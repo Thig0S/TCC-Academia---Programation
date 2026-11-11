@@ -1,4 +1,4 @@
-# Orientações para o Crediário Fácil
+# Orientações para o Vendas em Aberto
 
 Este documento se aplica a todo o repositório. Instruções específicas em diretórios descendentes podem complementar estes padrões. Preserve o README, as entrevistas e os artefatos OpenSpec; diferencie sempre decisões planejadas de funcionalidades implementadas.
 
@@ -36,7 +36,7 @@ SQLite: banco local
 - Preserve nomes impostos por Angular, TypeScript, RxJS, navegador e dependências, como `Component`, `signal`, `computed`, `inject`, `HttpClient`, `Router`, `Observable`, `ngOnInit`, `templateUrl` e `providedIn`.
 - Preserve propriedades de contratos externos quando existirem; se necessário, converta-as para modelos internos em português na fronteira da aplicação. Não invente contratos para o backend futuro.
 - Não traduza propriedades CSS, atributos HTML, APIs de acessibilidade, comandos npm, classes de bibliotecas ou nomes convencionais de configuração e entrada.
-- Preserve a identidade Crediário Fácil. Não faça substituições textuais indiscriminadas.
+- Preserve a identidade Vendas em Aberto. Não faça substituições textuais indiscriminadas.
 - Preserve os títulos estruturais e palavras normativas exigidos pelo esquema OpenSpec, como `Requirement`, `Scenario`, `SHALL` e `MUST`.
 
 ## Organização recomendada

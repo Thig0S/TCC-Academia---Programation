@@ -1,241 +1,248 @@
-# Prompt — Modern Credit Management Dashboard (MVP Prototype)
+# Prompt — Painel moderno de gestão de crediário (protótipo de MVP)
 
-## Project Overview
+## Visão geral do projeto
 
-Create a modern, clean, intuitive, and professional **Credit Sales Management Dashboard** for an optical retail store.
+Crie um **painel de gestão de vendas a prazo** moderno, limpo, intuitivo e profissional para uma ótica.
 
-The application will replace an outdated Excel-based workflow currently used to manage customer credit sales, installment payments, overdue balances, and payment records.
+Utilize uma paleta de cores Dark-Theme
 
-> **IMPORTANT:** This is a UI/UX prototype for an MVP, NOT a production-ready application.
+A aplicação substituirá um processo desatualizado baseado em Excel, atualmente utilizado para gerenciar vendas a prazo, parcelas, saldos em atraso e registros de pagamentos dos clientes.
 
-The primary goal is to create a visually polished, functional-looking prototype that can be presented to the store owner and employees for validation and feedback.
+> **IMPORTANTE:** Este é um protótipo de interface e experiência do usuário (UI/UX) para um MVP, NÃO uma aplicação pronta para produção.
 
-Do not implement a backend, database, authentication, or external API integrations. Use realistic static mock data throughout the application.
+O objetivo principal é criar um protótipo visualmente refinado, com aparência funcional, que possa ser apresentado ao proprietário e aos funcionários da loja para validação e coleta de opiniões.
 
-Use the attached screenshots as references:
+Não implemente backend, banco de dados, autenticação ou integrações com APIs externas. Utilize dados demonstrativos estáticos e realistas em toda a aplicação.
 
-- The existing Excel spreadsheet represents the current workflow and the type of information being managed.
-- The dashboard example represents the desired layout, organization, search functionality, and overall user experience.
+Use as capturas de tela anexadas como referência:
 
-Do not reproduce the visual style of the spreadsheet. Redesign it into a modern application.
+- A imagem `exemplo/exemplo-planilha-vendas.jpeg` representa o processo atual e o tipo de informação gerenciada. Use-a como referência de organização, sem reproduzir seus dados pessoais.
+- O exemplo de painel representa a disposição dos elementos, a organização, a funcionalidade de busca e a experiência geral desejadas.
 
-## 1. Design Direction
+Não reproduza o estilo visual da planilha. Redesenhe-o como uma aplicação moderna.
 
-Build a premium, modern SaaS-style dashboard inspired by clean financial management platforms.
+## 1. Direção de design
 
-The design should be:
+Construa um painel moderno e de alto padrão, no estilo SaaS, inspirado em plataformas de gestão financeira com visual limpo.
 
-- Modern, minimalistic, and professional.
-- Clean and spacious, with excellent visual hierarchy.
-- Easy to understand for non-technical retail employees.
-- Focused on usability, readability, and efficiency.
-- Visually consistent across all modules.
-- Responsive, but primarily optimized for desktop usage.
+O design deve ser:
 
-### Visual Style
+- Moderno, minimalista e profissional.
+- Limpo e espaçoso, com excelente hierarquia visual.
+- Fácil de entender para funcionários do comércio sem conhecimento técnico.
+- Focado em usabilidade, legibilidade e eficiência.
+- Visualmente consistente entre todos os módulos.
+- Responsivo, mas otimizado principalmente para uso em computadores.
 
-- Light theme by default.
-- Soft off-white or very light gray page background.
-- White cards and table containers.
-- Subtle borders and soft shadows.
-- Rounded corners (approximately 10–14px).
-- Modern typography such as Inter.
-- A restrained primary accent color, preferably indigo or blue.
-- Green for successful payments.
-- Red for overdue payments.
-- Amber for pending payments.
-- Subtle hover states and smooth transitions.
-- Clean Lucide icons or equivalent.
+### Estilo visual
 
-Avoid excessive gradients, glassmorphism, heavy shadows, oversized elements, and unnecessary decorations.
+- Disponibilize dois temas visuais: **tema branco (claro)** e **tema escuro (dark)**, com o tema escuro por padrão.
+- No tema branco, use fundo das páginas em branco levemente acinzentado ou cinza muito claro, com cartões e contêineres de tabelas brancos.
+- No tema escuro, use fundos e superfícies em tons escuros, com textos claros e bordas discretas.
+- Permita alternar entre os temas por um controle visível, acessível por teclado e com indicação do tema ativo, sem exigir persistência da preferência nesta etapa.
+- Aplique o tema selecionado de forma consistente em todas as telas, tabelas, formulários e modais, preservando contraste, legibilidade e identificação das situações além da cor.
+- Bordas discretas e sombras suaves.
+- Cantos arredondados, com aproximadamente 10–14 px.
+- Tipografia moderna, como Inter.
+- Uma cor principal de destaque discreta, preferencialmente índigo ou azul.
+- Verde para pagamentos realizados com sucesso.
+- Vermelho para pagamentos em atraso.
+- Âmbar para pagamentos pendentes.
+- Estados discretos ao passar o cursor e transições suaves.
+- Ícones simples do Lucide ou equivalentes.
 
-The result should look like a professional financial management application, not a basic HTML table.
+Evite gradientes excessivos, efeitos de vidro, sombras fortes, elementos grandes demais e decorações desnecessárias.
 
-All user-facing interface text must be written in **Brazilian Portuguese (pt-BR)**.
+O resultado deve parecer uma aplicação profissional de gestão financeira, não uma tabela HTML básica.
 
-- **Currency:** BRL (R$).
-- **Date format:** DD/MM/YYYY.
+Todos os textos da interface voltados ao usuário devem ser escritos em **português brasileiro (pt-BR)**.
 
-## 2. Main Application Layout
+- **Moeda:** BRL (R$).
+- **Formato de data:** DD/MM/AAAA.
 
-Create a consistent dashboard layout with three primary sections:
+## 2. Estrutura principal da aplicação
 
-### A. Left Sidebar Navigation
+Crie uma estrutura de painel consistente, com três seções principais:
 
-Create a fixed or collapsible vertical sidebar.
+### A. Navegação lateral à esquerda
 
-At the top, display a simple application identity:
+Crie uma barra lateral vertical fixa ou recolhível.
 
-**Crediário Fácil**
+No topo, exiba uma identidade simples para a aplicação:
 
-Use a minimal logo or icon related to financial management.
+**Vendas em Aberto**
 
-Include the following navigation modules:
+Use um logotipo minimalista ou um ícone relacionado à gestão financeira.
 
-1. **Visão Geral** — Dashboard overview.
-2. **Vendas** — Credit sales management.
-3. **Clientes** — Customer management.
-4. **Parcelas** — Installment tracking.
-5. **Relatórios** — Financial summaries.
-6. **Configurações** — Placeholder settings page.
+Inclua os seguintes módulos de navegação:
 
-Each navigation item should include:
+1. **Visão Geral** — Pagamentos recebidos no mês, pagamentos atrasados e próximos pagamentos.
+2. **Vendas** — Listagem de vendas em aberto, cadastro de vendas com os dados do cliente e consulta das parcelas de cada venda.
+3. **Relatórios** — Resumo financeiro da aplicação.
+4. **Configurações** — Página de configurações, mantida no MVP.
 
-- A corresponding icon.
-- A readable label.
-- A clear active state.
-- Subtle hover effects.
+Não haverá módulos separados de **Clientes** ou **Parcelas**. Os dados do cliente serão informados diretamente no cadastro da venda. As parcelas serão consultadas dentro de Vendas, ao clicar no cliente da venda correspondente.
 
-At the bottom of the sidebar, display a small static user profile, such as "Administrador", and a settings shortcut.
+Haverá também uma página de **Vendas quitadas** para consultar vendas totalmente pagas, com a situação **Quitada**, acessível por uma opção dentro de **Vendas**, sem criar um quinto módulo na navegação principal.
 
-Navigation must work between the prototype screens, but no real business logic or backend is required.
+Cada item de navegação deve incluir:
 
-### B. Top Header With Search Bar
+- Um ícone correspondente.
+- Um rótulo legível.
+- Uma indicação clara do estado ativo.
+- Efeitos discretos ao passar o cursor.
 
-Create a clean top navigation header spanning the main content area.
+Na parte inferior da barra lateral, exiba um pequeno perfil de usuário estático, como "Administrador", e um atalho para configurações.
 
-The most important element is a **prominent global search bar**, positioned above the page content, similar to the search example in the reference.
+A navegação entre as telas do protótipo deve funcionar, mas não é necessária lógica de negócio real nem backend.
 
-Search placeholder:
+### B. Cabeçalho superior e busca de vendas
 
-> Buscar cliente, CPF ou venda...
+Crie um cabeçalho de navegação limpo que ocupe toda a largura da área principal de conteúdo.
 
-Requirements:
+Na seção de Vendas, o elemento mais importante é uma **barra de pesquisa em destaque**, posicionada acima da listagem. Ela deve permitir pesquisar por **nome do cliente, CPF, telefone e data da venda**.
 
-- Rounded search input.
-- Search icon on the left.
-- Comfortable width and padding.
-- Visually prominent but not oversized.
-- Clean border and focus state.
-- Optional notification and user avatar icons on the right.
+Texto de orientação do campo de busca:
 
-The search bar should remain consistently positioned across all pages.
+> Buscar por nome, CPF, telefone ou data da venda...
 
-For the prototype, implement basic frontend-only filtering of mock customers or sales, especially on the sales listing page.
+Requisitos:
 
-### C. Main Content Area
+- Campo de busca com cantos arredondados.
+- Ícone de busca à esquerda.
+- Largura e espaçamento interno confortáveis.
+- Destaque visual sem tamanho excessivo.
+- Borda e estado de foco bem definidos.
+- Ícones opcionais de notificações e avatar do usuário à direita.
 
-The central area must display the currently selected module.
+A pesquisa pertence à seção de Vendas; não é necessário criar uma busca global para outros módulos.
 
-Use a consistent structure:
+Para o protótipo, a pesquisa deve funcionar apenas no frontend, sobre as vendas demonstrativas. A forma de combinar os critérios e a pesquisa por data exata ou período ainda devem ser confirmadas.
 
-- Page title.
-- Short subtitle.
-- Primary action button.
-- Summary cards when relevant.
-- Filters.
-- Main content table or cards.
+### C. Área principal de conteúdo
 
-Maintain generous spacing and strong visual hierarchy.
+A área central deve exibir o módulo selecionado no momento.
 
-## 3. Sales Management Page — Primary Screen
+Use uma estrutura consistente:
 
-**This is the most important page of the entire prototype.**
+- Título da página.
+- Subtítulo curto.
+- Botão de ação principal.
+- Cartões de resumo, quando pertinentes.
+- Filtros.
+- Tabela ou cartões com o conteúdo principal.
 
-The store currently uses Excel to register credit sales and track installments.
+Mantenha espaçamento generoso e uma hierarquia visual clara.
 
-Create a modern table-based interface that makes this process substantially easier to visualize.
+## 3. Página de gestão de vendas — Tela principal
 
-### Page Header
+**Esta é a página mais importante de todo o protótipo.**
 
-Title: **Vendas**
+A loja atualmente utiliza o Excel para registrar vendas a prazo e acompanhar parcelas.
 
-Subtitle: "Gerencie vendas parceladas e acompanhe os pagamentos dos clientes."
+Crie uma interface moderna baseada em tabela que facilite significativamente a visualização desse processo.
 
-Primary action button:
+A listagem principal deve apresentar **todas as vendas em aberto**. Quando uma venda for totalmente paga, ela ficará com a situação **Quitada** e passará para a página de **Vendas quitadas**, deixando a listagem de vendas em aberto.
+
+### Cabeçalho da página
+
+Título: **Vendas**
+
+Subtítulo: "Gerencie vendas parceladas e acompanhe os pagamentos dos clientes."
+
+Botão de ação principal:
 
 **+ Nova venda**
 
-### Summary Cards
+### Cartões de resumo
 
-Above the table, display four compact financial summary cards:
+Acima da tabela, exiba quatro cartões compactos de resumo financeiro:
 
-1. **Total em aberto** — Total remaining balance.
-2. **Valores em atraso** — Total overdue amount.
-3. **Recebido no mês** — Payments received this month.
-4. **Vendas cadastradas** — Number of registered sales.
+1. **Total em aberto** — Saldo total restante.
+2. **Valores em atraso** — Valor total em atraso.
+3. **Recebido no mês** — Pagamentos recebidos neste mês.
+4. **Vendas cadastradas** — Quantidade de vendas registradas.
 
-Use mock values and appropriate icons.
+Use valores demonstrativos e ícones adequados.
 
-### Sales Table
+### Tabela de vendas
 
-Create a modern, professional, readable data table with the following columns:
+Crie uma tabela de dados moderna, profissional e legível com as seguintes colunas:
 
-| Column            | Description                               |
-| ----------------- | ----------------------------------------- |
-| Cliente           | Customer name, with subtle initials avatar |
-| Data da venda     | Sale registration date                    |
-| Valor total       | Total sale amount                         |
-| Parcelas          | Paid installments / total installments    |
-| Saldo devedor     | Remaining unpaid amount                   |
-| Próximo vencimento | Next unpaid installment due date          |
-| Situação          | Visual status badge                       |
-| Ações             | View, edit, and more options               |
+| Coluna | Descrição |
+| --- | --- |
+| Cliente | Nome do cliente, com um avatar discreto contendo suas iniciais |
+| Data da venda | Data de registro da venda |
+| Valor total | Valor total da venda |
+| Parcelas | Parcelas pagas / total de parcelas |
+| Saldo devedor | Valor restante ainda não pago |
+| Próximo vencimento | Data de vencimento da próxima parcela não paga |
+| Situação | Indicador visual da situação |
+| Ações | Visualizar, editar e outras opções |
 
-Status examples:
+A situação **Quitada** identifica vendas totalmente pagas na página de Vendas quitadas. Não deduza a situação geral das vendas a partir das situações das parcelas sem confirmação das regras de agregação.
 
-- **Em dia** — Green or neutral success indicator.
-- **Atrasada** — Red indicator.
-- **Quitada** — Green indicator.
+Requisitos de design:
 
-Design requirements:
+- Contêiner da tabela com cantos arredondados: branco no tema claro e em tom escuro no tema dark.
+- Separadores discretos entre as linhas.
+- Espaçamento interno confortável nas células.
+- Tipografia legível.
+- Alinhamento claro das colunas.
+- Valores monetários alinhados de maneira consistente.
+- Situações exibidas como etiquetas coloridas e minimalistas com cantos arredondados.
+- Efeitos ao passar o cursor sobre as linhas da tabela.
+- Menu de ações com três pontos.
+- Paginação opcional na parte inferior.
 
-- White table container with rounded corners.
-- Subtle row separators.
-- Comfortable cell padding.
-- Readable typography.
-- Clear column alignment.
-- Currency values aligned consistently.
-- Status displayed as minimal colored pills.
-- Hover effects on table rows.
-- Action menu using three dots.
-- Optional pagination at the bottom.
+Utilize pelo menos 10 a 15 registros fictícios e realistas de vendas no contexto brasileiro.
 
-Use at least 10–15 realistic Brazilian mock sales records.
+### Busca e filtros
 
-### Search and Filters
+Acima da tabela, adicione uma barra compacta de filtros.
 
-Above the table, add a compact filter toolbar.
+Inclua:
 
-Include:
+- Pesquisa por nome do cliente.
+- Pesquisa por CPF.
+- Pesquisa por telefone.
+- Pesquisa por data da venda.
+- Ação para limpar filtros.
 
-- Customer search.
-- Status filter: Todas, Em dia, Atrasadas, Quitadas.
-- Date filter.
-- Clear filters action.
+Evite duplicar a pesquisa no cabeçalho e na listagem. Não inclua vendas quitadas na listagem de vendas em aberto; elas terão uma página própria.
 
-The search in the top header may share the same mock search state as the table, or the page-specific search may be omitted to avoid unnecessary duplication.
+Faça a pesquisa funcionar com dados demonstrativos locais, sem presumir critérios de combinação ou filtros adicionais não confirmados.
 
-Make the existing search and basic status filtering work with local mock data.
+## 4. Detalhes da venda e parcelas
 
-## 4. Sale Details and Installments
+Quando o usuário clicar no cliente de uma venda na seção de Vendas, abra os detalhes e as parcelas dessa venda em uma página ou painel lateral visualmente refinado. Não abra um cadastro independente de cliente nem uma seção separada de parcelas.
 
-When the user clicks on a sale, open a polished sale details page or side drawer.
+Exiba:
 
-Display:
-
-### Customer Information
+### Informações do cliente
 
 - Nome completo
 - CPF
 - Telefone
+- Descrição, quando preenchida (opcional)
 
-### Sale Information
+### Informações da venda
 
 - Data da venda
 - Valor total
+- Indicação de existência ou não de entrada
 - Quantidade de parcelas
 - Total pago
 - Saldo devedor
 - Situação geral
 
-### Installments Table
+### Tabela de parcelas
 
-Show the installments belonging to that sale.
+Mostre as parcelas pertencentes à venda.
 
-Columns:
+Colunas:
 
-- Parcela (e.g., 1/6)
+- Parcela (por exemplo, 1/6)
 - Valor
 - Vencimento
 - Situação
@@ -243,148 +250,129 @@ Columns:
 - Forma de pagamento
 - Ações
 
-Statuses:
+Situações:
 
-- Paga
-- Pendente
-- Vencida
+- **Aberto**.
+- **Próximos dias** — Janela de 7 dias; os limites exatos, incluindo o tratamento do vencimento no dia atual, ainda devem ser confirmados.
+- **Atrasado**.
+- **Paga** — A parcela paga continua visível nos detalhes da venda.
 
-Display paid installments in green, overdue installments in red, and pending installments in amber or neutral tones.
+Exiba parcelas pagas em verde, atrasadas em vermelho e as demais em âmbar ou tons neutros, sempre com o texto da situação. Não crie regras adicionais de classificação sem confirmação.
 
-Include a visually clear action button:
+Inclua um botão de ação visualmente claro:
 
 **Registrar pagamento**
 
-Clicking this button should open a mock payment registration modal containing:
+Ao clicar nesse botão, deve ser aberto um modal demonstrativo de registro de pagamento contendo:
 
 - Valor recebido
 - Data do pagamento
 - Forma de pagamento
 - Confirmar pagamento
 
-The interaction can simulate success using local frontend state. No data persistence is required.
+A interação pode simular sucesso utilizando o estado local do frontend. Não é necessária persistência dos dados.
 
-## 5. Customers Page
+## 5. Dados do cliente no cadastro da venda
 
-Create a customer management screen.
+Não crie uma página, listagem ou formulário independente de clientes.
 
-Title: **Clientes**
+O nome do cliente, CPF e telefone serão obrigatoriamente informados no próprio cadastro da venda, seguindo a referência de organização da imagem em `exemplo/`.
 
-Subtitle: "Consulte e organize os clientes cadastrados."
+Inclua também um campo de **Descrição do cliente**, de preenchimento opcional, nesse mesmo cadastro. Quando preenchida, a descrição deve ser exibida nas informações do cliente nos detalhes da venda.
 
-Include:
+Não presuma cadastro prévio, seleção de cliente existente, unicidade por CPF ou compartilhamento automático de dados entre vendas. Essas regras não foram definidas.
 
-- Search input.
-- **Novo cliente** button.
-- Customers table.
+## 6. Página de vendas quitadas
 
-Columns:
+Crie uma página para consultar as vendas totalmente pagas, identificadas pela situação **Quitada**.
 
-- Nome
-- CPF
-- Telefone
-- Vendas cadastradas
-- Saldo em aberto
-- Situação
-- Ações
+Ao quitar uma venda, ela deve sair da listagem de vendas em aberto e passar a constar nesta página. As parcelas pagas continuam disponíveis nos detalhes da venda.
 
-Clicking a customer should display a customer details screen with their basic information and associated credit sales.
+O acesso a essa página será uma opção dentro de **Vendas**. Seus filtros específicos ainda precisam ser confirmados. Não adicione um módulo separado de parcelas.
 
-Use static mock data.
+## 7. Painel de visão geral
 
-## 6. Installments Page
+Crie uma página de visão geral com visual limpo, acessível pelo módulo **Visão Geral**.
 
-Create a dedicated installment tracking module.
+Inclua:
 
-Title: **Parcelas**
+- Saldo total em aberto.
+- Saldo total em atraso.
+- Pagamentos recebidos neste mês.
+- Vendas recentes.
+- Próximos pagamentos e vencimentos de parcelas, com destaque para a janela de 7 dias definida para **Próximos dias**.
+- Pagamentos em atraso que exigem atenção.
 
-Subtitle: "Acompanhe pagamentos pendentes, realizados e vencidos."
+Opcionalmente, inclua um gráfico simples com os pagamentos recebidos nos últimos meses.
 
-Include summary cards or quick filters:
+O painel deve priorizar informações financeiras úteis em vez de gráficos decorativos.
 
-- Todas
-- Pendentes
-- Vencidas
-- Pagas
+## 8. Página de relatórios
 
-Table columns:
+Crie uma página de **resumo financeiro da aplicação**, com dados demonstrativos consistentes com as vendas, parcelas e pagamentos simulados.
 
-- Cliente
-- Venda
-- Parcela
-- Valor
-- Vencimento
-- Situação
-- Ações
-
-Make overdue installments especially easy to identify without making the interface visually overwhelming.
-
-Provide local mock interactions for registering a payment.
-
-## 7. Dashboard Overview
-
-Create a clean overview page accessible through **Visão Geral**.
-
-Include:
-
-- Total outstanding balance.
-- Total overdue balance.
-- Payments received this month.
-- Number of active customers.
-- Recent sales.
-- Upcoming installment due dates.
-- Overdue payments requiring attention.
-
-Optionally include a simple chart displaying payments received over recent months.
-
-The dashboard should prioritize useful financial information instead of decorative charts.
-
-## 8. Reports Page
-
-Create a basic static financial reports page.
-
-Include mock report cards or charts for:
+Inclua cartões ou gráficos demonstrativos de relatórios para:
 
 - Recebimentos mensais.
 - Valores em aberto.
 - Parcelas vencidas.
 - Vendas realizadas por período.
 
-Include an "Exportar relatório" button as a visual placeholder.
+Inclua um botão "Exportar relatório" apenas como elemento visual ilustrativo.
 
-No actual reporting engine or file generation is necessary.
+Não é necessário um mecanismo real de relatórios nem a geração de arquivos.
 
-## 9. Forms and Modals
+## 9. Formulários e modais
 
-Create visually consistent prototype forms for:
+Crie formulários de protótipo visualmente consistentes para:
 
-- Cadastrar cliente.
 - Cadastrar venda.
 - Editar venda.
 - Registrar pagamento.
 
-For the new sale form, include:
+No formulário de nova venda, os seguintes campos serão obrigatórios:
 
-- Cliente.
-- Data da venda.
-- Valor total.
+- Nome do cliente.
+- CPF.
+- Telefone.
+- Valor da venda.
+- Indicação de existência ou não de entrada.
 - Quantidade de parcelas.
-- Primeiro vencimento.
-- Observações.
+- Data da venda.
 
-Display a simple simulated installment preview based on the entered sale amount and number of installments.
+Além dos campos obrigatórios, inclua **Descrição do cliente** como campo opcional. Deixá-lo vazio não deve impedir o cadastro da venda.
 
-Frontend-only calculations are allowed.
+A data da venda deve iniciar com a data do dia do cadastro, representando o dia em que a venda é realizada por padrão, e permitir alteração pelo usuário.
 
-All forms should be clean, well-spaced, and easy for non-technical users to understand.
+As parcelas devem vencer no mesmo dia da data da venda, nos meses seguintes. A regra para meses que não possuem esse dia ainda precisa ser confirmada; não escolha automaticamente outra data.
 
-No backend integration is needed.
+Quando houver entrada, informe seu valor e desconte-o do valor total da venda antes de dividir o restante pela quantidade de parcelas:
 
-## 10. Mock Data and Interactions
+**Valor a parcelar = valor total da venda − valor da entrada.**
 
-Use realistic mock data in Brazilian Portuguese.
+**Valor-base da parcela = valor a parcelar ÷ quantidade de parcelas.**
 
-Examples:
+Por exemplo, uma venda de R$ 1.000,00 com entrada de R$ 200,00 e quatro parcelas terá R$ 800,00 a parcelar, resultando em quatro parcelas de R$ 200,00.
+
+A forma de registrar a entrada como pagamento e sua apresentação nos recebimentos ainda precisam ser confirmadas. O tratamento de diferenças de centavos também permanece pendente; não deduza essas regras da planilha.
+
+Observações podem permanecer como campo opcional. Não mantenha um campo independente de primeiro vencimento que contradiga o calendário mensal definido, sem autorização explícita.
+
+Exiba uma prévia simples e simulada das parcelas com base no valor da venda e na quantidade de parcelas informados.
+
+Use a regra confirmada de desconto da entrada e divisão do restante. Antes de implementar casos com diferenças de centavos, confirme a regra de arredondamento. A prévia não deve apresentar regras ainda pendentes como definitivas.
+
+São permitidos cálculos realizados apenas no frontend.
+
+Todos os formulários devem ter visual limpo, bom espaçamento e ser fáceis de entender para usuários sem conhecimento técnico.
+
+Não é necessária integração com backend.
+
+## 10. Dados e interações demonstrativas
+
+Utilize dados demonstrativos realistas em português brasileiro.
+
+Exemplos:
 
 - Maria Oliveira.
 - João Pereira.
@@ -392,116 +380,125 @@ Examples:
 - Carlos Ferreira.
 - Juliana Martins.
 
-Include varying sale values, installment quantities, due dates, and statuses.
+Inclua valores de venda, quantidades de parcelas, vencimentos e situações variados.
 
-All mock data must be clearly separated from UI components so that it can later be replaced with API responses.
+Todos os dados demonstrativos devem ficar claramente separados dos componentes de interface, para que possam ser substituídos por respostas de API no futuro.
 
-For the prototype, implement lightweight local interactions where useful:
+Para o protótipo, implemente interações locais simples quando forem úteis:
 
-- Sidebar navigation.
-- Global search.
-- Status filters.
-- Opening sale details.
-- Opening customer details.
-- Opening registration modals.
-- Simulating a payment registration.
-- Closing modals.
-- Displaying mock confirmation messages.
+- Navegação pela barra lateral.
+- Pesquisa de vendas por nome, CPF, telefone e data da venda.
+- Abertura de detalhes da venda.
+- Consulta das parcelas ao clicar no cliente da venda.
+- Consulta de vendas quitadas.
+- Abertura de modais de cadastro.
+- Simulação de registro de pagamento.
+- Fechamento de modais.
+- Exibição de mensagens demonstrativas de confirmação.
 
-These interactions should make the application feel realistic during a client presentation.
+Essas interações devem tornar a aplicação realista durante uma apresentação ao cliente.
 
-Do not implement authentication, backend endpoints, database access, or external API calls.
+Não implemente autenticação, endpoints de backend, acesso a banco de dados ou chamadas a APIs externas.
 
-## 11. Code Structure and Implementation
+## 11. Estrutura do código e implementação
 
-First, inspect the existing project structure and identify the frontend framework and styling approach.
+Primeiro, inspecione a estrutura existente do projeto e identifique o framework de frontend e a abordagem de estilização.
 
-Preserve the existing technology stack whenever possible.
+Preserve as tecnologias existentes sempre que possível.
 
-If this is an Angular project, prefer:
+Se este for um projeto Angular, prefira:
 
-- Standalone components.
-- Modern Angular template syntax.
-- Signals for local UI state.
-- Reusable components.
-- TailwindCSS for styling, if already configured or appropriate.
-- Feature-based organization.
+- Componentes standalone.
+- Sintaxe moderna de templates do Angular.
+- Signals para o estado local da interface.
+- Componentes reutilizáveis.
+- TailwindCSS para estilização, se já estiver configurado ou for adequado.
+- Organização por funcionalidade.
 
-Recommended reusable UI components:
+Componentes de interface reutilizáveis recomendados:
 
-- `AppSidebar`
-- `AppHeader`
-- `PageHeader`
-- `SummaryCard`
-- `DataTable`
-- `StatusBadge`
-- `SearchInput`
-- `FilterToolbar`
-- `SaleDetails`
-- `PaymentModal`
-- `CustomerForm`
-- `SaleForm`
+- `BarraNavegacao`
+- `Cabecalho`
+- `CabecalhoPagina`
+- `IndicadorResumo`
+- `TabelaDados`
+- `SeloSituacao`
+- `CampoBusca`
+- `BarraFiltros`
+- `DetalhesVenda`
+- `ModalPagamento`
+- `FormularioVenda`
 
-Use mock services or local TypeScript data files where appropriate.
+Utilize serviços demonstrativos ou arquivos locais de dados em TypeScript quando apropriado.
 
-Avoid unnecessary architectural complexity.
+Evite complexidade arquitetural desnecessária.
 
-Do not install large UI component frameworks unless truly necessary.
+Não instale grandes frameworks de componentes de interface, a menos que sejam realmente necessários.
 
-Focus on clean, maintainable frontend code.
+Concentre-se em código de frontend limpo e de fácil manutenção.
 
-## 12. User Experience Requirements
+## 12. Requisitos de experiência do usuário
 
-Remember that the main users are retail employees who currently work with Excel.
+Lembre-se de que os principais usuários são funcionários do comércio que atualmente trabalham com Excel.
 
-The UI should be immediately understandable even without technical experience.
+A interface deve ser compreensível de imediato, mesmo sem experiência técnica.
 
-Prioritize:
+Priorize:
 
-1. Finding a customer quickly.
-2. Identifying outstanding installments.
-3. Registering a payment with very few clicks.
-4. Viewing overdue installments clearly.
-5. Understanding the overall financial situation.
+1. Encontrar uma venda rapidamente pelo nome do cliente, CPF, telefone ou data da venda.
+2. Identificar parcelas em aberto.
+3. Registrar um pagamento com poucos cliques.
+4. Visualizar claramente as parcelas vencidas.
+5. Entender a situação financeira geral.
 
-Avoid complicated navigation, excessive menus, or overly dense tables.
+Evite navegação complicada, excesso de menus ou tabelas muito densas.
 
-Ensure that important actions are visible and easy to access.
+Garanta que as ações importantes estejam visíveis e sejam fáceis de acessar.
 
-## 13. Prototype Scope and Priorities
+## 13. Escopo e prioridades do protótipo
 
-This is a **visual MVP prototype for stakeholder validation**.
+Este é um **protótipo de MVP visual para validação com as partes interessadas**.
 
-Do not spend time implementing infrastructure that is unnecessary for a demonstration.
+Não dedique tempo à implementação de infraestrutura desnecessária para uma demonstração.
 
-Focus development effort in this priority order:
+Concentre o esforço de desenvolvimento nesta ordem de prioridade:
 
-1. Main application shell with sidebar and top search bar.
-2. Sales listing page with a polished table.
-3. Sale details and installment tracking.
-4. Customers page.
-5. Dashboard overview.
-6. Installments page.
-7. Basic reports and settings placeholders.
-8. Frontend-only modal interactions.
+1. Estrutura principal da aplicação com navegação para Visão Geral, Vendas, Relatórios e Configurações.
+2. Listagem de vendas em aberto com tabela visualmente refinada e pesquisa por nome, CPF, telefone e data da venda.
+3. Cadastro de venda com dados obrigatórios do cliente e da venda no mesmo formulário.
+4. Detalhes das parcelas dentro de Vendas, com as situações Aberto, Próximos dias, Atrasado e Paga.
+5. Página de vendas quitadas.
+6. Painel de visão geral com recebimentos do mês, pagamentos atrasados e próximos pagamentos.
+7. Resumo financeiro em Relatórios e página de Configurações.
+8. Interações com modais apenas no frontend.
 
-Every page should be navigable and visually consistent.
+Todas as páginas devem ser navegáveis e visualmente consistentes.
 
-It is better to deliver a highly polished, coherent interface with realistic mock data than to build unnecessary backend features.
+É melhor entregar uma interface muito bem-acabada e coerente, com dados demonstrativos realistas, do que criar funcionalidades desnecessárias de backend.
 
-## 14. Expected Final Result
+### Definições pendentes de confirmação
 
-Deliver a complete, navigable frontend prototype that feels like a real financial management SaaS application.
+- Como tratar vencimentos em meses sem o dia da venda, como uma venda realizada no dia 31.
+- Como registrar a entrada como pagamento e apresentá-la nos recebimentos.
+- Como distribuir diferenças de centavos no parcelamento.
+- Quais são os limites exatos de Próximos dias, incluindo parcelas com vencimento hoje.
+- Como combinar os critérios de pesquisa e se a data será pesquisada por dia exato ou período.
 
-The prototype must demonstrate how the store could move from a complex Excel spreadsheet to a modern and intuitive credit sales management system.
+Pergunte ao usuário antes de definir essas regras. A planilha é referência visual e de processo, não autorização para inferir regras de negócio.
 
-The result should be suitable for presentation to the store owner and employees, helping validate:
+## 14. Resultado final esperado
 
-- Whether the proposed layout is understandable.
-- Whether customer and sale information is easy to locate.
-- Whether payment management is simpler than using Excel.
-- Whether the proposed navigation and modules match their daily workflow.
+Entregue um protótipo completo e navegável de frontend, com a aparência de uma aplicação SaaS real de gestão financeira.
 
-**The most important requirement is a beautiful, modern, clean, and highly usable Sales Management screen with a left navigation sidebar, a top search bar, and a central customer sales listing.**
+O protótipo deve demonstrar como a loja poderia migrar de uma planilha complexa do Excel para um sistema moderno e intuitivo de gestão de vendas a prazo.
 
-Build the actual frontend prototype in the existing project rather than only describing the design.
+O resultado deve ser adequado para apresentação ao proprietário e aos funcionários da loja, ajudando a validar:
+
+- Se a disposição dos elementos proposta é compreensível.
+- Se as informações de clientes e vendas são fáceis de localizar.
+- Se a gestão de pagamentos é mais simples do que no Excel.
+- Se a navegação e os módulos propostos correspondem ao processo de trabalho diário.
+
+**O requisito mais importante é uma tela de gestão de vendas bonita, moderna, limpa e muito fácil de usar, com navegação lateral à esquerda, barra de busca superior e listagem central das vendas dos clientes.**
+
+Construa o protótipo real de frontend no projeto existente, em vez de apenas descrever o design.
