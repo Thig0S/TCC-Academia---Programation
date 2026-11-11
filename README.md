@@ -6,7 +6,7 @@ Create a modern, clean, intuitive, and professional **Credit Sales Management Da
 
 The application will replace an outdated Excel-based workflow currently used to manage customer credit sales, installment payments, overdue balances, and payment records.
 
-**IMPORTANT: This is a UI/UX prototype for an MVP, NOT a production-ready application.**
+> **IMPORTANT:** This is a UI/UX prototype for an MVP, NOT a production-ready application.
 
 The primary goal is to create a visually polished, functional-looking prototype that can be presented to the store owner and employees for validation and feedback.
 
@@ -53,9 +53,8 @@ The result should look like a professional financial management application, not
 
 All user-facing interface text must be written in **Brazilian Portuguese (pt-BR)**.
 
-Currency: BRL (R$).
-
-Date format: DD/MM/YYYY.
+- **Currency:** BRL (R$).
+- **Date format:** DD/MM/YYYY.
 
 ## 2. Main Application Layout
 
@@ -99,7 +98,7 @@ The most important element is a **prominent global search bar**, positioned abov
 
 Search placeholder:
 
-"Buscar cliente, CPF ou venda..."
+> Buscar cliente, CPF ou venda...
 
 Requirements:
 
@@ -162,16 +161,16 @@ Use mock values and appropriate icons.
 
 Create a modern, professional, readable data table with the following columns:
 
-| Column | Description |
-|---|---|
-| Cliente | Customer name, with subtle initials avatar |
-| Data da venda | Sale registration date |
-| Valor total | Total sale amount |
-| Parcelas | Paid installments / total installments |
-| Saldo devedor | Remaining unpaid amount |
-| Próximo vencimento | Next unpaid installment due date |
-| Situação | Visual status badge |
-| Ações | View, edit, and more options |
+| Column            | Description                               |
+| ----------------- | ----------------------------------------- |
+| Cliente           | Customer name, with subtle initials avatar |
+| Data da venda     | Sale registration date                    |
+| Valor total       | Total sale amount                         |
+| Parcelas          | Paid installments / total installments    |
+| Saldo devedor     | Remaining unpaid amount                   |
+| Próximo vencimento | Next unpaid installment due date          |
+| Situação          | Visual status badge                       |
+| Ações             | View, edit, and more options               |
 
 Status examples:
 
@@ -430,18 +429,18 @@ If this is an Angular project, prefer:
 
 Recommended reusable UI components:
 
-- AppSidebar
-- AppHeader
-- PageHeader
-- SummaryCard
-- DataTable
-- StatusBadge
-- SearchInput
-- FilterToolbar
-- SaleDetails
-- PaymentModal
-- CustomerForm
-- SaleForm
+- `AppSidebar`
+- `AppHeader`
+- `PageHeader`
+- `SummaryCard`
+- `DataTable`
+- `StatusBadge`
+- `SearchInput`
+- `FilterToolbar`
+- `SaleDetails`
+- `PaymentModal`
+- `CustomerForm`
+- `SaleForm`
 
 Use mock services or local TypeScript data files where appropriate.
 
