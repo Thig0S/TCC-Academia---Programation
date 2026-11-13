@@ -7,8 +7,8 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 
 ## 1. Dependência de navegação e fronteira de execução
 
-- [ ] 1.1 Revalidar branch dedicada, autorização de apply e versões da base; conferir `git status`, manifesto e existência de `frontend/public/imgs/logo-franquia.jpg` e dos quatro exemplos indicados no design, preservando os arquivos e qualquer trabalho alheio; registrar o recorte e as referências visuais em `frontend/README.md` sem declarar FASE-004 a FASE-008 ou regras abertas como autorizadas.
-- [ ] 1.2 Acrescentar somente `@angular/router@22.2.6` compatível com a base e gerar o lockfile pelo npm; verificar peers sem flags de força por `npm.cmd ls --depth=0`, instalação por `npm.cmd ci` e build por `npm.cmd run build` em `frontend/`; registrar resultados e versões em `frontend/README.md`, sem Forms, ZoneJS ou upgrades incidentais.
+- [x] 1.1 Revalidar branch dedicada, autorização de apply e versões da base; conferir `git status`, manifesto e existência de `frontend/public/imgs/logo-franquia.jpg` e dos quatro exemplos indicados no design, preservando os arquivos e qualquer trabalho alheio; registrar o recorte e as referências visuais em `frontend/README.md` sem declarar FASE-004 a FASE-008 ou regras abertas como autorizadas.
+- [x] 1.2 Acrescentar somente `@angular/router@22.2.6` compatível com a base e gerar o lockfile pelo npm; verificar peers sem flags de força por `npm.cmd ls --depth=0`, instalação por `npm.cmd ci` e build por `npm.cmd run build` em `frontend/`; registrar resultados e versões em `frontend/README.md`, sem Forms, ZoneJS ou upgrades incidentais.
 
 ## 2. Estrutura navegável e regressão de abertura
 
