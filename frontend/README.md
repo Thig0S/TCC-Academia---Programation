@@ -50,7 +50,7 @@ Esta entrega cobre somente a preparação aplicável da FASE-001 e a base da FAS
 página técnica estática, identidade, aviso demonstrativo, pt-BR e ferramentas mínimas.
 Referências: [PRD](../docs/prd/vendas-em-aberto.md), RF-011 e RNF-001/004/008/010;
 [TDD](../docs/tdd/tdd.md), DEC-001/002/003/008/009/013/014;
-[SDD](../openspec/changes/preparar-base-tecnica-frontend/).
+[SDD](../openspec/changes/archive/2026-11-13-preparar-base-tecnica-frontend/).
 
 DEC-014: Prettier com dois espaços, aspas simples e largura 100, sem lint; Vitest/TestBed/
 jsdom zoneless; smoke E2E Chromium no Windows em 1366 × 768 e 390 × 844.
