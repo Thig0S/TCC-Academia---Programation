@@ -58,6 +58,55 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
 });
 
+test('páginas comerciais explicam indisponibilidade sem consulta ou ações fictícias', async ({
+  page,
+}) => {
+  for (const [rota, titulo] of destinos.filter(([rota]) => rota !== '/configuracoes')) {
+    await page.goto(rota);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
+    await expect(page.getByRole('main')).toContainText(/nenhuma consulta foi realizada/i);
+    await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
+    await expect(page.getByRole('main').locator('button')).toHaveCount(0);
+    await expect(page.getByRole('button')).toHaveCount(1);
+    await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|\d/);
+  }
+});
+
+test('Configurações explica os quatro limites pelos dois acessos e temas', async ({ page }) => {
+  await page.goto('/');
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    for (const acesso of ['principal', 'atalho']) {
+      const link =
+        acesso === 'principal'
+          ? page
+              .getByRole('navigation', { name: 'Navegação principal' })
+              .getByRole('link', { name: 'Configurações', exact: true })
+          : page.getByRole('link', { name: 'Atalho para Configurações', exact: true });
+      await link.click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Configurações');
+      for (const texto of [
+        'Dados fictícios',
+        'Estado apenas em memória',
+        'Descarte ao recarregar',
+        'Sem uso operacional',
+        'não controla cobranças reais',
+      ]) {
+        await expect(page.getByRole('main')).toContainText(texto);
+      }
+      await expect(
+        page.getByRole('main').locator('form, input, select, textarea, button, a'),
+      ).toHaveCount(0);
+      await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+      await page
+        .getByRole('navigation', { name: 'Navegação principal' })
+        .getByRole('link', { name: 'Visão Geral', exact: true })
+        .click();
+    }
+  }
+});
+
 test('alterna tema com Enter e Espaço sem mudar foco ou rota', async ({ page }) => {
   await page.goto('/vendas');
   const botao = page.getByRole('button', { name: 'Tema escuro', exact: true });

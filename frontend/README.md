@@ -72,6 +72,28 @@ Revisão visual de Quitadas em desktop/pequeno, ambos os temas: foco visível, t
 brancas externas, ativo sublinhado e módulo destacado, marca legível; movimento reduzido não
 impede ações. Não é certificação integral, teste de leitor de tela nem homologação da ótica.
 
+### Conteúdo comercial indisponível
+
+Visão Geral, Vendas, Quitadas e Relatórios informam explicitamente que nenhuma consulta foi
+realizada: não são consultas vazias. Não estão implementados domínio, registros, indicadores,
+cadastro, edição, parcelas, pagamento, filtros ou exportação. Controles existentes são apenas
+navegação e tema. `npm.cmd test -- --watch=false`: 20/20; E2E dirigido de páginas comerciais:
+2/2, cobrindo as quatro páginas nos dois viewports, sem formulários, tabelas, valores ou
+ações comerciais inventadas. Os textos não copiam dados pessoais ou financeiros das imagens.
+
+Configurações explica os quatro limites de PRD/CA-022: dados fictícios, memória, descarte
+ao recarregar e ausência de uso operacional/cobranças reais. Não há controles fictícios.
+Unitários/componentes posteriores: 21/21. E2E dirigido de Configurações: 2/2, exercitando
+menu e atalho nos dois temas e viewports. PRD/PEN-012 está parcialmente resolvida somente
+para esse conteúdo (HIP-004 aceita); os filtros de Quitadas continuam fora do escopo.
+
+Revisão de conteúdo com PRD/RF-001/011/012, CA-022 e TDD/FASE-003 e deltas: quatro módulos,
+Quitadas interna, nenhuma implementação de cadastro mestre, formulário, lista ou domínio.
+Busca no fonte confirmou somente a logo como imagem da interface; capturas não são carregadas.
+Manifesto mantém Bootstrap como única base visual e Router como única dependência direta nova.
+Regressão de conteúdo consolidada: 21/21 testes unitários/componentes e 24/24 execuções E2E
+aprovadas, incluindo todos os contratos anteriores. Os exemplos não definiram campos/regras.
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.
