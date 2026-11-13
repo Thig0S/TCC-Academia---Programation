@@ -12,6 +12,7 @@ A base técnica já executa e possui automações, mas ainda não permite avalia
 - Utilizar `frontend/public/imgs/logo-franquia.jpg` na identidade visual da aplicação. Usar os designs de `frontend/public/imgs/exemplos/` como referência para a estrutura de layout, organização, espaçamento e hierarquia visual, não como especificação de módulos, formulários, campos, dados ou regras. PRD, TDD e especificações OpenSpec prevalecem; os exemplos não ampliam o recorte da FASE-003.
 - Definir Configurações como explicação de dados fictícios, estado em memória, perda na recarga e ausência de uso operacional, sem controles fictícios.
 - Definir temas claro/escuro com escuro inicial, alternância acessível e estado somente em memória, consistente entre rotas e descartado na recarga.
+- Refinamento visual autorizado durante o apply, conforme PRD 1.2/TDD 1.5: lateral vermelha no claro e degradê vertical sutil vermelho/vinho no escuro, usando `exemploListagemDeVendas.png` e `exemploDesignDark.png` também como referências cromáticas dessa área. Preservar contraste, foco, responsividade, logo e restante da interface; isso não autoriza campos ou dados das capturas.
 - Evoluir o contrato da abertura técnica: identidade global e título específico por página substituem a exigência de nome do produto como único título principal. Preservar aviso, idioma e isolamento.
 - Conciliar PRD 1.1 e TDD 1.4 antes das deltas: PEN-006 resolvida documentalmente; HIP-004 aceita somente para o conteúdo explicativo. PEN-012 continua aberta para filtros de Quitadas.
 

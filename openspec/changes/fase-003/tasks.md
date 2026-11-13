@@ -37,6 +37,12 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 - [ ] 5.2 Percorrer manualmente todos os destinos por teclado nos dois temas, conferir atalho, foco, ausência de corte, zoom 200% e movimento reduzido; registrar roteiro, resultados e itens não executados em `frontend/README.md`, sem converter o smoke técnico em homologação de dispositivos, navegadores ou aceite da ótica.
 - [x] 5.3 Revisar rastreabilidade final, executar `openspec validate fase-003 --strict` e `git diff --check`, conferir o diff limitado ao recorte e atualizar estas tarefas somente conforme evidências reais; registrar pendências comerciais, CA-018/021 completos e PRD/PEN-013/014 ainda não atendidos, sem declarar o MVP concluído.
 
+## 6. Refinamento visual autorizado da lateral — PRD 1.2/TDD 1.5
+
+- [ ] 6.1 Aplicar lateral vermelha no tema claro e degradê vertical estático vermelho/vinho no escuro, conforme os dois exemplos indicados; ajustar textos, ícones, perfil/atalho, bordas, hover, ativo e foco com variáveis locais, sem mudar a logo, as outras superfícies, a navegação ou as dependências; preservar a adaptação abaixo de md.
+- [ ] 6.2 Atualizar verificações E2E para o fundo vermelho e degradê real, medindo contraste de texto normal/secundário, links, ativo/hover e foco nos extremos e região intermediária; revisar visualmente 1366 × 768 e 390 × 844 nos dois temas, sem substituir o zoom nativo pendente da tarefa 5.2.
+- [ ] 6.3 Executar formatação, build, testes unitários/componentes e E2E afetados, validar OpenSpec e diff; registrar resultados reais em frontend/README.md e criar commit coerente do ajuste com testes e tarefas, sem PR enquanto 5.2 estiver pendente.
+
 ## Evidências do planejamento — 13/11/2026
 
 - PRD 1.1 e TDD 1.4 revisados antes dos artefatos SDD, após confirmação explícita de temas e conteúdo explicativo de Configurações. Nenhuma outra hipótese ou regra financeira foi aprovada.

@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.1 — revisão de planejamento em 13/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.2 — revisão visual em 13/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
@@ -282,7 +282,7 @@ Não há alegação de conformidade legal, certificação de acessibilidade, car
 
 **Arquitetura de informação:** navegação lateral → Visão Geral / Vendas / Relatórios / Configurações. Em Vendas: abertas → detalhes da venda e suas parcelas → modal de pagamento; Nova venda e edição no mesmo contexto funcional; Quitadas como opção interna. A escolha de página ou painel lateral para detalhes deve preservar orientação e retorno, sem exigir uma seção Clientes.
 
-**Hierarquia visual:** título e subtítulo, ação principal, resumos pertinentes, área única de busca e tabela quando seus fluxos estiverem disponíveis. A listagem será o foco, não gráficos decorativos. Os dois temas usam superfícies e textos contrastantes, destaque discreto azul/índigo e foco perceptível; situações futuras combinam texto e cor. Na FASE-003, não antecipar tabelas, indicadores ou ações comerciais sem consumidor funcional.
+**Hierarquia visual:** título e subtítulo, ação principal, resumos pertinentes, área única de busca e tabela quando seus fluxos estiverem disponíveis. A listagem será o foco, não gráficos decorativos. Os dois temas usam superfícies e textos contrastantes e foco perceptível; situações futuras combinam texto e cor. Por solicitação explícita na revisão 1.2, a barra lateral usa vermelho da identidade no tema claro, orientado por `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`; no escuro, usa degradê vertical sutil de vermelho para vermelho mais escuro/vinho, orientado por `exemploDesignDark.png`. Textos e ícones claros, estados ativo/hover e foco devem permanecer contrastantes. Essa identidade também se aplica ao bloco de navegação em viewport pequeno, sem animação obrigatória. O destaque azul/índigo continua permitido fora da lateral; o restante da interface não é redesenhado nesta revisão. Na FASE-003, não antecipar tabelas, indicadores ou ações comerciais sem consumidor funcional.
 
 | Estado | Conteúdo e comportamento esperado |
 | --- | --- |
@@ -561,3 +561,4 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | --- | --- | --- | --- |
 | 1.0 | 11/11/2026 | Criação do PRD com IDs iniciais, fontes locais, escopo, jornadas, requisitos, aceite, hipóteses e pendências | Atender à solicitação de transformar o README em documento de produto sem implementar código |
 | 1.1 | 13/11/2026 | Conciliação de PEN-006, aceite delimitado de HIP-004/PEN-012, CA-023 e recorte da FASE-003; atualização do estado da base | Confirmações do solicitante na exploração e no planejamento; sem implementação ou aceite da ótica |
+| 1.2 | 13/11/2026 | Identidade vermelha da lateral no claro e degradê vermelho/vinho no escuro, mantendo contraste e os demais limites | Pedido visual explícito durante o apply da fase-003; zoom nativo 200% permanece pendente e sem PR |
