@@ -94,6 +94,65 @@ Manifesto mantém Bootstrap como única base visual e Router como única depend�
 Regressão de conteúdo consolidada: 21/21 testes unitários/componentes e 24/24 execuções E2E
 aprovadas, incluindo todos os contratos anteriores. Os exemplos não definiram campos/regras.
 
+### Verificação integrada da FASE-003 — 13/11/2026
+
+Ambiente revalidado: Windows 11 Home 64 bits 10.0.26200, Node 24.21.0, npm 11.19.0;
+Angular/Router/CLI/build 22.2.6, TypeScript 6.0.3, Vitest 5.1.0, jsdom 31.0.0 e
+Playwright 1.65.0/Chromium. Após instalação limpa em `frontend/`:
+
+| Comando                         | Saída | Resultado                                                                    |
+| ------------------------------- | ----- | ---------------------------------------------------------------------------- |
+| `npm.cmd ci`                    | 0     | 289 pacotes; auditoria automática reportou 0 vulnerabilidades                |
+| `npm.cmd run format:check`      | 0     | Prettier aprovado                                                            |
+| `npm.cmd run build`             | 0     | Produção estrita; 466,15 kB iniciais, estimativa de transferência 87,08 kB   |
+| `npm.cmd test -- --watch=false` | 0     | 21/21 testes em 5 arquivos                                                   |
+| `npm.cmd run test:e2e`          | 0     | 24/24 execuções, 12 por viewport; sem erros inesperados de console/pageerror |
+
+E2E usa servidor próprio (`reuseExistingServer: false`), iniciado e encerrado pelo runner.
+Os servidores da inspeção visual foram encerrados antes dos E2E, sem reutilizar servidor
+alheio. Cobertos navegação/tema/recarga/isolamento e contraste. Warnings mantidos: quatro
+scripts npm não aprovados e Sass `@import` depreciado. Auditoria npm não é certificação de
+segurança ou licenças. Não houve aprovação automática de scripts ou bypass de peers.
+
+### Percurso assistido e bloqueio da tarefa 5.2
+
+Inspeção interativa via ferramentas Playwright, fora do runner E2E, com Tab/Enter/Espaço:
+Visão Geral → Vendas → Quitadas → Relatórios → Configurações → Visão Geral, nos dois
+temas e viewports, com movimento reduzido. Todos os destinos ficaram alcançáveis, foco no
+h1 após mudança e nenhuma rolagem horizontal. Atalho “Ir para o conteúdo” levou ao main
+após aguardar a página renderizar; uma leitura imediata anterior à conclusão da ação não
+foi usada como resultado. Revisão visual de Quitadas e Configurações confirmou texto,
+aviso, tema, foco e leitura sem corte. Não é avaliação humana com tecnologia assistiva.
+
+**Zoom nativo a 200% não executado:** o atalho enviado ao navegador controlado não alterou
+o zoom (innerWidth 1366, devicePixelRatio 1 e visualViewport.scale 1 antes/depois). Foi
+oferecida verificação por CSS `zoom: 200%`; o solicitante preferiu manter o zoom nativo
+pendente, sem aceitar substituição. Portanto a tarefa 5.2 permanece aberta e **não abrir PR**
+até concluí-la. Não se alega conformidade a zoom 200%, homologação de navegadores/dispositivos
+reais ou aceite da ótica. Firefox, WebKit e leitor de tela não foram verificados.
+
+### Rastreabilidade final e estado da entrega
+
+| Referência                                              | Evidência técnica                                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| PRD/RF-001/012, CA-001/022; TDD/DEC-003/008             | Rotas, módulos, Quitadas, Configurações, testes de Router/componentes/E2E e percurso assistido               |
+| PRD/RNF-009, CA-023; TDD/DEC-006/013                    | Serviço raiz, tema global, teclado, recarga, contraste medido e estado somente em memória                    |
+| PRD/RF-011, RNF-001/004/010; delta demonstracao-inicial | Aviso literal, pt-BR, identidade, rede local e ausência de persistência após interações                      |
+| TDD/DEC-002/009/014                                     | Angular standalone zoneless estrito, apenas Router alinhado acrescentado, lockfile e automações reexecutadas |
+
+Na raiz, `openspec validate fase-003 --strict`: aprovado; `git diff --check`: saída 0,
+apenas avisos LF/CRLF. Diff revisado: implementação e testes desta fase, documentação,
+dependência Router e as cinco imagens explicitamente solicitadas. Sem alterações de regras,
+persistência, backend ou antecipação das FASE-004 a FASE-008. Capturas temporárias da revisão
+ficaram fora do Git. Os servidores próprios de inspeção foram encerrados.
+
+CA-018 (registro de venda inexistente) e CA-021 completos (mutações de negócio e descarte)
+continuam não atendidos: wildcard de rota não substitui registro inexistente. Pendências
+comerciais permanecem abertas; PEN-012 só foi parcialmente resolvida para o conteúdo de
+Configurações. PRD/PEN-013/014 seguem abertos. CA-001/022/023 possuem evidências técnicas
+deste recorte, não aceite comercial. **Entrega pausada pela tarefa 5.2, sem PR, merge,
+sincronização de specs ou arquivamento. O MVP não está concluído.**
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.

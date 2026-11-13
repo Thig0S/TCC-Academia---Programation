@@ -1,7 +1,7 @@
 # Tasks
 
-Planejamento apenas: todas as caixas representam execução futura. Iniciar somente após revisão
-dos artefatos e novo pedido explícito de apply. Fontes: PRD 1.1 (RF-001/011/012,
+Apply autorizado explicitamente em 13/11/2026 após revisão dos artefatos. Caixas marcadas
+representam somente verificações reais registradas em `frontend/README.md`. Fontes: PRD 1.1 (RF-001/011/012,
 RNF-001/002/003/004/007/008/009/010, CA-001/022/023), TDD 1.4 (FASE-003,
 DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 
@@ -33,9 +33,9 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 
 ## 5. Verificação integrada da FASE-003
 
-- [ ] 5.1 Executar em `frontend/` `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; verificar códigos de saída e cenários cruzados de navegação/temas/recarga/isolamento, sem erros inesperados no console/pageerror e sem reutilizar servidor alheio; registrar ambiente, resultados e warnings reais em `frontend/README.md`.
+- [x] 5.1 Executar em `frontend/` `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; verificar códigos de saída e cenários cruzados de navegação/temas/recarga/isolamento, sem erros inesperados no console/pageerror e sem reutilizar servidor alheio; registrar ambiente, resultados e warnings reais em `frontend/README.md`.
 - [ ] 5.2 Percorrer manualmente todos os destinos por teclado nos dois temas, conferir atalho, foco, ausência de corte, zoom 200% e movimento reduzido; registrar roteiro, resultados e itens não executados em `frontend/README.md`, sem converter o smoke técnico em homologação de dispositivos, navegadores ou aceite da ótica.
-- [ ] 5.3 Revisar rastreabilidade final, executar `openspec validate fase-003 --strict` e `git diff --check`, conferir o diff limitado ao recorte e atualizar estas tarefas somente conforme evidências reais; registrar pendências comerciais, CA-018/021 completos e PRD/PEN-013/014 ainda não atendidos, sem declarar o MVP concluído.
+- [x] 5.3 Revisar rastreabilidade final, executar `openspec validate fase-003 --strict` e `git diff --check`, conferir o diff limitado ao recorte e atualizar estas tarefas somente conforme evidências reais; registrar pendências comerciais, CA-018/021 completos e PRD/PEN-013/014 ainda não atendidos, sem declarar o MVP concluído.
 
 ## Evidências do planejamento — 13/11/2026
 
@@ -50,3 +50,10 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 - Apresentar o planejamento para revisão na conversa ou na branch, distinguindo documentação de implementação, sem gerar PR antecipado e sem iniciar apply por inferência desta proposta.
 - Durante o apply autorizado, manter commits individuais por funcionalidade com testes e documentação correspondentes na mesma feature branch; apresentar o escopo integral concluído em um único PR para main, conforme `AGENTS.md` e `.github/pull_request_template.md`, sem novos PRs por alteração.
 - Não mesclar sem autorização explícita e revisões exigidas; não sincronizar as deltas nem arquivar antes do fluxo de conclusão solicitado.
+
+## Evidências do apply — 13/11/2026
+
+- Branch `feature/fase-003-implementacao`, criada da main atualizada, com commits separados de dependência/imagens, navegação, temas e conteúdo. As cinco imagens fornecidas foram incluídas explicitamente por autorização do solicitante; somente a logo é carregada pela interface.
+- `frontend/README.md` registra execuções incrementais, duas falhas identificadas e corrigidas após confirmação, e a sequência integrada: instalação limpa, formatação, build estrito, 21 testes unitários/componentes e 24 execuções E2E aprovados.
+- Tarefa 5.2 parcial: percurso assistido por teclado, foco, movimento reduzido e leitura sem corte executados nos dois temas/viewports. Zoom nativo 200% continua pendente; o solicitante recusou substituí-lo por CSS zoom e determinou manter a tarefa aberta, sem PR até sua conclusão.
+- CA-001/022/023 têm evidências técnicas neste recorte. CA-018 e CA-021 completos dependem de domínio/mutações futuros. PEN-012 parcialmente resolvida para Configurações; filtros, demais regras comerciais, PRD/PEN-013/014 e aceite do produto continuam pendentes. Não é conclusão do MVP.
