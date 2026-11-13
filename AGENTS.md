@@ -34,3 +34,24 @@ artefatos existentes quando eles já cobrirem o escopo:
 - Diferenciar planejamento, autorização e implementação comprovada. Não alegar testes,
   aprovação ou conclusão sem evidência, nem abrir, publicar ou mesclar PR sem solicitação
   explícita do usuário.
+
+## Feature branches e integração na main
+
+- Executar o fluxo completo **PRD → TDD → SDD → pull request** em uma feature branch
+  dedicada à mudança, incluindo documentação, especificações, implementação e verificações.
+  Não realizar alterações ou commits diretamente na `main`.
+- Antes de iniciar as alterações, conferir a branch atual e o estado do diretório de trabalho.
+  Criar a branch a partir da `main` atualizada ou reutilizar uma feature branch pertinente,
+  com nome descritivo como `feature/cadastro-vendas`. Não descartar nem incorporar trabalho
+  alheio silenciosamente; se houver alterações que impeçam a troca segura, pedir orientação
+  pelo sistema de questões do Harness.
+- Manter os commits restritos ao escopo da mudança e abrir o pull request da feature branch
+  para a `main`, usando o template padrão e as referências de PRD, TDD e SDD.
+- Integrar na `main` por meio do pull request, somente após as verificações aplicáveis,
+  revisão e aprovação exigidas pelo repositório e autorização explícita do usuário para
+  mesclar. Não contornar proteções da branch nem substituir o PR por push direto na `main`.
+- Após a integração, conferir o estado do PR e a presença da mudança na `main` antes de
+  informar conclusão. Se publicação, revisão ou merge estiverem bloqueados ou não autorizados,
+  informar a etapa pendente sem alegar que o fluxo foi concluído.
+- Uma solicitação para documentar esse processo não autoriza, por si só, criar branches,
+  fazer commits, publicar ou mesclar pull requests.
