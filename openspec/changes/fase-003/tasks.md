@@ -39,9 +39,9 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 
 ## 6. Refinamento visual autorizado da lateral — PRD 1.2/TDD 1.5
 
-- [ ] 6.1 Aplicar lateral vermelha no tema claro e degradê vertical estático vermelho/vinho no escuro, conforme os dois exemplos indicados; ajustar textos, ícones, perfil/atalho, bordas, hover, ativo e foco com variáveis locais, sem mudar a logo, as outras superfícies, a navegação ou as dependências; preservar a adaptação abaixo de md.
-- [ ] 6.2 Atualizar verificações E2E para o fundo vermelho e degradê real, medindo contraste de texto normal/secundário, links, ativo/hover e foco nos extremos e região intermediária; revisar visualmente 1366 × 768 e 390 × 844 nos dois temas, sem substituir o zoom nativo pendente da tarefa 5.2.
-- [ ] 6.3 Executar formatação, build, testes unitários/componentes e E2E afetados, validar OpenSpec e diff; registrar resultados reais em frontend/README.md e criar commit coerente do ajuste com testes e tarefas, sem PR enquanto 5.2 estiver pendente.
+- [x] 6.1 Aplicar lateral vermelha no tema claro e degradê vertical estático vermelho/vinho no escuro, conforme os dois exemplos indicados; ajustar textos, ícones, perfil/atalho, bordas, hover, ativo e foco com variáveis locais, sem mudar a logo, as outras superfícies, a navegação ou as dependências; preservar a adaptação abaixo de md.
+- [x] 6.2 Atualizar verificações E2E para o fundo vermelho e degradê real, medindo contraste de texto normal/secundário, links, ativo/hover e foco nos extremos e região intermediária; revisar visualmente 1366 × 768 e 390 × 844 nos dois temas, sem substituir o zoom nativo pendente da tarefa 5.2.
+- [x] 6.3 Executar formatação, build, testes unitários/componentes e E2E afetados, validar OpenSpec e diff; registrar resultados reais em frontend/README.md e criar commit coerente do ajuste com testes e tarefas, sem PR enquanto 5.2 estiver pendente.
 
 ## Evidências do planejamento — 13/11/2026
 
@@ -63,3 +63,10 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 - `frontend/README.md` registra execuções incrementais, duas falhas identificadas e corrigidas após confirmação, e a sequência integrada: instalação limpa, formatação, build estrito, 21 testes unitários/componentes e 24 execuções E2E aprovados.
 - Tarefa 5.2 parcial: percurso assistido por teclado, foco, movimento reduzido e leitura sem corte executados nos dois temas/viewports. Zoom nativo 200% continua pendente; o solicitante recusou substituí-lo por CSS zoom e determinou manter a tarefa aberta, sem PR até sua conclusão.
 - CA-001/022/023 têm evidências técnicas neste recorte. CA-018 e CA-021 completos dependem de domínio/mutações futuros. PEN-012 parcialmente resolvida para Configurações; filtros, demais regras comerciais, PRD/PEN-013/014 e aceite do produto continuam pendentes. Não é conclusão do MVP.
+
+## Evidências do refinamento cromático — 13/11/2026
+
+- PRD 1.2, TDD 1.5, proposta/design e delta de temas alinhados após confirmação explícita. Três tarefas acrescentadas sem reescrever resultados históricos; 5.2 continua pendente.
+- Lateral vermelha no claro e degradê estático vermelho/vinho no escuro, com revisão visual nos dois temas/viewports. Contorno dos links reforçado e animação de cores removida após falhas incrementais e autorização de correção, sem enfraquecer os critérios.
+- Build, formatação, 21 unitários/componentes e 26 E2E aprovados. Porta 4200 ocupada preservada; uso de configuração temporária/servidor próprio 4301 autorizado. README registra comandos, método e limites, incluindo amostras calculadas do estilo efetivo do degradê e mínimos de contraste.
+- `openspec validate fase-003 --strict` aprovado e `git diff --check` com saída 0, apenas avisos LF/CRLF. Ajuste restrito à lateral, regressão afetada e documentação. Sem alteração de dependências ou imagens, sem PR/merge/arquivamento; zoom nativo ainda pendente.

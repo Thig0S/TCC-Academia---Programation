@@ -12,16 +12,18 @@ svg {
   stroke-linejoin: round;
 }
 .nav-link {
-  color: var(--bs-body-color);
+  color: var(--lateral-texto);
   border-radius: 0.5rem;
   padding: 0.8rem 1rem;
+  // Evita cores intermediárias sem contraste ao alternar os temas da lateral.
+  transition: none;
 }
 .nav-link:hover {
-  background: var(--bs-tertiary-bg);
+  background: var(--lateral-hover);
 }
 .modulo-ativo > .nav-link:first-child {
-  background: var(--bs-primary-bg-subtle);
-  color: var(--bs-primary-text-emphasis);
+  background: var(--lateral-ativo-fundo);
+  color: var(--lateral-ativo-texto);
   font-weight: 700;
 }
 .pagina-atual {
@@ -30,5 +32,5 @@ svg {
 }
 .subdestino {
   margin: 0.25rem 0 0 1.5rem;
-  border-inline-start: 3px solid var(--bs-primary-text-emphasis);
+  border-inline-start: 3px solid var(--lateral-foco);
 }

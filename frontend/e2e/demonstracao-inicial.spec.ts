@@ -129,6 +129,7 @@ test('alterna tema com Enter e Espaço sem mudar foco ou rota', async ({ page })
 for (const preferencia of ['light', 'dark'] as const) {
   test(`inicia escuro com sistema ${preferencia} e restaura em nova sessão`, async ({
     browser,
+    baseURL,
   }) => {
     const contexto = await browser.newContext({ colorScheme: preferencia });
     const novaPagina = await contexto.newPage();
@@ -137,7 +138,7 @@ for (const preferencia of ['light', 'dark'] as const) {
     novaPagina.on('console', (mensagem) => {
       if (mensagem.type() === 'error') erros.push(mensagem.text());
     });
-    await novaPagina.goto('http://127.0.0.1:4200/configuracoes');
+    await novaPagina.goto(`${baseURL}/configuracoes`);
     await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
     await novaPagina.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'light');
@@ -147,7 +148,7 @@ for (const preferencia of ['light', 'dark'] as const) {
     await contexto.close();
     const outraSessao = await browser.newContext({ colorScheme: preferencia });
     const outraPagina = await outraSessao.newPage();
-    await outraPagina.goto('http://127.0.0.1:4200/');
+    await outraPagina.goto(`${baseURL}/`);
     await expect(outraPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
     await outraSessao.close();
   });
@@ -172,7 +173,15 @@ test('confere contraste efetivo, foco e superfícies com movimento reduzido', as
       };
       const fundo = (elemento: Element | null): number[] => {
         if (!elemento) return [255, 255, 255];
-        const atual = cor(getComputedStyle(elemento).backgroundColor);
+        const estilo = getComputedStyle(elemento);
+        const paradas = estilo.backgroundImage.match(/rgba?\([^)]+\)/g);
+        if (paradas?.length === 2) {
+          const inicio = cor(paradas[0]);
+          const fim = cor(paradas[1]);
+          // Amostra central; o teste específico da lateral cobre os extremos e estados.
+          return inicio.slice(0, 3).map((v, i) => (v + fim[i]) / 2);
+        }
+        const atual = cor(estilo.backgroundColor);
         if ((atual[3] ?? 1) === 1) return atual;
         return mesclar(atual, fundo(elemento.parentElement));
       };
@@ -226,6 +235,108 @@ test('confere contraste efetivo, foco e superfícies com movimento reduzido', as
     body: JSON.stringify(medicoes, null, 2),
     contentType: 'application/json',
   });
+});
+
+test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco', async ({
+  page,
+}) => {
+  await page.goto('/vendas/quitadas');
+  const lateral = page.locator('.barra-lateral');
+  const nav = page.getByRole('navigation', { name: 'Navegação principal' });
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(lateral).toHaveCSS(
+      'background-color',
+      tema === 'dark' ? 'rgb(133, 0, 32)' : 'rgb(206, 0, 38)',
+    );
+    const imagem = await lateral.evaluate((e) => getComputedStyle(e).backgroundImage);
+    expect(imagem.includes('linear-gradient')).toBe(tema === 'dark');
+    if (tema === 'dark') {
+      expect(imagem).toContain('rgb(133, 0, 32)');
+      expect(imagem).toContain('rgb(48, 0, 16)');
+    }
+    const minimoTexto: number[] = [];
+    const minimoFoco: number[] = [];
+    for (const nome of ['Vendas', 'Quitadas', 'Relatórios', 'Configurações']) {
+      const link = nav.getByRole('link', { name: nome, exact: true });
+      for (const estado of ['normal', 'hover', 'foco']) {
+        await page.mouse.move(0, 0);
+        if (estado === 'hover') await link.hover();
+        if (estado === 'foco') {
+          await link.focus();
+          await page.keyboard.press('Tab');
+          await page.keyboard.press('Shift+Tab');
+          await expect(link).toBeFocused();
+        }
+        const medidas = await page.evaluate(() => {
+          const rgba = (texto: string): number[] => (texto.match(/[\d.]+/g) ?? []).map(Number);
+          const luminancia = (rgb: number[]): number =>
+            rgb
+              .slice(0, 3)
+              .map((v) => {
+                const s = v / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+          const contraste = (a: number[], b: number[]): number => {
+            const x = luminancia(a),
+              y = luminancia(b);
+            return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+          };
+          const fundo = (e: Element, posicao: number): number[] => {
+            const estilo = getComputedStyle(e);
+            const paradas = estilo.backgroundImage.match(/rgba?\([^)]+\)/g);
+            if (paradas?.length === 2) {
+              const a = rgba(paradas[0]),
+                b = rgba(paradas[1]);
+              return a.slice(0, 3).map((v, i) => v + (b[i] - v) * posicao);
+            }
+            const cor = rgba(estilo.backgroundColor);
+            if ((cor[3] ?? 1) === 1) return cor;
+            const ancestral = e.parentElement ? fundo(e.parentElement, posicao) : [255, 255, 255];
+            return cor
+              .slice(0, 3)
+              .map((v, i) => v * (cor[3] ?? 1) + ancestral[i] * (1 - (cor[3] ?? 1)));
+          };
+          const alvos = Array.from(
+            document.querySelectorAll('.barra-lateral p, .barra-lateral a, .barra-lateral svg'),
+          );
+          const textos = alvos.flatMap((e) =>
+            [0, 0.5, 1].map((posicao) => ({
+              alvo: e.textContent?.trim() || 'ícone',
+              razao: contraste(rgba(getComputedStyle(e).color), fundo(e, posicao)),
+            })),
+          );
+          const focado = document.activeElement;
+          const focos =
+            focado?.closest('.barra-lateral') && getComputedStyle(focado).outlineStyle !== 'none'
+              ? [0, 0.5, 1].map((p) =>
+                  contraste(
+                    rgba(getComputedStyle(focado).outlineColor),
+                    fundo(focado.parentElement!, p),
+                  ),
+                )
+              : [];
+          return { textos, focos };
+        });
+        for (const medida of medidas.textos)
+          expect(medida.razao, `${tema}/${estado}: ${medida.alvo}`).toBeGreaterThanOrEqual(4.5);
+        for (const razao of medidas.focos) expect(razao).toBeGreaterThanOrEqual(3);
+        if (estado === 'foco') expect(medidas.focos).toHaveLength(3);
+        minimoTexto.push(...medidas.textos.map((m) => m.razao));
+        minimoFoco.push(...medidas.focos);
+      }
+    }
+    console.log(
+      `Lateral ${tema}: texto/ícones mínimo ${Math.min(...minimoTexto).toFixed(2)}:1; foco mínimo ${Math.min(...minimoFoco).toFixed(2)}:1 (topo/meio/base, normal/hover/ativo/foco)`,
+    );
+    await expect(page.locator('[aria-current="page"]')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
 });
 
 test('abre e recarrega cada destino com identidade, aviso e localização', async ({ page }) => {

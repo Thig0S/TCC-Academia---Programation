@@ -1,5 +1,36 @@
 // Complementos locais: Bootstrap continua sendo a fonte dos tokens dos dois temas.
 app-root[data-bs-theme] {
+  .barra-lateral {
+    --lateral-fundo: #ce0026;
+    --lateral-degrade: none;
+    --lateral-texto: #fff;
+    --lateral-secundario: #ffe5e9;
+    --lateral-ativo-fundo: #fff0f2;
+    --lateral-ativo-texto: #90001b;
+    --lateral-hover: #a40021;
+    --lateral-foco: #fff;
+    --bs-body-color: var(--lateral-texto);
+    --bs-secondary-color: var(--lateral-secundario);
+    --bs-border-color: #ef9aa9;
+    --bs-primary-text-emphasis: var(--lateral-foco);
+
+    .perfil a {
+      color: var(--lateral-texto);
+    }
+    a:focus-visible {
+      outline: 3px solid var(--lateral-foco);
+      outline-offset: 4px;
+      box-shadow: none;
+    }
+  }
+  &[data-bs-theme='dark'] .barra-lateral {
+    --lateral-fundo: #850020;
+    --lateral-degrade: linear-gradient(180deg in srgb, #850020 0%, #300010 100%);
+    --lateral-ativo-fundo: #c9002d;
+    --lateral-ativo-texto: #fff;
+    --lateral-hover: #9b0027;
+    --bs-border-color: #b45a70;
+  }
   .perfil a,
   main a {
     color: var(--bs-primary-text-emphasis);
