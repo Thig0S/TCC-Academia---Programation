@@ -70,7 +70,7 @@ Crie uma barra lateral vertical fixa ou recolhível.
 
 No topo, exiba uma identidade simples para a aplicação:
 
-**Vendas em Aberto**
+**Mercadão dos Óculos - Vendas em Aberto**
 
 Use um logotipo minimalista ou um ícone relacionado à gestão financeira.
 

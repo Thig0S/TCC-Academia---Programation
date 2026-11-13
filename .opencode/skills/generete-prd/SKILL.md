@@ -37,7 +37,7 @@ documentação de planejamento, não uma implementação nem uma aprovação do 
 5. Separe fatos documentados, decisões explícitas do usuário, hipóteses propostas e questões
    em aberto. Conflitos entre fontes devem ser visíveis, não resolvidos silenciosamente.
 
-Neste repositório, preserve o limite do MVP visual do Vendas em Aberto: Angular + TypeScript,
+Neste repositório, preserve o limite do MVP visual do Mercadão dos Óculos - Vendas em Aberto: Angular + TypeScript,
 dados sintéticos e estado em memória, com aviso de demonstração e perda das alterações ao
 recarregar. Backend, banco, autenticação, integrações e persistência pertencem à evolução
 futura, salvo solicitação explícita em contrário. Não transforme a arquitetura futura em

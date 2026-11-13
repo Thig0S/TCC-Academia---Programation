@@ -42,7 +42,7 @@ Uma lista genérica de próximos passos ou a descrição de evolução futura n�
 5. Faça um inventário de decisões: estabelecidas, abertas e conflitantes. Sinalize divergências
    entre documentação e arquivos. Não escolha silenciosamente uma das fontes conflitantes.
 
-Neste repositório, preserve o MVP visual do Vendas em Aberto: Angular + TypeScript, dados
+Neste repositório, preserve o MVP visual do Mercadão dos Óculos - Vendas em Aberto: Angular + TypeScript, dados
 sintéticos e estado em memória, com aviso de demonstração e perda ao recarregar. Tauri,
 ASP.NET Core e SQLite são direção futura, não camadas implementadas nem parte do MVP atual.
 Não presuma contratos de comunicação, persistência, autenticação ou regras financeiras.
@@ -181,7 +181,7 @@ do documento não autoriza implementação ou mudanças nos demais artefatos de 
 ## Exemplos
 
 ```text
-/generate-tdd Desenhe tecnicamente o MVP visual do Vendas em Aberto usando o README e o PRD. Faça perguntas sobre versões, estilos e organização antes de consolidar.
+/generate-tdd Desenhe tecnicamente o MVP visual do Mercadão dos Óculos - Vendas em Aberto usando o README e o PRD. Faça perguntas sobre versões, estilos e organização antes de consolidar.
 ```
 
 ```text

@@ -1,4 +1,4 @@
-# TDD — Vendas em Aberto
+# TDD — Mercadão dos Óculos - Vendas em Aberto
 
 > Technical Design Document: documento de desenho técnico do MVP visual. Não representa
 > implementação, aprovação da ótica ou desenvolvimento orientado a testes. Todos os fluxos,
@@ -6,7 +6,7 @@
 
 ## 1. Identificação e situação
 
-- **Produto:** Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
+- **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
 - **Data e revisão:** 12/11/2026, revisão 1.2.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
