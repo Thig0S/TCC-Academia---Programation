@@ -8,7 +8,7 @@
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 12/11/2026, revisão 1.3.
+- **Data e revisão:** 13/11/2026, revisão 1.4.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho arquitetural consolidado para as escolhas respondidas; comportamentos
   dependentes das regras de produto continuam pendentes.
@@ -16,8 +16,9 @@
   standalone, zoneless e Signals, seguida de duas rodadas de perguntas.
 - **Autoridade:** escolhas técnicas e direção de temas confirmadas pelo solicitante nesta
   conversa. Não houve validação das regras comerciais pela equipe da ótica.
-- **Implementação:** não implementada de forma verificável. Não existe `package.json` encontrado
-  na inspeção; `frontend/src/app/` está vazia.
+- **Implementação observada em 13/11/2026:** base técnica FASE-001/002 integrada na `main`,
+  com fonte, manifesto, Bootstrap e automações; evidências anteriores em `frontend/README.md`.
+  FASE-001 global parcial; FASE-003 a FASE-008 não implementadas. Esta revisão apenas planeja.
 
 As decisões completas estão centralizadas na seção 15. As demais seções detalham sua aplicação,
 sem criar registros concorrentes. Pendências de produto são referidas como `PRD/PEN-xxx` e
@@ -86,6 +87,16 @@ v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisã
 retornados para a branch `22.0.x`. Não foram enviados arquivos privados às consultas.
 
 ### Evidências locais e divergências
+
+**Atualização da revisão 1.4:** os itens abaixo registram a inspeção histórica inicial,
+não o estado atual. A base técnica foi entregue e a mudança arquivada em
+`openspec/changes/archive/2026-11-13-preparar-base-tecnica-frontend/`, com capacidade
+`demonstracao-inicial` consolidada. O PR #4 está mesclado e seu commit consta na `main`.
+`frontend/README.md` registra build, 5 testes unitários/componentes e 8 execuções E2E
+aprovados anteriormente, sem nova execução nesta revisão. O solicitante confirmou dois
+temas com escuro inicial e autorizou conciliar o PRD 1.1; PEN-006 está resolvida
+documentalmente. HIP-004 foi aceita para Configurações explicativa; filtros de Quitadas
+continuam pendentes em PRD/PEN-012. Os registros históricos não revogam essas atualizações.
 
 - Existem `frontend/src/app/`, `public/`, `.vscode/`, `dist/` e `.angular/`; a pasta da aplicação
   está vazia e não foi encontrado manifesto. Saídas e caches não provam implementação.
@@ -600,7 +611,7 @@ planejada pela DEC-014 e ainda não criada. O servidor local dos E2E deve usar
 a mesma URL configurada no runner; sua porta é de desenvolvimento e não contrato de backend.
 Não fixar porta de serviço .NET nem política de implantação neste TDD.
 
-**Recorte confirmado da revisão 1.3:** planejar FASE-001 + FASE-002, sem executar código.
+**Recorte histórico confirmado da revisão 1.3:** planejar FASE-001 + FASE-002, sem executar código.
 A base terá apenas página técnica mínima com identidade e aviso demonstrativo, sem navegação
 dos módulos, dados comerciais, formulários ou serviço de tema. Bootstrap deve ter sua compilação
 Sass comprovada na base, sem antecipar a identidade visual da FASE-003. DEC-014 define as
@@ -611,9 +622,10 @@ a FASE-001 global permanece parcial enquanto depender de decisões das fases seg
 
 ### Roadmap de implementação — fases propostas, não autorização
 
-O roadmap detalha a sequência anterior sem alterar as decisões de arquitetura ou aprovar regras
-de produto. Todas as fases estão **Não implementadas neste planejamento**, sem evidência nova
-de execução nesta revisão. Prazos, estimativas e responsáveis não foram definidos. As referências
+O roadmap detalha a sequência anterior sem aprovar regras comerciais pendentes.
+FASE-002 possui evidências anteriores de conclusão; FASE-001 permanece parcial e FASE-003
+a FASE-008 seguem planejadas, não implementadas. Não há nova execução nesta revisão.
+Prazos, estimativas e responsáveis não foram definidos. As referências
 `PEN-xxx` abaixo pertencem à seção 16, que mantém a correspondência com as pendências do PRD.
 
 | Fase | Objetivo e entregas | Dependências e bloqueios | Critérios verificáveis de conclusão |
@@ -626,6 +638,23 @@ de execução nesta revisão. Prazos, estimativas e responsáveis não foram def
 | FASE-006 — Cadastro, edição e recebimento | Construir Signal Forms com rascunhos independentes, prévia de parcelas e comandos locais atômicos; integrar modal de pagamento, mensagens e atualização reativa das consultas. | FASE-005; DEC-004/005/007/010/011; PEN-001/002/003/008/010/011 para os respectivos fluxos. Edição e recebimento aguardam seus recortes aprovados. | Testes de envio inválido, cancelamento, falha e duplicidade aprovados; valores preservados após erro; sucesso atualiza a fonte uma única vez; Escape e retorno de foco verificados no navegador. |
 | FASE-007 — Visão Geral, relatórios e configurações | Integrar indicadores e resumos derivados, períodos e filtros aprovados, conteúdo de Configurações e exportação apenas ilustrativa. | FASE-005/006; DEC-003/004/005/011; PEN-002/004/007/009/012 para métricas e conteúdos afetados. | Indicadores reconciliados com vendas e pagamentos simulados; vazios coerentes; nenhuma métrica fixa contradiz mutações; nenhuma exportação produz arquivo ou falso sucesso. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado, foco e contraste, conferir perda de alterações ao recarregar e preparar roteiro demonstrativo com limitações e evidências. | FASE-003 a FASE-007 no recorte aprovado; DEC-008; PEN-013 para compatibilidade e PEN-014 para avaliação com a ótica. | Build e cenários aplicáveis aprovados, sem erros inesperados no console; resultados e limitações registrados. Aprovação de produto somente após avaliação explícita, distinta da conclusão técnica. |
+
+**Recorte da FASE-003 — revisão 1.4:** somente estrutura visual, navegação e temas.
+Destinos `/visao-geral`, `/vendas`, `/vendas/quitadas`, `/relatorios` e `/configuracoes`;
+entrada vazia redirecionada à Visão Geral e caminho desconhecido com retorno explícito.
+Quatro módulos principais, Quitadas interna e perfil Administrador claramente estático.
+Páginas comerciais mostram indisponibilidade honesta, não tabelas vazias que sugiram
+consulta realizada, cartões numéricos, filtros, cadastro, edição ou pagamento.
+Configurações explica os limites confirmados em PRD/HIP-004 e CA-022, sem controles
+fictícios. A alternância é global e acessível, escuro inicial, preservada somente entre
+rotas da sessão; recarga volta ao escuro (PRD/CA-023). Usar Bootstrap já instalado,
+SCSS complementar e somente componentes compartilhados consumidos nesta fase.
+`@angular/router` ainda não consta no manifesto e deverá ser acrescentado no apply na
+mesma versão dos pacotes Angular existentes (22.2.6), após conferir peers, sem upgrade
+incidental. Não acrescentar Forms, modal, selos financeiros ou serviço demonstrativo.
+O design da mudança detalha foco pós-navegação, comportamento em viewport pequeno e
+evolução dos testes da página técnica. Chromium/Windows nos dois viewports existentes
+é a base de verificação técnica; PRD/PEN-013/014 continuam abertos para aceite de produto.
 
 **Ordem e paralelismo:** após a base, estrutura visual (FASE-003) e núcleo demonstrativo
 (FASE-004) podem avançar em paralelo nos trechos desbloqueados. A resolução de pendências da
@@ -658,7 +687,10 @@ como um backend definitivo.
 
 ## 15. Registro central de decisões técnicas
 
-Todos os registros abaixo estão **Não implementados**. Confirmação é de desenho, não de código.
+Os registros de decisão abaixo preservam o histórico de desenho. As marcações originais
+“Não implementada” descrevem a época de cada registro. Para o estado atual, prevalecem a
+seção 1 e as evidências da base em `frontend/README.md`; esta revisão não implementa
+nenhum comportamento novo. DEC-006 continua planejada; sua conciliação documental foi feita.
 
 | ID | Tema | Escolha | Situação | Dependências |
 | --- | --- | --- | --- | --- |
@@ -667,7 +699,7 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 | DEC-003 | Estrutura | `frontend/`, funcionalidades e rotas lazy | Confirmada quanto à direção; árvore e rotas propostas | DEC-001 e DEC-002 |
 | DEC-004 | Estado | Serviço raiz com Signals e mutações atômicas | Confirmada | DEC-005 e DEC-011 |
 | DEC-005 | Dados | Centavos inteiros e datas civis, cálculos fora dos componentes | Confirmada; modelos detalhados propostos | DEC-011 |
-| DEC-006 | Visual | Dois temas e escuro inicial mantidos; base de estilos próprios substituída pela DEC-013 | Parcialmente substituída pela DEC-013 | Conciliação documental de temas pendente |
+| DEC-006 | Visual | Dois temas e escuro inicial mantidos; base de estilos próprios substituída pela DEC-013 | Confirmada e conciliada com PRD 1.1; não implementada | Verificação de temas na FASE-003 |
 | DEC-007 | Interações | Dialog nativo e SVG local | Confirmada | Testes em browser |
 | DEC-008 | Testes | Vitest, TestBed/jsdom e Playwright E2E | Confirmada | DEC-009 e regras de produto |
 | DEC-009 | Ambiente | Node.js 24, npm/lockfile e TypeScript 6.0.x | Confirmada; patches pendentes | FON-006 e verificação da base |
@@ -752,12 +784,13 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 - **Alternativas:** SCSS, Tailwind ou biblioteca visual; somente claro ou dois temas.
 - **Escolha/justificativa:** SCSS com tokens, componentes próprios e dois temas, escuro inicial.
   Corresponde às respostas explícitas e ao pedido visual do README.
-- **Consequências:** a equipe assume estilização e acessibilidade. A decisão diverge da
-  orientação de tema claro em AGENTS.md e do PRD atual, sem alterá-los nesta tarefa.
-- **Origem/situação:** FON-004; Confirmada pelo solicitante para o TDD, Não implementada.
-- **Dependências/validação:** conciliar instruções antes da implementação; verificar contraste,
-  alternância, modais e recarga. Substitui, neste desenho, a direção provisória de tema claro
-  apontada em `PRD/PEN-006`, mas não atualiza o registro do PRD automaticamente.
+- **Consequências:** a equipe assume estilização e acessibilidade. Na revisão 1.4, PRD 1.1
+  conciliado com dois temas; AGENTS.md atual não mantém a restrição histórica de claro.
+- **Origem/situação:** FON-004 e confirmação do solicitante na exploração da FASE-003;
+  Confirmada e conciliada documentalmente em 13/11/2026, não implementada.
+- **Dependências/validação:** verificar contraste, alternância global e recarga na FASE-003;
+  modais e componentes comerciais somente quando existirem. Substitui a direção provisória
+  de tema claro de PRD/PEN-006; preferência exclusivamente em memória.
 
 ### DEC-007 — Modal nativo e ícones locais
 
@@ -902,7 +935,7 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 | ID | Descrição | Impacto | Mitigação |
 | --- | --- | --- | --- |
 | RIS-001 | Regras abertas implementadas como defaults | Comportamento financeiro enganoso | DEC-011 e bloqueio das tarefas dependentes |
-| RIS-002 | Tema do TDD diverge das instruções atuais | Retrabalho e conflito na implementação | Registrar resposta e conciliar fontes em tarefa própria |
+| RIS-002 | Divergência histórica sobre temas | Retrabalho e conflito na implementação | Conciliação realizada com PRD 1.1; verificar DEC-006 e PRD/CA-023 no apply |
 | RIS-003 | Cópias de estado ou mutações de rascunho no original | Saldos inconsistentes e cancelamento com efeito | Agregado único, imutabilidade e testes |
 | RIS-004 | Teste jsdom interpretado como validação do dialog | Falhas reais de foco/teclado | Playwright e revisão manual |
 | RIS-005 | Cache e saída existentes tratados como código entregue | Planejamento baseado em aplicação inexistente | Inspecionar fonte e manifesto, não inferir entrega |
@@ -923,13 +956,13 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 | PEN-003 | Distribuição de centavos; `PRD/PEN-003` | Parcelamento, DEC-005 | Aprovar distribuição preservando a soma | Divisões não exatas |
 | PEN-004 | Hoje e limites dos próximos sete dias; `PRD/PEN-004` | Situações e painéis, DEC-005 | Aprovar tabela de bordas temporais | Classificação completa |
 | PEN-005 | Combinação, normalização e datas da pesquisa; `PRD/PEN-005` | Consulta, DEC-004 | Definir exemplos e resultados esperados | Busca completa |
-| PEN-006 | Conciliar dois temas/escuro inicial com AGENTS.md e PRD | Direção visual, DEC-006 | Atualizar as fontes em tarefa autorizada; decisão no TDD já confirmada | Conciliação antes da implementação |
+| PEN-006 | Conciliação dos temas com PRD e instruções | Direção visual, DEC-006 | PRD 1.1 atualizado após confirmação explícita; AGENTS.md atual sem restrição histórica | Resolvida documentalmente em 13/11/2026; implementação e testes pendentes |
 | PEN-007 | Situações gerais de vendas abertas; `PRD/PEN-007` | Projeções e selos, DEC-004/005 | Confirmar nomes e agregações | Classificação geral |
 | PEN-008 | Edição antes/depois de pagamentos; `PRD/PEN-008` | Integridade de histórico, DEC-004/010 | Definir campos e repercussões permitidas | Edição completa |
 | PEN-009 | Referência temporal, períodos, universo e filtros dos resumos; `PRD/PEN-009` | Painéis e testes, DEC-004/005 | Confirmar referência fixa/dinâmica e exemplos | Indicadores conclusivos |
 | PEN-010 | Validações de CPF/telefone e limites demonstrativos; `PRD/PEN-010` | Cadastro, DEC-010 | Confirmar formato versus regra comercial | Validação completa |
 | PEN-011 | Parcial, excedente, antecipação, datas e formas; `PRD/PEN-011` | Pagamento e modelos, DEC-004/005/010 | Definir recorte e elegibilidade explícitos | Recebimento completo |
-| PEN-012 | Configurações e filtros em quitadas; `PRD/PEN-012` | Telas secundárias, DEC-003 | Confirmar conteúdo sem inventar controles | Conteúdo detalhado |
+| PEN-012 | Configurações e filtros em quitadas; `PRD/PEN-012` | Telas secundárias, DEC-003 | PRD/HIP-004 aceita para página explicativa; filtros e outros controles não definidos | Parcialmente resolvida; itens remanescentes fora da FASE-003 |
 | PEN-013 | Navegadores, dimensões e computador; `PRD/PEN-013` | Acessibilidade, E2E e desempenho, DEC-007/008 | Definir ambiente de avaliação | Aceite de compatibilidade |
 | PEN-014 | Aprovadores, participantes e metas; `PRD/PEN-014` | Validação com a ótica | Confirmar responsáveis e roteiro | Aprovação do produto |
 | PEN-015 | Patches, engines/peers, licenças e versões das ferramentas | Criação da base, DEC-008/009 | Conferir manifestos oficiais e gerar lockfile compatível | Instalação reprodutível |
@@ -937,7 +970,8 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 
 Responsáveis e prazos não foram definidos. Nenhuma dessas pendências impede salvar o TDD;
 elas impedem tratar os comportamentos afetados como especificação completa e implementável
-sem nova decisão. Não há autorização implícita para adotar `PRD/HIP-001` a `PRD/HIP-006`.
+sem nova decisão. PRD/HIP-004 foi explicitamente aceita no recorte acima; as demais
+hipóteses não foram aprovadas por inferência.
 
 ## 17. Rastreabilidade e revisão documental
 
@@ -993,3 +1027,11 @@ separadamente, após este registro técnico.
 | 1.1 — 12/11/2026 | Roadmap com oito fases, entregas, dependências, bloqueios e critérios de conclusão; correção do destino documental; skill e modelo passam a exigir roadmap | DEC-012 detalhada; demais decisões preservadas | Solicitação explícita do usuário para revisar o TDD e a skill de geração |
 | 1.2 — 12/11/2026 | Bootstrap como base visual, SCSS complementar, integração de temas e atualização de ferramentas, roadmap e verificações | DEC-013 adicionada; DEC-006 parcialmente substituída | Solicitação explícita do usuário para usar Bootstrap em vez de CSS puro |
 | 1.3 — 12/11/2026 | Recorte FASE-001/002 e automações iniciais, sem implementar; PEN-016 detalhada e demais bloqueios preservados | DEC-014 adicionada | Respostas explícitas no planejamento OpenSpec e autorização de revisão pontual do TDD |
+| 1.4 — 13/11/2026 | Estado real da base referenciado; PEN-006 conciliada com PRD 1.1; recorte navegável da FASE-003 e Configurações explicativa | DEC-003/006/008/013 aplicadas sem nova arquitetura; PEN-012 parcialmente resolvida | Confirmações do solicitante; revisão documental, sem código ou testes de aplicação novos |
+
+**Verificação da revisão 1.4:** leitura da fonte, manifesto, testes e configuração E2E;
+confirmação de merge do PR #4 e de ancestralidade de seu commit na `main`; consultas
+Context7 Angular/Bootstrap e metadados npm de Router 22.2.6. A validação da proposta
+`fase-003` será registrada em seu `tasks.md`. Não executados instalação, build ou testes
+de aplicação nesta revisão. As declarações “não executado” das revisões anteriores
+permanecem históricas e não substituem as evidências já registradas da base.
