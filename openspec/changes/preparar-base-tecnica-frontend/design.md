@@ -98,6 +98,11 @@ estático na página para permitir verificar aplicação real dos estilos, sem p
 Popper, bibliotecas de componentes Angular ou controle de tema. Não implementar tokens de
 marca nem alternância. O estilo padrão da base não concilia PRD/PEN-006.
 
+Exceção autorizada durante o apply, registrada primeiro em TDD/DEC-013: o npm pode instalar
+`@popperjs/core` somente como peer transitivo obrigatório de Bootstrap 5.3.9. A proibição
+acima se aplica à importação, execução e inclusão no bundle, não à presença instalada.
+Conferir o bundle de produção; não ignorar peers nem usar flags de força.
+
 Registrar warnings Sass de terceiros e sua origem; não esconder falhas de compilação ou
 substituir a verificação Sass por CSS pré-compilado sem revisão do desenho. Alternativas:
 CDN (rejeitada por dependência remota); plugins Bootstrap (rejeitados por controle concorrente
