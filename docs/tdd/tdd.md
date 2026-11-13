@@ -853,7 +853,8 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 - **Consequências:** acrescenta dependência visual e exige conferir Sass, tamanho do CSS,
   contraste e personalizações. Classes Bootstrap não garantem acessibilidade automaticamente.
   Temas usam `data-bs-theme`; nomes externos não são traduzidos. Não incluir JavaScript do
-  Bootstrap, Popper, ng-bootstrap ou ngx-bootstrap neste recorte.
+  Bootstrap, ng-bootstrap ou ngx-bootstrap neste recorte. Popper pode existir somente como
+  peer transitivo instalado pelo npm; não importar, executar ou incluir no bundle da aplicação.
 - **Origem/situação:** FON-014 confirma Bootstrap; FON-013 fundamenta os temas e a
   personalização. Detalhes de integração são planejados, não compatibilidade já comprovada.
   Não implementada.
@@ -862,6 +863,12 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
   sem alterar silenciosamente a versão ou substituir o modal.
 - **Substitui:** somente a parte de base visual independente da DEC-006; preserva seus temas
   e demais decisões não afetadas.
+
+**Esclarecimento autorizado durante o apply das FASE-001/002 (12/11/2026):**
+o pacote Bootstrap 5.3.9 declara `@popperjs/core` como peer obrigatório. O solicitante
+autorizou sua presença apenas como dependência transitiva instalada pelo npm, preservando
+a proibição de uso em runtime. Conferir a ausência de Popper e plugins Bootstrap no bundle,
+sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 
 ### DEC-014 — Automações e limite da base inicial
 
