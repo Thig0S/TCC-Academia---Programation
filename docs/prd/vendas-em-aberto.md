@@ -1,4 +1,4 @@
-# PRD — Vendas em Aberto
+# PRD — Mercadão dos Óculos - Vendas em Aberto
 
 > Documento de planejamento. Não comprova implementação nem aprovação. O MVP descrito é uma demonstração com dados sintéticos e estado em memória, inadequada para controlar cobranças reais.
 
@@ -6,7 +6,7 @@
 
 - **Situação:** rascunho para validação.
 - **Data de elaboração:** 11/11/2026. **Versão:** 1.0.
-- **Produto:** Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
+- **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
 - **Proposta:** demonstrar uma alternativa à planilha auxiliar de crediário, concentrando cadastro de venda, identificação do cliente, consulta de parcelas e simulação de recebimento em uma navegação simples.
@@ -96,7 +96,7 @@ A arquitetura indicada em FON-002 prevê Tauri como janela Windows, Angular na i
 
 ### RF-001 — Estrutura e navegação
 
-- **Comportamento:** apresentar identidade Vendas em Aberto, navegação lateral com ícones, rótulos e indicação ativa para os quatro módulos; disponibilizar Quitadas dentro de Vendas e perfil estático na parte inferior.
+- **Comportamento:** apresentar identidade Mercadão dos Óculos - Vendas em Aberto, navegação lateral com ícones, rótulos e indicação ativa para os quatro módulos; disponibilizar Quitadas dentro de Vendas e perfil estático na parte inferior.
 - **Necessidade:** orientação entre telas; OBJ-001 e OBJ-005; JOR-001 e JOR-006.
 - **Ator, pré-condições e entradas:** participante; demonstração carregada; acionamento de link ou teclado.
 - **Resultado:** conteúdo do módulo selecionado acessível sem login; dados sintéticos mantidos entre navegações da mesma sessão.
@@ -515,7 +515,7 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Impede afirmar compatibilidade e desempenho medidos | Definir computador/navegador e executar roteiro proposto | Aberta; não bloqueia rascunho |
 | PEN-014 | Quem participa, aprova e quais metas finais? Quais trechos reconstruídos serão confirmados? | Impede alegar validação ou aprovação formal | Agendar avaliação sem prazo inventado e registrar decisões e evidências | Aberta; crítica para aprovação |
 
-**Decisões confirmadas e seus limites:** nome Vendas em Aberto, quatro módulos, dados do cliente no cadastro da venda, parcelas no detalhe e Quitadas dentro de Vendas vêm de FON-001. O limite de memória e a arquitetura futura vêm de FON-002. A tarefa atual é exclusivamente documentação (FON-006). Essas decisões não confirmam hipóteses, regras pendentes, aprovação da loja ou conclusão de desenvolvimento.
+**Decisões confirmadas e seus limites:** nome Mercadão dos Óculos - Vendas em Aberto, quatro módulos, dados do cliente no cadastro da venda, parcelas no detalhe e Quitadas dentro de Vendas vêm de FON-001. O limite de memória e a arquitetura futura vêm de FON-002. A tarefa atual é exclusivamente documentação (FON-006). Essas decisões não confirmam hipóteses, regras pendentes, aprovação da loja ou conclusão de desenvolvimento.
 
 Nenhuma pendência impede salvar este rascunho. As pendências críticas impedem aprovar o comportamento completo afetado ou implementá-lo por suposição; a geração deste documento não é autorização para iniciar implementação.
 
