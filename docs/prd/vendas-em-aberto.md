@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.0.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.1 — revisão de planejamento em 13/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
@@ -19,7 +19,7 @@ O README propõe substituir, futuramente, uma planilha usada para acompanhar ven
 
 O relato de atendimento indica que consultar por nome pode ser tranquilo, enquanto cadastrar e conferir informações exige mais cuidado. Nomes semelhantes exigem conferência de sobrenome e CPF. Portanto, não há evidência de que a busca atual seja difícil para todos; a oportunidade mais consistente é simplificar cadastro, conferência e atualização, preservando a facilidade de consulta. Parte das entrevistas foi reconstruída, aproximada ou reorganizada e precisa de validação antes de fundamentar afirmações definitivas sobre frequência ou prejuízo financeiro.
 
-**Estado local verificado:** existem pastas `frontend/`, `frontend/src/app/`, saídas e caches, mas `frontend/src/app/` está vazia e não foi encontrado manifesto de dependências na raiz de `frontend/`. Não há base para afirmar que telas, regras ou testes estejam implementados. As pastas `openspec/specs/` e `openspec/changes/archive/` contêm apenas arquivos de preservação de diretório; não há especificação de produto ou mudança ativa que complemente os requisitos. A descrição de ausência absoluta da pasta de aplicação no `AGENTS.md` está desatualizada quanto à estrutura, não quanto à falta de implementação verificável.
+**Estado local verificado em 13/11/2026:** a base técnica das FASE-001/002 está integrada na `main`, com página inicial, manifesto, Bootstrap e infraestrutura de testes. `frontend/README.md` registra build, 5 testes unitários/componentes e 8 execuções E2E aprovados na entrega anterior; não foram reexecutados nesta revisão. A mudança está em `openspec/changes/archive/2026-11-13-preparar-base-tecnica-frontend/` e a capacidade em `openspec/specs/demonstracao-inicial/spec.md`. Não existem ainda navegação funcional, temas ou fluxos comerciais. A FASE-001 global permanece parcial pelas decisões de produto diferidas.
 
 ### Fontes e decisões de referência
 
@@ -28,15 +28,16 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 | ID | Fonte ou decisão | Caminho e seção | Evidência relevante | Limitações ou conflitos |
 | --- | --- | --- | --- | --- |
 | FON-001 | Briefing principal do produto | `README.md`, visão geral e seções 1–14 | Identidade, quatro módulos, vendas, parcelas, cadastro, relatórios e prioridades | É uma especificação desejada, não comprovação de entrega; contém regras explicitamente pendentes |
-| FON-002 | Orientações do repositório | `AGENTS.md`, limite do MVP, arquitetura, componentes e formulários | Angular + TypeScript, memória, aviso demonstrativo, acessibilidade e restrições técnicas | Menciona tema claro e ausência de pasta de aplicação; o README pede dois temas e escuro inicial; estrutura sugerida de clientes/parcelas não obriga módulos independentes |
+| FON-002 | Orientações do repositório | `AGENTS.md`, leitura inicial e revisão em 13/11/2026 | Fluxo PRD → TDD → SDD → PR, feature branch e evidências | A orientação histórica de tema claro não existe mais no arquivo atual; preservar as restrições de produto deste PRD e do TDD |
 | FON-003 | Entrevista de atendimento | `docs/entrevista.daria.md`, seções 1–3 e síntese | Cadastro exige conferência; consulta por nome é considerada viável; risco de confusão entre nomes | Seções 2 e 3 têm respostas aproximadas; não há medição de erros ou tempo |
 | FON-004 | Entrevista de gestão | `docs/entrevista.luighi.md`, seções 2, 4–7 e 9 | Planilha auxiliar, atualizações manuais, necessidade de cadastro e consulta simples | Há perguntas reconstruídas e respostas aproximadas/reorganizadas; sistemas existentes não devem ser substituídos implicitamente |
 | FON-005 | Inspeção da estrutura local em 11/11/2026 | `frontend/`, `frontend/src/app/`, `openspec/specs/`, `openspec/changes/archive/`, `openspec/config.yaml` | Pastas sem código de aplicação ou especificações de produto; configuração OpenSpec em pt-BR | Inspeção de estrutura, não execução ou auditoria de saídas geradas |
 | FON-006 | Decisão explícita nesta solicitação | Conversa atual, pedido de geração do PRD | Ler fontes locais, usar o modelo e salvar apenas documentação de requisitos | Não autoriza executar instruções do README ou implementar o produto |
+| FON-007 | Confirmações no planejamento da FASE-003 | Conversa de 13/11/2026, exploração e proposta | Dois temas com escuro inicial e preferência em memória; Configurações explicativa; revisão pontual autorizada deste PRD e do TDD | Não aprova regras financeiras, hipóteses restantes, implementação ou aceite da ótica |
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
-**Conflitos visíveis:** o README solicita tema claro e escuro, com escuro inicial, enquanto o `AGENTS.md` orienta tema claro. A restrição vigente de tema claro é respeitada neste planejamento; tema escuro permanece pendente de conciliação explícita (PEN-006). A árvore recomendada do `AGENTS.md` não é uma decisão de navegação: prevalece o recorte funcional explícito do README de não criar módulos independentes de clientes ou parcelas. A alegação de substituição do Excel é tratada como visão futura, não como entrega operacional do MVP.
+**Conciliação da revisão 1.1:** o solicitante confirmou dois temas, claro e escuro, com escuro inicial, alternância acessível e preferência somente em memória. PEN-006 fica resolvida documentalmente; temas ainda não estão implementados nem aprovados pela ótica. O `AGENTS.md` atual não contém a antiga restrição de tema claro. Mantêm-se quatro módulos, sem cadastros independentes de clientes ou parcelas. Substituição operacional do Excel continua fora do MVP.
 
 ## 3. Visão, objetivos e resultados esperados
 
@@ -66,7 +67,7 @@ Não se pressupõem contas, permissões ou autenticação por perfil. O perfil �
 
 ### Incluído no MVP
 
-- **Essencial:** estrutura com Visão Geral, Vendas, Relatórios e Configurações; aviso de demonstração; tema claro; listagem de vendas em aberto com busca local; cadastro com dados do cliente; detalhes com parcelas; simulação controlada de pagamento; consulta de quitadas; consistência de saldos e estados; acessibilidade e validações. Sem esses elementos não é possível validar o fluxo principal com segurança demonstrativa.
+- **Essencial:** estrutura com Visão Geral, Vendas, Relatórios e Configurações; aviso de demonstração; temas claro e escuro, escuro inicial e alternância acessível sem persistência; listagem de vendas em aberto com busca local; cadastro com dados do cliente; detalhes com parcelas; simulação controlada de pagamento; consulta de quitadas; consistência de saldos e estados; acessibilidade e validações. Sem esses elementos não é possível validar o fluxo principal com segurança demonstrativa.
 - **Importante:** edição de venda em situações permitidas, indicadores detalhados da Visão Geral e resumo financeiro de Relatórios. Completam a avaliação do processo, mas dependem de delimitar edição e regras de contabilização. Relatórios e Configurações continuam navegáveis mesmo antes do refinamento desses conteúdos.
 - **Desejável:** gráfico de recebimentos dos últimos meses, paginação e decoração discreta de avatar/ícones. Não devem atrasar a validação de cadastro e recebimento.
 - **Futuro:** infraestrutura operacional e alternativas condicionadas às decisões abaixo. Não há compromisso de prazo.
@@ -79,7 +80,11 @@ Backend, SQLite, persistência em navegador ou arquivo, autenticação, autoriza
 
 ### Evolução futura, sem compromisso de entrega
 
-A arquitetura indicada em FON-002 prevê Tauri como janela Windows, Angular na interface, ASP.NET Core nas regras definitivas e SQLite local acessado pelo backend. Comunicação, execução do processo .NET, empacotamento e contratos ainda serão planejados. Tema escuro e alternância solicitados no README só entram no escopo aprovado após resolver PEN-006; não são infraestrutura futura confirmada.
+A direção futura registrada no TDD prevê Tauri como janela Windows, Angular na interface, ASP.NET Core nas regras definitivas e SQLite local acessado pelo backend. Comunicação, execução do processo .NET, empacotamento e contratos ainda serão planejados. Temas claro/escuro e alternância pertencem à FASE-003 do MVP visual, não à infraestrutura futura.
+
+### Recorte de planejamento da FASE-003 — revisão 1.1
+
+Construir futuramente a estrutura visual e a navegação dos quatro módulos, com Quitadas dentro de Vendas, aviso em todos os destinos, dois temas e páginas identificadas. Visão Geral, Vendas, Quitadas e Relatórios explicarão que seus conteúdos comerciais ainda não estão disponíveis, sem números, listas, busca ou ações comerciais fictícias. Configurações explicará dados fictícios, estado apenas em memória, perda ao recarregar e ausência de capacidade operacional, sem controles fictícios. Esta confirmação aceita HIP-004 somente para esse conteúdo; filtros de Quitadas em PEN-012 permanecem abertos. A FASE-003 não conclui os requisitos de consultas, cadastro, recebimento ou indicadores. A criação de proposta e demais artefatos é planejamento, não autorização de implementação.
 
 ## 6. Jornadas e fluxos de uso
 
@@ -221,9 +226,9 @@ A arquitetura indicada em FON-002 prevê Tauri como janela Windows, Angular na i
 - **Necessidade:** validar organização proposta; OBJ-005; JOR-006.
 - **Ator, pré-condições e entradas:** participante; abrir Configurações.
 - **Resultado:** página identificada, com explicação do caráter demonstrativo e sem controles que prometam mudanças inexistentes.
-- **Exceções:** conteúdo funcional não foi especificado; não inventar gestão de contas, integrações, regras comerciais ou persistência. Conteúdo explicativo mínimo é HIP-004; alternância de temas depende de PEN-006.
+- **Exceções:** não inventar gestão de contas, integrações, regras comerciais ou persistência. HIP-004 foi aceita para a FASE-003: explicar os limites da demonstração, sem controles fictícios. A alternância global dos temas foi confirmada em PEN-006; outros conteúdos funcionais continuam fora do recorte.
 - **Prioridade:** Essencial para navegação; refinamento depende de validação.
-- **Origem/situação:** FON-001 §§2 e 13; presença confirmada por fonte, conteúdo proposto/pendente em HIP-004 e PEN-012.
+- **Origem/situação:** FON-001 §§2 e 13 e FON-007; presença confirmada por fonte, conteúdo explicativo de HIP-004 aceito para FASE-003; demais itens de PEN-012 continuam pendentes.
 - **Aceite:** CA-001, CA-022.
 
 ## 8. Regras de negócio e dados conceituais
@@ -268,7 +273,7 @@ Exemplo financeiro confirmado por FON-001: venda fictícia de R$ 1.000,00, entra
 | RNF-006 | Usabilidade e desempenho | Busca e abertura de detalhes sem espera artificial; avaliação proposta de resposta em até 300 ms com 15 vendas na máquina de demonstração | Medição local após definir ambiente; observação de tarefas | Importante | FON-001; limite numérico é HIP-006, não medição existente |
 | RNF-007 | Layout e compatibilidade | Uso principal em computador, com formulários e ações utilizáveis em telas menores; tabela pode rolar sem ocultar acesso às ações | Proposta: testar 1366 × 768 e 390 × 844, teclado e zoom 200%; definir navegador em PEN-013 | Importante | FON-001 §1; tamanhos e zoom como roteiro proposto, não suporte comprovado |
 | RNF-008 | Manutenibilidade e tecnologia | Angular + TypeScript; standalone, HTML separado, estado por signals, novos formulários com Signal Forms compatível; dados/cálculos fora da apresentação, tipos estritos | Revisão futura da estrutura/configuração e testes dos cálculos, sem impor versão neste PRD | Essencial | FON-002; confirmado por fonte, implementação inexistente |
-| RNF-009 | Coerência visual | Tema claro como restrição vigente; tokens compartilhados, hierarquia consistente e contraste preservado em tabelas, formulários e modais | Revisão visual das quatro áreas e estados de erro/foco | Essencial | FON-002; tema escuro solicitado em FON-001 pendente em PEN-006 |
+| RNF-009 | Coerência visual | Temas claro e escuro, escuro inicial; alternância acessível com indicação do tema ativo, preservada entre rotas somente em memória; recarga restaura escuro; tokens e contraste consistentes | Revisão visual e por teclado das áreas existentes nos dois temas; componentes futuros herdam o mesmo contrato | Essencial | FON-001 e confirmação do solicitante em 13/11/2026; PEN-006 resolvida documentalmente |
 | RNF-010 | Limite arquitetural | Ausência de backend, banco, autenticação, APIs de dados externas e persistência; sem contratos futuros inventados | Revisão de escopo e futura inspeção de dependências/código | Essencial | FON-001 e FON-002; confirmado por fonte |
 
 Não há alegação de conformidade legal, certificação de acessibilidade, carga suportada ou segurança de produção. O controle de acesso não se aplica ao MVP sem dados reais; não deve ser simulado como proteção efetiva.
@@ -277,7 +282,7 @@ Não há alegação de conformidade legal, certificação de acessibilidade, car
 
 **Arquitetura de informação:** navegação lateral → Visão Geral / Vendas / Relatórios / Configurações. Em Vendas: abertas → detalhes da venda e suas parcelas → modal de pagamento; Nova venda e edição no mesmo contexto funcional; Quitadas como opção interna. A escolha de página ou painel lateral para detalhes deve preservar orientação e retorno, sem exigir uma seção Clientes.
 
-**Hierarquia visual:** título e subtítulo, ação principal, resumos pertinentes, área única de busca e tabela. A listagem é o foco, não gráficos decorativos. Valores alinhados, cabeçalhos legíveis, rótulos de situação e ações visíveis. Tema claro vigente com superfícies claras, cor de destaque discreta em azul/índigo, verde para pago, vermelho para atraso e âmbar/neutros para pendências, sempre com texto. O pedido de dois temas não está silenciosamente descartado: aguarda PEN-006.
+**Hierarquia visual:** título e subtítulo, ação principal, resumos pertinentes, área única de busca e tabela quando seus fluxos estiverem disponíveis. A listagem será o foco, não gráficos decorativos. Os dois temas usam superfícies e textos contrastantes, destaque discreto azul/índigo e foco perceptível; situações futuras combinam texto e cor. Na FASE-003, não antecipar tabelas, indicadores ou ações comerciais sem consumidor funcional.
 
 | Estado | Conteúdo e comportamento esperado |
 | --- | --- |
@@ -426,9 +431,15 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 
 ### CA-022 — Configurações sem promessa indevida
 - **Requisito:** RF-012; RNF-009.
-- **Dado** o conteúdo mínimo proposto em HIP-004,
+- **Dado** o conteúdo mínimo de HIP-004 aceito para a FASE-003,
 - **Quando** acessar Configurações pela navegação ou atalho,
-- **Então** deve aparecer a página identificada e informação demonstrativa coerente, sem opções fictícias de conta, integração ou persistência; tema claro permanece vigente enquanto PEN-006 não for resolvida.
+- **Então** deve aparecer a página identificada, explicando dados fictícios, memória, descarte ao recarregar e ausência de uso operacional, sem opções fictícias de conta, integração ou persistência; os dois temas devem ser aplicados de forma consistente.
+
+### CA-023 — Temas globais e recarga
+- **Requisitos:** RNF-009; RF-001, RF-011, RF-012.
+- **Dado** a estrutura navegável aberta em uma nova sessão,
+- **Quando** alternar o tema por teclado, percorrer os destinos e recarregar,
+- **Então** deve iniciar em escuro, comunicar o tema ativo e manter a escolha entre rotas; após recarga, deve voltar ao escuro, sem consultar ou gravar preferência persistente.
 
 ### Matriz de rastreabilidade
 
@@ -446,6 +457,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 | OBJ-004 | JOR-005 | RF-010; RN-010 | FON-001 | CA-014, CA-015 |
 | OBJ-002, OBJ-003, OBJ-005 | JOR-002, JOR-003, JOR-004, JOR-006 | RF-011; RN-008, RN-009 | FON-001, FON-002 | CA-007, CA-009, CA-013, CA-016, CA-017, CA-021 |
 | OBJ-005 | JOR-006 | RF-012 | FON-001, HIP-004 | CA-001, CA-022 |
+| OBJ-005 | JOR-006 | RNF-009; RF-001/011/012 | FON-007; PEN-006 resolvida documentalmente | CA-023 |
 
 RNF-001 a RNF-005, RNF-009 e RNF-010 também são transversais aos cenários pertinentes. RNF-006 a RNF-008 têm métodos próprios na seção 9: medições e inspeções futuras, não resultados deste PRD.
 
@@ -478,7 +490,7 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | RIS-003 | Inferir problemas universais de entrevistas reconstruídas | Priorizar solução que não simplifica o trabalho | Limitação explícita das fontes | Confirmar relatos; comparar tarefas e observar cadastro e consulta separadamente | Não confirmado |
 | RIS-004 | Confundir MVP com sistema operacional ou substituto da franquia | Uso de dados reais, perda de registros ou escopo excessivo | Não medida | Aviso persistente, dados sintéticos e exclusões explícitas; verificar compreensão | Não confirmado |
 | RIS-005 | Alterar venda com pagamentos sem política definida | Histórico reescrito e divergência de saldos | Regra aberta | PEN-008 e restrição proposta em HIP-002 | Não confirmado |
-| RIS-006 | Conflito de tema entre README e orientações | Retrabalho visual e aprovação ambígua | Conflito documentado | Respeitar tema claro vigente; conciliar PEN-006 antes de aprovar alternância | Não confirmado |
+| RIS-006 | Divergência histórica sobre temas | Retrabalho visual e aprovação ambígua | Conciliação documental realizada em 13/11/2026 | Manter PRD/TDD/SDD alinhados e verificar CA-023; implementação ainda ausente | Solicitante confirmou a direção, sem aceite da ótica |
 | RIS-007 | Protótipo mais trabalhoso que a planilha | Baixa aceitação e mais tempo de atendimento | Preocupação expressa em FON-004, sem medição | Observar tarefas reais representadas por dados sintéticos, não apenas preferência estética | Não confirmado |
 | RIS-008 | Ambiente e estrutura incompletos interpretados como implementação | Planejamento baseado em entrega inexistente | Há pastas e saídas sem código verificável | Separar inspeção atual de planejamento; definir ambiente antes de implementar | Não confirmado |
 | RIS-009 | Resumos fixos divergem das mutações locais | Demonstração perde credibilidade | Não medida | Fonte comum e comparação em centavos após cadastro, edição e pagamento | Não confirmado |
@@ -492,7 +504,7 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | HIP-001 | Permitir roteiro parcial com casos inequívocos e bloquear confirmação quando calendário, centavos ou entrada exigirem decisão ausente | Permite demonstração sem impor política financeira, mas reduz cobertura | Validar restrição com solicitante e equipe; depois substituir pela decisão de domínio | Proposta, não aprovada |
 | HIP-002 | Até definir edição, não permitir alterações financeiras que reescrevam parcelas pagas; limitar correções ao que preserve histórico | Reduz risco, mas pode restringir tarefa esperada | Discutir exemplos de correção com a equipe e resolver PEN-008 | Proposta, não aprovada |
 | HIP-003 | Primeiro roteiro de pagamento contempla apenas quitação integral de uma parcela elegível, sem entrada | Valida interação sem inventar parcialidade, excedente ou conciliação | Confirmar recorte e formas demonstrativas em PEN-011 | Proposta, não aprovada |
-| HIP-004 | Configurações pode inicialmente explicar limites da demonstração, sem controles fictícios | Mantém página navegável sem inventar configurações | Validar conteúdo em PEN-012 | Proposta, não aprovada |
+| HIP-004 | Configurações explica limites da demonstração, sem controles fictícios | Mantém página navegável sem inventar configurações | Conteúdo confirmado pelo solicitante para FASE-003; verificar CA-022 | Aceita para esse recorte em 13/11/2026, não implementada |
 | HIP-005 | Usar a data civil local da sessão como referência exibida para mês corrente e vencimentos, com dados sintéticos adequados a ela | Facilita demonstração atualizada; exige consistência do conjunto | Confirmar referência fixa ou dinâmica em PEN-009 | Proposta, não aprovada |
 | HIP-006 | Resposta local em até 300 ms com 15 vendas e metas de tarefas da seção 12 são adequadas para a avaliação inicial | Define critérios provisórios de desempenho e usabilidade | Medir no ambiente escolhido e negociar metas com participantes | Proposta, não medida |
 
@@ -505,13 +517,13 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | PEN-003 | Como distribuir diferenças de centavos? | Bloqueia parcelamentos não divisíveis exatamente | Aprovar exemplos com soma preservada em centavos | Aberta; crítica para casos afetados |
 | PEN-004 | Quais limites inclusivos da janela de sete dias e qual situação no vencimento hoje? | Afeta parcelas, próximos pagamentos e atrasos | Aprovar tabela de datas relativa à referência, incluindo bordas | Aberta; crítica de classificação |
 | PEN-005 | Como combinar critérios e pesquisar data: dia exato ou período? Como normalizar acentos, CPF e telefone? | Bloqueia semântica conclusiva de busca | Validar exemplos positivos, negativos e entradas formatadas | Aberta; crítica do fluxo de consulta |
-| PEN-006 | Tema claro vigente versus dois temas com escuro inicial no README | Afeta direção visual e escopo da alternância | Obter decisão explícita e posterior conciliação das fontes em tarefa própria | Aberta; crítica para aprovar direção visual |
+| PEN-006 | Divergência histórica claro versus dois temas | Direção visual e alternância | Solicitante confirmou claro/escuro, escuro inicial e memória; PRD conciliado com TDD nesta revisão | Resolvida documentalmente em 13/11/2026; implementação e verificação pendentes |
 | PEN-007 | Quais situações gerais de vendas não quitadas e como agregá-las? | Impede rotular venda como atrasada/próxima por inferência | Confirmar nomes e regras, ou rótulo provisório explicitamente demonstrativo | Aberta; não inferir agregação |
 | PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Bloqueia edição financeira completa | Validar cenários de correção e preservação de histórico | Aberta; crítica para RF-006 completo |
 | PEN-009 | Qual data de referência, definição dos períodos, universo dos resumos e efeito de filtros? “Vendas cadastradas” inclui quitadas? | Afeta consistência e interpretação dos indicadores | Aprovar exemplos e rótulos explícitos, sem escolher silenciosamente | Aberta; crítica para números conclusivos |
 | PEN-010 | Quais validações de CPF/telefone e limites demonstrativos de valores, entrada e quantidade? | Afeta cadastro e envio inválido | Separar formato obrigatório de regra comercial; não presumir CPF único ou limite da loja | Aberta; detalhamento necessário antes de implementação |
 | PEN-011 | Pagamento parcial/excedente, antecipação, datas e formas aceitas entram na demonstração? | Afeta elegibilidade e cálculo de saldo | Validar recorte HIP-003 e cenários aceitos, sem implementar estorno por inferência | Aberta; crítica para ampliar recebimento |
-| PEN-012 | Quais conteúdos em Configurações e quais filtros em Quitadas? | Afeta telas secundárias | Validar conteúdo mínimo e filtros; manter somente navegação já documentada | Aberta; não bloqueia rascunho |
+| PEN-012 | Conteúdos em Configurações e filtros em Quitadas | Afeta telas secundárias | HIP-004 aceita para página explicativa na FASE-003; filtros de Quitadas e outros controles não definidos | Parcialmente resolvida em 13/11/2026; filtros continuam abertos e fora da FASE-003 |
 | PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Impede afirmar compatibilidade e desempenho medidos | Definir computador/navegador e executar roteiro proposto | Aberta; não bloqueia rascunho |
 | PEN-014 | Quem participa, aprova e quais metas finais? Quais trechos reconstruídos serão confirmados? | Impede alegar validação ou aprovação formal | Agendar avaliação sem prazo inventado e registrar decisões e evidências | Aberta; crítica para aprovação |
 
@@ -527,7 +539,7 @@ Nenhuma pendência impede salvar este rascunho. As pendências críticas impedem
 4. **Planejamento posterior de implementação:** somente mediante solicitação explícita, delimitar a mudança de frontend, ambiente, versões e sequência de entrega; não incluir infraestrutura futura por conveniência.
 5. **Implementação e avaliação futuras:** mediante autorização, construir o MVP, executar verificações de código e interface e realizar sessões com dados sintéticos. Registrar resultados reais separadamente das metas propostas.
 
-Este trabalho não altera código, README, entrevistas, configuração nem artefatos OpenSpec; não instala dependências ou executa comandos do briefing. Não foram executados testes de aplicação, build ou validação OpenSpec, pois a entrega é um PRD independente.
+Na revisão inicial, este PRD foi uma entrega independente, sem alterações em código ou outros artefatos. A revisão 1.1 integra o planejamento da mudança `fase-003`, com atualização do TDD e criação de artefatos OpenSpec separadamente. Não instala dependências, não implementa o produto e não reexecuta testes de aplicação ou build. A validação documental da mudança será registrada em seus artefatos, sem extrapolar as evidências anteriores da base.
 
 ## 16. Glossário e histórico de revisões
 
@@ -548,3 +560,4 @@ Este trabalho não altera código, README, entrevistas, configuração nem artef
 | Versão | Data | Alteração | Motivo |
 | --- | --- | --- | --- |
 | 1.0 | 11/11/2026 | Criação do PRD com IDs iniciais, fontes locais, escopo, jornadas, requisitos, aceite, hipóteses e pendências | Atender à solicitação de transformar o README em documento de produto sem implementar código |
+| 1.1 | 13/11/2026 | Conciliação de PEN-006, aceite delimitado de HIP-004/PEN-012, CA-023 e recorte da FASE-003; atualização do estado da base | Confirmações do solicitante na exploração e no planejamento; sem implementação ou aceite da ótica |
