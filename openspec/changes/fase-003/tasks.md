@@ -27,9 +27,9 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 
 ## 4. Conteúdo honesto e Configurações
 
-- [ ] 4.1 Refinar os textos das páginas comerciais para declarar indisponibilidade sem simular consulta vazia, resumos ou ações de cadastrar/editar/pagar/exportar; verificar testes de componentes e E2E para as quatro páginas, mantendo permitidos apenas controles de tema e navegação; registrar o que ainda não está implementado em `frontend/README.md`.
-- [ ] 4.2 Implementar Configurações explicando dados fictícios, memória, descarte ao recarregar e ausência de uso operacional, sem controles fictícios; verificar os quatro limites por testes de componente e E2E pelos dois acessos e nos dois temas, conforme PRD/CA-022; registrar PEN-012 parcialmente resolvida e filtros de Quitadas fora do escopo.
-- [ ] 4.3 Executar os testes aplicáveis ao conteúdo e revisar consistência com PRD/TDD/deltas; verificar que os módulos seguem a documentação e não copiam campos, dados, números financeiros, situações, filtros ou ações das imagens; confirmar ausência de formulários, cadastro mestre e biblioteca visual extra nesta fase, com apenas a logo indicada usada como ativo de interface e capturas usadas somente como referência de layout; criar commit coerente com testes, documentação e tarefas deste conteúdo.
+- [x] 4.1 Refinar os textos das páginas comerciais para declarar indisponibilidade sem simular consulta vazia, resumos ou ações de cadastrar/editar/pagar/exportar; verificar testes de componentes e E2E para as quatro páginas, mantendo permitidos apenas controles de tema e navegação; registrar o que ainda não está implementado em `frontend/README.md`.
+- [x] 4.2 Implementar Configurações explicando dados fictícios, memória, descarte ao recarregar e ausência de uso operacional, sem controles fictícios; verificar os quatro limites por testes de componente e E2E pelos dois acessos e nos dois temas, conforme PRD/CA-022; registrar PEN-012 parcialmente resolvida e filtros de Quitadas fora do escopo.
+- [x] 4.3 Executar os testes aplicáveis ao conteúdo e revisar consistência com PRD/TDD/deltas; verificar que os módulos seguem a documentação e não copiam campos, dados, números financeiros, situações, filtros ou ações das imagens; confirmar ausência de formulários, cadastro mestre e biblioteca visual extra nesta fase, com apenas a logo indicada usada como ativo de interface e capturas usadas somente como referência de layout; criar commit coerente com testes, documentação e tarefas deste conteúdo.
 
 ## 5. Verificação integrada da FASE-003
 
