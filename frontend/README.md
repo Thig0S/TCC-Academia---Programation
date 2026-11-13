@@ -25,6 +25,27 @@ flags de força, Forms, ZoneJS ou upgrades incidentais. Build inicial: 324,32 kB
 Permanecem os avisos dos quatro scripts npm não aprovados e Sass `@import` depreciado;
 nenhum aviso foi suprimido e nenhum script foi aprovado automaticamente.
 
+### Estrutura e layout
+
+Rotas lazy, redirecionamento inicial, wildcard com retorno, títulos contextuais e identidade
+global implementados. `npm.cmd run build`: saída 0 (438,54 kB iniciais); unitários/componentes:
+13/13; E2E incremental: 8/8, incluindo logo carregada e proporção natural preservada,
+aviso, pt-BR, estilos efetivos Bootstrap, ausência de rolagem horizontal e isolamento inicial.
+Revisão visual em Chromium via Playwright, 1366 × 768 e 390 × 844: coluna lateral desktop,
+navegação inteira no fluxo abaixo de md, marca legível, título e aviso sem corte. No pequeno
+há rolagem vertical normal, sem esconder destinos. Referências orientam somente estrutura e
+hierarquia; nenhum formulário/dado das capturas foi incorporado. Sass mantém seu warning.
+Esta revisão incremental ainda não comprova temas, zoom, foco ou aceite do produto.
+
+Regressão de navegação: `npm.cmd test -- --watch=false` aprovou 13/13 testes;
+`npm.cmd run test:e2e` aprovou 12/12 execuções nos dois viewports. Cobertura: URL direta e
+recarga dos cinco destinos, título contextual, aviso/identidade, um aria-current, Tab/Enter,
+atalho para conteúdo, foco no h1, link já ativo sem roubo de foco, voltar/avançar, navegação
+rápida e wildcard/retorno. Monitoramento de console/pageerror sem erros; inspeção de rede
+local e storage preservada. Um erro incremental de compilação acessou `.id` em um signal
+de navegação; após pausa e autorização explícita, foi corrigido para chamar o signal.
+As execuções acima são posteriores à correção. Nenhum timer ou detectChanges foi acrescentado.
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.

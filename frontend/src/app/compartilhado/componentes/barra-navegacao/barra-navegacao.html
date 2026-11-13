@@ -1,0 +1,28 @@
+<nav aria-label="Navegação principal" class="nav flex-column gap-2">
+  @for (modulo of modulos; track modulo.rota) {
+    <div routerLinkActive="modulo-ativo" #estado="routerLinkActive">
+      <a
+        class="nav-link d-flex align-items-center gap-3"
+        [routerLink]="modulo.rota"
+        routerLinkActive="pagina-atual"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path [attr.d]="modulo.icone" />
+        </svg>
+        {{ modulo.nome }}
+      </a>
+      @if (modulo.rota === '/vendas' && estado.isActive) {
+        <a
+          class="nav-link subdestino"
+          routerLink="/vendas/quitadas"
+          routerLinkActive="pagina-atual"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+          >Quitadas</a
+        >
+      }
+    </div>
+  }
+</nav>

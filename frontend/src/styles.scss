@@ -1,1 +1,24 @@
 @import 'bootstrap/scss/bootstrap';
+
+body {
+  margin: 0;
+}
+a,
+button {
+  touch-action: manipulation;
+}
+:focus-visible,
+h1:focus,
+main:focus {
+  outline: 3px solid var(--bs-primary-text-emphasis);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
