@@ -8,8 +8,8 @@
 
 - **Produto:** Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 12/11/2026, revisão 1.0.
-- **Destino:** `tdd.md`, na raiz do repositório.
+- **Data e revisão:** 12/11/2026, revisão 1.2.
+- **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho arquitetural consolidado para as escolhas respondidas; comportamentos
   dependentes das regras de produto continuam pendentes.
 - **Origem:** solicitação de especificação técnica baseada no `AGENTS.md`, com Angular 22,
@@ -76,6 +76,8 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-010 | https://angular.dev/guide/testing | Documentação v22, 12/11/2026 | Integração Angular CLI, Vitest e jsdom |
 | FON-011 | https://playwright.dev/docs/test-webserver | Consulta pelo Context7 em 12/11/2026 | Servidor local e configuração de E2E |
 | FON-012 | https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog | Consulta em 12/11/2026 | Modal nativo, teclado e foco |
+| FON-013 | https://getbootstrap.com/docs/5.3/customize/ e https://getbootstrap.com/docs/5.3/customize/color-modes/ | Bootstrap 5.3.8, consulta via Context7 em 12/11/2026 | Personalização Sass, variáveis CSS e temas com `data-bs-theme` |
+| FON-014 | Solicitação de revisão para utilizar Bootstrap em vez de CSS puro | 12/11/2026, revisão 1.2 | Substituição da base visual própria por Bootstrap; DEC-013 |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -102,7 +104,7 @@ retornados para a branch `22.0.x`. Não foram enviados arquivos privados às con
 | --- | --- | --- |
 | Framework | Angular 22, standalone, zoneless e Signals | DEC-002 |
 | Execução e diretório | SPA no navegador, em `frontend/`, sem SSR ou Tauri nesta etapa | DEC-001, DEC-003 |
-| Estilos | SCSS e componentes próprios | DEC-006 |
+| Estilos | SCSS e componentes próprios na entrevista inicial; base visual substituída por Bootstrap na revisão 1.2 | DEC-006, DEC-013 |
 | Temas | Claro e escuro; escuro na abertura | DEC-006 |
 | Estado | Serviço demonstrativo com Signals, sem biblioteca adicional | DEC-004 |
 | Qualidade | Testes unitários, de componentes e E2E; plano Vitest + Playwright confirmado | DEC-008 |
@@ -159,7 +161,8 @@ A futura integração exigirá planejamento próprio; os modelos internos não s
 | npm | Dependências e scripts | Versão compatível com Node.js escolhido, a fixar na base | Gerenciador confirmado; patch pendente |
 | RxJS | Dependência do ecossistema Angular quando necessária | Linha 7 compatível com `^7.4.0` | Faixa permitida por FON-006; não biblioteca de estado |
 | Signal Forms | Cadastro, edição e recebimento | `@angular/forms/signals`, mesma linha do Angular | Confirmado; `form` estável em v22.0, FON-008 |
-| SCSS | Estilos de componentes e folhas globais | Ferramenta compatível com CLI 22, a fixar | Confirmado; sem Tailwind |
+| Bootstrap | Base visual: layout responsivo, utilitários, tabelas, botões e campos | Linha estável 5.3.x; patch a fixar na base, referência consultada 5.3.8 | Escolha confirmada; somente estilos, sem plugins JavaScript; DEC-013 e FON-013 |
+| SCSS | Personalizações do Bootstrap e estilos específicos da aplicação | Ferramenta compatível com CLI 22 e Sass do Bootstrap, a verificar e fixar | Complementar ao Bootstrap; não base visual independente; DEC-013 |
 | Vitest e jsdom | Unitários e componentes | Versões compatíveis com CLI 22 e TypeScript escolhido | Ferramentas confirmadas; versões exatas pendentes |
 | Playwright Test | E2E em navegador real | Versão a verificar e fixar na criação da base | Ferramenta confirmada, não instalação validada |
 
@@ -431,15 +434,30 @@ o agregado anterior e não deixar o formulário permanentemente em envio.
 
 ## 10. Interface, estilos, formulários e acessibilidade
 
-### Estilos e temas — DEC-006
+### Estilos e temas — DEC-006 e DEC-013
 
-SCSS por componente e tokens CSS globais para superfícies, texto, bordas, destaque, situações,
-espaçamento e raios. Os tokens próprios devem ter nomes em português sem acentos; propriedades
-CSS continuam com seus nomes padronizados. Evitar valores de cor espalhados por templates.
+Bootstrap será a base visual no lugar de construir a interface somente com estilos próprios.
+Usar seu layout responsivo, utilitários e estilos de tabelas, botões e campos, preservando os
+componentes Angular por funcionalidade. SCSS continua apenas para personalizações e necessidades
+específicas; não se trata de eliminar CSS, mas de evitar reconstruir os padrões já fornecidos.
+
+Planejar a dependência `bootstrap` pelo npm e a inclusão global de seus estilos em
+`styles.scss`, sem CDN ou duplicação da folha completa em cada componente. Verificar o pipeline
+Sass na criação da base. Tokens próprios para superfícies, texto, bordas, destaque e situações
+devem se alinhar às variáveis do Bootstrap, evitando dois sistemas visuais concorrentes.
+Preservar classes, atributos e variáveis externas como `btn`, `form-control` e `--bs-*`;
+identificadores próprios continuam em português. Não adicionar Tailwind, ng-bootstrap ou
+ngx-bootstrap por consequência dessa escolha.
+
+Utilizar somente a camada de estilos do Bootstrap, sem seus plugins JavaScript, bundle ou
+Popper. Angular continua responsável por estado e interações; o modal permanece o `dialog`
+nativo da DEC-007, sem migrar para o modal JavaScript do Bootstrap. A aparência do modal pode
+reutilizar estilos compatíveis, sem classes que dependam do plugin para funcionar.
 
 `ServicoTema` mantém um signal com tema claro ou escuro; o inicial é escuro por decisão do
 solicitante. Aplicar o tema ao contêiner da aplicação e manter todos os modais sob o mesmo
-contexto visual. Não consultar preferência do sistema para contrariar o padrão escolhido nem
+contexto visual. Vincular o tema ao atributo `data-bs-theme`, mapeando os valores internos para
+`light` e `dark`, conforme FON-013. Não consultar preferência do sistema para contrariar o padrão escolhido nem
 salvar em `localStorage`. Recarregar volta ao escuro. Alternância tem nome acessível e indicação
 do tema ativo, preservando contraste e foco em ambos.
 
@@ -488,7 +506,7 @@ preferência de movimento reduzido; não introduzir animação como requisito de
 | --- | --- | --- | --- | --- |
 | Estado | Signals e serviço próprio | NgRx ou outra store | Sem dependência adicional; requer disciplina de imutabilidade | DEC-004 |
 | Formulários | Signal Forms | Reactive Forms | Alinhado ao AGENTS.md; API compatível com v22 | DEC-010 |
-| Estilos | SCSS e componentes próprios | Tailwind ou biblioteca visual | Menos dependências, maior responsabilidade pela interface | DEC-006 |
+| Estilos | Bootstrap 5.3.x, com personalização SCSS e componentes Angular próprios | Somente estilos próprios; Tailwind; biblioteca de componentes Angular | Dependência visual adicional; reduz reconstrução de padrões, mas exige personalização e verificação de acessibilidade | DEC-013; substitui a parte de estilos da DEC-006 |
 | Modal | `dialog` nativo encapsulado | Angular CDK ou biblioteca visual | Requer testes reais de foco e retorno | DEC-007 |
 | Ícones | SVG local | Biblioteca de ícones | Sem importação de catálogo inteiro; verificar procedência de assets | DEC-007 |
 | Unitários/componentes | Vitest, jsdom e TestBed | Karma/Jasmine | Integração padrão documentada da CLI atual; DOM não é browser real | DEC-008 |
@@ -524,6 +542,7 @@ isolar sessões por recarga/contexto novo, sem persistir dados ou criar endpoint
 | Navegação | Quatro módulos, quitadas interna, ID ausente e retorno | Componente e E2E | PRD/CA-001, CA-003, CA-018 |
 | Pagamento | Operação elegível atualiza detalhes, abertas, quitadas e resumos uma única vez | Serviço e E2E; regras pendentes | PRD/CA-011, CA-014 |
 | Temas | Escuro inicial, alternância global e recarga restaurando escuro | Componente e E2E | DEC-006; PRD/PEN-006 |
+| Bootstrap | Layout responsivo, tabelas e campos legíveis, erros acessíveis, temas em páginas e `dialog`, sem dependência de plugins JavaScript | Componente, E2E e inspeção manual | DEC-013; FON-013 |
 | Modal | Teclado, foco inicial, Escape, retorno, acionador removido e cancelamento | E2E e inspeção manual | DEC-007; PRD/CA-016 |
 | Demonstração | Aviso visível, memória preservada entre rotas e descartada na recarga | E2E | PRD/CA-021 |
 | Relatórios | Projeções coerentes, zero com coleção vazia e exportação ilustrativa | Unitário e E2E | PRD/CA-014 e CA-015 |
@@ -578,15 +597,43 @@ mas seu nome e configuração ainda não estão definidos. O servidor local dos 
 a mesma URL configurada no runner; sua porta é de desenvolvimento e não contrato de backend.
 Não fixar porta de serviço .NET nem política de implantação neste TDD.
 
-### Sequência sugerida de implementação, não autorização
+### Roadmap de implementação — fases propostas, não autorização
 
-1. Criar base e configurações estritas compatíveis, lockfile e testes mínimos.
-2. Implementar estrutura visual, quatro módulos, aviso e temas.
-3. Definir modelos internos e fonte sintética única com invariantes testadas.
-4. Resolver regras de busca e domínio necessárias antes dos comportamentos afetados.
-5. Construir listagem, detalhes e formulários sem mutações prévias à confirmação.
-6. Implementar recebimento e edição somente no recorte explicitamente aprovado.
-7. Derivar resumos, validar E2E, teclado, contraste e descarte ao recarregar.
+O roadmap detalha a sequência anterior sem alterar as decisões de arquitetura ou aprovar regras
+de produto. Todas as fases estão **Não implementadas neste planejamento**, sem evidência nova
+de execução nesta revisão. Prazos, estimativas e responsáveis não foram definidos. As referências
+`PEN-xxx` abaixo pertencem à seção 16, que mantém a correspondência com as pendências do PRD.
+
+| Fase | Objetivo e entregas | Dependências e bloqueios | Critérios verificáveis de conclusão |
+| --- | --- | --- | --- |
+| FASE-001 — Preparação e decisões de desbloqueio | Inspecionar a estrutura existente, confirmar o recorte a implementar e registrar decisões necessárias com exemplos de aceite, sem adotar hipóteses como regras. | DEC-001/011; autorização explícita para implementação. PEN-006 exige conciliação documental autorizada antes de implementar temas. Demais pendências são resolvidas antes dos respectivos casos. | Recorte e bloqueios rastreáveis; nenhuma divergência tratada como resolvida sem decisão. A fase permanece parcial enquanto houver decisões necessárias em aberto. |
+| FASE-002 — Base técnica e automações | Criar a base em `frontend/`, configurações estritas, versões compatíveis, lockfile, formatação, scripts reais e infraestrutura mínima de testes unitários, componentes e E2E. | Inspeção e autorização da FASE-001; DEC-002/003/008/009; PEN-015/016 para versões e automações; PEN-013 para o ambiente E2E. | Instalação reprodutível, build estrito e testes mínimos aprovados no ambiente definido; comandos e versões registrados, sem sobrescrever conteúdo existente. |
+| FASE-003 — Estrutura visual e navegação | Construir navegação dos quatro módulos, rotas e retornos, aviso demonstrativo, tokens, temas e componentes compartilhados efetivamente necessários. Conteúdos dependentes do domínio entram nas fases seguintes. | FASE-002; DEC-003/006/007; PEN-006 antes dos temas. | Navegação e caminho desconhecido verificados; aviso visível; teclado e foco funcionais; alternância, contraste e recarga dos temas verificados conforme a decisão conciliada. |
+| FASE-004 — Domínio demonstrativo e estado | Definir modelos internos, dados sintéticos, fonte única em memória, funções de dinheiro e datas, validações e projeções confirmadas; testar invariantes e atomicidade. | FASE-002; DEC-004/005/011. PEN-001/002/003/004/007/009/011 bloqueiam os cálculos, classificações e modelos afetados, não os utilitários independentes. | Testes de centavos e datas civis aprovados; fonte não duplicada entre rotas; falhas preservam o agregado; regras ainda abertas permanecem explicitamente bloqueadas. |
+| FASE-005 — Consulta de vendas e parcelas | Implementar listas de abertas e quitadas, detalhes com dados do cliente e parcelas, busca e filtros aprovados, coleção vazia, ausência de resultados e registro inexistente. | FASE-003/004; DEC-003/004/011; PEN-004/005/007/012 para classificações, pesquisa e filtros afetados. | Consultas refletem a mesma fonte; critérios de busca aprovados testados; estados vazios distintos; navegação por identificadores e acesso por teclado verificados. |
+| FASE-006 — Cadastro, edição e recebimento | Construir Signal Forms com rascunhos independentes, prévia de parcelas e comandos locais atômicos; integrar modal de pagamento, mensagens e atualização reativa das consultas. | FASE-005; DEC-004/005/007/010/011; PEN-001/002/003/008/010/011 para os respectivos fluxos. Edição e recebimento aguardam seus recortes aprovados. | Testes de envio inválido, cancelamento, falha e duplicidade aprovados; valores preservados após erro; sucesso atualiza a fonte uma única vez; Escape e retorno de foco verificados no navegador. |
+| FASE-007 — Visão Geral, relatórios e configurações | Integrar indicadores e resumos derivados, períodos e filtros aprovados, conteúdo de Configurações e exportação apenas ilustrativa. | FASE-005/006; DEC-003/004/005/011; PEN-002/004/007/009/012 para métricas e conteúdos afetados. | Indicadores reconciliados com vendas e pagamentos simulados; vazios coerentes; nenhuma métrica fixa contradiz mutações; nenhuma exportação produz arquivo ou falso sucesso. |
+| FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado, foco e contraste, conferir perda de alterações ao recarregar e preparar roteiro demonstrativo com limitações e evidências. | FASE-003 a FASE-007 no recorte aprovado; DEC-008; PEN-013 para compatibilidade e PEN-014 para avaliação com a ótica. | Build e cenários aplicáveis aprovados, sem erros inesperados no console; resultados e limitações registrados. Aprovação de produto somente após avaliação explícita, distinta da conclusão técnica. |
+
+**Ordem e paralelismo:** após a base, estrutura visual (FASE-003) e núcleo demonstrativo
+(FASE-004) podem avançar em paralelo nos trechos desbloqueados. A resolução de pendências da
+FASE-001 acompanha o trabalho, sem exigir que decisões não relacionadas bloqueiem toda a base.
+Consultas integram essas duas frentes; mutações vêm depois para que seus efeitos sejam verificáveis.
+O layout dos resumos pode avançar antes, mas sua conclusão depende das projeções e mutações.
+Testes e acessibilidade fazem parte de cada fase; a FASE-008 consolida a regressão, não inicia
+a qualidade. Avanço de fase não significa aprovação automática das dependências ainda abertas.
+
+**Controle de conclusão:** uma fase só poderá ser marcada como concluída com evidências dos
+critérios aplicáveis. Entrega parcial deve listar os casos bloqueados, sem apresentá-los como
+funcionais nem declarar concluído o escopo integral. A avaliação com a ótica não comprova
+persistência, regras definitivas ou aptidão para uso operacional.
+
+**Inclusão do Bootstrap no roadmap — revisão 1.2:** a FASE-002 deve fixar a dependência e
+verificar sua compilação Sass com o ambiente adotado. A FASE-003 deve integrar os estilos
+globais, aplicar padrões Bootstrap e conectar `data-bs-theme` ao serviço de tema, conforme
+DEC-013. Nas FASE-005 a FASE-007, reutilizar esses padrões em tabelas, formulários e resumos.
+Os critérios de conclusão incluem a linha Bootstrap da seção 12, sem substituir o modal nativo
+ou introduzir plugins JavaScript. A FASE-008 confirma a regressão visual e de acessibilidade.
 
 ### Evolução futura
 
@@ -608,13 +655,14 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 | DEC-003 | Estrutura | `frontend/`, funcionalidades e rotas lazy | Confirmada quanto à direção; árvore e rotas propostas | DEC-001 e DEC-002 |
 | DEC-004 | Estado | Serviço raiz com Signals e mutações atômicas | Confirmada | DEC-005 e DEC-011 |
 | DEC-005 | Dados | Centavos inteiros e datas civis, cálculos fora dos componentes | Confirmada; modelos detalhados propostos | DEC-011 |
-| DEC-006 | Visual | SCSS, componentes próprios, dois temas e escuro inicial | Confirmada pelo solicitante | Conciliação documental pendente |
+| DEC-006 | Visual | Dois temas e escuro inicial mantidos; base de estilos próprios substituída pela DEC-013 | Parcialmente substituída pela DEC-013 | Conciliação documental de temas pendente |
 | DEC-007 | Interações | Dialog nativo e SVG local | Confirmada | Testes em browser |
 | DEC-008 | Testes | Vitest, TestBed/jsdom e Playwright E2E | Confirmada | DEC-009 e regras de produto |
 | DEC-009 | Ambiente | Node.js 24, npm/lockfile e TypeScript 6.0.x | Confirmada; patches pendentes | FON-006 e verificação da base |
 | DEC-010 | Formulários | Signal Forms, rascunho independente e revalidação | Confirmada | DEC-002, DEC-004 e DEC-011 |
 | DEC-011 | Regras abertas | Manter pendências sem políticas presumidas | Confirmada | Decisões posteriores de produto |
-| DEC-012 | Documento | TDD central em `tdd.md`, com Mermaid | Confirmada | FON-004 |
+| DEC-012 | Documento | TDD central em `docs/tdd/tdd.md`, com Mermaid e roadmap | Confirmada | FON-004 e solicitação de revisão 1.1 |
+| DEC-013 | Base visual | Bootstrap 5.3.x somente para estilos, SCSS complementar e interações Angular | Bootstrap confirmado pelo solicitante; integração técnica planejada | DEC-002/007/009; FON-013/014 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -682,6 +730,9 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
   Revisar regras somente após decisões de domínio rastreáveis.
 
 ### DEC-006 — SCSS, componentes próprios e temas
+
+> Registro histórico: a revisão 1.2 substitui a parte de base visual por DEC-013. Dois temas,
+> escuro inicial e componentes Angular próprios permanecem; SCSS passa a ser complementar.
 
 - **Problema/contexto:** escolher direção visual e resolver a divergência claro/escuro.
 - **Escopo/restrições:** evitar biblioteca visual grande; não persistir preferência.
@@ -764,13 +815,40 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 - **Problema/contexto:** manter decisões rastreáveis em um artefato técnico único.
 - **Escopo/restrições:** documentação apenas; não alterar PRD, AGENTS.md ou OpenSpec.
 - **Alternativas:** arquivos paralelos de decisões; TDD central com referências.
-- **Escolha/justificativa:** `tdd.md`, registro central de decisões e Mermaid para arquitetura,
-  relacionamentos e recebimento. Explicações textuais acompanham diagramas.
+- **Escolha/justificativa:** `docs/tdd/tdd.md`, registro central de decisões e Mermaid para
+  arquitetura, relacionamentos e recebimento. Explicações textuais acompanham diagramas.
+  A revisão 1.1 registra o destino indicado pelo solicitante e detalha o roadmap de implementação
+  por fases na seção 14, preservando escopo e decisões anteriores.
 - **Consequências:** revisões devem preservar IDs e apontar substituições, sem duplicar decisões.
 - **Origem/situação:** solicitação e confirmação explícitas; Confirmada, Não implementada
   quanto ao produto; este artefato é a entrega documental.
 - **Validação/revisão:** revisar referências e coerência; renderização Mermaid não validada.
   Revisar quando novas decisões modificarem as fronteiras ou fluxos.
+
+### DEC-013 — Bootstrap como base visual
+
+- **Problema/contexto:** substituir a construção visual somente com estilos próprios por
+  padrões reutilizáveis do Bootstrap, conforme solicitação da revisão 1.2.
+- **Escopo/restrições:** frontend demonstrativo, sem instalação nesta entrega. Preservar
+  standalone, Signals, Signal Forms e o modal nativo; não alterar regras de produto.
+- **Alternativas:** manter SCSS como base independente; Bootstrap somente para estilos;
+  Bootstrap com plugins JavaScript ou biblioteca de componentes Angular adicional.
+- **Escolha/justificativa:** Bootstrap como base visual, com linha 5.3.x planejada e patch a
+  fixar após verificação na base. SCSS personaliza identidade e tokens. A integração apenas
+  de estilos evita controle concorrente do DOM por plugins e preserva as interações existentes
+  no desenho. Não adotar uma versão alpha por ser mais recente.
+- **Consequências:** acrescenta dependência visual e exige conferir Sass, tamanho do CSS,
+  contraste e personalizações. Classes Bootstrap não garantem acessibilidade automaticamente.
+  Temas usam `data-bs-theme`; nomes externos não são traduzidos. Não incluir JavaScript do
+  Bootstrap, Popper, ng-bootstrap ou ngx-bootstrap neste recorte.
+- **Origem/situação:** FON-014 confirma Bootstrap; FON-013 fundamenta os temas e a
+  personalização. Detalhes de integração são planejados, não compatibilidade já comprovada.
+  Não implementada.
+- **Dependências/validação:** DEC-002/007/009, PEN-015 para versões e pipeline; build estrito,
+  testes e cenários visuais da seção 12. Revisar se a combinação Sass/CLI não for compatível,
+  sem alterar silenciosamente a versão ou substituir o modal.
+- **Substitui:** somente a parte de base visual independente da DEC-006; preserva seus temas
+  e demais decisões não afetadas.
 
 ## 16. Riscos, hipóteses e pendências
 
@@ -828,11 +906,20 @@ sem nova decisão. Não há autorização implícita para adotar `PRD/HIP-001` a
 | Busca; PRD/RF-003 | FON-002 e FON-003 | DEC-004/011 | 9, 12 | Política confirmada e vazios |
 | Indicadores; PRD/RF-002/009/010 | FON-002 e FON-003 | DEC-004/005/011 | 8, 9, 12 | Reconciliação e períodos |
 | Temas e acessibilidade | FON-001, FON-002, FON-004 e FON-012 | DEC-006/007 | 10 | Teclado, contraste e foco |
+| Bootstrap como base visual | FON-013 e FON-014 | DEC-013 | 6, 10, 11, 12, 14 | Compilação dos estilos, temas, responsividade e acessibilidade |
 | Fonte técnica centralizada | FON-004 | DEC-012 | 15, 16 | IDs, fontes e coerência |
 
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
 revisão do PRD e das referências relevantes, confirmação das escolhas por perguntas, consulta
 à compatibilidade oficial Angular 22 e documentação de formulários, zoneless e testes.
+Essas verificações pertencem à revisão inicial. Na revisão 1.1, a conferência se limita à
+coerência do roadmap com as decisões, pendências e matriz de testes existentes, aos caminhos
+do documento e ao alinhamento da skill `generate-tdd` e de seu modelo. Não houve nova
+verificação de compatibilidade das tecnologias ou de implementação.
+Na revisão 1.2, foram consultadas as referências Bootstrap 5.3.8 pelo Context7 para
+personalização e temas e revisada a coerência entre ferramentas, estilos, decisões, roadmap
+e verificação. Compatibilidade efetiva com a futura base Angular/Sass permanece pendente;
+nenhuma dependência foi instalada.
 
 **Não executado:** instalação, scaffolding, build, testes, lint, cobertura, medição de desempenho,
 auditoria de dependências, validação com a ótica, renderização Mermaid ou validação OpenSpec.
@@ -848,3 +935,5 @@ implementação nem conciliar outros documentos silenciosamente.
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
 | 1.0 — 12/11/2026 | Documento inicial, entrevista, arquitetura, Mermaid, plano de testes e pendências | DEC-001 a DEC-012 | Solicitação e respostas do usuário; fontes locais e documentação oficial |
+| 1.1 — 12/11/2026 | Roadmap com oito fases, entregas, dependências, bloqueios e critérios de conclusão; correção do destino documental; skill e modelo passam a exigir roadmap | DEC-012 detalhada; demais decisões preservadas | Solicitação explícita do usuário para revisar o TDD e a skill de geração |
+| 1.2 — 12/11/2026 | Bootstrap como base visual, SCSS complementar, integração de temas e atualização de ferramentas, roadmap e verificações | DEC-013 adicionada; DEC-006 parcialmente substituída | Solicitação explícita do usuário para usar Bootstrap em vez de CSS puro |

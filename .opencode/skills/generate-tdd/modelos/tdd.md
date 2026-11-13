@@ -115,8 +115,28 @@ identificadas como propostas. Não introduza autenticação, telemetria ou infra
 ## 14. Execução, entrega e evolução
 
 Documente pré-requisitos, diretório de execução, comandos existentes ou propostos e artefatos
-esperados. Registre limitações da demonstração, ordem sugerida de implementação, dependências
-e condições para evolução. Diferencie arquitetura futura de trabalho autorizado nesta etapa.
+esperados. Registre limitações da demonstração e condições para evolução.
+
+### Roadmap de implementação — obrigatório
+
+Inclua sempre fases ordenadas que cubram o escopo técnico desenhado, inclusive em rascunhos e
+revisões. Não substitua o roadmap por uma lista genérica de próximos passos. Use identificadores
+estáveis como `FASE-001` e preencha a tabela com conteúdo específico do projeto.
+
+| Fase | Objetivo e entregas | Dependências e bloqueios | Critérios verificáveis de conclusão | Estado da implementação |
+| --- | --- | --- | --- | --- |
+
+Referencie decisões, requisitos e pendências por seus IDs. Distribua testes e acessibilidade
+pelas fases pertinentes. Explique a ordem, as possibilidades de trabalho paralelo e os casos
+que aguardam decisão. Separe plano proposto de execução autorizada e resultados comprovados;
+registre a falta de evidências sem presumir conclusão. Não invente prazos ou responsáveis.
+Em entregas parciais, mantenha as fases propostas e sinalize seus bloqueios. O roadmap não
+autoriza implementação.
+
+### Evolução futura
+
+Mantenha a arquitetura futura separada das fases do escopo atual e condicionada a nova
+autorização. Não transforme tecnologias futuras em entregas obrigatórias do roadmap atual.
 
 ## 15. Registro central de decisões técnicas
 

@@ -1,6 +1,6 @@
 ---
 name: generate-tdd
-description: Gerar ou revisar um Technical Design Document (TDD), documento de desenho técnico detalhado, por meio de perguntas sobre arquitetura, estrutura, linguagem, framework e bibliotecas, centralizando decisões, alternativas e pendências. Use quando o usuário invocar generate-tdd ou solicitar um documento de decisões técnicas; não para executar desenvolvimento orientado a testes.
+description: Gerar ou revisar um Technical Design Document (TDD), documento de desenho técnico detalhado, por meio de perguntas sobre arquitetura, estrutura, linguagem, framework e bibliotecas, centralizando decisões, alternativas, pendências e roadmap obrigatório com fases de implementação. Use quando o usuário invocar generate-tdd ou solicitar um documento de decisões técnicas; não para executar desenvolvimento orientado a testes.
 ---
 
 # Gerar documento de desenho técnico
@@ -9,6 +9,9 @@ Transforme o contexto do produto e uma entrevista técnica em um documento centr
 arquiteturais e estruturais. Neste fluxo, TDD significa **Technical Design Document**, não
 desenvolvimento orientado a testes. Escreva em português brasileiro, com profundidade
 suficiente para orientar uma implementação posterior, sem implementá-la.
+
+**Todo TDD gerado ou revisado deve conter um roadmap explícito com as fases da implementação.**
+Uma lista genérica de próximos passos ou a descrição de evolução futura não substitui o roadmap.
 
 ## Entrada, autoridade e limites
 
@@ -81,7 +84,7 @@ Cubra os eixos abaixo, perguntando somente sobre o que for pertinente e não est
 | Interface e formulários | Qual abordagem de estilos, temas, tokens, ícones, validação, acessibilidade, foco e estados de interface? |
 | Fronteiras e falhas | Quais responsabilidades e contratos internos são necessários? Como tratar erro, cancelamento, atomicidade local e envio duplicado? |
 | Qualidade | Quais estratégias de testes, ferramentas, cenários críticos, formatação, análise estática e critérios de verificação? |
-| Entrega e evolução | Como executar e gerar o artefato desta etapa? Quais riscos, limitações e gatilhos justificariam revisão da arquitetura? |
+| Entrega, roadmap e evolução | Como executar e gerar o artefato desta etapa? Quais fases, entregas, dependências e critérios de conclusão compõem o roadmap? Quais riscos, limitações e gatilhos justificariam revisão da arquitetura? |
 
 Segurança, privacidade, desempenho e observabilidade devem ser proporcionais ao escopo.
 Integrações, backend, banco, empacotamento nativo e implantação só recebem desenho detalhado
@@ -115,6 +118,17 @@ silenciosamente. Não crie um conjunto paralelo de documentos de decisão sem so
 
 - Leia `modelos/tdd.md`, relativo a esta skill. Preencha todas as seções aplicáveis com conteúdo
   específico. Justifique “não aplicável”; informações desconhecidas viram pendências, não fatos.
+- Inclua sempre uma seção identificável como **Roadmap de implementação**, inclusive em revisões
+  e entregas parciais. Organize fases ordenadas com identificadores estáveis, objetivo, entregas
+  concretas, dependências e bloqueios, critérios verificáveis de conclusão e estado da implementação.
+  Relacione fases a decisões, requisitos e pendências por seus IDs, quando existirem.
+- O roadmap deve abranger o escopo desenhado, não apenas a configuração inicial. Distribua testes
+  e acessibilidade pelas fases pertinentes, sem adiar toda a qualidade para a última fase.
+  Explique o que pode avançar em paralelo e o que aguarda decisão; não resolva regras abertas
+  para preencher o plano. Em rascunhos, mantenha as fases propostas e os bloqueios explícitos.
+- Não invente prazos, estimativas, responsáveis ou fases concluídas. Diferencie plano proposto,
+  trabalho autorizado e implementação comprovada. Evolução fora do escopo deve ficar separada,
+  condicionada a nova autorização; o roadmap não autoriza executar suas fases.
 - Mostre responsabilidades, direção de dependências e fluxos principais, incluindo alternativas
   de erro e cancelamento. Diagramas e árvores devem indicar se representam situação atual ou proposta.
 - Sugira a criação de diagramas Mermaid quando facilitarem a compreensão: `flowchart` para
@@ -151,13 +165,16 @@ Releia o arquivo salvo e confira:
 - Fontes, IDs e referências cruzadas válidos; cada escolha material rastreável à sua origem.
 - Versões e APIs compatíveis ou pendências explícitas; alternativas e consequências registradas.
 - Coerência entre registro de decisões, árvore, diagramas, fluxos, bibliotecas e plano de verificação.
+- Roadmap obrigatório presente, cobrindo o escopo e coerente com decisões e plano de verificação;
+  fases com entregas, dependências, bloqueios, critérios de conclusão e situação explícitos.
 - Diagramas Mermaid, quando incluídos, coerentes com os modelos e fluxos descritos, com situação
   atual ou proposta identificada. Só alegue validação de renderização se ela tiver sido realizada.
 - Separação entre estado atual, proposta confirmada, implementação e evolução futura.
 - Ausência de segredos, dados pessoais reais, regras inventadas e resultados de verificação fictícios.
 - Pendências bloqueantes com impacto e pergunta necessária; nada pendente apresentado como aprovado.
 
-Na entrega, informe caminho, principais decisões, pendências e verificações documentais feitas.
+Na entrega, informe caminho, principais decisões, resumo do roadmap, pendências e verificações
+documentais feitas.
 Não execute nem alegue build, testes ou validação OpenSpec para um TDD independente. A geração
 do documento não autoriza implementação ou mudanças nos demais artefatos de planejamento.
 
