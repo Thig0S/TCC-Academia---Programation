@@ -1,5 +1,30 @@
 # Base técnica — Vendas em Aberto
 
+## Apply FASE-003 — 13/11/2026
+
+Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
+`feature/fase-003-implementacao`, criada da `main` atualizada (`a5dee79`). Estado inicial:
+somente cinco imagens não versionadas, preservadas e autorizadas para inclusão no commit.
+Base: Angular 22.2.6 e Bootstrap 5.3.9, sem Router, Forms ou ZoneJS no manifesto inicial.
+Referências: PRD 1.1, TDD 1.4 e `openspec/changes/fase-003/`.
+
+O recorte autoriza estrutura, rotas, temas em memória e conteúdo explicativo, não FASE-004
+a FASE-008 nem regras comerciais abertas. `public/imgs/logo-franquia.jpg` será usada na
+identidade, sem alteração da imagem. Os quatro arquivos em `public/imgs/exemplos/`
+(`exemploCadastrarVenda.png`, `exemploDadosDaVenda.png`, `exemploDesignDark.png` e
+`exemploListagemDeVendas.png`) foram inspecionados apenas como referências de composição,
+espaçamento e hierarquia; não autorizam copiar dados, campos ou ações comerciais.
+Os registros abaixo desta seção são evidências históricas da base, não deste apply.
+
+### Dependência de navegação
+
+`npm.cmd install --save-exact @angular/router@22.2.6` gerou o lockfile (saída 0).
+Peers consultados: Angular core/common/platform-browser 22.2.6 e RxJS compatível com 7.8.2.
+`npm.cmd ci`, `npm.cmd ls --depth=0` e `npm.cmd run build` passaram (saída 0), sem
+flags de força, Forms, ZoneJS ou upgrades incidentais. Build inicial: 324,32 kB.
+Permanecem os avisos dos quatro scripts npm não aprovados e Sass `@import` depreciado;
+nenhum aviso foi suprimido e nenhum script foi aprovado automaticamente.
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.
