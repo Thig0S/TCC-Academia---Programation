@@ -58,6 +58,127 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
 });
 
+test('alterna tema com Enter e Espaço sem mudar foco ou rota', async ({ page }) => {
+  await page.goto('/vendas');
+  const botao = page.getByRole('button', { name: 'Tema escuro', exact: true });
+  await expect(botao).toHaveAttribute('aria-pressed', 'true');
+  await botao.focus();
+  for (const [tecla, tema, texto] of [
+    ['Enter', 'light', 'Claro'],
+    ['Space', 'dark', 'Escuro'],
+  ]) {
+    await page.keyboard.press(tecla);
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(botao).toHaveText(`Tema ativo: ${texto}`);
+    await expect(botao).toHaveAttribute('aria-pressed', tema === 'dark' ? 'true' : 'false');
+    await expect(botao).toBeFocused();
+    await expect(page).toHaveURL(/\/vendas$/);
+    await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+  }
+});
+
+for (const preferencia of ['light', 'dark'] as const) {
+  test(`inicia escuro com sistema ${preferencia} e restaura em nova sessão`, async ({
+    browser,
+  }) => {
+    const contexto = await browser.newContext({ colorScheme: preferencia });
+    const novaPagina = await contexto.newPage();
+    const erros: string[] = [];
+    novaPagina.on('pageerror', (erro) => erros.push(erro.message));
+    novaPagina.on('console', (mensagem) => {
+      if (mensagem.type() === 'error') erros.push(mensagem.text());
+    });
+    await novaPagina.goto('http://127.0.0.1:4200/configuracoes');
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    await novaPagina.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'light');
+    await novaPagina.reload();
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    expect(erros).toEqual([]);
+    await contexto.close();
+    const outraSessao = await browser.newContext({ colorScheme: preferencia });
+    const outraPagina = await outraSessao.newPage();
+    await outraPagina.goto('http://127.0.0.1:4200/');
+    await expect(outraPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    await outraSessao.close();
+  });
+}
+
+test('confere contraste efetivo, foco e superfícies com movimento reduzido', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/vendas/quitadas');
+  const medicoes = [];
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await page.getByRole('button', { name: 'Tema escuro', exact: true }).focus();
+    const valores = await page.evaluate(() => {
+      const cor = (valor: string): number[] => (valor.match(/[\d.]+/g) ?? []).map(Number);
+      const mesclar = (frente: number[], fundo: number[]): number[] => {
+        const alfa = frente[3] ?? 1;
+        return frente.slice(0, 3).map((v, i) => v * alfa + fundo[i] * (1 - alfa));
+      };
+      const fundo = (elemento: Element | null): number[] => {
+        if (!elemento) return [255, 255, 255];
+        const atual = cor(getComputedStyle(elemento).backgroundColor);
+        if ((atual[3] ?? 1) === 1) return atual;
+        return mesclar(atual, fundo(elemento.parentElement));
+      };
+      const luminancia = (rgb: number[]): number =>
+        rgb
+          .slice(0, 3)
+          .map((v) => {
+            const s = v / 255;
+            return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+          })
+          .reduce((soma, v, i) => soma + v * [0.2126, 0.7152, 0.0722][i], 0);
+      const razao = (a: number[], b: number[]): number => {
+        const [maior, menor] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+        return Number(((maior + 0.05) / (menor + 0.05)).toFixed(2));
+      };
+      const textos = Array.from(
+        document.querySelectorAll(
+          'h1, h2, p, nav a, .perfil a, main a, .barra-superior span, button',
+        ),
+      ).map((e) => ({
+        elemento: `${e.tagName} ${(e.textContent ?? '').trim().slice(0, 35)}`,
+        razao: razao(mesclar(cor(getComputedStyle(e).color), fundo(e)), fundo(e)),
+        minimo: e.tagName === 'H1' ? 3 : 4.5,
+      }));
+      const botao = document.querySelector('button')!;
+      const estilo = getComputedStyle(botao);
+      const superficie = fundo(botao.parentElement);
+      return {
+        textos,
+        borda: razao(cor(estilo.borderTopColor), superficie),
+        foco: razao(cor(estilo.outlineColor), superficie),
+        larguraFoco: estilo.outlineWidth,
+        superficieRaiz: getComputedStyle(document.querySelector('app-root')!).backgroundColor,
+        altura: document.querySelector('app-root')!.getBoundingClientRect().height >= innerHeight,
+        semCorte: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        semMovimento: estilo.transitionDuration === '0s',
+      };
+    });
+    for (const texto of valores.textos)
+      expect(texto.razao, texto.elemento).toBeGreaterThanOrEqual(texto.minimo);
+    expect(valores.borda).toBeGreaterThanOrEqual(3);
+    expect(valores.foco).toBeGreaterThanOrEqual(3);
+    expect(valores.larguraFoco).toBe('3px');
+    expect(valores.altura && valores.semCorte && valores.semMovimento).toBe(true);
+    console.log(
+      `Contraste ${tema}: texto mínimo ${Math.min(...valores.textos.map((t) => t.razao))}:1; borda ${valores.borda}:1; foco ${valores.foco}:1; fundo ${valores.superficieRaiz}`,
+    );
+    medicoes.push({ tema, ...valores });
+  }
+  await testInfo.attach('contraste-efetivo', {
+    body: JSON.stringify(medicoes, null, 2),
+    contentType: 'application/json',
+  });
+});
+
 test('abre e recarrega cada destino com identidade, aviso e localização', async ({ page }) => {
   for (const [rota, titulo] of destinos) {
     await page.goto(rota);
@@ -176,10 +297,23 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
   });
 
   expect(await context.cookies()).toEqual([]);
-  for (const recarregar of [false, true]) {
-    if (recarregar) await page.reload();
-    else await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+  for (const [rota, titulo] of [...destinos, ['/desconhecida', 'Página não encontrada']]) {
+    if (rota === '/desconhecida') {
+      // Caminho não oferecido pelo menu: evento de histórico sem recarregar a aplicação.
+      await page.evaluate((url) => {
+        history.pushState(null, '', url);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, rota);
+    } else {
+      await page
+        .getByRole('navigation', { name: 'Navegação principal' })
+        .locator(`a[href="${rota}"]`)
+        .click();
+    }
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', 'light');
     await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
     await page.waitForLoadState('networkidle');
 
@@ -199,5 +333,9 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
       serviceWorkers: 0,
     });
   }
+  await page.reload();
+  await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+  expect(await context.cookies()).toEqual([]);
+  expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0]);
   expect(redeIndevida, 'Somente recursos locais e canal de desenvolvimento').toEqual([]);
 });

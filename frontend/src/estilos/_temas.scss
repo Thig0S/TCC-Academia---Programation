@@ -1,0 +1,21 @@
+// Complementos locais: Bootstrap continua sendo a fonte dos tokens dos dois temas.
+app-root[data-bs-theme] {
+  .perfil a,
+  main a {
+    color: var(--bs-primary-text-emphasis);
+  }
+  .controle-tema {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-border-color: var(--bs-body-color);
+    --bs-btn-hover-color: var(--bs-body-color);
+    --bs-btn-hover-bg: var(--bs-secondary-bg);
+    --bs-btn-hover-border-color: var(--bs-body-color);
+    --bs-btn-active-color: var(--bs-body-color);
+    --bs-btn-active-bg: var(--bs-secondary-bg);
+    --bs-btn-active-border-color: var(--bs-body-color);
+  }
+  .controle-tema:focus-visible {
+    outline: 3px solid var(--bs-primary-text-emphasis);
+    outline-offset: 4px;
+  }
+}

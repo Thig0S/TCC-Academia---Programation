@@ -46,6 +46,32 @@ local e storage preservada. Um erro incremental de compilação acessou `.id` em
 de navegação; após pausa e autorização explícita, foi corrigido para chamar o signal.
 As execuções acima são posteriores à correção. Nenhum timer ou detectChanges foi acrescentado.
 
+### Tema global em memória
+
+Serviço raiz com signal privado e leitura readonly, sem providers duplicados. Tema escuro
+inicial, botão nativo “Tema escuro”, estado textual e aria-pressed, variáveis Bootstrap no
+host cobrindo a viewport. SCSS complementar somente para foco e controle de tema.
+Unitários/componentes: 16/16 aprovados, incluindo alternância e identidade da instância em
+todas as páginas lazy. E2E: 18/18 aprovados (9 por projeto Chromium), incluindo Enter/Espaço
+sem roubo de foco/rota, sistema claro/escuro, recarga e contextos novos, escolha clara mantida
+pelos links de todos os destinos e evento de histórico para wildcard. Nenhum erro inesperado
+de console/pageerror observado. Inspeção após alternar/navegar: somente recursos GET locais
+e WebSocket Vite; cookies/storage/IndexedDB/caches/service workers vazios. Não há persistência,
+leitura da preferência de sistema, novos pacotes ou JavaScript Bootstrap/Popper na aplicação.
+Limite: Chromium/Windows nos viewports técnicos não homologa dispositivos ou outros motores.
+
+Contraste: teste E2E calcula luminância sRGB e razão WCAG a partir de `getComputedStyle`,
+compondo transparência sobre os fundos ancestrais; inspeciona textos, ativo, botão e foco
+em Quitadas (superfícies compartilhadas), nos dois temas/viewports, com movimento reduzido.
+Falha real inicial no link de Configurações: 4,27:1; após pausa e autorização, links de
+conteúdo/perfil passaram a usar `--bs-primary-text-emphasis`, sem reduzir o mínimo do teste.
+Suíte posterior: 20/20; execução dirigida `npm.cmd run test:e2e -- --grep "contraste efetivo"`:
+2/2. Mínimos medidos: escuro texto 5,51:1, borda do botão 10,23:1, foco 5,51:1; claro texto
+6,59:1, borda 14,63:1, foco 12,81:1. Contorno 3 px; fundos da raiz rgb(33,37,41)/branco.
+Revisão visual de Quitadas em desktop/pequeno, ambos os temas: foco visível, tema sem bordas
+brancas externas, ativo sublinhado e módulo destacado, marca legível; movimento reduzido não
+impede ações. Não é certificação integral, teste de leitor de tela nem homologação da ótica.
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.

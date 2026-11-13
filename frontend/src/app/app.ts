@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barra-navegacao';
+import { ServicoTema } from './nucleo/configuracao/servico-tema';
 
 @Component({
   selector: 'app-root',
@@ -17,8 +18,10 @@ import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barr
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[attr.data-bs-theme]': 'servicoTema.tema()' },
 })
 export class App {
+  protected readonly servicoTema = inject(ServicoTema);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
