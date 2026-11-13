@@ -17,5 +17,9 @@ Inspecione as fontes pertinentes, identifique decisões já estabelecidas e faç
 objetivas sobre as escolhas arquiteturais e estruturais ainda abertas, incluindo linguagem,
 framework e bibliotecas. Aguarde as respostas antes de consolidar essas escolhas. Se faltar
 contexto, pergunte qual produto ou iniciativa será documentado. Use o modelo da skill,
-centralize decisões e justificativas, registre pendências e salve no destino definido pelo
-fluxo. Não implemente a solução nem confunda planejamento com funcionalidades entregues.
+centralize decisões e justificativas, registre pendências e salve como `tdd.md` na raiz do
+projeto, salvo destino explicitamente indicado pelo usuário. Se ele indicar apenas um
+diretório, mantenha o nome `tdd.md`.
+Sugira diagramas Mermaid quando ajudarem a explicar arquitetura, relacionamentos,
+dependências e fluxos. Não implemente a solução nem confunda planejamento com funcionalidades
+entregues.

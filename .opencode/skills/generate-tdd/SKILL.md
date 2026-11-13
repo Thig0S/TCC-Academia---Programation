@@ -117,17 +117,28 @@ silenciosamente. Não crie um conjunto paralelo de documentos de decisão sem so
   específico. Justifique “não aplicável”; informações desconhecidas viram pendências, não fatos.
 - Mostre responsabilidades, direção de dependências e fluxos principais, incluindo alternativas
   de erro e cancelamento. Diagramas e árvores devem indicar se representam situação atual ou proposta.
+- Sugira a criação de diagramas Mermaid quando facilitarem a compreensão: `flowchart` para
+  arquitetura, dependências e fluxos; `sequenceDiagram` para interações entre participantes;
+  `classDiagram` para relacionamentos entre modelos; `stateDiagram-v2` para transições de estado;
+  e `erDiagram` para relacionamentos de dados, somente quando pertinentes ao escopo. Não deduza
+  um esquema de banco a partir de modelos conceituais nem introduza camadas futuras nos fluxos atuais.
+- Ao incluir diagramas, use blocos cercados com linguagem `mermaid`, rótulos em português e
+  identificadores próprios sem acentos. Explique o que cada diagrama representa e referencie as
+  decisões relacionadas. Prefira diagramas pequenos e complementares, sem repetir toda a descrição
+  textual; mantenha uma explicação em texto para leitores sem renderização Mermaid.
 - Detalhe as convenções próprias da linguagem e do framework escolhidos. Preserve nomes de APIs
   e arquivos convencionais, usando português e identificadores sem acentos no código próprio.
 - Use exemplos e pseudocódigo apenas quando esclarecerem decisões; identifique-os como
   ilustrativos, não implementação validada. Evite esqueletos extensos de aplicação.
 - Documente comandos somente após conferir manifestos/configurações existentes ou documentação
   oficial. Diferencie comandos existentes de comandos propostos e não os execute neste fluxo.
-- Use o destino informado. Por padrão, salve em
-  `docs/tdd/<nome-do-produto-ou-iniciativa>.md`, relativo à raiz do projeto, em kebab-case sem acentos.
+- Por padrão, salve como `tdd.md` na raiz do projeto, não no diretório da skill.
+  Use outro nome ou diretório somente quando o usuário indicar explicitamente. Se ele
+  indicar apenas um diretório, mantenha o nome `tdd.md`.
 - Antes de escrever, verifique o destino e suas instruções. Só atualize documento existente
-  se o usuário pediu revisão; caso contrário, solicite confirmação ou use sufixo numérico livre,
-  informando o caminho. Preserve conteúdo pertinente, IDs e histórico em revisões; decisões
+  se o usuário pediu revisão; caso contrário, solicite confirmação antes de substituir o arquivo.
+  Não acrescente nome do produto, sufixos ou numeração sem solicitação explícita do usuário.
+  Preserve conteúdo pertinente, IDs e histórico em revisões; decisões
   substituídas devem apontar para suas sucessoras, não desaparecer.
 - Crie apenas diretórios necessários e grave Markdown UTF-8, sem marcadores de preenchimento.
   Sem permissão de escrita, entregue o documento na conversa e não afirme ter criado o arquivo.
@@ -140,6 +151,8 @@ Releia o arquivo salvo e confira:
 - Fontes, IDs e referências cruzadas válidos; cada escolha material rastreável à sua origem.
 - Versões e APIs compatíveis ou pendências explícitas; alternativas e consequências registradas.
 - Coerência entre registro de decisões, árvore, diagramas, fluxos, bibliotecas e plano de verificação.
+- Diagramas Mermaid, quando incluídos, coerentes com os modelos e fluxos descritos, com situação
+  atual ou proposta identificada. Só alegue validação de renderização se ela tiver sido realizada.
 - Separação entre estado atual, proposta confirmada, implementação e evolução futura.
 - Ausência de segredos, dados pessoais reais, regras inventadas e resultados de verificação fictícios.
 - Pendências bloqueantes com impacto e pergunta necessária; nada pendente apresentado como aprovado.
@@ -155,5 +168,5 @@ do documento não autoriza implementação ou mudanças nos demais artefatos de 
 ```
 
 ```text
-@generate-tdd Revise docs/tdd/vendas-em-aberto.md para comparar alternativas de formulários. Preserve as decisões anteriores e pergunte antes de substituir escolhas confirmadas.
+@generate-tdd Revise tdd.md para comparar alternativas de formulários. Preserve as decisões anteriores e pergunte antes de substituir escolhas confirmadas.
 ```

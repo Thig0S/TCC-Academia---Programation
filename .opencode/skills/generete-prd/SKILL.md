@@ -84,12 +84,13 @@ O modelo define a estrutura mínima, não limita a profundidade necessária ao b
 
 ### 4. Salvar com segurança
 
-1. Use o destino solicitado pelo usuário. Na ausência dele, use
-   `docs/prd/<nome-do-produto-ou-iniciativa>.md`, com nome em kebab-case sem acentos.
-   Esse caminho é relativo à raiz do projeto, não ao diretório da skill.
+1. Por padrão, salve como `prd.md` na raiz do projeto, não no diretório da skill.
+   Use outro nome ou diretório somente quando o usuário indicar explicitamente. Se ele
+   indicar apenas um diretório, mantenha o nome `prd.md`.
 2. Verifique se o destino já existe. Só revise um PRD existente quando o usuário tiver pedido
    a atualização; preserve conteúdo pertinente, histórico e IDs. Em caso contrário, solicite
-   confirmação ou escolha um nome livre com sufixo numérico, informando o novo caminho.
+   confirmação antes de substituir o arquivo. Não acrescente nome do produto, sufixos ou
+   numeração sem solicitação explícita do usuário.
 3. Crie apenas os diretórios necessários. Grave Markdown em UTF-8, sem placeholders
    remanescentes, e use datas reais apenas quando conhecidas.
 4. Caso não tenha permissão de escrita, apresente o PRD na conversa e o destino sugerido;

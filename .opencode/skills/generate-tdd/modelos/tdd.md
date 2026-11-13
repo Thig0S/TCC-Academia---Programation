@@ -39,6 +39,8 @@ fabricar uma entrevista. Separe respostas recebidas de recomendações ainda nã
 Apresente visão geral e diagrama textual ou Mermaid, identificados como atuais ou propostos.
 Explique fronteiras, direção das dependências, responsabilidade de cada parte, pontos de
 entrada e o que não pertence a cada camada. Referencie as decisões que sustentam o desenho.
+Sugira um `flowchart` Mermaid para visualizar componentes e dependências quando isso tornar
+a arquitetura mais clara. Inclua uma explicação textual e os IDs das decisões relacionadas.
 
 ## 6. Linguagem, framework e ferramentas
 
@@ -62,6 +64,9 @@ Descreva modelos conceituais e contratos internos necessários, propriedade e ci
 estado, valores derivados e mutações. Explique nulabilidade, identificadores, dinheiro, datas,
 fontes demonstrativas e consistência. Registre regras de domínio pendentes e seus impactos.
 Persistência e contratos externos só entram quando autorizados no escopo.
+Sugira `classDiagram` Mermaid para relacionamentos entre modelos ou `stateDiagram-v2` para
+estados e transições relevantes. Use `erDiagram` apenas quando pertinente ao desenho de dados
+autorizado; um modelo conceitual não representa automaticamente um esquema de banco.
 
 ## 9. Fluxos técnicos e tratamento de falhas
 
@@ -72,6 +77,11 @@ Para cada fluxo crítico, descreva:
 - Validações, transições de estado e resultado observável.
 - Erros, cancelamento, prevenção de duplicidade e consistência após a operação.
 - Dependências de decisões e regras ainda abertas.
+
+Sugira `flowchart` Mermaid para caminhos e ramificações e `sequenceDiagram` para a ordem das
+interações entre participantes. Inclua caminhos alternativos importantes sem inventar
+integrações. Use blocos `mermaid`, rótulos em português e identificadores próprios sem acentos;
+identifique o fluxo como atual ou proposto e preserve sua explicação textual.
 
 ## 10. Interface, estilos, formulários e acessibilidade
 

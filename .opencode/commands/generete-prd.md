@@ -14,5 +14,7 @@ $ARGUMENTS
 
 Se o briefing estiver vazio, solicite uma descrição inicial antes de gerar o documento.
 Leia as fontes locais pertinentes, use o modelo da skill, explicite hipóteses e pendências
-e salve o resultado no destino definido pelo fluxo. Não gere um PRD apenas genérico nem
+e salve o resultado como `prd.md` na raiz do projeto, salvo destino explicitamente indicado
+pelo usuário. Se ele indicar apenas um diretório, mantenha o nome `prd.md`.
+Não gere um PRD apenas genérico nem
 apresente funcionalidades planejadas como já implementadas.
