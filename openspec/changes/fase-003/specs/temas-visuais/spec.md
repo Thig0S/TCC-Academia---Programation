@@ -6,6 +6,17 @@ Oferecer leitura consistente da demonstração nos temas claro e escuro, com esc
 
 ## ADDED Requirements
 
+### Requirement: Identidade cromática da barra lateral
+
+A barra lateral SHALL usar vermelho da identidade no tema claro e degradê vertical estático vermelho/vinho no escuro, seguindo os exemplos indicados. Textos, ícones, perfil, links, estados ativo/hover e foco SHALL respeitar os mínimos de contraste existentes sobre todo o fundo. A logo e as demais superfícies SHALL permanecer preservadas. Esse tratamento SHALL acompanhar o bloco responsivo sem exigir animação.
+
+#### Scenario: Ler a navegação vermelha nos dois temas
+- **WHEN** a pessoa alternar o tema e percorrer os destinos nos dois viewports técnicos
+- **THEN** a lateral SHALL apresentar vermelho no claro e degradê vermelho/vinho no escuro
+- **AND** as referências SHALL ser `exemploListagemDeVendas.png` para claro e `exemploDesignDark.png` para escuro, sem copiar dados ou campos
+- **AND** textos e ícones claros, estado ativo e foco SHALL manter contraste nos extremos e regiões intermediárias do fundo
+- **AND** a localização SHALL continuar indicada por semântica e sublinhado, sem depender apenas de cor
+
 ### Requirement: Tema escuro inicial e escolha de sessão
 
 A aplicação SHALL iniciar no tema escuro, independentemente da preferência de cores do sistema. A escolha entre claro e escuro SHALL permanecer apenas em memória durante a navegação; recarregar ou abrir uma nova sessão SHALL restaurar o tema escuro, sem consultar nem gravar preferência persistente.

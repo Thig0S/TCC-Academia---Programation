@@ -33,6 +33,25 @@ não modifica, move nem inclui as imagens em commits.
 
 ## Decisions
 
+### Refinamento cromático da lateral durante o apply — PRD 1.2/TDD 1.5
+
+O solicitante autorizou que `exemploListagemDeVendas.png` e `exemploDesignDark.png`
+orientem também as cores da lateral, refinando a restrição anterior de referência somente
+de layout nessa área. Tema claro: fundo vermelho da identidade, textos/ícones claros,
+ativo com superfície clara e texto vermelho escuro. Tema escuro: degradê vertical estático
+de vermelho para vinho mais escuro, com ativo vermelho destacado e texto claro. “Transição
+sutil” é gradação de cor no fundo, não animação entre temas. Demais superfícies permanecem.
+
+Usar variáveis locais para superfície, foreground, texto secundário, ativo, hover, borda e
+foco; adaptar os consumidores existentes em `app.scss`, navegação e `_temas.scss`, sem
+duplicar Bootstrap ou alterar a logo. Manter o mesmo tratamento no bloco móvel, sublinhado
+de página atual, um único aria-current e Quitadas interna. Conferir contraste normal,
+hover, ativo, perfil/atalho e foco sobre extremos e pontos intermediários do degradê,
+nos dois viewports. A regressão atual que resolve apenas backgroundColor ancestral deve
+passar a considerar o background-image; fundo transparente não representa o degradê.
+Preservar evidências anteriores como históricas e acrescentar tarefas novas, sem marcar
+o ajuste pronto por inferência. Zoom nativo 200% e impedimento de PR continuam pendentes.
+
 ### Estrutura persistente com páginas standalone sob demanda
 
 Aplicar DEC-003: `app.ts/html/scss` mantém identidade, navegação, aviso literal,

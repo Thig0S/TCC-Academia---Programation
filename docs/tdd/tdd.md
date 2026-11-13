@@ -8,7 +8,7 @@
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 13/11/2026, revisão 1.4.
+- **Data e revisão:** 13/11/2026, revisão 1.5.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho arquitetural consolidado para as escolhas respondidas; comportamentos
   dependentes das regras de produto continuam pendentes.
@@ -448,6 +448,20 @@ o agregado anterior e não deixar o formulário permanentemente em envio.
 ## 10. Interface, estilos, formulários e acessibilidade
 
 ### Estilos e temas — DEC-006 e DEC-013
+
+**Refinamento visual 1.5, baseado no PRD 1.2:** a lateral terá superfície vermelha no tema
+claro e degradê vertical estático vermelho → vinho no escuro, seguindo os dois exemplos
+indicados pelo solicitante. Interpretar “transição” como gradação espacial, não animação.
+Usar propriedades CSS locais de fundo, texto/ícones, texto secundário, bordas, foco, hover
+e ativo, aplicadas sob `data-bs-theme`, sem substituir os tokens do conteúdo principal.
+No claro, ativo com superfície clara e texto vermelho escuro; no escuro, ativo vermelho
+destacado com texto claro, sempre sujeito aos mínimos de contraste. Preservar sublinhado,
+aria-current e Quitadas, inclusive no bloco responsivo. A logo permanece intacta.
+Não adicionar dependências nem plugins. A verificação deve cobrir os dois viewports,
+extremos e região intermediária do degradê, texto secundário/perfil, ativo/hover e foco:
+4,5:1 para texto comum e 3:1 para foco/controles essenciais. Os resultados anteriores
+continuam históricos; repetir a regressão afetada. Zoom nativo 200% segue pendente e não
+será substituído por CSS zoom; nenhuma abertura de PR antes de concluir a Change.
 
 Bootstrap será a base visual no lugar de construir a interface somente com estilos próprios.
 Usar seu layout responsivo, utilitários e estilos de tabelas, botões e campos, preservando os
@@ -1028,6 +1042,7 @@ separadamente, após este registro técnico.
 | 1.2 — 12/11/2026 | Bootstrap como base visual, SCSS complementar, integração de temas e atualização de ferramentas, roadmap e verificações | DEC-013 adicionada; DEC-006 parcialmente substituída | Solicitação explícita do usuário para usar Bootstrap em vez de CSS puro |
 | 1.3 — 12/11/2026 | Recorte FASE-001/002 e automações iniciais, sem implementar; PEN-016 detalhada e demais bloqueios preservados | DEC-014 adicionada | Respostas explícitas no planejamento OpenSpec e autorização de revisão pontual do TDD |
 | 1.4 — 13/11/2026 | Estado real da base referenciado; PEN-006 conciliada com PRD 1.1; recorte navegável da FASE-003 e Configurações explicativa | DEC-003/006/008/013 aplicadas sem nova arquitetura; PEN-012 parcialmente resolvida | Confirmações do solicitante; revisão documental, sem código ou testes de aplicação novos |
+| 1.5 — 13/11/2026 | Refinamento cromático da barra lateral e regressão de contraste sobre degradê, conforme PRD 1.2 | DEC-006/013 refinadas sem nova arquitetura ou dependência | Pedido explícito de lateral vermelha nos dois temas durante o apply; zoom nativo pendente preservado |
 
 **Verificação da revisão 1.4:** leitura da fonte, manifesto, testes e configuração E2E;
 confirmação de merge do PR #4 e de ancestralidade de seu commit na `main`; consultas
