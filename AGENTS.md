@@ -20,9 +20,13 @@ artefatos existentes quando eles já cobrirem o escopo:
    desenho e tarefas da mudança. Revisar os artefatos antes de implementar; executar apenas
    tarefas autorizadas e verificar seus critérios de aceite. Manter rastreabilidade com PRD
    e TDD e registrar os resultados reais das verificações.
-4. **Pull request:** após as etapas anteriores aplicáveis, apresentar a mudança para revisão,
-   usando `.github/pull_request_template.md`. Referenciar os artefatos, resumir o escopo
-   entregue, informar verificações realizadas e não executadas e explicitar limitações.
+4. **Pull request:** somente após concluir todo o escopo da proposta/Change, incluindo a
+   implementação autorizada, suas tarefas e verificações aplicáveis, apresentar a mudança
+   completa em um único PR, usando `.github/pull_request_template.md`. Não abrir PR apenas
+   porque os artefatos de planejamento ficaram prontos ou uma funcionalidade foi concluída.
+   Referenciar os artefatos, resumir o escopo entregue, informar verificações realizadas e
+   não executadas e explicitar limitações. Para mudanças exclusivamente documentais, a
+   conclusão considera todo o escopo documental solicitado, sem autorizar implementação.
 
 - Não iniciar implementação com requisitos ou decisões bloqueantes em aberto. Resolver as
   dependências dos casos afetados antes de executá-los; não inventar regras para avançar.
@@ -33,8 +37,9 @@ artefatos existentes quando eles já cobrirem o escopo:
   documentos existentes que sustentam a alteração.
 - Diferenciar planejamento, autorização e implementação comprovada. Não alegar testes,
   aprovação ou conclusão sem evidência. Durante uma mudança autorizada, o agente tem
-  autonomia para criar commits, publicar a feature branch e abrir ou atualizar pull requests
-  do escopo autorizado, sem pedir confirmação a cada operação. Essa autonomia não autoriza
+  autonomia para criar commits e publicar a feature branch durante o trabalho e abrir o PR
+  único somente na conclusão integral da proposta/Change, sem pedir confirmação a cada
+  operação. Atualizações posteriores devem usar o mesmo PR. Essa autonomia não autoriza
   ampliar o escopo nem mesclar PR sem autorização explícita do usuário.
 
 ## Feature branches e integração na main
@@ -48,13 +53,20 @@ artefatos existentes quando eles já cobrirem o escopo:
   alheio silenciosamente; se houver alterações que impeçam a troca segura, pedir orientação
   pelo sistema de questões do Harness.
 - Manter os commits restritos ao escopo da mudança e abrir o pull request da feature branch
-  para a `main`, usando o template padrão e as referências de PRD, TDD e SDD.
+  para a `main` somente ao concluir toda a proposta/Change, usando o template padrão e as
+  referências de PRD, TDD e SDD. Manter planejamento, funcionalidades, correções e verificações
+  da mesma Change na mesma feature branch; não gerar PRs separados por arquivo, alteração,
+  commit, artefato ou funcionalidade. A revisão dos artefatos antes do apply pode ocorrer na
+  conversa ou na branch, sem abertura antecipada de PR, e não autoriza implementação.
 - Dentro de cada Change do OpenSpec, criar commits individuais por funcionalidade
   desenvolvida, assim que ela estiver coerente e suas verificações aplicáveis tiverem sido
   executadas. Não acumular funcionalidades independentes em um único commit grande ao final
   da Change. Incluir no commit da funcionalidade seus testes e atualizações de documentação
   e tarefas correspondentes; separar alterações de planejamento ou documentação independentes
-  em commits próprios. Não incluir alterações alheias no staging ou nos commits.
+  em commits próprios. Esses commits individuais não geram PRs individuais: todos compõem o
+  PR único ao final da Change. Se houver tarefas incompletas, bloqueios ou apenas planejamento
+  concluído, informar o estado e aguardar o próximo passo autorizado, sem abrir PR antecipado.
+  Não incluir alterações alheias no staging ou nos commits.
 - Seguir o padrão já utilizado no histórico para as mensagens de commit: prefixo de tipo
   seguido de dois-pontos e descrição objetiva, em português, do que foi realizado, como
   `feat: adicionar cadastro de vendas` e `docs: atualizar regras de commits por funcionalidade`.
