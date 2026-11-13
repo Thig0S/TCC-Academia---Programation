@@ -2,6 +2,13 @@ import { expect, test as base } from '@playwright/test';
 
 const produto = 'Mercadão dos Óculos - Vendas em Aberto';
 const aviso = 'Demonstração com dados fictícios. As alterações são perdidas ao recarregar.';
+const destinos = [
+  ['/visao-geral', 'Visão Geral'],
+  ['/vendas', 'Vendas'],
+  ['/vendas/quitadas', 'Vendas quitadas'],
+  ['/relatorios', 'Relatórios'],
+  ['/configuracoes', 'Configurações'],
+] as const;
 
 const test = base.extend<{ monitoramento: void }>({
   monitoramento: [
@@ -18,15 +25,27 @@ const test = base.extend<{ monitoramento: void }>({
   ],
 });
 
-test('abre a página técnica', async ({ page }) => {
+test('abre a estrutura e carrega a logo local sem distorção', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: produto })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
+  await expect(page.getByText(produto, { exact: true })).toBeVisible();
   await expect(
-    page.getByText('Esta é uma base técnica. Os fluxos comerciais ainda não estão disponíveis.', {
+    page.getByText('Os fluxos comerciais ainda não estão disponíveis nesta demonstração.', {
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.locator('form, input, button')).toHaveCount(0);
+  await expect(page.locator('form, input')).toHaveCount(0);
+  const logo = page.locator('.identidade img');
+  await expect(logo).toBeVisible();
+  expect(
+    await logo.evaluate((elemento: HTMLImageElement) => ({
+      carregada: elemento.complete && elemento.naturalWidth > 0,
+      proporcao:
+        Math.abs(
+          elemento.width / elemento.height - elemento.naturalWidth / elemento.naturalHeight,
+        ) < 0.02,
+    })),
+  ).toEqual({ carregada: true, proporcao: true });
 });
 
 test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
@@ -34,9 +53,68 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(produto);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
   await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
+});
+
+test('abre e recarrega cada destino com identidade, aviso e localização', async ({ page }) => {
+  for (const [rota, titulo] of destinos) {
+    await page.goto(rota);
+    for (const recarregar of [false, true]) {
+      if (recarregar) await page.reload();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
+      await expect(page).toHaveTitle(`${titulo} | ${produto}`);
+      await expect(page.getByText(produto, { exact: true })).toBeVisible();
+      await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+      await expect(page.locator('[aria-current="page"]')).toHaveCount(1);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
+    }
+  }
+});
+
+test('orienta foco por teclado, atalho, histórico e retorno de caminho desconhecido', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Ir para o conteúdo' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('main')).toBeFocused();
+  const nav = page.getByRole('navigation', { name: 'Navegação principal' });
+  for (const [nome, titulo] of [
+    ['Vendas', 'Vendas'],
+    ['Quitadas', 'Vendas quitadas'],
+    ['Relatórios', 'Relatórios'],
+    ['Configurações', 'Configurações'],
+    ['Visão Geral', 'Visão Geral'],
+  ]) {
+    const link = nav.getByRole('link', { name: nome, exact: true });
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { level: 1, name: titulo, exact: true })).toBeFocused();
+  }
+  const ativo = nav.getByRole('link', { name: 'Visão Geral', exact: true });
+  await ativo.focus();
+  await page.keyboard.press('Enter');
+  await expect(ativo).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1, name: 'Configurações' })).toBeFocused();
+  await page.goForward();
+  await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeFocused();
+  await page.goto('/caminho-desconhecido');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Página não encontrada');
+  await page.getByRole('link', { name: 'Voltar para Visão Geral' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  // Cliques rápidos não devem focar um título obsoleto de página lazy.
+  await nav.getByRole('link', { name: 'Vendas', exact: true }).click();
+  await nav.getByRole('link', { name: 'Relatórios', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeFocused();
 });
 
 test('declara pt-BR e permite ler título e aviso sem corte horizontal', async ({ page }) => {
@@ -59,7 +137,9 @@ test('declara pt-BR e permite ler título e aviso sem corte horizontal', async (
           (retangulo) => retangulo.left >= 0 && retangulo.right <= largura,
         );
       }),
-      bootstrapAplicado: getComputedStyle(document.querySelector('main')!).paddingTop === '48px',
+      bootstrapAplicado:
+        getComputedStyle(document.querySelector('.alert')!).borderRadius !== '0px' &&
+        getComputedStyle(document.querySelector('.barra-lateral')!).display === 'flex',
     };
   });
   expect(leitura).toEqual({
@@ -99,7 +179,7 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
   for (const recarregar of [false, true]) {
     if (recarregar) await page.reload();
     else await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(produto);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
     await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
     await page.waitForLoadState('networkidle');
 

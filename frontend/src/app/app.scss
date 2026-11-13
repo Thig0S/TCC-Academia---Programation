@@ -1,3 +1,48 @@
 :host {
   display: block;
+  min-height: 100dvh;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+.estrutura {
+  min-height: 100dvh;
+}
+.barra-lateral,
+.barra-superior {
+  background: var(--bs-tertiary-bg);
+}
+.barra-lateral {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+.area-principal {
+  min-width: 0;
+}
+.identidade img {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.atalho-conteudo {
+  position: absolute;
+  inset: 0.5rem auto auto 0.5rem;
+  z-index: 10;
+  padding: 0.75rem 1rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transform: translateY(-200%);
+}
+.atalho-conteudo:focus {
+  transform: none;
+}
+@media (min-width: 768px) {
+  .estrutura {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+  .barra-lateral {
+    border-bottom: 0;
+    border-right: 1px solid var(--bs-border-color);
+  }
 }
