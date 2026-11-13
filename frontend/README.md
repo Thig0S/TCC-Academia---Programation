@@ -153,6 +153,53 @@ Configurações. PRD/PEN-013/014 seguem abertos. CA-001/022/023 possuem evidênc
 deste recorte, não aceite comercial. **Entrega pausada pela tarefa 5.2, sem PR, merge,
 sincronização de specs ou arquivamento. O MVP não está concluído.**
 
+### Refinamento da lateral vermelha — PRD 1.2 / TDD 1.5
+
+Pedido visual posterior aplicado na mesma Change e branch, após alinhar os artefatos:
+tema claro com fundo `#ce0026`, textos/ícones claros e ativo claro com texto vermelho
+escuro; tema escuro com degradê vertical estático `#850020` → `#300010` e ativo vermelho.
+Tokens próprios limitados à lateral; logo intacta, sem novos pacotes, alterações no
+conteúdo principal ou nas regras de navegação. O bloco abaixo de md usa a mesma identidade.
+As imagens `exemploListagemDeVendas.png` e `exemploDesignDark.png` passam também a orientar
+as cores dessa área, sem autorizar copiar campos/dados. Referências visuais não são embutidas.
+
+O teste de contraste passou a considerar background-image, com interpolação sRGB explícita
+entre as duas paradas do degradê; amostras conservadoras no topo, meio e base são usadas
+para texto normal/secundário, perfil, links, ícones, ativo, hover e foco. Mínimos observados:
+
+| Lateral | Texto/ícones | Foco    |
+| ------- | ------------ | ------- |
+| Escura  | 5,96:1       | 10,41:1 |
+| Clara   | 4,83:1       | 5,75:1  |
+
+Contorno de foco 3 px explícito para não ser removido pela precedência dos estilos nav do
+Bootstrap. Duas falhas incrementais foram corrigidas após confirmação: ausência desse
+contorno e contraste 4,49:1 durante a transição de cores do item ativo. A animação dos links
+foi desativada para evitar cores intermediárias ilegíveis; o degradê estático foi preservado.
+Revisão visual assistida nos dois temas em 1366 × 768 e 390 × 844 confirmou composição,
+logo proporcional, perfil legível, indicação de Quitadas e foco, sem corte horizontal.
+
+Execuções posteriores às correções em `frontend/`, todas com saída 0:
+
+- `npm.cmd run format:check`: aprovado.
+- `npm.cmd run build`: produção estrita, 467,06 kB iniciais, transferência estimada 87,48 kB.
+- `npm.cmd test -- --watch=false`: 21/21 testes em 5 arquivos.
+- `npm.cmd run test:e2e -- --config playwright.lateral.config.ts`: 26/26 execuções,
+  13 por viewport; sem erros inesperados de console/pageerror.
+
+A primeira tentativa E2E na configuração padrão foi bloqueada pela porta 4200 ocupada,
+sem executar testes. Conforme escolha do solicitante, a regressão e a inspeção usaram
+servidor próprio em 4301, mantendo o processo de 4200 intacto. A configuração temporária
+`playwright.lateral.config.ts` apenas estendeu a padrão, sobrescrevendo `use.baseURL` e
+`webServer.url` para `http://127.0.0.1:4301`, comando `npm.cmd exec -- ng serve --host
+127.0.0.1 --port 4301` e `reuseExistingServer: false`. Foi removida após as execuções;
+para repetir na mesma porta, recriar esse override temporário. Os testes de contextos novos
+agora usam a baseURL do runner, sem acesso acidental ao servidor de 4200. Servidor próprio
+encerrado; capturas temporárias fora do Git. Warning Sass `@import` mantido.
+
+Validação OpenSpec e diff registradas nas tarefas. Não há certificação de acessibilidade
+integral; zoom nativo 200% permanece pendente em 5.2, sem substituição por CSS zoom e sem PR.
+
 ## Compatibilidade verificada antes da instalação
 
 Ambiente observado na execução de 12–13/11/2026: Windows, Node.js 24.21.0 e npm 11.19.0.
