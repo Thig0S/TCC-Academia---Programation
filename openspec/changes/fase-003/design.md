@@ -14,8 +14,10 @@ e padding de 48 px: são contratos da página anterior, não invariantes do pain
 
 A especificação principal `demonstracao-inicial` existe. A delta altera três requisitos
 preservando os nomes de todos os seus cenários; o requisito de aviso permanece intacto.
-O arquivo histórico da base não será reescrito. Há imagens alheias não versionadas em
-`frontend/public/imgs/`, que não serão usadas, movidas nem incluídas nos commits.
+O arquivo histórico da base não será reescrito. Há imagens não versionadas em
+`frontend/public/imgs/`; o solicitante indicou `logo-franquia.jpg` para a identidade e
+`exemplos/` como referência de layout. Esta revisão apenas registra essa direção:
+não modifica, move nem inclui as imagens em commits.
 
 ## Goals / Non-Goals
 
@@ -72,6 +74,33 @@ reorganizar a navegação como bloco no fluxo acima do conteúdo. Não usar draw
 menu oculto: com quatro módulos isso evita estado extra e controle de foco desnecessário.
 Não importar plugins JS Bootstrap/Popper. Fonte de sistema, espaçamento e destaque discretos;
 nenhum ativo novo de procedência desconhecida.
+
+### Logo e referências de layout sem importar requisitos das imagens
+
+No apply autorizado, usar `frontend/public/imgs/logo-franquia.jpg`, servida localmente,
+na área de identidade da estrutura. Preservar proporção e composição da logo, sem
+distorcer, recolorir ou converter a marca em uma imagem gerada. Ajustar seu tamanho para
+não deslocar navegação e conteúdo; manter legibilidade nos dois temas e viewports.
+Fornecer nome acessível da marca, evitando leitura duplicada caso a imagem esteja junto
+do mesmo texto identificador. Verificar carregamento local e ausência de imagem quebrada.
+
+Referências em `frontend/public/imgs/exemplos/`: `exemploDesignDark.png` e
+`exemploListagemDeVendas.png` orientam a composição lateral/cabeçalho/conteúdo, alinhamento,
+espaçamento e hierarquia. `exemploCadastrarVenda.png` e `exemploDadosDaVenda.png` também
+servem somente como referências de organização visual; não autorizam formulários ou
+detalhes comerciais nesta fase. Adaptar a composição ao layout responsivo e aos dois
+temas já especificados, sem exigir reprodução pixel a pixel ou trocar automaticamente
+os tokens definidos pela documentação pelas cores dos exemplos.
+
+PRD, TDD e deltas continuam determinando módulos, campos, dados, validações e regras.
+Não copiar nomes, valores, totais, situações, filtros, busca global, controles de janela,
+notificações ou ações mostrados nas capturas sem previsão documental no recorte autorizado.
+Não usar capturas como fundo ou tela pronta, nem carregar os arquivos de referência na
+interface. Na FASE-003, preservar as páginas honestamente indisponíveis. A revisão visual
+compara estrutura e hierarquia, não fidelidade a formulários ou dados das imagens.
+
+Alternativa rejeitada: reproduzir integralmente as capturas, pois isso criaria funcionalidades
+e regras não autorizadas, além de confundir referência visual com contrato de produto.
 
 ### Tema em serviço raiz e contexto visual único
 
@@ -153,7 +182,8 @@ não homologação de navegadores, dispositivos reais ou aprovação do produto.
 - [Tema não cobre toda a viewport] → Host ocupa viewport e define fundo/texto; validar bordas externas e rolagem nos dois layouts.
 - [Foco dispara antes de página lazy existir] → Coordenar navegação/renderização e testar destino ativo, navegação rápida e alternância sem roubo de foco.
 - [Páginas indisponíveis parecem consultas vazias] → Texto explícito de não implementação, sem totais zero, linhas ou botões comerciais.
-- [Trabalho alheio incluído por staging amplo] → Staging por caminhos; preservar `frontend/public/imgs/` sem importação nem commit.
+- [Referências visuais tratadas como requisitos] → Documentação governa módulos, formulários e dados; capturas orientam somente layout; logo local prevista no apply, sem modificar as imagens nesta revisão.
+- [Trabalho alheio incluído por staging amplo] → Staging por caminhos; não adicionar em lote `frontend/public/imgs/`; no apply incluir somente o ativo efetivamente necessário e preservar os demais arquivos.
 
 ## Migration Plan
 
@@ -161,7 +191,8 @@ Esta entrega altera apenas PRD, TDD e artefatos desta mudança. Após revisão e
 apply: revalidar branch/base, acrescentar Router, construir estrutura/rotas e evoluir a
 regressão correspondente; depois temas e seus testes; finalizar conteúdo explicativo,
 acessibilidade e verificação integrada. Fazer commits coerentes por funcionalidade com seus
-testes e tarefas, separados do planejamento. Publicar/atualizar PR conforme o template.
+testes e tarefas, separados do planejamento. Apresentar o escopo integral em um único PR
+somente ao concluir a Change, conforme `AGENTS.md` e o template, sem novo PR por alteração.
 
 Não há dados a migrar. Se uma etapa falhar, parar e corrigir somente o escopo próprio,
 sem apagar imagens ou descartar trabalho alheio. Reversão futura deve usar revisão/commit
