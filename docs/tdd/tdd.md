@@ -8,7 +8,7 @@
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 12/11/2026, revisão 1.2.
+- **Data e revisão:** 12/11/2026, revisão 1.3.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho arquitetural consolidado para as escolhas respondidas; comportamentos
   dependentes das regras de produto continuam pendentes.
@@ -78,6 +78,8 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-012 | https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog | Consulta em 12/11/2026 | Modal nativo, teclado e foco |
 | FON-013 | https://getbootstrap.com/docs/5.3/customize/ e https://getbootstrap.com/docs/5.3/customize/color-modes/ | Bootstrap 5.3.8, consulta via Context7 em 12/11/2026 | Personalização Sass, variáveis CSS e temas com `data-bs-theme` |
 | FON-014 | Solicitação de revisão para utilizar Bootstrap em vez de CSS puro | 12/11/2026, revisão 1.2 | Substituição da base visual própria por Bootstrap; DEC-013 |
+| FON-015 | Respostas do solicitante no planejamento OpenSpec das FASE-001/002 | 12/11/2026, revisão 1.3 | Recorte das duas fases, Prettier sem lint e smoke E2E Chromium/Windows; autorização de revisão pontual deste TDD, não de implementação |
+| FON-016 | Documentação via Context7: Angular CLI `/angular/angular-cli/v22.2.2`, Playwright `/microsoft/playwright`, Prettier `/prettier/prettier` e Bootstrap `/twbs/bootstrap/v5.3.8` | 12/11/2026 | Builder de testes/build, webServer e viewport, formatação e importação Sass; não prova compatibilidade local dos patches |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -523,8 +525,9 @@ quando aplicável. Sem origem definida, não presumir que um ícone pode ser red
 ### Estratégia confirmada — DEC-008
 
 Vitest com integração da Angular CLI para funções, serviços e componentes; TestBed zoneless;
-jsdom para DOM simulado. Playwright Test para E2E, incluindo dialog nativo e teclado. Versões
-exatas, configuração de navegador e requisitos do Windows devem ser conferidos na base.
+jsdom para DOM simulado. Playwright Test para E2E, incluindo dialog nativo e teclado nas fases
+funcionais. O smoke inicial usa DEC-014; versões exatas e requisitos do Windows devem ser
+conferidos na base, sem antecipar testes de funcionalidades ainda ausentes.
 
 Preferir eventos e `await fixture.whenStable()` a forçar atualização indiscriminadamente com
 `detectChanges()`, evitando mascarar ausência de notificações zoneless. Cenários E2E devem
@@ -552,8 +555,8 @@ ausência de erros inesperados no console, verificação manual de teclado e con
 os temas e registro explícito das limitações de produto. Não há percentual de cobertura
 aprovado; cobertura futura não substitui casos críticos.
 
-Formatação deve aplicar as convenções de FON-001. A ferramenta de formatação e eventual lint
-permanecem a escolher; não há script de lint ou cobertura existente comprovado. Metas de
+Formatação deve aplicar as convenções da seção 7 com Prettier, conforme DEC-014. Lint fica
+fora do recorte inicial; não há script de lint ou cobertura existente comprovado. Metas de
 desempenho do PRD são propostas, não medições ou compromissos já aceitos.
 
 ## 13. Segurança, privacidade e desempenho
@@ -592,10 +595,19 @@ npm.cmd test -- --watch=false
 ```
 
 `npm.cmd ci` pressupõe `package-lock.json` coerente. `start`, `build` e `test` deverão apontar
-para comandos da CLI compatível. Um script adicional de E2E com Playwright será necessário,
-mas seu nome e configuração ainda não estão definidos. O servidor local dos E2E deve usar
+para comandos da CLI compatível. O script E2E inicial será `test:e2e`, com configuração
+planejada pela DEC-014 e ainda não criada. O servidor local dos E2E deve usar
 a mesma URL configurada no runner; sua porta é de desenvolvimento e não contrato de backend.
 Não fixar porta de serviço .NET nem política de implantação neste TDD.
+
+**Recorte confirmado da revisão 1.3:** planejar FASE-001 + FASE-002, sem executar código.
+A base terá apenas página técnica mínima com identidade e aviso demonstrativo, sem navegação
+dos módulos, dados comerciais, formulários ou serviço de tema. Bootstrap deve ter sua compilação
+Sass comprovada na base, sem antecipar a identidade visual da FASE-003. DEC-014 define as
+automações iniciais. PRD/PEN-013 continua aberto para avaliação do produto; o ambiente técnico
+de smoke test não o resolve. PEN-006 continua bloqueando temas, não esta base sem alternância.
+A preparação pode ser concluída para esse recorte com bloqueios explicitamente diferidos;
+a FASE-001 global permanece parcial enquanto depender de decisões das fases seguintes.
 
 ### Roadmap de implementação — fases propostas, não autorização
 
@@ -663,6 +675,7 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 | DEC-011 | Regras abertas | Manter pendências sem políticas presumidas | Confirmada | Decisões posteriores de produto |
 | DEC-012 | Documento | TDD central em `docs/tdd/tdd.md`, com Mermaid e roadmap | Confirmada | FON-004 e solicitação de revisão 1.1 |
 | DEC-013 | Base visual | Bootstrap 5.3.x somente para estilos, SCSS complementar e interações Angular | Bootstrap confirmado pelo solicitante; integração técnica planejada | DEC-002/007/009; FON-013/014 |
+| DEC-014 | Automações iniciais | Prettier sem lint; smoke Playwright Chromium no Windows em dois viewports | Confirmada; não implementada | DEC-008/009; FON-015/016; patches em PEN-015 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -850,6 +863,31 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 - **Substitui:** somente a parte de base visual independente da DEC-006; preserva seus temas
   e demais decisões não afetadas.
 
+### DEC-014 — Automações e limite da base inicial
+
+- **Problema/contexto:** fechar as escolhas de ferramentas da FASE-002 sem antecipar aceite
+  de compatibilidade, telas ou regras comerciais.
+- **Escopo/restrições:** FASE-001 + FASE-002; PRD/RNF-001/004/008/010 e RF-011 quanto ao
+  aviso, sem alegar atendimento completo de CA-021 antes dos fluxos comerciais.
+- **Alternativas:** somente verificação manual; acrescentar lint e múltiplos motores agora;
+  formatação e testes mínimos automatizados. Escolhida a terceira para limitar configuração.
+- **Escolha:** Prettier, dois espaços, aspas simples e largura 100; scripts propostos `format`
+  e `format:check`, limitados ao frontend. Sem lint nesta mudança. Vitest/TestBed/jsdom mantidos
+  pela DEC-008; script proposto `test:e2e` com Playwright e Chromium no Windows, projetos de
+  viewport 1366 × 768 e 390 × 844, sem alegar emulação ou suporte a dispositivo móvel.
+- **Justificativa/contrapartidas:** base verificável com baixo escopo; não cobre Firefox,
+  WebKit, todas as dimensões, desempenho ou acessibilidade integral do produto.
+- **Consequências:** `webServer` e `baseURL` devem usar a mesma URL local; testes de abertura,
+  identidade, aviso, idioma e ausência de erros inesperados em console/pageerror. Teste de
+  componente deve comprovar uma atualização por signal em ambiente zoneless sem acrescentar
+  uma funcionalidade comercial apenas para teste. Saídas e caches ficam fora da formatação.
+- **Origem/situação:** FON-015, confirmação explícita do solicitante; Confirmada, Não implementada.
+- **Dependências/revisão:** fixar patches e verificar engines, peers e licenças em PEN-015;
+  incompatibilidade bloqueia a tarefa, sem substituir major ou framework silenciosamente.
+  PEN-016 fica resolvida quanto às escolhas, não quanto à configuração executada.
+- **Validação:** instalação limpa com lockfile, build estrito, formatação, unitários/componentes
+  e ambos os projetos E2E, registrando comandos, versões e resultados reais na execução futura.
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -888,7 +926,7 @@ Todos os registros abaixo estão **Não implementados**. Confirmação é de des
 | PEN-013 | Navegadores, dimensões e computador; `PRD/PEN-013` | Acessibilidade, E2E e desempenho, DEC-007/008 | Definir ambiente de avaliação | Aceite de compatibilidade |
 | PEN-014 | Aprovadores, participantes e metas; `PRD/PEN-014` | Validação com a ótica | Confirmar responsáveis e roteiro | Aprovação do produto |
 | PEN-015 | Patches, engines/peers, licenças e versões das ferramentas | Criação da base, DEC-008/009 | Conferir manifestos oficiais e gerar lockfile compatível | Instalação reprodutível |
-| PEN-016 | Ferramenta de formatação, eventual lint e configuração E2E | Automação de qualidade, DEC-008/009 | Escolher ferramentas proporcionais e scripts reais | Respectivas automações |
+| PEN-016 | Ferramenta de formatação, eventual lint e configuração E2E | Automação de qualidade, DEC-008/009/014 | Escolhas resolvidas pela DEC-014; configuração e execução ainda não realizadas | Verificação das respectivas automações na FASE-002 |
 
 Responsáveis e prazos não foram definidos. Nenhuma dessas pendências impede salvar o TDD;
 elas impedem tratar os comportamentos afetados como especificação completa e implementável
@@ -907,6 +945,7 @@ sem nova decisão. Não há autorização implícita para adotar `PRD/HIP-001` a
 | Indicadores; PRD/RF-002/009/010 | FON-002 e FON-003 | DEC-004/005/011 | 8, 9, 12 | Reconciliação e períodos |
 | Temas e acessibilidade | FON-001, FON-002, FON-004 e FON-012 | DEC-006/007 | 10 | Teclado, contraste e foco |
 | Bootstrap como base visual | FON-013 e FON-014 | DEC-013 | 6, 10, 11, 12, 14 | Compilação dos estilos, temas, responsividade e acessibilidade |
+| Base e automações iniciais | FON-015 e FON-016; PRD/RNF-008/010 | DEC-008/009/014 | 12, 14, 15 | Instalação, build estrito, Prettier e testes mínimos, sem aceite comercial |
 | Fonte técnica centralizada | FON-004 | DEC-012 | 15, 16 | IDs, fontes e coerência |
 
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
@@ -932,8 +971,18 @@ implementação nem conciliar outros documentos silenciosamente.
 
 ## 18. Histórico de revisões
 
+**Verificação da revisão 1.3:** releitura do PRD e do roadmap; inspeção de estrutura sem
+arquivos verificáveis em `frontend/`; Node.js local observado em 24.21.0, sem comprovar o
+restante da cadeia. O `AGENTS.md` atual não contém mais a orientação visual histórica citada
+nas revisões anteriores; o conflito entre PRD e TDD sobre temas permanece. Consultas FON-016
+fundamentam o plano, mas não confirmam instalação. Não executados scaffolding, instalação,
+build, testes, formatação ou auditoria de dependências. Esta revisão não altera o PRD nem
+aprova suas hipóteses; os artefatos OpenSpec serão produzidos pelo fluxo de planejamento
+separadamente, após este registro técnico.
+
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
 | 1.0 — 12/11/2026 | Documento inicial, entrevista, arquitetura, Mermaid, plano de testes e pendências | DEC-001 a DEC-012 | Solicitação e respostas do usuário; fontes locais e documentação oficial |
 | 1.1 — 12/11/2026 | Roadmap com oito fases, entregas, dependências, bloqueios e critérios de conclusão; correção do destino documental; skill e modelo passam a exigir roadmap | DEC-012 detalhada; demais decisões preservadas | Solicitação explícita do usuário para revisar o TDD e a skill de geração |
 | 1.2 — 12/11/2026 | Bootstrap como base visual, SCSS complementar, integração de temas e atualização de ferramentas, roadmap e verificações | DEC-013 adicionada; DEC-006 parcialmente substituída | Solicitação explícita do usuário para usar Bootstrap em vez de CSS puro |
+| 1.3 — 12/11/2026 | Recorte FASE-001/002 e automações iniciais, sem implementar; PEN-016 detalhada e demais bloqueios preservados | DEC-014 adicionada | Respostas explícitas no planejamento OpenSpec e autorização de revisão pontual do TDD |
