@@ -34,7 +34,7 @@ DEC-003/006/008/013/014), `design.md` e as três deltas em `specs/`.
 ## 5. Verificação integrada da FASE-003
 
 - [x] 5.1 Executar em `frontend/` `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; verificar códigos de saída e cenários cruzados de navegação/temas/recarga/isolamento, sem erros inesperados no console/pageerror e sem reutilizar servidor alheio; registrar ambiente, resultados e warnings reais em `frontend/README.md`.
-- [ ] 5.2 Percorrer manualmente todos os destinos por teclado nos dois temas, conferir atalho, foco, ausência de corte, zoom 200% e movimento reduzido; registrar roteiro, resultados e itens não executados em `frontend/README.md`, sem converter o smoke técnico em homologação de dispositivos, navegadores ou aceite da ótica.
+- [x] 5.2 Percorrer manualmente todos os destinos por teclado nos dois temas, conferir atalho, foco, ausência de corte, zoom 200% e movimento reduzido; registrar roteiro, resultados e itens não executados em `frontend/README.md`, sem converter o smoke técnico em homologação de dispositivos, navegadores ou aceite da ótica.
 - [x] 5.3 Revisar rastreabilidade final, executar `openspec validate fase-003 --strict` e `git diff --check`, conferir o diff limitado ao recorte e atualizar estas tarefas somente conforme evidências reais; registrar pendências comerciais, CA-018/021 completos e PRD/PEN-013/014 ainda não atendidos, sem declarar o MVP concluído.
 
 ## 6. Refinamento visual autorizado da lateral — PRD 1.2/TDD 1.5
