@@ -1,5 +1,48 @@
 # Base técnica — Vendas em Aberto
 
+## Apply FASE-004 — 14/11/2026
+
+Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
+TDD 1.6 e proposal/design/três deltas/tasks. Reutilizada `feature/fase-004`, limpa,
+base `58fb57b5bfd9f9ed843d5cc5b732e10de83bc204`. Manifesto e raiz do lockfile
+conferidos: Angular/Router/CLI 22.2.6, TypeScript 6.0.3, Vitest 5.1.0,
+jsdom 31.0.0, Playwright 1.65.0; ambiente Node 24.21.0/npm 11.19.0.
+Sem upgrades ou novas dependências. O recorte é domínio puro, comandos internos,
+seed e fonte raiz em memória; não autoriza UI comercial, edição, busca ou persistência.
+Os registros das fases anteriores abaixo são históricos, não resultados deste apply.
+
+### Utilitários de domínio
+
+`dinheiro.ts` valida centavos não negativos seguros, verifica cada soma/subtração e
+interpreta texto pt-BR sem float intermediário (construção por BigInt). Aceita `1234`,
+`1234,5`, `1.234,56`; rejeita sinais, expoentes, símbolos, agrupamento incorreto,
+ponto sem decimal e frações de centavo. Formatação BRL conserva o extremo seguro.
+Erros técnicos são `RangeError` em português; comandos tratarão esses erros sem publicação.
+
+`data-civil.ts` usa strings AAAA-MM-DD gregorianas, anos 0001–9999, sem Date/UTC
+no domínio. Meses são calculados desde a data-base original; alcance do último
+vencimento é validado antes de alocar parcelas. Ordinais permitem janelas de dias
+sem duração de horas. Apresentação DD/MM/AAAA e limites do mês explícitos.
+
+Verificações reais: unitários iniciais de dinheiro 49/49 (6 arquivos); após calendário,
+65/65 (7 arquivos), saída 0 em cada processo. Para fusos, executar no PowerShell
+`$env:TZ = 'UTC'` e depois `npm.cmd test -- --watch=false --reporters=verbose`;
+repetir em novo processo com `America/Sao_Paulo`. O nome do teste registra o fuso
+observado por Intl e o offset de Date em janeiro: UTC/0 e America/Sao_Paulo/180,
+respectivamente, ambos 65/65. A primeira execução sem verbose não mostrou os logs,
+por isso não foi usada isoladamente para comprovar o fuso. Warning Sass mantido.
+Estes testes não são homologação de todos os fusos, interface ou aceite comercial.
+
+Regressão do grupo: `npm.cmd run build` saída 0, 467,06 kB iniciais (87,48 kB
+de transferência estimada), abaixo do aviso de 500 kB; `npm.cmd test -- --watch=false`
+saída 0, 65/65 em 7 arquivos. `format:check` inicialmente saiu 1 em 31 arquivos
+preexistentes: diagnóstico com Prettier confirmou exclusivamente CRLF versus LF.
+Após autorização do solicitante, normalização e `frontend/.gitattributes` preservam
+LF, sem mudanças funcionais ou de dependências; correção em commit separado
+`1c321fa`. Nova execução `npm.cmd run format:check`: saída 0. Os 31 arquivos
+já tinham LF no índice Git, por isso não geraram diff de conteúdo. Warning Sass
+de `@import` permanece. Nenhuma página ou rota foi alterada pelos utilitários.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
