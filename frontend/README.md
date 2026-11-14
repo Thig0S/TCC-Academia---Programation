@@ -43,6 +43,36 @@ LF, sem mudanças funcionais ou de dependências; correção em commit separado
 já tinham LF no índice Git, por isso não geraram diff de conteúdo. Warning Sass
 de `@import` permanece. Nenhuma página ou rota foi alterada pelos utilitários.
 
+### Modelos, cadastro e projeções
+
+Modelos readonly de venda/cliente próprio/parcela/entrada/recebimento/alocação e
+`Resultado<T>` discriminado em sucesso, validação, inexistência, inelegibilidade
+ou falha. `prepararCadastro` copia identificação, exige presença sem checksum ou
+unicidade, normaliza descrição vazia para null e não publica estado. Entrada ausente
+é null, sem data/forma fictícias. Parcelamento usa quociente/resto inteiros por BigInt,
+centavos residuais nas primeiras parcelas e primeiro vencimento no mês seguinte.
+
+`projetarVenda` deriva pago, saldo, contagem paga, próximo vencimento e situação;
+data/forma da parcela vêm do recebimento associado. `validarVenda` confere calendário,
+distribuição, IDs e histórico integral sequencial, alocações, valores e reconciliação.
+`projetarVendas` também verifica IDs globais e somas seguras do conjunto antes da
+aceitação. Coleções abertas/quitadas são projeções, não cópias canônicas concorrentes.
+Resumos globais não recebem filtros; períodos são inclusivos com datas explícitas,
+recebimentos por sua data, entradas pela venda e mês civil, nunca últimos 30 dias.
+
+Verificações incrementais: build estrito saída 0 (467,06 kB); cadastro e parcelas
+92/92 testes. Após projeções, 102/102 em 9 arquivos (saída 0). Houve uma execução
+101/102 por expectativa incorreta de atraso numa fixture com a primeira parcela já
+quitada; após pausa e autorização, expectativa corrigida para zero e suíte reexecutada.
+Não se alterou a regra. Casos incluem CA-008/009/014/020/025 no domínio: limites,
+restos, entrada, ontem/hoje/+7/+8, precedências, quitação, dois meses, bordas inclusivas,
+vazio e overflow agregado. Busca, edição, identificação completa e UI permanecem pendentes.
+
+Regressão do grupo de vendas: formatação, build estrito e unitários/componentes
+reexecutados com saída 0; 102/102 testes em 9 arquivos, build 467,06 kB/87,48 kB.
+Warning Sass mantido. Diff limitado aos modelos, cálculos, preparação, testes e
+documentação/tarefas; nenhuma alteração em páginas, rotas, manifesto ou lockfile.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
