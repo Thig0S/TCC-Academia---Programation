@@ -1,5 +1,10 @@
 # Design
 
+> Complemento aprovado durante apply em 14/11/2026: TDD 1.7, DEC-016 refinada;
+> PRD 1.3 inalterado. Apply autorizado, 9/21 tarefas concluídas. As afirmações de
+> ausência de implementação/autorização abaixo pertencem ao planejamento original.
+> O adaptador de preparação definido nesta revisão ainda aguarda implementação.
+
 ## Context
 
 Motivação e escopo estão em `proposal.md`. Este desenho aplica PRD 1.3 e TDD 1.6,
@@ -48,6 +53,7 @@ frontend/src/app/
     demonstracao.modelos.ts
     referencia-demonstracao.ts
     dados-demonstrativos.ts
+    preparador-recebimento.ts
     servico-demonstracao.ts
   funcionalidades/vendas/
     venda.modelos.ts
@@ -150,8 +156,25 @@ alocações juntos. Saldo deve coincidir com a soma pendente antes de aceitar o 
 Resultado é união discriminada: sucesso, validação, inexistência, inelegibilidade,
 falha inesperada. Erros trazem código estável e mensagem em português sem dados pessoais.
 Não introduzir Promise, atraso ou rede fictícia em operação síncrona. Preparação sem
-commit e cancelamento não chamam a mutação. Falhas inesperadas são testadas por mock
-de uma função de preparação na suíte, não por controles de falha na interface.
+commit e cancelamento não chamam a mutação. Falhas inesperadas são testadas por doubles
+tipados da fronteira de preparação em TestBed, não por mock de exportação de módulo
+nem por controles de falha na interface.
+
+**Refinamento conforme TDD 1.7 / DEC-016:** `prepararPagamento` continua pura, sem
+importar Angular, recebendo operações específicas de alocar uma parcela e validar
+o conjunto final. As operações padrão chamam as funções puras existentes; o seed
+pode usar esse caminho diretamente. `PreparadorRecebimento` é um serviço raiz sem
+estado que fornece essas operações e delega a preparação pura. O serviço da sessão
+injeta esse adaptador, mas continua sendo o único responsável pela publicação e IDs.
+O adaptador não mantém estado, relógio, flags de falha ou infraestrutura genérica.
+
+O runner instalado não suporta mocks de imports relativos (`build-options.js` de
+`@angular/build` 22.2.6); `vi.spyOn` de exportação compilada falhou com propriedade
+não redefinível. Não mudar runner, versões ou caminhos para contornar a restrição.
+Testes TestBed substituirão métodos/instância do adaptador por doubles que lançam
+na alocação posterior ou validação final. Comparar snapshots completos e comprovar
+nova tentativa válida; ao integrar a sessão, conferir contador/histórico/publicação.
+Todos os cenários permanecem obrigatórios; a falha do mock anterior não os comprova.
 
 ### 5. Estado imutável e inicialização — TDD/DEC-016
 

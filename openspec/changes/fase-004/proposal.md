@@ -1,5 +1,14 @@
 # Proposal
 
+> Situação durante apply em 14/11/2026: implementação explicitamente autorizada,
+> 9/21 tarefas concluídas. O texto de planejamento original abaixo não revoga essa
+> autorização nem comprova conclusão. PRD 1.3 permanece válido; TDD 1.7 refina
+> DEC-016 por limitação real de mocks no runner Angular. O núcleo passa a prever
+> `PreparadorRecebimento`, adaptador raiz sem estado substituível via TestBed,
+> delegando às funções puras sem publicar dados. Não há nova capacidade, regra,
+> dependência, runner ou UI. O adaptador e seus testes ainda não foram implementados;
+> os recebimentos parciais permanecem sem commit até a verificação do grupo.
+
 ## Why
 
 A FASE-003 entregou a estrutura navegável e os temas, mas as páginas ainda não possuem uma fonte comum de vendas ou cálculos financeiros. O próximo passo é um núcleo demonstrativo consistente, conforme PRD 1.3 e TDD 1.6, para que consultas e mutações futuras não dupliquem saldos ou inventem regras comerciais.
