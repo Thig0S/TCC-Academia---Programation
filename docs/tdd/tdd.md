@@ -8,7 +8,7 @@
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 14/11/2026, revisão 1.6.
+- **Data e revisão:** 14/11/2026, revisão 1.7.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho consolidado para o núcleo financeiro da FASE-004, com PRD 1.3;
   busca, edição, identificação e controles das fases posteriores ainda possuem pendências.
@@ -25,6 +25,15 @@
 As decisões completas estão centralizadas na seção 15. As demais seções detalham sua aplicação,
 sem criar registros concorrentes. Pendências de produto são referidas como `PRD/PEN-xxx` e
 hipóteses como `PRD/HIP-xxx`, para não confundir seus IDs com os deste documento.
+
+**Atualização 1.7 durante apply autorizado:** o pedido explícito de apply `fase-004`
+autoriza o núcleo descrito, não UI comercial. Os registros de planejamento 1.6 acima
+e nas tabelas são históricos: utilitários e domínio de vendas possuem commits e
+102 testes aprovados em `frontend/README.md`. Progresso atual 9/21 tarefas; recebimentos
+parciais sem commit, fonte de sessão não implementada. Uma execução posterior passou
+127/128 testes; a falha foi no mock de módulo, não evidência de atomicidade. A revisão
+pontual de DEC-016 abaixo foi aprovada pelo solicitante; sua solução ainda não foi
+implementada ou verificada. PRD 1.3 e suas regras permanecem inalterados.
 
 ## 2. Contexto, objetivos e limites
 
@@ -572,6 +581,12 @@ Preferir eventos e `await fixture.whenStable()` a forçar atualização indiscri
 `detectChanges()`, evitando mascarar ausência de notificações zoneless. Cenários E2E devem
 isolar sessões por recarga/contexto novo, sem persistir dados ou criar endpoints de teste.
 
+**Revisão 1.7 — falhas de preparação:** não usar mock de exportação de módulo relativo
+para o núcleo puro no runner Angular existente. Usar a fronteira específica
+`PreparadorRecebimento` de DEC-016, substituível por doubles em TestBed, preservando a
+preparação pura e a comparação de snapshots completos em falhas posteriores e finais.
+Não excluir esses cenários nem aceitar a falha do mecanismo de mock como teste aprovado.
+
 | Área | Cenários e resultado esperado | Nível | Referências |
 | --- | --- | --- | --- |
 | Dinheiro | Parse, inteiros seguros, soma, entrada e invariantes sem arredondamento silencioso | Unitário | DEC-005; PRD/CA-008 e CA-014 |
@@ -1020,6 +1035,34 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 
 ### DEC-016 — Núcleo de sessão, imutabilidade e testes sem antecipar telas
 
+**Complemento 1.7 aprovado durante apply — fronteira de preparação testável:**
+
+- O runner instalado `@angular/build` 22.2.6 empacota as funções locais: `vi.spyOn`
+  falhou com `Cannot redefine property: prepararAlocacao`. O arquivo instalado
+  `src/builders/unit-test/runners/vitest/build-options.js`, linhas 263–294,
+  também proíbe `vi.mock` e métodos relacionados para imports relativos e orienta
+  usar TestBed. Não contornar esse comportamento com caminhos artificiais ou upgrade.
+- Manter `prepararPagamento` como função pura, sem Angular. Ela receberá contrato
+  específico de operações tipadas de preparação: alocar uma parcela e validar o
+  conjunto final, com implementação padrão que chama as funções puras existentes.
+  Não é construtor genérico de comandos, mecanismo de persistência ou política financeira.
+- Acrescentar `nucleo/demonstracao/preparador-recebimento.ts`, serviço raiz sem estado
+  `PreparadorRecebimento`. Seus métodos delegam às funções puras e fornecem as
+  operações ao preparar um lote; `ServicoDemonstracao` injeta esse adaptador. Ele
+  não publica estado, não guarda venda, não gera IDs e não captura o relógio.
+- Testes TestBed substituem métodos/instância por doubles tipados. Um double prepara
+  o primeiro item e lança no posterior; outro lança na validação final. Comparar o
+  agregado completo antes/depois, contador e histórico quando a fonte existir;
+  comprovar nova tentativa válida e publicação única no sucesso. Falhas são lançadas
+  exclusivamente nos testes; não adicionar flags, endpoints ou controles na aplicação.
+- Funções puras continuam testadas diretamente para seleção, soma, datas, formas,
+  repetição e reconciliação. O seed poderá usar a implementação pura padrão.
+- Sem mudanças no PRD 1.3, dependências, scripts, runner ou critérios de aceite.
+  Consulta Context7 ao guia oficial `https://angular.dev/guide/testing/services`
+  confirmou substituição de dependências com `useValue`/`useClass` no TestBed;
+  a compatibilidade concreta desta solução ainda requer apply e execução local.
+  Este complemento substitui apenas o mecanismo de mock previsto para falhas.
+
 - **Problema/contexto:** serviços raiz são instanciados sob demanda; apenas declarar
   `providedIn: 'root'` não garante capturar a referência na abertura. `asReadonly()` também
   não impede mutação profunda (FON-019). Páginas atuais não devem passar a prometer consultas.
@@ -1158,6 +1201,7 @@ separadamente, após este registro técnico.
 | 1.4 — 13/11/2026 | Estado real da base referenciado; PEN-006 conciliada com PRD 1.1; recorte navegável da FASE-003 e Configurações explicativa | DEC-003/006/008/013 aplicadas sem nova arquitetura; PEN-012 parcialmente resolvida | Confirmações do solicitante; revisão documental, sem código ou testes de aplicação novos |
 | 1.5 — 13/11/2026 | Refinamento cromático da barra lateral e regressão de contraste sobre degradê, conforme PRD 1.2 | DEC-006/013 refinadas sem nova arquitetura ou dependência | Pedido explícito de lateral vermelha nos dois temas durante o apply; zoom nativo pendente preservado |
 | 1.6 — 14/11/2026 | PRD 1.3, estado local da FASE-003, núcleo da FASE-004, lote sequencial, referência e estratégia de testes sem UI; pendências e roadmap conciliados | DEC-015/016 adicionadas; DEC-004/005 preservadas | Respostas explícitas do solicitante e inspeção local; planejamento, sem apply |
+| 1.7 — 14/11/2026 | Fronteira específica de preparação sem estado e doubles TestBed para falhas de atomicidade; funções puras preservadas | DEC-016 refinada, PRD 1.3 sem alteração | Bloqueio real do mock de módulo no apply e revisão técnica aprovada pelo solicitante; solução ainda não implementada |
 
 **Verificação da revisão 1.4:** leitura da fonte, manifesto, testes e configuração E2E;
 confirmação de merge do PR #4 e de ancestralidade de seu commit na `main`; consultas

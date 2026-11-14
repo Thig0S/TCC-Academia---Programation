@@ -1,8 +1,10 @@
 # Tasks
 
-Planejamento de 14/11/2026. Apply ainda não autorizado; todas as caixas permanecem
-desmarcadas. Referências: PRD 1.3 (RN-011 a RN-017, CA-008/009/011/013/014/017/020/024/025),
-TDD 1.6 (FASE-004, DEC-004/005/008/011/015/016), `design.md` e as três deltas desta Change.
+Planejamento de 14/11/2026, seguido de apply explicitamente autorizado e revisão
+técnica aprovada durante a execução. Progresso: 9/21; as caixas restantes não
+representam implementação comprovada. Referências: PRD 1.3
+(RN-011 a RN-017, CA-008/009/011/013/014/017/020/024/025),
+TDD 1.7 (FASE-004, DEC-004/005/008/011/015/016), `design.md` e as três deltas desta Change.
 Cada funcionalidade deverá incluir testes, evidências e commit coerente na mesma branch;
 nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguintes.
 
@@ -25,13 +27,13 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 
 - [ ] 3.1 Implementar validação/preparação pura de lote da mesma venda: IDs únicos, seleção não vazia e exatamente um prefixo das parcelas pendentes por número; testar primeira pendente isolada, várias consecutivas, IDs em ordem textual diferente, salto, parcela paga, ID ausente e parcela de outra venda. Verificar todos os cenários correspondentes de `recebimentos-parcelas` por testes unitários.
 - [ ] 3.2 Implementar soma integral, recebimento único com alocações, antecipação e data/forma comuns; testar R$ 600 para três parcelas de R$ 200, parcial/excedente rejeitados, quatro formas aceitas, forma ausente/desconhecida, bordas venda/referência e datas inválidas/fora do intervalo. Verificar que nenhum teste admite juros, desconto, dados bancários ou número de cartão.
-- [ ] 3.3 Implementar revalidação do lote sobre o agregado atual e preparação totalmente atômica; testar comando repetido, seleção obsoleta sem deslocamento automático, venda inexistente e falha controlada na preparação de item posterior/validação final. Comparar snapshot completo antes/depois em rejeições e validar recebimento/alocações sem dupla contagem em sucesso, conforme CA-011/013/017/024.
+- [ ] 3.3 Implementar revalidação do lote sobre o agregado atual e preparação totalmente atômica; conforme TDD 1.7/DEC-016, manter operações tipadas com padrão puro e criar `PreparadorRecebimento` raiz sem estado, substituível via TestBed. Testar comando repetido, seleção obsoleta sem deslocamento automático, venda inexistente e falha controlada por doubles na preparação de item posterior/validação final, sem mock de exportação de módulo relativo. Comparar snapshot completo antes/depois em rejeições e validar recebimento/alocações sem dupla contagem em sucesso, conforme CA-011/013/017/024; não adicionar controles de falha em produção.
 - [ ] 3.4 Registrar em `frontend/README.md` o contrato de lote, mensagens e resultados reais; executar formatação, build e unitários/componentes, revisar que falhas são simuladas apenas em testes e criar commit individual do recebimento com testes, documentação e tarefas correspondentes, sem modal ou ação comercial na UI.
 
 ## 4. Dados sintéticos e fonte única de sessão
 
 - [ ] 4.1 Criar fábrica pura de 12 vendas sintéticas relativas à referência, com abertas/atrasadas/próximas/quitadas, com/sem entrada e nomes semelhantes; usar regras já implementadas e identificação demonstrativa não copiada de imagens ou entrevistas. Testar invariantes de todas as vendas, datas/pagamentos históricos válidos, sequência quitada sem lacunas, equivalência para mesma referência e isolamento de objetos; conferir manualmente a ausência de dados reais.
-- [ ] 4.2 Criar referência civil substituível em testes e `ServicoDemonstracao` raiz com agregado privado, projeções `computed`, consulta por ID e comandos internos de cadastro/recebimento; implementar publicação única e IDs locais sem colisão com o seed. Verificar com TestBed referência explícita, tipos de resultado/mensagens em português, sucesso único, consulta ausente versus vazio e avanço dos identificadores somente em comandos aceitos.
+- [ ] 4.2 Criar referência civil substituível em testes e `ServicoDemonstracao` raiz com agregado privado, projeções `computed`, consulta por ID e comandos internos de cadastro/recebimento, injetando `PreparadorRecebimento` conforme TDD 1.7/DEC-016; implementar publicação única e IDs locais sem colisão com o seed. Verificar com TestBed referência explícita, tipos de resultado/mensagens em português, sucesso único, consulta ausente versus vazio e avanço dos identificadores somente em comandos aceitos, inclusive em falhas posteriores/finais simuladas por doubles do adaptador.
 - [ ] 4.3 Aplicar cópia defensiva e congelamento recursivo dos objetos/arrays publicados e das consultas; testar tentativa de mutação externa, alteração posterior do rascunho, preservação do seed e de snapshots anteriores, erro sem consumir estado parcial e novo injetor com estado inicial independente. Verificar que `asReadonly()` não é a única proteção e que não há efeitos sincronizando cópias financeiras.
 - [ ] 4.4 Integrar inicialização na raiz em `app.ts` sem alterar HTML, foco, rotas ou providers das páginas; testar captura da referência na abertura, estabilidade ao atravessar meia-noite simulada e renovação em nova aplicação. Seguir o teste de tema com RouterTestingHarness para comprovar a mesma fonte após navegar por todos os destinos e preservar cadastro/lote aceitos internamente; host exclusivo de teste deve observar projeções zoneless com `whenStable`, sem detecção forçada.
 - [ ] 4.5 Registrar em `frontend/README.md` seed, ciclo de vida, contratos, resultados e limite dos testes de recriação versus recarga de navegador; executar formatação, build e unitários/componentes e E2E existentes nos dois viewports. Confirmar aviso/conteúdo indisponível/temas e ausência de rede de negócio/storage; criar commit individual coerente da fonte de sessão, seus testes e documentação, sem hooks globais/endpoints para E2E de negócio.
@@ -51,6 +53,25 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 - Não executados nesta etapa: instalação, formatação executável do frontend, build, testes unitários/componentes/E2E, validação manual de UI, medição, aprovação de produto ou operação de merge. O código e as specs principais permanecem intactos.
 
 ## Workflow follow-up
+
+### Atualização durante apply e revisão técnica
+
+- Autorização explícita de apply recebida; branch pertinente reutilizada. Grupos 1 e 2
+  concluídos com evidências no README: commits `7fb637d` e `d7b1a32`; normalização
+  LF autorizada em commit separado `1c321fa`. Última suíte integral aprovada antes
+  dos recebimentos: 102/102 em 9 arquivos, build e formatação saída 0.
+- Recebimentos parcialmente implementados, ainda sem commit. Primeira execução
+  não compilou por parametrização `it.each` de arrays; após autorização, corrigida.
+  Execução seguinte: 127/128 em 10 arquivos; falha de `vi.spyOn` por exportação
+  não redefinível, sem executar a falha de preparação planejada. Não há evidência
+  conclusiva de atomicidade nem marcação de conclusão do grupo 3.
+- Inspeção do runner instalado confirma proibição de mocks de imports relativos.
+  Após consulta Context7 de TestBed e aprovação individual dos artefatos, TDD 1.7,
+  proposal, design e tarefas passam a prever adaptador específico sem estado e
+  doubles TestBed. PRD e specs comportamentais preservados, sem redução de cenários.
+- Revisão documental não implementa a solução; retomar apply para concluir as
+  tarefas pendentes. Os próximos itens abaixo são orientações históricas do
+  planejamento original, não revogação da autorização de apply já recebida.
 
 - Apresentar estes artefatos para revisão; aguardar uma nova solicitação explícita de apply antes de implementar. Pendências de busca, edição, identificação, filtros e aceite permanecem fora do recorte.
 - Durante apply autorizado, manter planejamento, funcionalidades, testes e evidências na mesma feature branch, com commits individuais coerentes em português e sem staging de trabalho alheio.
