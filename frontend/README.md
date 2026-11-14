@@ -124,12 +124,22 @@ após aguardar a página renderizar; uma leitura imediata anterior à conclusão
 foi usada como resultado. Revisão visual de Quitadas e Configurações confirmou texto,
 aviso, tema, foco e leitura sem corte. Não é avaliação humana com tecnologia assistiva.
 
-**Zoom nativo a 200% não executado:** o atalho enviado ao navegador controlado não alterou
-o zoom (innerWidth 1366, devicePixelRatio 1 e visualViewport.scale 1 antes/depois). Foi
-oferecida verificação por CSS `zoom: 200%`; o solicitante preferiu manter o zoom nativo
-pendente, sem aceitar substituição. Portanto a tarefa 5.2 permanece aberta e **não abrir PR**
-até concluí-la. Não se alega conformidade a zoom 200%, homologação de navegadores/dispositivos
-reais ou aceite da ótica. Firefox, WebKit e leitor de tela não foram verificados.
+Na inspeção inicial, o zoom nativo a 200% não foi executado: o atalho enviado ao navegador
+controlado não alterou o zoom (innerWidth 1366, devicePixelRatio 1 e visualViewport.scale 1
+antes/depois). Foi oferecida verificação por CSS `zoom: 200%`; o solicitante preferiu manter
+pendente essa verificação nativa, sem aceitar substituição. A situação foi atualizada pelo
+relato manual abaixo. Isso não comprova homologação de navegadores/dispositivos reais ou
+aceite da ótica. Firefox, WebKit e leitor de tela não foram verificados.
+
+#### Complemento — relato manual de zoom nativo, 14/11/2026
+
+Após a inspeção acima, o solicitante confirmou ter aplicado 200% pelo controle nativo do
+navegador, sem CSS zoom ou DevTools. Relatou que os elementos permaneceram dentro da página,
+sem distorção nem barras laterais. Este resultado é evidência manual informada pelo
+solicitante, não uma medição independente nesta sessão. Combinado ao percurso assistido,
+teclado, foco, atalho, leitura sem corte e movimento reduzido registrados acima, conclui-se
+a verificação técnica desta tarefa no escopo observado. Isso não representa homologação
+de outros navegadores/dispositivos, teste com tecnologia assistiva ou aceite do produto.
 
 ### Rastreabilidade final e estado da entrega
 
