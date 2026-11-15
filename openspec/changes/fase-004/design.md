@@ -1,5 +1,13 @@
 # Design
 
+> Estado após retomada de apply em 15/11/2026: 18/21 tarefas. Adaptador e sessão
+> implementados, regressão limpa 143/143 e E2E 26/26. Pausa solicitada na revisão
+> final por lacuna do seed nas extremidades 0001/9999: histórico de três meses e
+> vencimentos de quatro meses podem extrapolar o calendário. Nenhuma nova restrição
+> ou exceção aprovada. Reabrir 4.1 e manter 5.2/5.3 pendentes; decidir primeiro no
+> PRD/TDD e então atualizar SDD antes de retomar a implementação. Evidências reais
+> em `frontend/README.md`; avaliação original abaixo permanece como histórico.
+
 > Complemento aprovado durante apply em 14/11/2026: TDD 1.7, DEC-016 refinada;
 > PRD 1.3 inalterado. Apply autorizado, 9/21 tarefas concluídas. As afirmações de
 > ausência de implementação/autorização abaixo pertencem ao planejamento original.

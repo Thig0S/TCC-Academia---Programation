@@ -6,6 +6,16 @@
 
 ## 1. Identificação e situação
 
+**Estado do apply em 15/11/2026:** núcleo de recebimentos e sessão implementados na
+`feature/fase-004` (commits `72fba45`/`17255d2`), com regressão limpa registrada em
+`frontend/README.md`: 143/143 testes e 26/26 E2E. Progresso 18/21; não é conclusão
+da FASE-004. Revisão final identificou que o seed usa três meses anteriores e quatro
+vencimentos futuros, podendo extrapolar 0001–9999 nas referências extremas. O
+solicitante escolheu pausar para revisão: nenhum limite adicional ou fallback foi
+aprovado, e a tarefa 4.1 foi reaberta. Resolver requisito no PRD antes de revisar o
+desenho e SDD; sem PR, merge, sync ou arquivamento nesta retomada. Os estados e
+avaliações anteriores abaixo são históricos, não evidência de entrega integral.
+
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
 - **Data e revisão:** 14/11/2026, revisão 1.7.
