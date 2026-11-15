@@ -73,6 +73,32 @@ reexecutados com saída 0; 102/102 testes em 9 arquivos, build 467,06 kB/87,48 k
 Warning Sass mantido. Diff limitado aos modelos, cálculos, preparação, testes e
 documentação/tarefas; nenhuma alteração em páginas, rotas, manifesto ou lockfile.
 
+### Recebimentos sequenciais — retomada em 15/11/2026
+
+Novo pedido explícito de apply reutiliza PRD 1.3/TDD 1.7 e a branch limpa
+`feature/fase-004`. `selecionarParcelas` exige um prefixo não vazio das pendentes,
+sem duplicatas, saltos ou IDs de outra venda; ordem textual não muda a ordem canônica.
+`prepararPagamento` revalida o estado atual, exige soma integral, data entre venda e
+referência e uma das quatro formas aprovadas. Cria um recebimento com alocações, sem
+publicação, parcialidade, juros, descontos ou dados bancários/cartão.
+
+Conforme DEC-016, operações tipadas têm padrão puro; `PreparadorRecebimento` é um
+adaptador raiz sem estado, relógio ou IDs próprios. Métodos delegam à alocação e
+validação final puras. Doubles de métodos da instância TestBed substituem os spies
+de exports relativos, sem trocar runner/dependências. Falha na segunda alocação e
+na validação final retorna `falha-preparacao-lote`, mantém snapshot completo e
+permite nova tentativa. Repetição/seleção obsoleta retorna `selecao-nao-sequencial`;
+ausência retorna `venda-inexistente`; valor diferente retorna `valor-nao-integral`.
+Mensagens são em português. Publicação e contador ainda dependem do grupo 4.
+
+Verificação real do grupo: `npm.cmd test -- --watch=false`, saída 0, 128/128 testes
+em 10 arquivos; `npm.cmd run build`, saída 0, 467,06 kB iniciais/87,48 kB estimados.
+Aviso Sass `@import` preexistente mantido. Formatação dos arquivos de pagamentos
+corrigida com Prettier; nenhuma UI, rota, dependência ou controle de falha acrescentado.
+Context7 Angular/TestBed consultado nesta retomada para doubles de serviços.
+`npm.cmd run format:check`: saída 0. Diff revisado restrito à preparação, seus
+testes, adaptador e documentação; falhas artificiais existem somente no spec.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
