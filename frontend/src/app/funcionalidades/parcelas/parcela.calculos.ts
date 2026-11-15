@@ -1,11 +1,16 @@
 import { ordinalCivil } from '../vendas/data-civil';
-import { PagamentoDemonstrativo, FormaPagamento } from './pagamento.modelos';
+import { PagamentoDemonstrativo, FormaPagamento, AlocacaoPagamento } from './pagamento.modelos';
+import { validarCentavos } from '../vendas/dinheiro';
 import { Parcela, SituacaoParcela } from './parcela.modelos';
 
 export interface ProjecaoParcela extends Parcela {
   readonly situacao: SituacaoParcela;
   readonly dataPagamento: string | null;
   readonly formaPagamento: FormaPagamento | null;
+}
+
+export function prepararAlocacao(parcela: Parcela): AlocacaoPagamento {
+  return { parcelaId: parcela.id, valorCentavos: validarCentavos(parcela.valorCentavos) };
 }
 
 export function projetarParcela(
