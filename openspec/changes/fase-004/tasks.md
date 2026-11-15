@@ -60,7 +60,8 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
   concluídos com evidências no README: commits `7fb637d` e `d7b1a32`; normalização
   LF autorizada em commit separado `1c321fa`. Última suíte integral aprovada antes
   dos recebimentos: 102/102 em 9 arquivos, build e formatação saída 0.
-- Recebimentos parcialmente implementados, ainda sem commit. Primeira execução
+- Recebimentos parcialmente implementados; à época desta atualização ainda sem commit,
+  posteriormente versionados em `14077ca` em 15/11/2026. Primeira execução
   não compilou por parametrização `it.each` de arrays; após autorização, corrigida.
   Execução seguinte: 127/128 em 10 arquivos; falha de `vi.spyOn` por exportação
   não redefinível, sem executar a falha de preparação planejada. Não há evidência
@@ -72,6 +73,44 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 - Revisão documental não implementa a solução; retomar apply para concluir as
   tarefas pendentes. Os próximos itens abaixo são orientações históricas do
   planejamento original, não revogação da autorização de apply já recebida.
+
+### Avaliação e próximos passos — 15/11/2026
+
+Revisão documental solicitada e confirmada pelo Harness, reutilizando a Change e a
+branch `feature/fase-004`, inicialmente limpa. Não cria Change concorrente, novas
+regras ou autorização para implementar nesta etapa. PRD 1.3/TDD 1.7 reutilizados;
+specs comportamentais revisadas sem necessidade de alteração. Progresso permanece
+9/21: presença de código ou commit não equivale à conclusão dos critérios do grupo.
+
+| Ordem | Tarefas existentes | Entrega e condição para avançar |
+| --- | --- | --- |
+| 1 | 3.3, revalidando 3.1/3.2 | Implementar a fronteira tipada e `PreparadorRecebimento` conforme TDD 1.7; substituir spies relativos por doubles; comprovar erro posterior/final, snapshot preservado e nova tentativa, sem retirar cenários |
+| 2 | 3.4 | Corrigir formatação dos dois arquivos de pagamentos; executar formatação/build/suíte; registrar contrato e resultados no README e tarefas; commit coerente da conclusão do grupo, sem reescrever o commit parcial |
+| 3 | 4.1 | Seed puro de 12 vendas sintéticas, válido e isolado, usando o domínio estabilizado |
+| 4 | 4.2/4.3 | Referência substituível e serviço raiz, cópia defensiva/congelamento, publicação única e IDs que só avançam no sucesso; testar falhas com o adaptador |
+| 5 | 4.4/4.5 | Inicialização em App e testes de navegação, referência estável e recriação; preservar UI e executar regressões do grupo, com documentação e commit próprios |
+| 6 | 5.1–5.3 | Instalação limpa e regressão integral, reconciliação e rastreabilidade; único PR somente com todo o escopo concluído; sem merge automático |
+
+Achados observados: `prepararPagamento` ainda chama diretamente as funções de
+alocação e projeção final, sem operações substituíveis; o teste usa `vi.spyOn` de
+exports relativos. Não há diretório `nucleo/demonstracao/` e App ainda não inicializa
+fonte financeira. Preparação pura não comprova publicação atômica, contador ou
+imutabilidade profunda da futura sessão. Nenhuma dessas pendências autoriza telas
+comerciais, persistência, dependências ou novas regras.
+
+Evidências em `frontend/`, estado correspondente a `14077ca`:
+- Execução imediatamente anterior nesta conversa: `npm test -- --watch=false`,
+  saída 1, 127 aprovados/1 falhou, 10 arquivos. Erro `Cannot redefine property:
+  prepararAlocacao` no spy; o cenário de falha controlada não chegou a ser exercitado.
+- Nesta avaliação: `npm.cmd run format:check`, saída 1, problemas em
+  `pagamento.validacoes.ts` e `pagamento.validacoes.spec.ts`; não corrigidos nesta
+  etapa exclusivamente documental.
+- Nesta avaliação: `npm.cmd run build`, saída 0, 467,06 kB iniciais e 87,48 kB de
+  transferência estimada, aviso Sass preexistente. Não comprova integração do domínio,
+  ainda não consumido por App.
+- Instalação limpa, E2E e validação comercial não reexecutados nesta avaliação.
+  Resultados anteriores do README permanecem históricos. Nenhuma tarefa adicional
+  marcada como concluída; nenhum PR antecipado, sync ou arquivamento autorizado.
 
 - Apresentar estes artefatos para revisão; aguardar uma nova solicitação explícita de apply antes de implementar. Pendências de busca, edição, identificação, filtros e aceite permanecem fora do recorte.
 - Durante apply autorizado, manter planejamento, funcionalidades, testes e evidências na mesma feature branch, com commits individuais coerentes em português e sem staging de trabalho alheio.
