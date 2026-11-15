@@ -151,6 +151,47 @@ navegador. E2E continua regressão visual/estrutural: não há hooks globais, en
 formulários ou ações de negócio nesta fase. CA-018/021 completos, UI dos demais CA
 e aceite da ótica continuam dependentes das fases seguintes; não há persistência.
 
+### Regressão limpa e pausa para revisão — 15/11/2026
+
+Ambiente reconferido: Windows 11 Home 10.0.26200 64 bits, Node 24.21.0,
+npm 11.19.0; versões do manifesto/lockfile preservadas. A primeira tentativa de
+`npm.cmd ci` saiu 1, EBUSY nos arquivos Sass: servidor preexistente em 4301 mantinha
+dart.exe aberto. Após autorização explícita, reconferidos e encerrados somente
+ng serve PID 18332 e seus filhos esbuild 20080/dart 6396 deste projeto. Sem remoção
+manual de pastas, aprovação de scripts ou bypass de peers. Execuções posteriores:
+
+| Comando em `frontend/`          | Saída | Resultado real                                                              |
+| ------------------------------- | ----- | --------------------------------------------------------------------------- |
+| `npm.cmd ci`                    | 0     | 289 pacotes instalados; auditoria automática: 0 vulnerabilidades reportadas |
+| `npm.cmd run format:check`      | 0     | Prettier aprovado                                                           |
+| `npm.cmd run build`             | 0     | 479,89 kB iniciais, transferência estimada 91,39 kB                         |
+| `npm.cmd test -- --watch=false` | 0     | 143/143 testes em 13 arquivos                                               |
+| `npm.cmd run test:e2e`          | 0     | 26/26, 13 por viewport, configuração padrão/servidor próprio em 4200        |
+
+Budgets preservados: inicial aviso 500 kB/erro 1 MB; estilo por componente aviso
+4 kB/erro 8 kB. Sem aviso de budget; Sass `@import` depreciado permanece. npm avisa
+scripts não aprovados de @parcel/watcher, esbuild, lmdb e msgpackr-extract; nenhum
+foi aprovado automaticamente. Auditoria automática não é certificação de segurança.
+E2E verificou aviso, navegação, foco, temas, contraste, indisponibilidade comercial,
+ausência de console/pageerror inesperado, APIs de negócio ou persistência observada.
+
+**Bloqueio da revisão final:** o seed usa três meses de histórico e quatro de
+vencimentos futuros. Por inspeção, referências próximas ao início/fim de 0001–9999
+podem ultrapassar o calendário nas funções puras; por exemplo, 0001-01-01 não tem
+histórico anterior e 9999-12-31 não permite quatro vencimentos futuros. As cinco
+referências testadas não comprovam essas extremidades. Não foi executado teste
+adicional dessas bordas nem definido um novo limite ou fallback silencioso.
+
+O solicitante escolheu **pausar para revisão**, sem aceitar restringir a referência
+do seed ou dispensar situações nas bordas. Tarefa 4.1 reaberta; 5.2/5.3 pendentes.
+As implementações e resultados acima continuam parciais, não aceite integral.
+Próximo passo: decidir o comportamento, atualizar primeiro PRD/TDD e depois SDD,
+adicionar testes de borda e repetir as verificações afetadas em apply autorizado.
+Nenhuma UI comercial, edição, busca, persistência ou dependência nova incluída.
+Não foram executados aceite da ótica, UI das FASE-005/006/007, Firefox/WebKit,
+homologação de dispositivos, cobertura percentual ou desempenho de negócio.
+CA-018/021 completos continuam pendentes. Sem PR antecipado, merge, sync ou arquivo.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch

@@ -1,5 +1,13 @@
 # Proposal
 
+> Retomada de apply em 15/11/2026: 18/21 tarefas concluídas. Recebimentos e fonte
+> de sessão implementados nos commits `72fba45`/`17255d2`; regressão limpa aprovada
+> (143 testes e 26 E2E), com evidências no README. Revisão final identificou lacuna
+> do seed nas extremidades do calendário; tarefa 4.1 reaberta, 5.2/5.3 pendentes.
+> O solicitante escolheu pausar para revisão, sem definir limite ou fallback.
+> Não abrir PR enquanto o comportamento não for decidido, especificado e verificado.
+> As avaliações e próximos passos abaixo são históricos; não comprovam conclusão.
+
 > Avaliação em 15/11/2026: 9/21 tarefas concluídas. Utilitários e domínio de vendas
 > implementados; recebimentos parciais versionados em `14077ca`, ainda sem o
 > `PreparadorRecebimento` e as operações substituíveis previstos no TDD 1.7/DEC-016.

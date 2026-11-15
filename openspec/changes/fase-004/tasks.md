@@ -1,5 +1,17 @@
 # Tasks
 
+**Estado atual — 15/11/2026: 18/21.** Apply retomado por solicitação explícita;
+recebimentos concluídos em `72fba45`, fonte de sessão em `17255d2`. Instalação limpa,
+formatação/build, 143 unitários/componentes e 26 E2E aprovados; detalhes e falhas
+incrementais no README. Revisão final encontrou lacuna do seed nas extremidades do
+calendário. Solicitante escolheu pausar para revisão, sem limite/fallback aprovado;
+4.1 reaberta, 5.2/5.3 pendentes. Nenhum PR antecipado. Progresso abaixo é histórico.
+
+Na pausa, `openspec validate fase-004 --strict`, `git diff --check` e formatação
+reexecutados com saída 0 (Git apenas avisa LF/CRLF nos documentos da raiz). Essas
+verificações estruturais não resolvem a lacuna do seed nem concluem 5.3. Nenhuma
+alteração de manifesto/lockfile, HTML, rota ou configuração E2E permaneceu no diff.
+
 Planejamento de 14/11/2026, seguido de apply explicitamente autorizado e revisão
 técnica aprovada durante a execução. Progresso: 9/21; as caixas restantes não
 representam implementação comprovada. Referências: PRD 1.3
@@ -32,7 +44,7 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 
 ## 4. Dados sintéticos e fonte única de sessão
 
-- [x] 4.1 Criar fábrica pura de 12 vendas sintéticas relativas à referência, com abertas/atrasadas/próximas/quitadas, com/sem entrada e nomes semelhantes; usar regras já implementadas e identificação demonstrativa não copiada de imagens ou entrevistas. Testar invariantes de todas as vendas, datas/pagamentos históricos válidos, sequência quitada sem lacunas, equivalência para mesma referência e isolamento de objetos; conferir manualmente a ausência de dados reais.
+- [ ] 4.1 Criar fábrica pura de 12 vendas sintéticas relativas à referência, com abertas/atrasadas/próximas/quitadas, com/sem entrada e nomes semelhantes; usar regras já implementadas e identificação demonstrativa não copiada de imagens ou entrevistas. Testar invariantes de todas as vendas, datas/pagamentos históricos válidos, sequência quitada sem lacunas, equivalência para mesma referência e isolamento de objetos; conferir manualmente a ausência de dados reais.
 - [x] 4.2 Criar referência civil substituível em testes e `ServicoDemonstracao` raiz com agregado privado, projeções `computed`, consulta por ID e comandos internos de cadastro/recebimento, injetando `PreparadorRecebimento` conforme TDD 1.7/DEC-016; implementar publicação única e IDs locais sem colisão com o seed. Verificar com TestBed referência explícita, tipos de resultado/mensagens em português, sucesso único, consulta ausente versus vazio e avanço dos identificadores somente em comandos aceitos, inclusive em falhas posteriores/finais simuladas por doubles do adaptador.
 - [x] 4.3 Aplicar cópia defensiva e congelamento recursivo dos objetos/arrays publicados e das consultas; testar tentativa de mutação externa, alteração posterior do rascunho, preservação do seed e de snapshots anteriores, erro sem consumir estado parcial e novo injetor com estado inicial independente. Verificar que `asReadonly()` não é a única proteção e que não há efeitos sincronizando cópias financeiras.
 - [x] 4.4 Integrar inicialização na raiz em `app.ts` sem alterar HTML, foco, rotas ou providers das páginas; testar captura da referência na abertura, estabilidade ao atravessar meia-noite simulada e renovação em nova aplicação. Seguir o teste de tema com RouterTestingHarness para comprovar a mesma fonte após navegar por todos os destinos e preservar cadastro/lote aceitos internamente; host exclusivo de teste deve observar projeções zoneless com `whenStable`, sem detecção forçada.
@@ -40,7 +52,7 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 
 ## 5. Verificação integrada da Change
 
-- [ ] 5.1 Executar instalação limpa e regressão em `frontend/`: `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; registrar códigos de saída, contagens reais, ambiente, budget e warnings. Preservar servidor alheio em porta ocupada e usar somente servidor próprio conforme configuração, sem aprovar scripts ou contornar peers silenciosamente.
+- [x] 5.1 Executar instalação limpa e regressão em `frontend/`: `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; registrar códigos de saída, contagens reais, ambiente, budget e warnings. Preservar servidor alheio em porta ocupada e usar somente servidor próprio conforme configuração, sem aprovar scripts ou contornar peers silenciosamente.
 - [ ] 5.2 Revisar em conjunto seed, cadastro interno, entrada e recebimentos em lote antes/depois da quitação; reconciliar todas as projeções e períodos em centavos, repetir erro/duplicidade e recriação de sessão. Registrar evidências integradas e distinguir os contratos de domínio cobertos dos CA de UI ainda dependentes das FASE-005/006/007; não declarar CA-018/021 completos nem aceite da ótica por esses testes.
 - [ ] 5.3 Executar na raiz `openspec validate fase-004 --strict` e `git diff --check`, revisar diff e rastreabilidade PRD → TDD → SDD, tarefas e README conforme verificações reais; conferir que nenhuma alteração de dependência, interface comercial, persistência, edição ou regra ainda pendente foi incluída. Confirmar commits individuais por funcionalidade e escopo integral concluído antes de apresentar o único PR desta Change, nunca um PR só de planejamento.
 
