@@ -99,6 +99,58 @@ Context7 Angular/TestBed consultado nesta retomada para doubles de serviços.
 `npm.cmd run format:check`: saída 0. Diff revisado restrito à preparação, seus
 testes, adaptador e documentação; falhas artificiais existem somente no spec.
 
+### Dados sintéticos e fonte de sessão — 15/11/2026
+
+`criarDadosDemonstrativos(referencia)` cria 12 vendas inventadas, com marcadores
+`Cliente DEMO`, `CPF-DEMO` e `TEL-DEMO`, nomes semelhantes, entrada opcional e
+situações Em aberto/Próximos dias/Atrasada/Quitada. Usa calendário mensal e as
+preparações puras aprovadas, com namespace `seed/`. Os testes conferem invariantes,
+histórico sequencial, cinco referências (incluindo fevereiro bissexto e dias 31),
+equivalência e isolamento. Revisão do fonte confirmou ausência de dados de pessoas,
+imagens ou entrevistas. Datas históricas são anteriores à referência; liquidações
+antecipadas obedecem ao intervalo venda–referência.
+
+`ServicoDemonstracao` raiz contém agregado privado (referência/vendas/próximo ID).
+`vendas`, `abertas`, `quitadas` e `resumo` são computed; consultas por ID e período
+distinguem ausência de coleção vazia. `cadastrarVenda` e `registrarPagamento` são
+síncronos e internos. O adaptador é injetado; somente o serviço publica, com um
+`set` após preparação, validação financeira e congelamento. IDs `sessao/` avançam
+apenas no sucesso, inclusive após falhas posteriores/finais e overflow. Entrada e
+recebimento somam uma vez; parcelas pagas vêm das alocações, não da entrada.
+
+Rascunhos, estado e projeções são copiados defensivamente; objetos/arrays próprios
+são congelados recursivamente. Testes usam `Reflect.set` contra cliente, entrada,
+parcela, alocação e coleção; alterações externas não modificam a sessão nem snapshots
+anteriores. Novo TestBed/injetor restaura seed e contador independentes. Não há
+effects de sincronização, storage, HTTP, temporizador de referência ou providers
+por página. O token `REFERENCIA_DEMONSTRACAO` captura a data local ao criar a fonte;
+App injeta a fonte na abertura sem alterar HTML, navegação ou foco.
+
+Integração: RouterTestingHarness percorre todos os destinos preservando instância,
+cadastro e lote; host exclusivo de teste observa uma atualização coerente por comando
+aceito com `whenStable`, sem `detectChanges`. App é criado em 31/01 às 23:59;
+primeira consulta após 01/02 mantém 31/01; nova aplicação usa 01/02 e descarta mutações.
+Houve timeout incremental (142/143) com timers falsos completos. Após pausa e correção
+autorizada, apenas Date é simulado (`toFake: ['Date']`), mantendo agendamento real e
+timeout original: 143/143 em 13 arquivos, saída 0. Context7 Angular e Vitest consultados.
+
+Build do grupo: saída 0, 479,89 kB iniciais/91,39 kB estimados, abaixo do aviso 500 kB;
+Sass `@import` permanece. E2E padrão: saída 0, 26/26 (13 por viewport), preservando
+aviso, indisponibilidade, temas, foco, contraste, rede somente local e storage vazio.
+Portas 4200/4301 estavam ocupadas; override temporário 4302 abortou antes de testes
+por combinação dos servidores na configuração. Foi removido. O solicitante escolheu
+4200 padrão e autorizou encerrar especificamente PIDs 3332/5968 do projeto nove-mil;
+identidades reconferidas antes de encerrá-los. A execução aprovada usou servidor
+próprio do runner em 4200, `reuseExistingServer: false`, sem reutilizar outro servidor.
+
+`npm.cmd run format:check` e `git diff --check`: saída 0; diff revisado sem alteração
+de páginas, HTML, rotas, manifesto ou lockfile. Porta 4200 sem listener após o E2E.
+
+Limites: recriação da sessão financeira é verificada no TestBed, não por mutação via
+navegador. E2E continua regressão visual/estrutural: não há hooks globais, endpoints,
+formulários ou ações de negócio nesta fase. CA-018/021 completos, UI dos demais CA
+e aceite da ótica continuam dependentes das fases seguintes; não há persistência.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch

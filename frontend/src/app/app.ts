@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barra-navegacao';
 import { ServicoTema } from './nucleo/configuracao/servico-tema';
+import { ServicoDemonstracao } from './nucleo/demonstracao/servico-demonstracao';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ import { ServicoTema } from './nucleo/configuracao/servico-tema';
 })
 export class App {
   protected readonly servicoTema = inject(ServicoTema);
+  private readonly demonstracao = inject(ServicoDemonstracao);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
