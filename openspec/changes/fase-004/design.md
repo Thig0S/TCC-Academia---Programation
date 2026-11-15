@@ -5,11 +5,46 @@
 > ausência de implementação/autorização abaixo pertencem ao planejamento original.
 > O adaptador de preparação definido nesta revisão ainda aguarda implementação.
 
+> Avaliação de 15/11/2026: recebimentos parciais agora estão no commit `14077ca`;
+> mantêm-se 9/21 tarefas comprovadas. Esta revisão é somente documental, sem retomada
+> de apply. PRD 1.3/TDD 1.7 e as três specs permanecem como base, sem novas decisões.
+
 ## Context
 
 Motivação e escopo estão em `proposal.md`. Este desenho aplica PRD 1.3 e TDD 1.6,
 especialmente DEC-004/005/008/011/015/016, às três capacidades novas desta Change.
-É planejamento: não há código financeiro implementado nem autorização de apply.
+O desenho original abaixo deve ser lido junto ao diagnóstico atual: há código
+financeiro parcial e autorização histórica de apply, mas esta revisão não o executa.
+
+### Implementation Assessment — 15/11/2026
+
+| Área | Observado | Próximo passo verificável |
+| --- | --- | --- |
+| Dinheiro, datas e vendas | Funções puras, modelos, cadastro, invariantes, projeções e períodos; evidências anteriores de 102/102 testes no README | Preservar contratos e repetir regressão ao concluir os grupos restantes |
+| Recebimentos | `selecionarParcelas` valida prefixo pendente; `prepararPagamento` confere soma/data/forma, cria nova venda e chama `projetarVendas`; commit `14077ca` | Concluir operações substituíveis e adaptador conforme decisão 4 abaixo; comprovar falhas e nova tentativa |
+| Teste de atomicidade | `pagamento.validacoes.spec.ts` usa spies de exports relativos; falha em `prepararAlocacao` antes da injeção controlada | Substituir o mecanismo sem retirar cenários ou mudar runner |
+| Sessão | Sem `nucleo/demonstracao/`; App injeta tema, não fonte financeira | Executar grupo 4 após estabilizar recebimentos, com seed, referência, serviço e integração |
+| Encerramento | Grupos 3 a 5 sem conclusão comprovada | Evidências por funcionalidade e regressão integral antes de PR |
+
+`prepararPagamento` ainda recebe apenas vendas, comando, referência e ID; suas
+chamadas diretas de `prepararAlocacao` e `projetarVendas` não implementam a fronteira
+de operações tipadas descrita no TDD 1.7. Não é necessária outra arquitetura: aplicar
+o desenho já aprovado e verificar os mesmos cenários. A função constrói cópias da
+venda afetada, mas compartilha referências não alteradas; isso não é uma consulta
+profundamente imutável nem publicação de sessão. Cópia defensiva, congelamento,
+contador e publicação única continuam responsabilidades do futuro serviço raiz.
+
+Verificações desta avaliação: build saída 0, 467,06 kB iniciais, transferência
+estimada 87,48 kB, aviso Sass `@import`; formatação saída 1 nos dois arquivos de
+validação de pagamentos. Execução imediatamente anterior na conversa: 127/128
+testes em 10 arquivos, falha `Cannot redefine property: prepararAlocacao` no spy.
+Não concluir atomicidade a partir dessa falha, nem inclusão do domínio no bundle
+a partir do build. Instalação limpa e E2E não reexecutados nesta revisão.
+
+Consulta documental de apoio: Context7 `/websites/angular_dev`,
+`https://angular.dev/api/core/testing/TestBed` e guia de testes de serviços,
+15/11/2026, confirma substituição por `useValue`/`overrideProvider`. É suporte ao
+desenho existente, não comprovação de execução no patch instalado.
 
 Inspeção local de 14/11/2026:
 - `frontend/src/app/app.ts` já injeta tema e gerencia foco/navegação; `app.config.ts`
