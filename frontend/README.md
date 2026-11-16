@@ -1,5 +1,30 @@
 # Base técnica — Vendas em Aberto
 
+## Apply FASE-005 — busca de vendas
+
+Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.
+Ela filtra somente a coleção recebida, mantém a ordem e combina a situação opcional por E.
+Nome e marcadores textuais são comparados sem distinção de caixa/diacríticos; CPF e telefone
+também aceitam consulta numérica ignorando pontuação, sem aceitar sequência vazia nem retirar
+letras de termos mistos. Um termo completo `DD/MM/AAAA` tem precedência exclusiva e compara
+somente `dataVenda`, após validação com `interpretarDataCivil` (calendário gregoriano 0001–9999).
+Data completa inválida retorna vazio, sem exceção ou fallback numérico; data parcial não é
+tratada como data. A busca não altera objetos nem coleções.
+
+Verificação incremental em 16/11/2026, Windows, Node 24.21.0/npm 11.19.0; dependências
+exatas existentes mantidas (Angular 22.2.6, TypeScript 6.0.3, Vitest 5.1.0):
+
+| Comando em `frontend/`          | Saída | Resultado real                                      |
+| ------------------------------- | ----- | --------------------------------------------------- |
+| `npm.cmd run format`            | 0     | Prettier executado                                  |
+| `npm.cmd run build`             | 0     | 480,18 kB iniciais; transferência estimada 91,57 kB |
+| `npm.cmd test -- --watch=false` | 0     | 162/162 testes em 14 arquivos                       |
+
+O build mantém o aviso existente de depreciação de Sass `@import`; budgets e dependências não
+foram alterados. Os testes novos cobrem situação, nome, identificadores, busca numérica,
+entradas inválidas, datas bissextas/extremas, ordem e ausência de mutação. Isso não verifica
+interface, navegação ou aceitação comercial.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
