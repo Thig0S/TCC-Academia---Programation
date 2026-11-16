@@ -58,10 +58,12 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
 });
 
-test('páginas comerciais explicam indisponibilidade sem consulta ou ações fictícias', async ({
+test('Visão Geral e Relatórios explicam indisponibilidade sem consulta ou ações fictícias', async ({
   page,
 }) => {
-  for (const [rota, titulo] of destinos.filter(([rota]) => rota !== '/configuracoes')) {
+  for (const [rota, titulo] of destinos.filter(([rota]) =>
+    ['/visao-geral', '/relatorios'].includes(rota),
+  )) {
     await page.goto(rota);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
     await expect(page.getByRole('main')).toContainText(/nenhuma consulta foi realizada/i);
@@ -70,6 +72,85 @@ test('páginas comerciais explicam indisponibilidade sem consulta ou ações fic
     await expect(page.getByRole('button')).toHaveCount(1);
     await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|\d/);
   }
+});
+
+test('consulta listas, combina critérios e abre a venda correta pelos dois acessos', async ({
+  page,
+}) => {
+  await page.goto('/vendas');
+  const busca = page.getByRole('searchbox', { name: /Buscar por nome/ });
+  const situacao = page.getByLabel('Filtrar por situação');
+  const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
+  const primeiraLinha = tabela.locator('tbody tr').first();
+  const nome = (await primeiraLinha.locator('th').innerText()).trim();
+  const data = (await primeiraLinha.locator('td').nth(0).innerText()).trim();
+  const situacaoLinha = (await primeiraLinha.locator('td').nth(5).innerText()).trim();
+  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  for (const termo of [nome.slice(-5), 'CPF-DEMO-1', 'TEL-DEMO-1', data]) {
+    await busca.fill(termo);
+    await expect(tabela.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+    await expect(tabela.locator('tbody')).toContainText(nome);
+    await busca.fill('');
+  }
+
+  await situacao.selectOption(situacaoLinha);
+  await busca.fill(nome.slice(-5));
+  await expect(tabela.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+  await expect(tabela.locator('tbody')).toContainText(situacaoLinha);
+  await page.getByRole('button', { name: 'Limpar pesquisa' }).click();
+  await expect(situacao).toHaveValue(situacaoLinha);
+  await expect(busca).toBeFocused();
+  await busca.fill('sem-correspondencia');
+  await page.getByRole('button', { name: 'Limpar critérios' }).click();
+  await expect(situacao).toHaveValue('Todas');
+  await expect(busca).toBeFocused();
+
+  await primeiraLinha
+    .getByRole('link', { name: new RegExp(`Abrir detalhes da venda de ${nome}`) })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
+  await expect(page.getByRole('main')).toContainText(nome);
+  await page.goto('/vendas');
+  await page
+    .getByRole('table', { name: 'Vendas em aberto' })
+    .locator('tbody tr')
+    .first()
+    .getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) })
+    .click();
+  await expect(page.getByRole('main')).toContainText(nome);
+
+  await page.goto('/vendas/quitadas');
+  const tabelaQuitadas = page.getByRole('table', { name: 'Vendas quitadas' });
+  await expect(page.getByLabel(/Buscar por nome/)).toBeVisible();
+  await expect(page.getByLabel(/Filtrar por situação/)).toHaveCount(0);
+  const linhaQuitada = tabelaQuitadas.locator('tbody tr').first();
+  const nomeQuitado = (await linhaQuitada.locator('th').innerText()).trim();
+  const dataQuitada = (await linhaQuitada.locator('td').nth(0).innerText()).trim();
+  const buscaQuitadas = page.getByRole('searchbox', { name: /Buscar por nome/ });
+  await linhaQuitada
+    .getByRole('link', { name: new RegExp(`Abrir detalhes da venda de ${nomeQuitado}`) })
+    .click();
+  const cpfQuitado = (
+    await page.locator('dt').filter({ hasText: /^CPF$/ }).locator('+ dd').innerText()
+  ).trim();
+  const telefoneQuitado = (
+    await page
+      .locator('dt')
+      .filter({ hasText: /^Telefone$/ })
+      .locator('+ dd')
+      .innerText()
+  ).trim();
+  await page.goto('/vendas/quitadas');
+  for (const termo of [nomeQuitado.slice(-5), cpfQuitado, telefoneQuitado, dataQuitada]) {
+    await buscaQuitadas.fill(termo);
+    await expect(tabelaQuitadas.locator('tbody tr').filter({ hasText: nomeQuitado })).toHaveCount(
+      1,
+    );
+    await expect(tabelaQuitadas.locator('tbody')).toContainText(nomeQuitado);
+    await buscaQuitadas.fill('');
+  }
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+  await expect(page.getByRole('main')).not.toContainText(/cadastrar|editar|pagar|exportar/i);
 });
 
 test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no contexto de Vendas', async ({

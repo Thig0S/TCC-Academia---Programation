@@ -8,6 +8,16 @@ a,
 button {
   touch-action: manipulation;
 }
+.botao-consulta {
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-secondary-color);
+  background-color: transparent;
+}
+.botao-consulta:hover {
+  color: var(--bs-body-bg);
+  border-color: var(--bs-body-color);
+  background-color: var(--bs-body-color);
+}
 :focus-visible,
 h1:focus,
 main:focus {
