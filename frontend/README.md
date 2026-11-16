@@ -153,6 +153,34 @@ Budgets inalterados: bundle inicial aviso 500 kB/erro 1 MB e estilos por compone
 `reuseExistingServer: false`, servidor próprio em 4200 e o encerrou ao terminar; nenhum
 processo alheio foi reutilizado ou encerrado nesta regressão final.
 
+### Rastreabilidade e limites — conclusão 5.3 da FASE-005
+
+Em 16/11/2026, após consolidação autorizada, `fase-004` foi arquivada em
+`openspec/changes/archive/2026-11-16-fase-004/`; suas três capabilities foram sincronizadas
+para `openspec/specs/`. Em seguida, as três deltas da FASE-005 foram reconciliadas: criada a
+spec principal `consulta-vendas`, atualizadas as três requirements modificadas de
+`navegacao-aplicacao`, e atualizada `Núcleo sem promessa de interface comercial` em
+`estado-demonstrativo`, preservando os demais requisitos de ambas as specs existentes.
+`openspec validate --specs` passou em 7/7 specs e `openspec validate fase-005 --strict` saiu 0.
+
+Rastreabilidade revisada: PRD 1.5/RF-002/003/005/008/RN-018/019/CA-002/003/004/005/010/014/
+018/019/020/025/026 → TDD 1.9/FASE-005/DEC-017 → deltas `consulta-vendas`,
+`estado-demonstrativo` e `navegacao-aplicacao` → testes puros de busca, TestBed de listas/
+detalhe/fonte, rotas e projeções, e E2E `demonstracao-inicial.spec.ts`. A regressão cobre
+consultas e limpeza, combinação por E, cartões globais, vazio/sem resultado, duas coleções,
+detalhe por nome/Visualizar/URL opaca e recarga, foco/teclado, contraste/temas, viewports
+1366×768 e 390×844, referência e reinicialização, ausência de console inesperado, cookies,
+storage e tráfego externo. Percurso de 200% permanece apenas como relato manual acima.
+
+**Limites de aceite:** CA-026 e os aspectos de consulta de CA-002/003/004/005/010/014/018/019/
+020/025 têm evidência técnica nos testes descritos; isso não equivale a aceite de produto ou
+da ótica. Itens de mutação de CA-002/003/010/011–017/021 e operações futuras permanecem fora
+da interface desta fase; o comando de cadastro/pagamento no teste TestBed é integração interna,
+não fluxo de usuário. Integração com backend/serviços reais, homologação em Firefox/WebKit,
+leitor de tela/tecnologia assistiva e avaliação da ótica não foram executados. O efeito e2e
+não testa comportamento de persistência financeira real, pois a fonte é intencionalmente em
+memória. Não há dependência de serviço externo para a consulta demonstrativa.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
