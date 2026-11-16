@@ -22,8 +22,10 @@ Observado em 16/11/2026:
 - Angular/Router 22.2.6, Bootstrap 5.3.9, TypeScript 6.0.3, Vitest 5.1.0 e
   Playwright 1.65.0 fixados; não há `@angular/forms`, nem motivo para instalá-lo
   para um campo nativo de pesquisa. Formulários de negócio permanecem na FASE-006.
-- PR #7 mesclado na main. Evidências anteriores: 156 testes/26 E2E e build aprovados;
-  não são execução desta Change. A 004 continua ativa e não será modificada aqui.
+- A main local/remota aponta para `1f184e3`; o plano anterior registra PR #7 mesclado
+  e 156 testes/26 E2E aprovados, sem nova consulta ao GitHub ou execução nesta revisão.
+  A 004 continua ativa nesta base. Seu arquivamento existe em outra branch (`94559ed`),
+  que não será incorporada ou modificada aqui.
 
 ## Goals / Non-Goals
 
@@ -56,7 +58,7 @@ reatividade, mas páginas não o chamam e produção não oferece acesso global.
 
 ```text
 ServicoDemonstracao (raiz, existente)
-  |-- abertas --> Lista abertas --> busca pura --> tabela
+  |-- abertas --> Lista abertas --> busca E situacao --> tabela
   |-- quitadas -> Lista quitadas -> busca pura --> tabela
   |-- resumo ----------------------------------> cartoes em Vendas
   |-- consultarVenda(id) -----------------------> detalhe + parcelas
@@ -66,11 +68,14 @@ ServicoDemonstracao (raiz, existente)
 ### 2. Pesquisa pura e estado local — PRD/RN-018/019
 
 Acrescentar `venda.busca.ts` junto ao domínio de vendas, sem Angular. Entrada:
-coleção readonly de projeções e termo. Saída: coleção filtrada na ordem de origem.
+coleção readonly de projeções, termo e situação opcional (Todas por padrão).
+Saída: coleção filtrada na ordem de origem. A página Quitadas não passa situação.
 Não ordenar, mutar, escrever na fonte ou interpretar múltiplos campos separados.
 
 Ordem de interpretação:
-1. Remover espaços externos. Vazio ou só espaços restaura a coleção atual.
+1. Remover espaços externos. Vazio ou só espaços não restringe por termo, mas mantém
+   o filtro de situação nas abertas. Aplicar esse filtro em conjunto com o resultado
+   textual; nenhum retorno antecipado pode ignorar a situação selecionada.
 2. Se corresponder a DD/MM/AAAA completo, reorganizar para AAAA-MM-DD e validar
    com `interpretarDataCivil`; só comparar `dataVenda`. Inválida retorna vazio,
    sem fallback por dígitos, normalização automática de dia ou exceção escapando.
@@ -84,13 +89,20 @@ Não há data parcial ou período: `31/01` não filtra por data. Identificação
 pesquisável sem validar checksum ou modificar marcadores existentes. Fixtures de
 teste usam números deliberadamente inválidos para CPF, sem dados reais ou persistência.
 
-Páginas mantêm signal de termo e `computed` de resultados. Campo `<input type="search">`
+Páginas mantêm signal de termo; abertas mantêm também signal de situação. O `computed`
+de resultados lê a coleção e ambos os critérios e aplica busca E situação.
+Um `<select>` nativo rotulado oferece Todas, Em aberto, Próximos dias e Atrasada,
+sem confundir Todas (toda a coleção aberta) com Em aberto (somente essa situação).
+Campo `<input type="search">`
 tem `[value]` e evento tipado; não usar `ngModel`, adicionar Forms ou embrulhar em
 formulário de negócio. Sem debounce, subscribe manual ou espera fictícia.
-Limpar redefine termo e mantém/devolve foco ao campo; contagem usa região anunciável.
+Limpar pesquisa redefine somente o termo e mantém/devolve foco ao campo; nas abertas,
+Limpar critérios redefine também situação para Todas e foca o campo. Selecionar situação
+mantém foco no select. Contagem usa região anunciável, inclusive em zero resultados.
 
-Alternativas: AND com controles separados e filtros de período foram oferecidos
-e não escolhidos no Harness. Busca global e tokenização alterariam o requisito.
+Alternativas: campos separados para cada dado de busca e filtros de período não foram
+escolhidos. Busca global e tokenização alterariam o requisito. O filtro único de situação
+nas abertas foi confirmado no Harness; nenhum filtro adicional será criado em Quitadas.
 
 ### 3. Composição de listas e detalhes
 
@@ -164,7 +176,8 @@ SCSS pontual. Não refazer a lateral/logo, adicionar plugins JS ou pacote de íc
 Tabela semântica com caption, th/scope, dinheiro alinhado e link de cliente; Visualizar
 nomeia a venda. Selo sempre tem texto, com contraste no fundo real, não só cor.
 
-Busca com rótulo visível, descrição do formato de data e ação Limpar nomeada. Região
+Busca e situação com rótulos visíveis, descrição do formato de data e ações Limpar pesquisa
+e Limpar critérios nomeadas, sem limpeza automática de um critério ao alterar o outro. Região
 de status anuncia contagem/nenhum resultado sem forçar foco a cada tecla. Região de
 rolagem da tabela, se necessária, recebe nome e acesso por teclado; apenas ela pode
 rolar horizontalmente em 390×844, sem esconder permanentemente Ações. Verificar
@@ -178,12 +191,12 @@ Não simular rede, sucesso financeiro, skeleton ou modal neste recorte síncrono
 
 | Área | Verificação planejada | Nível | Referência |
 | --- | --- | --- | --- |
-| Busca | Acentos/caixa, parcial, dígitos/pontuação, marcadores, termo vazio, pontuação sem dígito, data válida/inválida/extrema, coleção imutável e ordem | Unitário | RN-018/019; CA-004/005/019 |
-| Listas/cartões | Coleções separadas, colunas, zero/vazio, referência e cartões globais invariantes à pesquisa | Componente/integração | CA-002/003/014/025/026 |
+| Busca/filtro | Acentos/caixa, parcial, dígitos/pontuação, marcadores, vazio, data válida/inválida/extrema; cada situação, combinação por E, ordem e imutabilidade | Unitário | RN-018/019; CA-004/005/019 |
+| Listas/cartões | Coleções separadas, colunas, vazio distinto de filtro sem resultado, limpezas isolada/completa, referência e cartões invariantes a ambos os critérios | Componente/integração | CA-002/003/014/025/026 |
 | Detalhes | Mesmo ID, parcelas pagas/pendentes, entrada ausente/presente, nulls, nomes semelhantes, nenhuma mutação | Componente/integração | CA-010/020/026 |
 | Rotas | ID com barras round-trip, endereço direto/recarga, A→B→ausente, contexto ativo, foco e retornos | Harness + E2E | CA-001/018/026 |
 | Reatividade | Um cadastro/lote aceito por comando interno de teste atualiza listas/detalhe/cartões sem forçar detecção | TestBed/whenStable | DEC-004/017; CA-014/025 |
-| Consulta pelo browser | Nome e identificação do seed, data lida da UI, limpar, separar coleções e conferir detalhe/retorno | E2E dois viewports | CA-004/005/010/019/026 |
+| Consulta pelo browser | Nome/identificação do seed, data lida da UI, situação E busca, ambas as limpezas, nenhum filtro extra em Quitadas e detalhe/retorno | E2E dois viewports | CA-004/005/010/019/026 |
 | Acessibilidade | Rótulos, teclado, foco, selos/tabela/campo nos dois temas, região de rolagem, zoom 200% | E2E + manual | RNF-002/003/007/009 |
 | Limites | Indisponibilidade só nas páginas restantes; rede local, sem storage/console inesperado/mutações e regressão financeira | E2E + suíte existente | RF-011; RNF-004/010 |
 
@@ -213,9 +226,11 @@ Nenhum percentual de cobertura, meta de desempenho ou aceite é inferido.
   os estados em ambos os temas, sem alegar certificação de acessibilidade.
 - UI não representar estados sintéticos impossíveis nas bordas do calendário →
   manter política da FASE-004 e usar fixtures explícitas nos testes, não alterar seed.
-- Specs da 004 ainda não consolidadas → preservar sua Change e registrar que a
-  restrição de ausência de UI era daquela fase. Futuro sync deverá manter a evolução
-  temporal, sem sobrescrever os requisitos novos; arquivamento permanece fora daqui.
+- Specs da 004 ainda não consolidadas nesta base → preservar sua Change e a branch de
+  arquivamento; acrescentar delta explícita de `estado-demonstrativo` na 005, substituindo
+  integralmente Núcleo sem promessa de interface comercial. Consolidar primeiro a 004,
+  depois a 005, para não restaurar a restrição de consultas. Não alegar validação de
+  sincronização sem a spec principal disponível nesta branch; integração fica pendente.
 
 ## Migration Plan
 
