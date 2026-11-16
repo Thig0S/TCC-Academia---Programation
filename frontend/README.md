@@ -100,6 +100,29 @@ Essas medições cobrem as superfícies e estados exercitados, não certificam a
 integral nem tecnologia assistiva; zoom nativo de 200% e avaliação da ótica não foram
 executados nesta verificação.
 
+### Viewports, teclado e zoom — FASE-005
+
+Nova regressão E2E em Chromium passou 34/34 execuções (17 por viewport: 1366×768 e 390×844),
+com `prefers-reduced-motion: reduce`. Verifica listas, detalhe e páginas ainda indisponíveis,
+ausência de overflow horizontal no documento, região da tabela identificada e focável, avanço
+por Tab até a última ação Visualizar, abertura por Enter e região de parcelas focável. Em
+390×844, confirmou overflow contido na região da tabela enquanto a página permanece sem
+rolagem horizontal. Os testes de busca anteriores também verificam que limpar critérios devolve
+foco à busca e que digitar/selecionar situação não o desloca.
+
+Zoom nativo de 200%: relato manual do solicitante em 16/11/2026, após aplicar o controle nativo
+do navegador em Vendas, Quitadas e detalhe; informou conteúdo legível e ausência de overflow
+horizontal da página. Não foi substituído por CSS zoom nem medido independentemente nesta
+sessão. Chromium automatizado nos viewports técnicos não equivale à homologação de navegador
+ou dispositivo real; tecnologia assistiva e avaliação da ótica continuam fora da evidência.
+
+Regressão posterior às alterações visuais, em 16/11/2026: `npm.cmd run format:check` saiu 0;
+`npm.cmd run build` saiu 0 com 488,11 kB iniciais/93,81 kB estimados, sem warning de budget;
+`npm.cmd test -- --watch=false` saiu 0 (173/173 em 16 arquivos); E2E completo com servidor
+próprio em 4302 saiu 0 (34/34, 17 por viewport). Sass `@import` segue depreciado. A primeira
+verificação de formatação incluiu a configuração temporária do runner ainda presente e saiu 1;
+após removê-la, a reexecução passou. Nenhuma configuração temporária permaneceu no projeto.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,

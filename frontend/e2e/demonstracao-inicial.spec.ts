@@ -455,6 +455,51 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
   }
 });
 
+test('mantém o overflow contido e permite alcançar tabela, ações e detalhe por teclado', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/vendas');
+  const largura = page.viewportSize()!.width;
+  const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
+  const regiao = page.getByRole('region', { name: 'Vendas em aberto' });
+  await expect(regiao).toHaveAttribute('tabindex', '0');
+  await expect(tabela.getByRole('columnheader', { name: 'Ações' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+  await regiao.focus();
+  await expect(regiao).toBeFocused();
+  const links = await tabela.getByRole('link').count();
+  await page.keyboard.press('Tab');
+  for (let indice = 1; indice < links; indice++) await page.keyboard.press('Tab');
+  await expect(tabela.getByRole('link', { name: /Visualizar venda/ }).last()).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  if (largura <= 390) {
+    const overflow = await regiao.evaluate((elemento) => ({
+      tabelaMaior: elemento.scrollWidth > elemento.clientWidth,
+      paginaSemOverflow:
+        document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    }));
+    expect(overflow).toEqual({ tabelaMaior: true, paginaSemOverflow: true });
+  }
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Parcelas da venda' })).toHaveAttribute(
+    'tabindex',
+    '0',
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+  for (const rota of ['/visao-geral', '/relatorios']) {
+    await page.goto(rota);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|cadastrar|pagar|exportar/i);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+});
+
 test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco', async ({
   page,
 }) => {
