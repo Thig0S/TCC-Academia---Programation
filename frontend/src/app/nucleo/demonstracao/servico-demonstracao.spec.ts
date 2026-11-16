@@ -33,6 +33,122 @@ function iniciar(preparador = new PreparadorRecebimento()): ServicoDemonstracao 
 describe('Fonte demonstrativa de sessão', () => {
   afterEach(() => vi.restoreAllMocks());
 
+  it.each([
+    { referencia: '0001-01-01', dataVenda: '0001-01-01' },
+    { referencia: '2027-01-31', dataVenda: '2026-12-01' },
+    { referencia: '9999-12-31', dataVenda: '9999-10-31' },
+  ])('reconcilia o ciclo integrado e recria sessão em $referencia', ({ referencia, dataVenda }) => {
+    const criarFonte = () => {
+      TestBed.configureTestingModule({
+        providers: [{ provide: REFERENCIA_DEMONSTRACAO, useValue: referencia }],
+      });
+      return TestBed.inject(ServicoDemonstracao);
+    };
+    const fonte = criarFonte();
+    const seed = fonte.vendas();
+    const somar = (valores: readonly number[]) => valores.reduce((a, b) => a + b, 0);
+    const conferir = () => {
+      const vendas = fonte.vendas();
+      const recebimentos = vendas.flatMap((v) => [
+        ...(v.entrada ? [v.entrada] : []),
+        ...v.recebimentos,
+      ]);
+      for (const v of vendas) {
+        const pagas = new Set(v.recebimentos.flatMap((r) => r.alocacoes.map((a) => a.parcelaId)));
+        const pendentes = v.parcelas.filter((p) => !pagas.has(p.id));
+        expect(v.totalPagoCentavos).toBe(
+          (v.entrada?.valorCentavos ?? 0) + somar(v.recebimentos.map((r) => r.valorCentavos)),
+        );
+        expect(v.saldoCentavos).toBe(v.valorTotalCentavos - v.totalPagoCentavos);
+        expect(v.saldoCentavos).toBe(somar(pendentes.map((p) => p.valorCentavos)));
+        expect(v.quantidadePaga).toBe(pagas.size);
+        expect(v.proximoVencimento).toBe(pendentes[0]?.vencimento ?? null);
+        expect(sucesso(fonte.consultarVenda(v.id))).toEqual(v);
+      }
+      expect(fonte.abertas()).toEqual(vendas.filter((v) => v.saldoCentavos > 0));
+      expect(fonte.quitadas()).toEqual(vendas.filter((v) => v.saldoCentavos === 0));
+      const pendentes = vendas.flatMap((v) => v.parcelas.filter((p) => p.situacao !== 'Paga'));
+      expect(fonte.resumo()).toEqual({
+        totalEmAbertoCentavos: somar(pendentes.map((p) => p.valorCentavos)),
+        valoresEmAtrasoCentavos: somar(
+          pendentes.filter((p) => p.vencimento < referencia).map((p) => p.valorCentavos),
+        ),
+        recebidoNoMesCentavos: somar(
+          recebimentos
+            .filter((r) => r.data.slice(0, 7) === referencia.slice(0, 7))
+            .map((r) => r.valorCentavos),
+        ),
+        vendasCadastradas: vendas.length,
+      });
+      for (const [inicio, fim] of [
+        ['0001-01-01', '9999-12-31'],
+        [dataVenda, dataVenda],
+        [referencia, referencia],
+      ]) {
+        const dentro = (data: string) => data >= inicio && data <= fim;
+        expect(sucesso(fonte.consultarPeriodo(inicio, fim))).toEqual({
+          recebidosCentavos: somar(
+            recebimentos.filter((r) => dentro(r.data)).map((r) => r.valorCentavos),
+          ),
+          vendas: vendas
+            .filter((v) => dentro(v.dataVenda))
+            .map((v) => ({
+              id: v.id,
+              cliente: v.cliente,
+              dataVenda: v.dataVenda,
+              valorTotalCentavos: v.valorTotalCentavos,
+              entrada: v.entrada,
+              recebimentos: v.recebimentos,
+              parcelas: v.parcelas.map(({ id, numero, valorCentavos, vencimento }) => ({
+                id,
+                numero,
+                valorCentavos,
+                vencimento,
+              })),
+            })),
+        });
+      }
+    };
+    conferir();
+    const v = sucesso(
+      fonte.cadastrarVenda({
+        ...cadastro(),
+        dataVenda,
+        quantidadeParcelas: 2,
+        entrada: { valorCentavos: 20000, data: dataVenda, forma: 'Pix' },
+      }),
+    );
+    conferir();
+    const comando = {
+      vendaId: v.id,
+      parcelaIds: [v.parcelas[0].id],
+      valorCentavos: 40000,
+      data: referencia,
+      forma: 'Dinheiro',
+    };
+    const antes = fonte.vendas();
+    expect(fonte.registrarPagamento({ ...comando, valorCentavos: 39999 }).tipo).toBe('validacao');
+    expect(fonte.vendas()).toBe(antes);
+    conferir();
+    sucesso(fonte.registrarPagamento(comando));
+    conferir();
+    const parcial = fonte.vendas();
+    expect(fonte.registrarPagamento(comando).tipo).toBe('inelegibilidade');
+    expect(fonte.vendas()).toBe(parcial);
+    sucesso(fonte.registrarPagamento({ ...comando, parcelaIds: [v.parcelas[1].id] }));
+    conferir();
+    expect(sucesso(fonte.consultarVenda(v.id))).toMatchObject({
+      situacao: 'Quitada',
+      saldoCentavos: 0,
+    });
+    TestBed.resetTestingModule();
+    const nova = criarFonte();
+    expect(nova.referencia).toBe(referencia);
+    expect(nova.vendas()).toEqual(seed);
+    expect(nova.vendas()[0]).not.toBe(seed[0]);
+    expect(nova.consultarVenda(v.id).tipo).toBe('inexistencia');
+  });
+
   it('usa referência explícita, consulta ausente distinta de período vazio e mensagens tipadas', () => {
     const fonte = iniciar();
     expect(fonte.referencia).toBe(referencia);

@@ -218,6 +218,23 @@ requisito longo; após autorização, detalhes ficaram nos cenários e a valida�
 Context7 Angular/TestBed consultado para integração/recriação. Estes resultados não
 comprovam UI de negócio nem aceite da ótica; 5.2/5.3 ainda pendentes neste ponto.
 
+Tarefa 5.2: três cenários integrados em 0001-01-01, 2027-01-31 e 9999-12-31
+conferem seed, cadastro de 100.000 centavos com entrada de 20.000, duas parcelas
+de 40.000, rejeição de 39.999, dois recebimentos até quitação, duplicidade rejeitada
+e recriação independente restaurando seed. A cada etapa são reconciliados todos
+os saldos, pagos, prefixos, próximas datas, abertas/quitadas, resumo mensal/atraso e
+períodos inclusivos (calendário inteiro, dia da venda e dia da referência). O cenário
+intermediário separa entrada em dezembro e lotes em janeiro; o superior separa
+outubro/dezembro. IDs e snapshots permanecem protegidos pelos demais testes.
+
+A execução inicial desses testes saiu 1 (153 passaram, três falharam): expectativa
+comparava vendas brutas do período com projeções enriquecidas. Após autorização,
+corrigida somente a expectativa para comparar todos os campos brutos; derivados
+continuam verificados separadamente. Nova suíte: saída 0, 156/156 em 13 arquivos.
+Isso cobre contratos internos de CA-008/009/011/013/014/017/020/024/025, não UI dos
+CA nem CA-018/021 completos, recarga financeira por navegador ou aceite da ótica.
+As telas de consulta, comandos visíveis e indicadores dependem de FASE-005/006/007.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
