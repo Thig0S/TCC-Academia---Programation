@@ -1,5 +1,21 @@
 # Design
 
+## Approved Calendar Boundary Policy — 16/11/2026
+
+PRD 1.4 → TDD 1.8, política revisada e aprovada via Harness para implementação.
+Manter a referência civil real e as 12 vendas. Para os deslocamentos mensais do seed,
+limitar o mês da venda ao intervalo janeiro/0001–novembro/9999, ajustando o dia ao
+último do mês quando necessário. Usar `min(4, meses até dezembro/9999)` parcelas e
+somar seus valores efetivos ao preparar pagamentos; não assumir valor fixo por parcela.
+No cálculo do mês anterior para o grupo próximo, janeiro/0001 usa o próprio mês
+como limite, sem tentar gerar ano zero. Usar as mesmas funções puras e IDs `seed/`.
+Preservar o seed anterior onde couber. A variedade de situações só é dispensada
+onde impossível; por exemplo, janeiro/0001 não pode ter atraso com primeira parcela
+no mês seguinte, e dezembro/9999 não pode ter parcela além desse mês. Essa exceção
+não muda validações de comandos, referência ou classificação. Cobrir extremos,
+transições, datas bissextas/dias 31, invariantes, determinismo, isolamento e serviço.
+Não adicionar tela de bloqueio, persistência ou dependência. A pausa abaixo é histórica.
+
 > Estado após retomada de apply em 15/11/2026: 18/21 tarefas. Adaptador e sessão
 > implementados, regressão limpa 143/143 e E2E 26/26. Pausa solicitada na revisão
 > final por lacuna do seed nas extremidades 0001/9999: histórico de três meses e

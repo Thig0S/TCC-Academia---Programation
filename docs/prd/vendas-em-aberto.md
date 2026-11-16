@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.3 — decisões do domínio em 14/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.4 — adaptação do conjunto sintético nas bordas do calendário em 16/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
@@ -14,6 +14,17 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Decisão de 16/11/2026 — conjunto sintético:** aprovada via Harness na retomada
+da FASE-004. Preservar a referência local em toda a faixa civil 0001–9999 e iniciar
+com 12 vendas válidas. Onde o calendário comportar, preservar o conjunto atual e
+suas quatro situações. Nas extremidades, adaptar datas de venda e quantidade de
+parcelas; dispensar uma situação somente quando impossível pelas regras de datas.
+Não substituir a referência, inventar histórico anterior ao calendário ou permitir
+vendas futuras/vencimentos irrepresentáveis. A exceção pertence apenas ao conjunto
+inicial sintético: comandos continuam sujeitos a RN-011/017. A alternativa de
+restringir a demonstração foi reconsiderada e não está aprovada. Apply autorizado;
+esta decisão não comprova implementação, verificação ou aceite comercial.
 
 O README propõe substituir, futuramente, uma planilha usada para acompanhar vendas a prazo, parcelas e recebimentos. A entrevista de gestão delimita melhor essa oportunidade: a loja já utiliza sistemas da franquia, inclusive de crediário, e mantém uma planilha auxiliar de determinadas vendas. O produto não deve ser interpretado como substituto de todo o sistema financeiro ou do crediário da franquia.
 
@@ -586,3 +597,4 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | 1.1 | 13/11/2026 | Conciliação de PEN-006, aceite delimitado de HIP-004/PEN-012, CA-023 e recorte da FASE-003; atualização do estado da base | Confirmações do solicitante na exploração e no planejamento; sem implementação ou aceite da ótica |
 | 1.2 | 13/11/2026 | Identidade vermelha da lateral no claro e degradê vermelho/vinho no escuro, mantendo contraste e os demais limites | Pedido visual explícito durante o apply da fase-003; zoom nativo 200% permanece pendente e sem PR |
 | 1.3 | 14/11/2026 | Conciliação do estado local da FASE-003; RN-011 a RN-017; revisão dos CA existentes e inclusão de CA-024/025; pagamento integral em lote sequencial; situação das pendências preservando IDs | Respostas explícitas no planejamento da fase-004; sem código, testes de aplicação ou aceite da ótica |
+| 1.4 | 16/11/2026 | Adaptar somente o conjunto sintético nas extremidades de 0001–9999, preservando referência, 12 vendas e regras financeiras; exceção à variedade apenas quando impossível | Política e implementação autorizadas via Harness na fase-004; sem aceite de produto |
