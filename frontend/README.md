@@ -25,6 +25,37 @@ foram alterados. Os testes novos cobrem situação, nome, identificadores, busca
 entradas inválidas, datas bissextas/extremas, ordem e ausência de mutação. Isso não verifica
 interface, navegação ou aceitação comercial.
 
+### Detalhe de venda e rota por identificador
+
+A rota lazy `/vendas/:id` fica após as rotas estáticas e antes do wildcard. O componente lê
+`paramMap` reativamente e consulta a instância raiz de `ServicoDemonstracao`; IDs são passados
+ao Router como segmento e serializados por `createUrlTree`/`serializeUrl`, sem transformação
+do identificador. O detalhe é somente leitura, apresenta dados financeiros formatados pela
+projeção existente, entrada separada, todas as parcelas, referência da sessão, ausência de
+próximo vencimento e retornos explícitos. A inexistência de venda tem estado próprio.
+
+Verificações incrementais de 16/11/2026: `npm.cmd run build` saiu 0 (487,33 kB iniciais;
+transferência estimada 93,81 kB), `npm.cmd test -- --watch=false` saiu 0 (167/167 testes em
+15 arquivos). O RouterTestingHarness confirmou `seed/venda/1` e `sessao/venda/1` com barras,
+reutilização A→B→inexistente, venda quitada e parcelas, entrada presente/ausente, descrição
+ausente, formatação, retornos e ausência de controles mutáveis. O E2E dirigido passou 2/2
+(uma execução por viewport: 1366×768 e 390×844), cobrindo URL direta codificada, recarga,
+contexto de Vendas, retorno explícito e foco no título após retorno. A porta padrão 4200 estava
+ocupada pelo processo Node PID 1292 do repositório; sem encerrá-lo, o runner iniciou e fechou
+servidor próprio em 4302 por configuração temporária. O Sass `@import` depreciado segue como
+aviso existente.
+
+Após os testes adicionais de identificador e descrição: `npm.cmd run format:check`, build e
+suíte unitária/componentes passaram (saída 0); 167/167 testes em 15 arquivos. A regressão E2E
+completa desta etapa passou 28/28 execuções, 14 por viewport, com servidor próprio em 4302.
+Contraste medido pelo E2E estrutural existente: texto mínimo 5,96:1 no tema escuro e 4,83:1
+no claro; borda/foco dos controles essenciais também superaram 3:1. Essa regressão conserva
+as asserções de indisponibilidade das listas até a implementação da tarefa 3.1.
+
+Essas verificações não são homologação de outros navegadores, aceite da ótica ou prova de
+contraste/acessibilidade completa. A verificação de foco ao abrir o detalhe por link da lista
+será concluída junto à entrega dos links de consulta nas listas.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,

@@ -1,0 +1,120 @@
+@if (consulta(); as resultado) {
+  @if (resultado.tipo === 'sucesso') {
+    <app-cabecalho titulo="Detalhes da venda" />
+    <p class="text-body-secondary">
+      Referência da demonstração: {{ formatarDataCivil(referencia) }}
+    </p>
+    <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3 mb-4">
+      <a routerLink="/vendas">Voltar para Vendas</a>
+      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+    </nav>
+
+    <section class="card p-3 p-md-4 mb-4" aria-labelledby="identificacao-venda">
+      <h2 id="identificacao-venda" class="h4">{{ resultado.valor.cliente.nome }}</h2>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">CPF</dt>
+        <dd class="col-sm-8">{{ resultado.valor.cliente.cpf }}</dd>
+        <dt class="col-sm-4">Telefone</dt>
+        <dd class="col-sm-8">{{ resultado.valor.cliente.telefone }}</dd>
+        @if (resultado.valor.cliente.descricao) {
+          <dt class="col-sm-4">Descrição</dt>
+          <dd class="col-sm-8">{{ resultado.valor.cliente.descricao }}</dd>
+        }
+        <dt class="col-sm-4">Data da venda</dt>
+        <dd class="col-sm-8">{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
+        <dt class="col-sm-4">Valor total</dt>
+        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
+        <dt class="col-sm-4">Total pago</dt>
+        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
+        <dt class="col-sm-4">Saldo devedor</dt>
+        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.saldoCentavos) }}</dd>
+        <dt class="col-sm-4">Próximo vencimento</dt>
+        <dd class="col-sm-8">
+          {{
+            resultado.valor.proximoVencimento
+              ? formatarDataCivil(resultado.valor.proximoVencimento)
+              : 'Não há parcelas pendentes'
+          }}
+        </dd>
+        <dt class="col-sm-4">Situação</dt>
+        <dd class="col-sm-8"><app-selo-situacao [situacao]="resultado.valor.situacao" /></dd>
+        <dt class="col-sm-4">Parcelas pagas</dt>
+        <dd class="col-sm-8">
+          {{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}
+        </dd>
+      </dl>
+    </section>
+
+    <section class="card p-3 p-md-4 mb-4" aria-labelledby="titulo-entrada">
+      <h2 id="titulo-entrada" class="h5">Entrada</h2>
+      @if (resultado.valor.entrada; as entrada) {
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Valor</dt>
+          <dd class="col-sm-8">{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
+          <dt class="col-sm-4">Data</dt>
+          <dd class="col-sm-8">{{ formatarDataCivil(entrada.data) }}</dd>
+          <dt class="col-sm-4">Forma</dt>
+          <dd class="col-sm-8">{{ entrada.forma }}</dd>
+        </dl>
+      } @else {
+        <p class="mb-0">Sem entrada</p>
+      }
+    </section>
+
+    <section aria-labelledby="titulo-parcelas">
+      <h2 id="titulo-parcelas" class="h5">Parcelas</h2>
+      <div class="table-responsive" role="region" aria-label="Parcelas da venda" tabindex="0">
+        <table class="table table-striped align-middle">
+          <caption>
+            Parcelas da venda de
+            {{
+              resultado.valor.cliente.nome
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Parcela</th>
+              <th scope="col">Valor</th>
+              <th scope="col">Vencimento</th>
+              <th scope="col">Situação</th>
+              <th scope="col">Data do pagamento</th>
+              <th scope="col">Forma de pagamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (parcela of resultado.valor.parcelas; track parcela.id) {
+              <tr>
+                <th scope="row">{{ parcela.numero }} de {{ resultado.valor.parcelas.length }}</th>
+                <td>{{ formatarDinheiro(parcela.valorCentavos) }}</td>
+                <td>{{ formatarDataCivil(parcela.vencimento) }}</td>
+                <td><app-selo-situacao [situacao]="parcela.situacao" /></td>
+                <td>
+                  {{
+                    parcela.dataPagamento
+                      ? formatarDataCivil(parcela.dataPagamento)
+                      : 'Não informada'
+                  }}
+                </td>
+                <td>{{ parcela.formaPagamento ?? 'Não informada' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <app-cabecalho titulo="Venda não encontrada" />
+    <p>Não existe uma venda com este identificador.</p>
+    <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+      <a routerLink="/vendas">Voltar para Vendas</a>
+      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+    </nav>
+  }
+} @else {
+  <app-cabecalho titulo="Venda não encontrada" />
+  <p>Não existe uma venda com este identificador.</p>
+  <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+    <a routerLink="/vendas">Voltar para Vendas</a>
+    <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+  </nav>
+}

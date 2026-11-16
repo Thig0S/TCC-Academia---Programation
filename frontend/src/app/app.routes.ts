@@ -37,6 +37,12 @@ export const routes: Routes = [
       import('./funcionalidades/configuracoes/configuracoes').then((m) => m.Configuracoes),
   },
   {
+    path: 'vendas/:id',
+    title: `Detalhes da venda | ${produto}`,
+    loadComponent: () =>
+      import('./funcionalidades/vendas/detalhes-venda/detalhes-venda').then((m) => m.DetalhesVenda),
+  },
+  {
     path: '**',
     title: `Página não encontrada | ${produto}`,
     loadComponent: () =>
