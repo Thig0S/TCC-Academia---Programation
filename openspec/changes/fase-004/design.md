@@ -1,5 +1,10 @@
 # Design
 
+> Estado vigente — 16/11/2026: política abaixo e refinamento de dia/prefixo aprovados
+> e implementados. Seed e integração verificados, regressão limpa 156/156 testes e
+> 26/26 E2E. Build/formatação aprovados; evidências em `frontend/README.md`. O desenho
+> e os diagnósticos históricos não representam ausência atual do núcleo implementado.
+
 ## Approved Calendar Boundary Policy — 16/11/2026
 
 PRD 1.4 → TDD 1.8, política revisada e aprovada via Harness para implementação.

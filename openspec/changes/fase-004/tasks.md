@@ -1,5 +1,11 @@
 # Tasks
 
+**Verificação vigente — 16/11/2026:** seed de borda e integração concluídos com
+evidências no README; regressão limpa repetida: instalação, formatação/build,
+156 testes e 26 E2E aprovados. **21/21 tarefas concluídas.** OpenSpec estrito e
+diff-check saída 0; rastreabilidade/escopo/commits revisados. O bloqueio anterior está
+resolvido; estados abaixo são históricos. PR único após revisão integral; merge não autorizado.
+
 **Retomada autorizada — 16/11/2026:** PRD 1.4/TDD 1.8 e política do seed aprovados
 via Harness. Referência mantida, 12 vendas, datas limitadas ao calendário e até quatro
 parcelas; variedade dispensada somente onde impossível. Revisão dos artefatos antes
@@ -59,7 +65,7 @@ nenhum grupo autoriza abrir PR antecipado ou implementar telas das fases seguint
 
 - [x] 5.1 Executar instalação limpa e regressão em `frontend/`: `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`; registrar códigos de saída, contagens reais, ambiente, budget e warnings. Preservar servidor alheio em porta ocupada e usar somente servidor próprio conforme configuração, sem aprovar scripts ou contornar peers silenciosamente.
 - [x] 5.2 Revisar em conjunto seed, cadastro interno, entrada e recebimentos em lote antes/depois da quitação; reconciliar todas as projeções e períodos em centavos, repetir erro/duplicidade e recriação de sessão. Registrar evidências integradas e distinguir os contratos de domínio cobertos dos CA de UI ainda dependentes das FASE-005/006/007; não declarar CA-018/021 completos nem aceite da ótica por esses testes.
-- [ ] 5.3 Executar na raiz `openspec validate fase-004 --strict` e `git diff --check`, revisar diff e rastreabilidade PRD → TDD → SDD, tarefas e README conforme verificações reais; conferir que nenhuma alteração de dependência, interface comercial, persistência, edição ou regra ainda pendente foi incluída. Confirmar commits individuais por funcionalidade e escopo integral concluído antes de apresentar o único PR desta Change, nunca um PR só de planejamento.
+- [x] 5.3 Executar na raiz `openspec validate fase-004 --strict` e `git diff --check`, revisar diff e rastreabilidade PRD → TDD → SDD, tarefas e README conforme verificações reais; conferir que nenhuma alteração de dependência, interface comercial, persistência, edição ou regra ainda pendente foi incluída. Confirmar commits individuais por funcionalidade e escopo integral concluído antes de apresentar o único PR desta Change, nunca um PR só de planejamento.
 
 ## Evidências do planejamento
 

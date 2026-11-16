@@ -1,5 +1,11 @@
 # Proposal
 
+> Estado vigente — 16/11/2026: seed corrigido e verificação integrada concluída.
+> Regressão limpa: 156/156 testes, 26/26 E2E, build e formatação aprovados. Política
+> PRD 1.4/TDD 1.8 refinada para variar dia/prefixo pago e manter situações possíveis.
+> Sem UI comercial ou dependências novas; ver `frontend/README.md`. Os diagnósticos
+> e bloqueios abaixo são históricos, não pendências atuais de implementação.
+
 > Retomada autorizada em 16/11/2026: PRD 1.4/TDD 1.8 e política técnica revisados
 > e aprovados via Harness antes do código. Adaptar datas/parcelamento do seed nas
 > bordas, sem trocar a referência nem restringir o domínio; manter 12 vendas e
