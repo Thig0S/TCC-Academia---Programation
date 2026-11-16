@@ -25,6 +25,7 @@ A sessão SHALL iniciar com 12 vendas sintéticas válidas em relação à refer
 - **AND** SHALL usar até quatro parcelas conforme os meses disponíveis até dezembro/9999, com valores e pagamentos integrais recalculados
 - **AND** SHALL preservar a referência e não gerar venda futura, ano zero ou vencimento além do calendário
 - **AND** SHALL dispensar uma situação somente onde impossível, preservando o conjunto anterior onde couber
+- **AND** SHALL variar também dia-base sintético e prefixo pago quando necessário para representar situações possíveis, sem alterar as regras do domínio
 
 #### Scenario: Inicializar e isolar o conjunto demonstrativo
 - **WHEN** duas sessões independentes forem inicializadas com a mesma referência
