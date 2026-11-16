@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from '../../app';
 import { routes } from '../../app.routes';
 import { ComandoCadastro } from '../../funcionalidades/vendas/venda.modelos';
+import { formatarDinheiro } from '../../funcionalidades/vendas/dinheiro';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
 import { ServicoDemonstracao } from './servico-demonstracao';
 
@@ -128,5 +129,83 @@ describe('Inicialização e integração da sessão', () => {
     expect(host.fonte.registrarPagamento(comando).tipo).toBe('inelegibilidade');
     await fixture.whenStable();
     expect(host.observar).toHaveBeenCalledTimes(3);
+  });
+
+  it('mantém listas, cartões e detalhe na mesma fonte reativa; consulta e navegação não mutam', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter(routes),
+        { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
+      ],
+    });
+    const fonte = TestBed.inject(ServicoDemonstracao);
+    const harness = await RouterTestingHarness.create('/vendas');
+    const antes = fonte.vendas();
+    const resumoAntes = fonte.resumo();
+
+    const criado = fonte.cadastrarVenda(cadastro);
+    expect(criado.tipo).toBe('sucesso');
+    if (criado.tipo !== 'sucesso') throw new Error(criado.mensagem);
+    await harness.fixture.whenStable();
+    const snapshot = fonte.vendas();
+    const resumoAberta = fonte.resumo();
+    expect(snapshot).not.toBe(antes);
+    expect(resumoAberta.vendasCadastradas).toBe(resumoAntes.vendasCadastradas + 1);
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
+      cadastro.cliente.nome,
+    );
+    expect(harness.routeNativeElement?.textContent).toContain(
+      formatarDinheiro(resumoAberta.totalEmAbertoCentavos),
+    );
+
+    const campo = harness.routeNativeElement!.querySelector<HTMLInputElement>('#busca-vendas')!;
+    campo.value = 'termo sem correspondência';
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.textContent).toContain('Nenhuma venda corresponde');
+    expect(fonte.vendas()).toBe(snapshot);
+    [...harness.routeNativeElement!.querySelectorAll('button')]
+      .find((botao) => botao.textContent?.includes('Limpar critérios'))!
+      .click();
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
+      cadastro.cliente.nome,
+    );
+    expect(fonte.vendas()).toBe(snapshot);
+
+    const router = TestBed.inject(Router);
+    const detalheUrl = router.serializeUrl(router.createUrlTree(['/vendas', criado.valor.id]));
+    await harness.navigateByUrl(detalheUrl);
+    expect(harness.routeDebugElement?.injector.get(ServicoDemonstracao)).toBe(fonte);
+    expect(harness.routeNativeElement?.textContent).toContain(cadastro.cliente.nome);
+    expect(fonte.vendas()).toBe(snapshot);
+
+    const resultadoPagamento = fonte.registrarPagamento({
+      vendaId: criado.valor.id,
+      parcelaIds: criado.valor.parcelas.map((parcela) => parcela.id),
+      valorCentavos: cadastro.valorTotalCentavos,
+      data: '2027-01-31',
+      forma: 'Pix',
+    });
+    expect(resultadoPagamento.tipo).toBe('sucesso');
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.textContent).toContain('Quitada');
+    expect(harness.routeNativeElement?.querySelectorAll('.badge')).toHaveLength(
+      criado.valor.parcelas.length + 1,
+    );
+
+    const resumoQuitada = fonte.resumo();
+    await harness.navigateByUrl('/vendas');
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain(
+      cadastro.cliente.nome,
+    );
+    expect(harness.routeNativeElement?.textContent).toContain(
+      formatarDinheiro(resumoQuitada.totalEmAbertoCentavos),
+    );
+    await harness.navigateByUrl('/vendas/quitadas');
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
+      cadastro.cliente.nome,
+    );
+    expect(harness.routeDebugElement?.injector.get(ServicoDemonstracao)).toBe(fonte);
   });
 });

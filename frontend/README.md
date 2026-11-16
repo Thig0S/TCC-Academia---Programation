@@ -118,10 +118,18 @@ ou dispositivo real; tecnologia assistiva e avaliação da ótica continuam fora
 
 Regressão posterior às alterações visuais, em 16/11/2026: `npm.cmd run format:check` saiu 0;
 `npm.cmd run build` saiu 0 com 488,11 kB iniciais/93,81 kB estimados, sem warning de budget;
-`npm.cmd test -- --watch=false` saiu 0 (173/173 em 16 arquivos); E2E completo com servidor
+`npm.cmd test -- --watch=false` saiu 0 (174/174 em 16 arquivos após o teste integrado); E2E completo com servidor
 próprio em 4302 saiu 0 (34/34, 17 por viewport). Sass `@import` segue depreciado. A primeira
 verificação de formatação incluiu a configuração temporária do runner ainda presente e saiu 1;
 após removê-la, a reexecução passou. Nenhuma configuração temporária permaneceu no projeto.
+
+O teste integrado do TestBed usa `ServicoDemonstracao` pela injeção de teste para emitir um
+cadastro e um pagamento completos; comprova atualização zoneless por `whenStable`, identidade
+da fonte entre lista/detalhe, cartões, parcelas e transição de aberta para quitada. Antes do
+pagamento compara a identidade do snapshot financeiro após pesquisar, limpar e navegar. Esse
+comando interno é exclusivo do TestBed: a aplicação e os E2E continuam sem botão de pagamento,
+hook global ou chamada ao serviço pelo browser. O teste não representa operação visível ao
+usuário nem altera regras do núcleo financeiro.
 
 ## Apply FASE-004 — 14/11/2026
 
