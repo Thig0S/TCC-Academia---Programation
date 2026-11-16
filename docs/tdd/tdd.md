@@ -6,7 +6,19 @@
 
 ## 1. Identificação e situação
 
-**Verificação vigente — 16/11/2026:** seed adaptativo e integração implementados;
+**Estado vigente — revisão 1.9, 16/11/2026:** PRD 1.5 revisado primeiro, com
+PEN-005/012 resolvidas no Harness. FASE-004 implementada na `main` (PR #7,
+merge `1f184e3`, confirmado no GitHub e Git local); 156 testes e 26 E2E registrados
+em `frontend/README.md`, sem reexecução nesta revisão. A Change 004 ainda não está
+sincronizada/arquivada; isso fica fora do escopo. Esta revisão desenha a FASE-005:
+listas, quatro cartões globais em Vendas, busca nas duas coleções e detalhe/parcelas
+somente leitura. Não implementa consultas ou mutações. Autorizados somente PRD/TDD
+e artefatos OpenSpec da nova Change; novo pedido de apply após sua apresentação.
+DEC-017 detalha a proposta técnica; o roadmap abaixo passa a refletir esse estado.
+Afirmações históricas de ausência do núcleo, patches pendentes ou merge ainda não
+executado não descrevem a situação vigente. Nenhum aceite da ótica é alegado.
+
+**Verificação da FASE-004 — registro anterior ao merge, 16/11/2026:** seed adaptativo e integração implementados;
 regressão limpa da FASE-004 com 156 testes e 26 E2E aprovados, build e formatação
 saída 0. Evidências/limitações em `frontend/README.md`. O bloqueio anterior do seed
 foi resolvido pela política e refinamento abaixo. Não comprova aceite de produto,
@@ -45,10 +57,10 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 16/11/2026, revisão 1.8.
+- **Data e revisão:** 16/11/2026, revisão 1.9.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
-- **Situação:** desenho consolidado para o núcleo financeiro da FASE-004, com PRD 1.3;
-  busca, edição, identificação e controles das fases posteriores ainda possuem pendências.
+- **Situação:** núcleo financeiro entregue na FASE-004; desenho proposto da consulta
+  da FASE-005 com PRD 1.5. Edição, identificação e controles posteriores ainda possuem pendências.
 - **Origem:** solicitação de especificação técnica baseada no `AGENTS.md`, com Angular 22,
   standalone, zoneless e Signals, seguida de duas rodadas de perguntas.
 - **Autoridade:** escolhas técnicas e direção de temas confirmadas pelo solicitante nesta
@@ -132,6 +144,8 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-017 | Respostas do solicitante no planejamento `fase-004`; PRD 1.3, RN-011 a RN-017, CA-024/025 | 14/11/2026 | Regras demonstrativas confirmadas; lote sequencial amplia o recebimento original; não autoriza apply |
 | FON-018 | `frontend/src/app/nucleo/configuracao/servico-tema.ts`, seu teste com RouterTestingHarness, `reatividade.spec.ts`, `app.config.ts`, rotas, testes de conteúdo e manifesto | 14/11/2026, inspeção sem execução | Padrão de serviço raiz, Signals e testes; páginas comerciais indisponíveis, nenhum domínio financeiro existente |
 | FON-019 | Context7 `/websites/angular_dev`, guia Signals e API WritableSignal (`https://angular.dev/guide/signals`, `https://angular.dev/api/core/WritableSignal`) | 14/11/2026 | Signal privado e leitura readonly; `asReadonly` não impede mutações profundas. Consulta geral, não comprova execução no patch 22.2.6 |
+| FON-020 | PRD 1.5; Harness de 16/11/2026; fonte, rotas, conteúdo, seed e testes existentes | Inspeção nesta revisão | Busca nas duas coleções aprovada; IDs com barras (`seed/venda/1`), serviço readonly e testes de indisponibilidade a revisar somente em Vendas |
+| FON-021 | Context7 `/websites/angular_dev`, `https://angular.dev/api/router/Router`, `https://angular.dev/guide/signals` | 16/11/2026 | Router constrói URLs por segmentos; signals/computed derivam filtros. Consulta geral, não comprova comportamento do patch 22.2.6; round-trip de ID e navegação precisam de teste local no apply |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -497,8 +511,8 @@ o agregado anterior e não deixar o formulário permanentemente em envio.
 
 ### Busca, navegação e relatórios
 
-- Busca será local e derivada; sua combinação, normalização e interpretação de datas dependem
-  de `PRD/PEN-005`. Não adotar debounce ou rede fictícia sem necessidade.
+- Busca será local e derivada, conforme PRD/RN-018/019 e DEC-017; PEN-005 foi
+  resolvida para a FASE-005. Não adotar debounce ou rede fictícia sem necessidade.
 - Navegação preserva o estado da sessão, mas não exige persistência dos rascunhos abandonados.
 - Coleção vazia, filtro sem resultado e venda inexistente têm mensagens e ações distintas.
 - Relatórios e painéis leem a fonte compartilhada. Não substituir métricas por números fixos
@@ -708,9 +722,9 @@ a FASE-001 global permanece parcial enquanto depender de decisões das fases seg
 
 ### Roadmap de implementação — fases propostas, não autorização
 
-O roadmap detalha a sequência sem autorizar implementação. FASE-002 e FASE-003 possuem
-evidências anteriores; FASE-001 permanece parcial e FASE-004 a FASE-008 não implementadas.
-PRD 1.3 resolve as dependências financeiras do núcleo. Não há nova execução nesta revisão.
+O roadmap detalha a sequência sem autorizar implementação. FASE-002/003/004 possuem
+evidências anteriores; FASE-001 permanece parcial e FASE-005 a FASE-008 aguardam entrega.
+PRD 1.5 resolve busca e filtros de Quitadas. Não há nova execução de aplicação nesta revisão.
 Prazos, estimativas e responsáveis não foram definidos. As referências
 `PEN-xxx` abaixo pertencem à seção 16, que mantém a correspondência com as pendências do PRD.
 
@@ -719,21 +733,21 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-001 — Preparação e decisões de desbloqueio | Inspecionar a estrutura existente, confirmar o recorte a implementar e registrar decisões necessárias com exemplos de aceite, sem adotar hipóteses como regras. | DEC-001/011; autorização explícita para implementação. PEN-006 exige conciliação documental autorizada antes de implementar temas. Demais pendências são resolvidas antes dos respectivos casos. | Recorte e bloqueios rastreáveis; nenhuma divergência tratada como resolvida sem decisão. A fase permanece parcial enquanto houver decisões necessárias em aberto. |
 | FASE-002 — Base técnica e automações | Criar a base em `frontend/`, configurações estritas, versões compatíveis, lockfile, formatação, scripts reais e infraestrutura mínima de testes unitários, componentes e E2E. | Inspeção e autorização da FASE-001; DEC-002/003/008/009; PEN-015/016 para versões e automações; PEN-013 para o ambiente E2E. | Instalação reprodutível, build estrito e testes mínimos aprovados no ambiente definido; comandos e versões registrados, sem sobrescrever conteúdo existente. |
 | FASE-003 — Estrutura visual e navegação | Construir navegação dos quatro módulos, rotas e retornos, aviso demonstrativo, tokens, temas e componentes compartilhados efetivamente necessários. Conteúdos dependentes do domínio entram nas fases seguintes. | FASE-002; DEC-003/006/007; PEN-006 antes dos temas. | Navegação e caminho desconhecido verificados; aviso visível; teclado e foco funcionais; alternância, contraste e recarga dos temas verificados conforme a decisão conciliada. |
-| FASE-004 — Domínio demonstrativo e estado | Modelos, 10 a 15 vendas sintéticas, funções puras, estado raiz, cadastro por comando interno e pagamento integral em lote sequencial; projeções e testes. | FASE-002/003 existentes; DEC-004/005/011/015/016 e PRD 1.3. Regras financeiras resolvidas; edição, busca e validação completa de identificação excluídas deste núcleo. | Soma e calendário exatos; fonte única, inicialização e projeções coerentes; entrada separada; lotes atômicos sem salto ou duplicidade; testes aplicáveis aprovados e regressão da estrutura preservada. Planejada, não implementada. |
-| FASE-005 — Consulta de vendas e parcelas | Implementar listas de abertas e quitadas, detalhes, busca e filtros aprovados, estados vazios e registro inexistente. | FASE-003/004; DEC-003/004/011/015; PRD/PEN-005/012 ainda para pesquisa e filtros. Classificações já definidas. | Fonte única, busca aprovada, vazios distintos, identificadores e teclado verificados. Planejada, não implementada. |
+| FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Sync/arquivamento ainda pendentes e fora desta Change. |
+| FASE-005 — Consulta de vendas e parcelas | Listas de abertas/quitadas, quatro cartões globais em Vendas, detalhe/parcelas somente leitura, busca única, vazios e inexistência. | FASE-003/004; DEC-003/004/005/008/013/017; PRD 1.5/RN-018/019/CA-026. PEN-005/012 resolvidas para o recorte. | Busca sem mutação nem efeito nos cartões; URLs com ID completo, detalhe reativo, entrada separada e retornos; teclado, temas, layout, testes de consulta e regressão aprovados. Planejada, não implementada; novo apply após revisão. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia e comandos do núcleo; modal de lote sequencial integral, mensagens e atualização das consultas. | FASE-005; DEC-004/005/007/010/015; PRD/PEN-008 e identificação de PEN-010 ainda pendentes. Recebimento segue PRD/RN-016. | Inválido, cancelamento, falha e duplicidade testados; lote atômico; Escape e retorno de foco no navegador. Planejada, não implementada. |
 | FASE-007 — Visão Geral, relatórios e configurações | Integrar resumos, períodos explícitos, controles aprovados e exportação ilustrativa; preservar Configurações já entregue. | FASE-005/006; DEC-003/004/005/015; PRD/RN-015 define métricas. Controles visuais e filtros adicionais exigem recorte próprio. | Indicadores reconciliados, vazios coerentes, sem métricas fixas ou exportação real/falso sucesso. Conteúdo financeiro não implementado; Configurações explicativa já possui evidências da FASE-003. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado, foco e contraste, conferir perda de alterações ao recarregar e preparar roteiro demonstrativo com limitações e evidências. | FASE-003 a FASE-007 no recorte aprovado; DEC-008; PEN-013 para compatibilidade e PEN-014 para avaliação com a ótica. | Build e cenários aplicáveis aprovados, sem erros inesperados no console; resultados e limitações registrados. Aprovação de produto somente após avaliação explícita, distinta da conclusão técnica. |
 
-Estado das fases em 14/11/2026, sem nova execução de aplicação:
+Estado vigente das fases em 16/11/2026, sem nova execução de aplicação:
 
 | Fase | Estado da implementação |
 | --- | --- |
 | FASE-001 | Parcial; decisões das fases futuras ainda abertas |
 | FASE-002 | Implementada com evidências anteriores em frontend/README.md |
 | FASE-003 | Implementada com evidências anteriores e Change arquivada; sem aceite da ótica |
-| FASE-004 | Planejamento desta Change; não implementada |
-| FASE-005 | Não implementada |
+| FASE-004 | Implementada e integrada na main via PR #7; Change ainda ativa, specs não consolidadas |
+| FASE-005 | Planejamento autorizado na Change fase-005; não implementada |
 | FASE-006 | Não implementada |
 | FASE-007 | Conteúdo financeiro não implementado; Configurações explicativa entregue na FASE-003 |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
@@ -799,8 +813,8 @@ como um backend definitivo.
 Os registros de decisão abaixo preservam o histórico de desenho. As marcações originais
 “Não implementada” descrevem a época de cada registro. Para o estado atual, prevalecem a
 seção 1, a tabela de estado do roadmap e as evidências em `frontend/README.md`; esta revisão
-não implementa comportamento novo. DEC-006 já possui evidências anteriores da FASE-003;
-DEC-015/016 e o núcleo financeiro permanecem não implementados.
+não implementa comportamento novo. DEC-006 possui evidências anteriores da FASE-003;
+DEC-015/016 possuem evidências do núcleo na FASE-004; DEC-017 está planejada.
 
 | ID | Tema | Escolha | Situação | Dependências |
 | --- | --- | --- | --- | --- |
@@ -818,8 +832,9 @@ DEC-015/016 e o núcleo financeiro permanecem não implementados.
 | DEC-012 | Documento | TDD central em `docs/tdd/tdd.md`, com Mermaid e roadmap | Confirmada | FON-004 e solicitação de revisão 1.1 |
 | DEC-013 | Base visual | Bootstrap 5.3.x somente para estilos, SCSS complementar e interações Angular | Bootstrap confirmado pelo solicitante; integração técnica planejada | DEC-002/007/009; FON-013/014 |
 | DEC-014 | Automações iniciais | Prettier sem lint; smoke Playwright Chromium no Windows em dois viewports | Confirmada; não implementada | DEC-008/009; FON-015/016; patches em PEN-015 |
-| DEC-015 | Domínio financeiro | Entrada separada, parcelas integrais, recebimento com alocações de lote sequencial e regras do PRD 1.3 | Confirmada quanto às regras; desenho interno proposto, não implementado | DEC-004/005/011; PRD/RN-011 a RN-017 |
-| DEC-016 | Ciclo de vida e verificação do núcleo | Inicialização explícita na abertura, referência injetável, agregado imutável, comandos sem UI e testes de domínio/integração | Proposta técnica apoiada em decisões existentes; não implementada | DEC-002/004/008/015; PRD/RN-009/015 |
+| DEC-015 | Domínio financeiro | Entrada separada, parcelas integrais, recebimento com alocações de lote sequencial e regras do PRD 1.3 | Confirmada; implementada com evidências da FASE-004 em frontend/README.md | DEC-004/005/011; PRD/RN-011 a RN-017 |
+| DEC-016 | Ciclo de vida e verificação do núcleo | Inicialização explícita na abertura, referência injetável, agregado imutável, comandos sem UI e testes de domínio/integração | Confirmada no apply anterior; implementada com evidências da FASE-004 | DEC-002/004/008/015; PRD/RN-009/015 |
+| DEC-017 | Consultas visíveis e busca | Consumir projeções readonly, derivar pesquisa local e vincular detalhe por ID opaco com Router | Proposta técnica; regras/recorte confirmados, não implementada | DEC-003/004/005/008/013; PRD 1.5/RN-018/019/CA-026 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -1135,6 +1150,80 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
   de desempenho medido. Reavaliar somente com evidência ou mudança de escopo; não criar
   repositório abstrato, construtor de comandos genérico ou endpoints para testes.
 
+### DEC-017 — Consultas visíveis sobre o núcleo existente
+
+- **Problema/contexto:** listas e detalhes ainda são indisponíveis, embora a fonte
+  exponha `abertas`, `quitadas`, `resumo`, `referencia` e `consultarVenda(id)`.
+  RF-002/003/005/008 e CA-026 exigem consulta real, sem duplicar saldos ou antecipar mutações.
+- **Origem/situação:** regras e recorte confirmados pelo solicitante no Harness;
+  este mecanismo é proposta técnica baseada em FON-020/021, não implementação comprovada.
+- **Alternativas:** rejeitar estado canônico por página, lista estática, serviço
+  de busca com HTTP, table framework e dependências novas. Consumir a instância raiz
+  existente, com componentes standalone/OnPush e templates separados.
+- **Escolha proposta e estrutura:** manter páginas em `listar-vendas/` e
+  `listar-vendas-quitadas/`; acrescentar `detalhes-venda/`, `venda.busca.ts` e testes.
+  Compartilhar somente apresentação efetivamente usada: tabela de vendas, selo de
+  situação e, se necessário, campo de busca/cartão. Nada de plataforma genérica.
+  Domínio/busca não importam Angular ou páginas; páginas importam fonte e utilitários.
+- **Busca:** função pura recebe coleção readonly e termo; signal local do termo e
+  `computed` derivam resultados. Trim externo, nome com normalização Unicode sem
+  diacríticos e caixa; comparação por substring. Identificação também admite busca
+  textual de marcadores sintéticos (`CPF-DEMO-1`, `TEL-DEMO-1`) sem alterar o seed.
+  Consulta exclusivamente numérica ou com pontuação usual de CPF/telefone (ponto,
+  hífen, parênteses, espaço e +) compara substring dos dígitos, apenas se não vazia.
+  Padrão completo DD/MM/AAAA tem precedência exclusiva: converter para data civil,
+  validar com utilitário existente e comparar igualdade da data da venda; inválida
+  retorna zero resultados. Sem data parcial, tokenização, AND entre campos ou intervalo.
+  Vazio devolve coleção atual, preservando sua ordem; termo não persiste ao sair.
+- **Estado e apresentação:** nenhuma chamada a comandos de cadastro/recebimento;
+  sem providers da fonte por rota. Quatro cartões em Vendas leem `resumo()` global,
+  nunca a lista filtrada. Ambas as listas e detalhes identificam `referencia`.
+  Reutilizar `formatarDinheiro` do utilitário existente `dinheiro.ts`
+  e `formatarDataCivil`, sem DatePipe/UTC para datas civis. Null de vencimento ou
+  pagamento aparece como ausência explícita; entrada permanece separada das parcelas.
+- **Rotas e IDs:** acrescentar `/vendas/:id` após `/vendas/quitadas` e demais
+  caminhos estáticos existentes, antes do wildcard. IDs contêm `/`: usar link por
+  segmentos (`['/vendas', venda.id]`) e serialização do Router, não concatenação
+  de URL ou dupla codificação. `ActivatedRoute.paramMap` convertido por `toSignal`
+  alimenta consulta derivada com `computed`; não capturar só o snapshot inicial.
+  Testar round-trip do ID completo, recarga/direto, troca A→B→inexistente na mesma
+  instância e ausência distinta de rota desconhecida. Não mudar IDs do núcleo.
+- **Navegação:** detalhe oferece links explícitos para Vendas e Quitadas, sem
+  depender de histórico/query params; foco no h1 pelo mecanismo existente de App.
+  Vendas permanece módulo ativo nos detalhes, sem falso aria-current da lista.
+  Não exigir preservação do termo ao retornar. Não criar rotas de cadastro/edição.
+- **Estilos/acessibilidade:** Bootstrap instalado e SCSS complementar; tabela com
+  caption/cabeçalhos, valores alinhados, link de cliente e Visualizar com nomes
+  inequívocos, selo textual além de cor. Busca com rótulo visível, orientação de
+  data e ação Limpar que preserva/devolve foco ao campo. Contagem/sem resultados
+  anunciáveis sem deslocar foco. Rolagem horizontal restrita à tabela com região
+  identificada acessível por teclado, sem corte horizontal do restante da página.
+  Dois temas, foco, contraste e zoom nativo 200% precisam de verificação real.
+- **Conflito e migração das specs:** `navegacao-aplicacao` exige indisponibilidade
+  nas páginas da FASE-003; modificar requisito/cenário para restringi-lo a Visão
+  Geral/Relatórios e especificar consultas em Vendas/Quitadas. A delta 004 também
+  registra ausência de UI como recorte histórico. Não editar/arquivar a Change 004
+  nesta solicitação; nova capacidade deve declarar que a restrição era da fase 004,
+  não proibição permanente. Revisar `conteudo.spec.ts` e E2E só nos destinos afetados,
+  preservando restrições nas páginas ainda indisponíveis e controles de privacidade.
+- **Verificação planejada:** unitários de busca (incluindo fixtures com CPF/telefone
+  sintéticos formatados, nomes acentuados e datas extremas), TestBed com fonte e
+  referência explícitas, coleção vazia em doubles somente de teste, navegação e
+  atualização reativa após comando interno de teste. E2E lê seed pela UI, sem hooks
+  globais/endpoints: pesquisar nome/identificação/data, limpar, abrir detalhes e
+  navegar direto/recarregar, em ambos os viewports. Testes e revisão visual/manual
+  por funcionalidade, regressão final nos scripts existentes, sem contagem antecipada.
+- **Contrapartidas/limites:** filtros se perdem ao sair; consulta linear é proporcional
+  às 12 vendas, sem alegar desempenho medido. Nenhum pacote Forms é necessário para
+  um campo de pesquisa nativo com signal/evento, pois não é formulário de negócio;
+  cadastro/edição/recebimento da FASE-006 continuam sujeitos à DEC-010/Signal Forms.
+  Sem placeholders Nova venda/Editar/Registrar pagamento, modal, gráfico, relatório
+  funcional ou mutação financeira pelo browser nesta fase. CA-021 completo continua
+  dependente de interação futura. Compatibilidade e aceite de produto não comprovados.
+- **Condição de revisão:** mudança nas regras RN-018/019, necessidade de manter filtros
+  na URL ou falha comprovada do Router com IDs exige revisar o desenho antes do código
+  afetado, nunca trocar IDs silenciosamente ou contornar testes.
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -1162,14 +1251,14 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 | PEN-002 | Entrada nos pagamentos, saldos e recebimentos; `PRD/PEN-002` | Cadastro e resumos, DEC-004/005/015 | Resolvida por PRD/RN-013 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
 | PEN-003 | Distribuição de centavos; `PRD/PEN-003` | Parcelamento, DEC-005/015 | Resolvida por PRD/RN-012 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
 | PEN-004 | Hoje e próximos sete dias; `PRD/PEN-004` | Situações, DEC-005/015 | Resolvida por PRD/RN-014 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
-| PEN-005 | Combinação, normalização e datas da pesquisa; `PRD/PEN-005` | Consulta, DEC-004 | Definir exemplos e resultados esperados | Busca completa |
+| PEN-005 | Combinação, normalização e datas da pesquisa; `PRD/PEN-005` | Consulta, DEC-004/017 | PRD 1.5/RN-018/019 e respostas do Harness | Resolvida para o recorte da FASE-005; não implementada |
 | PEN-006 | Conciliação dos temas com PRD e instruções | Direção visual, DEC-006 | PRD conciliado; evidências anteriores e specs da FASE-003 | Resolvida com evidências técnicas, sem aceite da ótica |
 | PEN-007 | Situações gerais de vendas abertas; `PRD/PEN-007` | Projeções, DEC-004/005/015 | Resolvida por PRD/RN-014 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
 | PEN-008 | Edição antes/depois de pagamentos; `PRD/PEN-008` | Integridade de histórico, DEC-004/010 | Definir campos e repercussões permitidas | Edição completa |
 | PEN-009 | Referência, períodos, universo e filtros dos resumos; `PRD/PEN-009` | Projeções, DEC-004/005/016 | Resolvida para núcleo por PRD/RN-015; controles visuais na FASE-007 | Sem bloqueio no núcleo; não implementada |
 | PEN-010 | Validações de CPF/telefone e limites demonstrativos; `PRD/PEN-010` | Cadastro, DEC-010/015 | PRD/RN-017 resolve finanças; identificação ainda aberta | Validação de identificação antes da UI na FASE-006 |
 | PEN-011 | Integralidade, lote, ordem, antecipação, datas e formas; `PRD/PEN-011` | Pagamento, DEC-004/005/015 | Resolvida por PRD/RN-016 e CA-024 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
-| PEN-012 | Configurações e filtros em quitadas; `PRD/PEN-012` | Telas secundárias, DEC-003 | PRD/HIP-004 aceita para página explicativa; filtros e outros controles não definidos | Parcialmente resolvida; itens remanescentes fora da FASE-003 |
+| PEN-012 | Configurações e filtros em quitadas; `PRD/PEN-012` | Telas secundárias, DEC-003/017 | Configurações entregue; PRD/RN-019 confirma mesma busca sem filtros extras | Resolvida no recorte do MVP; consulta de Quitadas não implementada |
 | PEN-013 | Navegadores, dimensões e computador; `PRD/PEN-013` | Acessibilidade, E2E e desempenho, DEC-007/008 | Definir ambiente de avaliação | Aceite de compatibilidade |
 | PEN-014 | Aprovadores, participantes e metas; `PRD/PEN-014` | Validação com a ótica | Confirmar responsáveis e roteiro | Aprovação do produto |
 | PEN-015 | Patches, engines/peers, licenças e versões das ferramentas | Base, DEC-008/009 | Manifesto/lockfile e verificações anteriores em frontend/README.md | Base entregue; não mudar versões na FASE-004; sem auditoria completa de licenças |
@@ -1196,6 +1285,7 @@ continuam pendentes. Nenhuma hipótese é aprovada por inferência.
 | Bootstrap como base visual | FON-013 e FON-014 | DEC-013 | 6, 10, 11, 12, 14 | Compilação dos estilos, temas, responsividade e acessibilidade |
 | Base e automações iniciais | FON-015 e FON-016; PRD/RNF-008/010 | DEC-008/009/014 | 12, 14, 15 | Instalação, build estrito, Prettier e testes mínimos, sem aceite comercial |
 | Fonte técnica centralizada | FON-004 | DEC-012 | 15, 16 | IDs, fontes e coerência |
+| Consultas, pesquisa e recorte somente leitura; PRD/RF-002/003/005/008, RN-018/019, CA-026 | FON-020/021 | DEC-017 | 9, 14, 15 | Busca, URLs com ID opaco, vazio/inexistência, resumos globais e testes de UI; planejados na fase-005 |
 
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
 revisão do PRD e das referências relevantes, confirmação das escolhas por perguntas, consulta
@@ -1239,6 +1329,8 @@ separadamente, após este registro técnico.
 | 1.5 — 13/11/2026 | Refinamento cromático da barra lateral e regressão de contraste sobre degradê, conforme PRD 1.2 | DEC-006/013 refinadas sem nova arquitetura ou dependência | Pedido explícito de lateral vermelha nos dois temas durante o apply; zoom nativo pendente preservado |
 | 1.6 — 14/11/2026 | PRD 1.3, estado local da FASE-003, núcleo da FASE-004, lote sequencial, referência e estratégia de testes sem UI; pendências e roadmap conciliados | DEC-015/016 adicionadas; DEC-004/005 preservadas | Respostas explícitas do solicitante e inspeção local; planejamento, sem apply |
 | 1.7 — 14/11/2026 | Fronteira específica de preparação sem estado e doubles TestBed para falhas de atomicidade; funções puras preservadas | DEC-016 refinada, PRD 1.3 sem alteração | Bloqueio real do mock de módulo no apply e revisão técnica aprovada pelo solicitante; solução ainda não implementada |
+| 1.8 — 16/11/2026 | Política adaptativa do seed nas bordas e refinamento de dia/prefixo; registros anteriores preservados | DEC-015/016 aplicadas | Aprovação e implementação da FASE-004; evidências em frontend/README.md |
+| 1.9 — 16/11/2026 | Estado vigente da FASE-004 e roadmap; consulta de vendas da FASE-005 com busca aprovada, ID opaco e migração de testes/specs | DEC-017 proposta; PRD 1.5 | Autorização documental no Harness; fonte e documentação consultadas, sem código ou testes de aplicação |
 
 **Verificação da revisão 1.4:** leitura da fonte, manifesto, testes e configuração E2E;
 confirmação de merge do PR #4 e de ancestralidade de seu commit na `main`; consultas

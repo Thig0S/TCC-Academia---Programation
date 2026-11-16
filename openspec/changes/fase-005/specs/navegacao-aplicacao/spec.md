@@ -1,0 +1,61 @@
+# Spec Delta
+
+## MODIFIED Requirements
+
+### Requirement: Navegação principal e contexto de Vendas
+
+A aplicação SHALL oferecer navegação com ícones decorativos e rótulos Visão Geral, Vendas, Relatórios e Configurações, indicando visualmente o módulo ativo. Quitadas e detalhes de venda SHALL pertencer a Vendas, sem quinto módulo, Clientes ou Parcelas independentes. O perfil Administrador SHALL ser identificado como estático, sem sugerir autenticação.
+
+#### Scenario: Percorrer os módulos
+- **WHEN** a pessoa acionar cada item da navegação principal
+- **THEN** SHALL acessar o destino correspondente com seu título visível
+- **AND** o destino atual SHALL ter indicação visual e programática de localização
+- **AND** identidade e aviso demonstrativo SHALL permanecer visíveis
+
+#### Scenario: Consultar o destino Quitadas
+- **WHEN** a pessoa acessar Quitadas pela opção interna de Vendas
+- **THEN** o título SHALL identificar Vendas quitadas e o módulo Vendas SHALL permanecer visualmente ativo
+- **AND** Quitadas SHALL ser indicada como página atual, com retorno disponível para Vendas
+- **AND** o perfil estático e o atalho de Configurações SHALL não oferecer login ou gestão de conta
+
+#### Scenario: Orientar contexto e retorno no detalhe
+- **WHEN** a pessoa abrir detalhes de uma venda aberta, quitada ou inexistente
+- **THEN** Vendas SHALL permanecer como módulo visualmente ativo, sem marcar a lista como a página atual do detalhe
+- **AND** SHALL haver título principal específico e links explícitos para Vendas e Quitadas, inclusive no acesso direto sem histórico anterior
+- **AND** após navegação interna bem-sucedida o título principal SHALL receber foco conforme o contrato da estrutura
+
+### Requirement: Rotas acessíveis diretamente e retorno de caminho desconhecido
+
+A aplicação SHALL disponibilizar `/visao-geral`, `/vendas`, `/vendas/quitadas`, `/vendas/:id`, `/relatorios` e `/configuracoes`. A entrada `/` SHALL abrir Visão Geral. Detalhes SHALL preservar o identificador completo da venda. Um caminho desconhecido SHALL mostrar página não encontrada com retorno explícito para Visão Geral, sem inventar registro ou apresentar erro não tratado.
+
+#### Scenario: Abrir e recarregar destinos diretamente
+- **WHEN** a pessoa abrir diretamente ou recarregar cada rota conhecida
+- **THEN** SHALL encontrar a mesma página identificada e a navegação coerente com o destino
+- **AND** a entrada `/` SHALL resultar em `/visao-geral`
+- **AND** o detalhe SHALL consultar o identificador completo, inclusive quando contiver barras codificadas no endereço, sem alterar IDs do domínio
+
+#### Scenario: Recuperar-se de caminho desconhecido
+- **WHEN** a pessoa acessar uma rota não prevista
+- **THEN** SHALL receber indicação de página não encontrada e link para Visão Geral
+- **AND** acionar o retorno SHALL restaurar a navegação normal, preservando aviso e tema da sessão
+
+#### Scenario: Trocar venda sem exibir registro anterior
+- **WHEN** a navegação interna mudar o detalhe de uma venda para outra e depois para um identificador inexistente
+- **THEN** SHALL consultar o novo identificador a cada navegação, sem manter dados do anterior
+- **AND** o identificador inexistente SHALL apresentar venda não encontrada, distinta de rota desconhecida, com retornos explícitos
+- **AND** `/vendas/quitadas` SHALL continuar abrindo a coleção, nunca o detalhe de uma venda com esse nome
+
+### Requirement: Conteúdo comercial honestamente indisponível
+
+Visão Geral e Relatórios SHALL apresentar título e explicação de que seu conteúdo comercial ainda não está disponível, sem totais, registros, busca, filtros, formulários ou ações comerciais. Vendas, Quitadas e detalhes SHALL oferecer as consultas da FASE-005, sem ações fictícias de cadastro, edição, pagamento ou exportação ainda não implementadas.
+
+#### Scenario: Abrir cada página comercial inicial
+- **WHEN** a pessoa acessar Visão Geral ou Relatórios
+- **THEN** SHALL distinguir uma funcionalidade ainda indisponível de uma consulta realizada sem resultados
+- **AND** SHALL não encontrar números financeiros, vendas inventadas ou ações de cadastrar, editar, pagar ou exportar
+
+#### Scenario: Consultar páginas entregues sem promessa de mutação
+- **WHEN** a pessoa acessar Vendas, Quitadas ou detalhes
+- **THEN** SHALL encontrar as consultas reais previstas em consulta-vendas, não a mensagem de que nenhuma consulta foi realizada
+- **AND** SHALL não encontrar botões ou links de cadastrar, editar, registrar pagamento ou exportar sem funcionalidade nesta fase
+- **AND** Configurações, aviso, temas e limites de demonstração SHALL continuar preservados
