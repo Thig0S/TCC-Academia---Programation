@@ -72,6 +72,46 @@ test('páginas comerciais explicam indisponibilidade sem consulta ou ações fic
   }
 });
 
+test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no contexto de Vendas', async ({
+  page,
+}) => {
+  const detalhe = '/vendas/seed%2Fvenda%2F1';
+  await page.goto(detalhe);
+  await expect(page).toHaveURL(/\/vendas\/seed%2Fvenda%2F1$/i);
+  await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
+  await expect(page.getByRole('main')).toContainText('Cliente DEMO Aurora 1');
+  await expect(page.getByRole('main')).toContainText('CPF-DEMO-1');
+  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  await expect(page.getByRole('main').getByRole('table')).toBeVisible();
+  await expect(page.getByRole('main').locator('button, form')).toHaveCount(0);
+  const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
+  await expect(navegacao.locator('div.modulo-ativo')).toContainText('Vendas');
+  await expect(navegacao.getByRole('link', { name: 'Vendas', exact: true })).not.toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
+  await expect(page.getByRole('main')).toContainText('Cliente DEMO Aurora 1');
+
+  await page
+    .getByRole('navigation', { name: 'Retornos de Vendas' })
+    .getByRole('link', { name: 'Voltar para Vendas' })
+    .click();
+  await expect(page).toHaveURL(/\/vendas$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Vendas' })).toBeFocused();
+
+  await page.goto(detalhe);
+  await page
+    .getByRole('navigation', { name: 'Retornos de Vendas' })
+    .getByRole('link', { name: 'Ver Vendas quitadas' })
+    .click();
+  await expect(page).toHaveURL(/\/vendas\/quitadas$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeFocused();
+});
+
 test('Configurações explica os quatro limites pelos dois acessos e temas', async ({ page }) => {
   await page.goto('/');
   for (const tema of ['dark', 'light']) {
