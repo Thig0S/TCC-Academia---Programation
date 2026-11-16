@@ -192,6 +192,32 @@ Não foram executados aceite da ótica, UI das FASE-005/006/007, Firefox/WebKit,
 homologação de dispositivos, cobertura percentual ou desempenho de negócio.
 CA-018/021 completos continuam pendentes. Sem PR antecipado, merge, sync ou arquivo.
 
+## Retomada FASE-004 — 16/11/2026
+
+PRD 1.4/TDD 1.8 e deltas revisados e aprovados no Harness antes do código. A opção
+de restringir a referência foi reconsiderada: o domínio e a sessão mantêm 0001–9999.
+O seed adapta meses/quantidade de parcelas e, quando necessário, dia-base e prefixo
+pago. Janeiro/0001 usa 01/01 no grupo próximo; fevereiro/0001 usa 01/01 no atrasado.
+Dezembro/9999 usa 31/10 e primeira parcela paga para deixar pendência em 31/12 no
+grupo aberto e no próximo em 31/12. Nos demais casos limita o mês entre janeiro/0001
+e novembro/9999 e usa até quatro parcelas que caibam no calendário. Soma valores
+efetivos ao pagar; nenhuma alteração da referência ou das validações comerciais.
+
+Tarefa 4.1: suíte percorre todos os 242 dias de janeiro–abril/0001 e setembro–dezembro/9999,
+validando 12 vendas, IDs únicos, somas, calendário, histórico sequencial, determinismo
+e conjunto exato de situações possíveis; isolamento também nos dois extremos.
+As cinco referências anteriores continuam cobertas. Revisão do fonte confirma apenas
+marcadores sintéticos, sem dados reais. Situações impossíveis: atraso até 01/02/0001
+inclusive, próximos antes de 25/01/0001 e aberto nos últimos sete dias mais o próprio
+31/12/9999. As demais situações são preservadas.
+
+Verificações incrementais desta retomada, todas saída 0: formatação, build de produção
+(480,18 kB iniciais/91,57 kB estimados; sem aviso de budget, Sass `@import` mantido)
+e 153/153 testes em 13 arquivos. Validação OpenSpec inicialmente saiu 1 por texto de
+requisito longo; após autorização, detalhes ficaram nos cenários e a validação passou.
+Context7 Angular/TestBed consultado para integração/recriação. Estes resultados não
+comprovam UI de negócio nem aceite da ótica; 5.2/5.3 ainda pendentes neste ponto.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
