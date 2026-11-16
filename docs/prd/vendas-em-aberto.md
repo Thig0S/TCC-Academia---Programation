@@ -26,6 +26,11 @@ inicial sintético: comandos continuam sujeitos a RN-011/017. A alternativa de
 restringir a demonstração foi reconsiderada e não está aprovada. Apply autorizado;
 esta decisão não comprova implementação, verificação ou aceite comercial.
 
+Refinamento aprovado na mesma sessão: é permitido variar também o dia da venda e
+o histórico de liquidações do seed para preservar todas as situações possíveis nas
+bordas. Apenas limitar meses preservando sempre o dia não é suficiente; não foi
+aprovada a dispensa de situações que ainda possam ser representadas validamente.
+
 O README propõe substituir, futuramente, uma planilha usada para acompanhar vendas a prazo, parcelas e recebimentos. A entrevista de gestão delimita melhor essa oportunidade: a loja já utiliza sistemas da franquia, inclusive de crediário, e mantém uma planilha auxiliar de determinadas vendas. O produto não deve ser interpretado como substituto de todo o sistema financeiro ou do crediário da franquia.
 
 O relato de atendimento indica que consultar por nome pode ser tranquilo, enquanto cadastrar e conferir informações exige mais cuidado. Nomes semelhantes exigem conferência de sobrenome e CPF. Portanto, não há evidência de que a busca atual seja difícil para todos; a oportunidade mais consistente é simplificar cadastro, conferência e atualização, preservando a facilidade de consulta. Parte das entrevistas foi reconstruída, aproximada ou reorganizada e precisa de validação antes de fundamentar afirmações definitivas sobre frequência ou prejuízo financeiro.

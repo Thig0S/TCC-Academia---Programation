@@ -16,6 +16,14 @@ não muda validações de comandos, referência ou classificação. Cobrir extre
 transições, datas bissextas/dias 31, invariantes, determinismo, isolamento e serviço.
 Não adicionar tela de bloqueio, persistência ou dependência. A pausa abaixo é histórica.
 
+Refinamento aprovado na revisão anterior ao código: variar dia e prefixo pago onde
+necessário para manter situações possíveis. Janeiro/0001 usa venda em 01/01 no
+grupo próximo, permitindo vencimento em 01/02; fevereiro/0001 usa 01/01 no grupo
+atrasado. Dezembro/9999 usa venda em 31/10, duas parcelas e primeira paga no grupo
+aberto, preservando pendência em 31/12; o grupo próximo usa esse mesmo histórico
+quando a referência é 31/12. As demais datas continuam com limitação mensal e
+quantidade descritas acima. As exceções de dia substituem sua preservação estrita.
+
 > Estado após retomada de apply em 15/11/2026: 18/21 tarefas. Adaptador e sessão
 > implementados, regressão limpa 143/143 e E2E 26/26. Pausa solicitada na revisão
 > final por lacuna do seed nas extremidades 0001/9999: histórico de três meses e

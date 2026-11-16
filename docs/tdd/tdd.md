@@ -19,6 +19,14 @@ da integração do serviço, reconciliação e recriação. Sem restrição adic
 domínio, fallback de referência, UI nova ou dependências. Atualizar SDD antes do
 código. O bloqueio e as evidências descritos abaixo são históricos.
 
+Refinamento aprovado após revisão: o dia-base sintético e o prefixo pago também
+podem variar nas bordas. Para próximos dias no início, usar 01/01/0001 (primeira
+parcela 01/02); para atraso em fevereiro/0001, usar a mesma venda. Em dezembro/9999,
+usar 31/10 com duas parcelas e a primeira liquidada para representar vencimento
+pendente em 31/12 (aberto enquanto distante mais de sete dias e próximo depois).
+No grupo próximo, esse histórico é necessário em 31/12; nos demais dias de dezembro
+o mês anterior preserva o dia. Continuar somando os valores efetivos dos prefixos.
+
 **Estado do apply em 15/11/2026:** núcleo de recebimentos e sessão implementados na
 `feature/fase-004` (commits `72fba45`/`17255d2`), com regressão limpa registrada em
 `frontend/README.md`: 143/143 testes e 26/26 E2E. Progresso 18/21; não é conclusão
