@@ -144,7 +144,7 @@ vulnerabilidades. Os quatro avisos de scripts não autorizados foram preservados
 | ------------------------------- | ----- | ------------------------------------------------------------- |
 | `npm.cmd ci`                    | 0     | 289 pacotes; auditoria automática reportou 0 vulnerabilidades |
 | `npm.cmd run format:check`      | 0     | Prettier aprovado                                             |
-| `npm.cmd run build`             | 0     | 488,11 kB iniciais/93,81 kB estimados                        |
+| `npm.cmd run build`             | 0     | 488,11 kB iniciais/93,81 kB estimados                         |
 | `npm.cmd test -- --watch=false` | 0     | 174/174 testes em 16 arquivos                                 |
 | `npm.cmd run test:e2e`          | 0     | 34/34, 17 por viewport Chromium                               |
 
@@ -180,6 +180,14 @@ não fluxo de usuário. Integração com backend/serviços reais, homologação 
 leitor de tela/tecnologia assistiva e avaliação da ótica não foram executados. O efeito e2e
 não testa comportamento de persistência financeira real, pois a fonte é intencionalmente em
 memória. Não há dependência de serviço externo para a consulta demonstrativa.
+
+Revisão final 5.4: branch `feature/fase-005`, commits por entrega verificados contra `main`;
+diff restrito ao planejamento PRD/TDD/SDD, implementação/testes/docs da 005 e consolidação
+documental solicitada da 004. `git diff --check` saiu 0 (avisos de conversão LF/CRLF do Git);
+`openspec validate fase-005 --strict` saiu 0 e `openspec validate --specs` aprovou 7/7.
+Template consultado: `.github/pull_request_template.md`. Nenhum PR estava aberto para esta
+branch na consulta final; preparar um PR único após fechar a última tarefa, sem merge nesta
+etapa.
 
 ## Apply FASE-004 — 14/11/2026
 
