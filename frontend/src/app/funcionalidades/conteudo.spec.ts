@@ -21,7 +21,7 @@ describe('Conteúdo honesto da demonstração', () => {
     expect(pagina.querySelectorAll('form, input, select, textarea, button, a').length).toBe(0);
   });
 
-  for (const rota of ['/visao-geral', '/vendas', '/vendas/quitadas', '/relatorios']) {
+  for (const rota of ['/visao-geral', '/relatorios']) {
     it(`explica indisponibilidade em ${rota}, sem simular consulta vazia`, async () => {
       const harness = await RouterTestingHarness.create(rota);
       const pagina = harness.routeNativeElement!;

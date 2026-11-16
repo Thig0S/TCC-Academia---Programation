@@ -1,0 +1,59 @@
+<div class="table-responsive" role="region" [attr.aria-label]="legenda()" tabindex="0">
+  <table class="table table-striped align-middle">
+    <caption>
+      {{
+        legenda()
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Cliente</th>
+        <th scope="col">Data da venda</th>
+        <th scope="col">Valor total</th>
+        <th scope="col">Parcelas pagas/total</th>
+        <th scope="col">Saldo devedor</th>
+        <th scope="col">Próximo vencimento</th>
+        <th scope="col">Situação</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (venda of vendas(); track venda.id) {
+        <tr>
+          <th scope="row">
+            <a
+              [routerLink]="['/vendas', venda.id]"
+              [attr.aria-label]="
+                'Abrir detalhes da venda de ' + venda.cliente.nome + ', ID ' + venda.id
+              "
+              >{{ venda.cliente.nome }}</a
+            >
+          </th>
+          <td>{{ formatarDataCivil(venda.dataVenda) }}</td>
+          <td>{{ formatarDinheiro(venda.valorTotalCentavos) }}</td>
+          <td>{{ venda.quantidadePaga }}/{{ venda.parcelas.length }}</td>
+          <td>{{ formatarDinheiro(venda.saldoCentavos) }}</td>
+          <td>
+            {{
+              venda.proximoVencimento
+                ? formatarDataCivil(venda.proximoVencimento)
+                : 'Não há parcelas pendentes'
+            }}
+          </td>
+          <td><app-selo-situacao [situacao]="venda.situacao" /></td>
+          <td>
+            <a
+              [routerLink]="['/vendas', venda.id]"
+              [attr.aria-label]="'Visualizar venda de ' + venda.cliente.nome + ', ID ' + venda.id"
+              >Visualizar</a
+            >
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="8">Não há vendas nesta coleção.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

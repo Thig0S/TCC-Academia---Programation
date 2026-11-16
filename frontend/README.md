@@ -56,6 +56,30 @@ Essas verificações não são homologação de outros navegadores, aceite da ó
 contraste/acessibilidade completa. A verificação de foco ao abrir o detalhe por link da lista
 será concluída junto à entrega dos links de consulta nas listas.
 
+### Listas, busca visível e cartões globais — FASE-005
+
+Vendas e Quitadas apresentam coleções separadas da fonte raiz, referência da sessão e a tabela
+compartilhada. Vendas mostra os quatro cartões globais sem recalculá-los pelos resultados da
+pesquisa; o filtro de situação existe somente nas abertas. Os campos nativos aceitam nome,
+marcadores sintéticos de CPF/telefone e data completa obtida da própria UI. Limpar pesquisa
+preserva situação; Limpar critérios restaura Todas. Os dois links por linha abrem a venda
+identificada; ações de cadastro, edição, pagamento e exportação não foram adicionadas.
+
+Verificação incremental em 16/11/2026, Windows, Node 24.21.0/npm 11.19.0, Chromium, viewports
+1366×768 e 390×844: `npm.cmd run format:check` passou; `npm.cmd run build` saiu 0 com
+488,11 kB iniciais e 93,81 kB estimados; `npm.cmd test -- --watch=false` aprovou 173/173 testes
+em 16 arquivos.
+Playwright com servidor próprio em 4302 aprovou 30/30 E2E (15 por viewport), incluindo nome,
+CPF/telefone sintéticos, data da tabela, combinação busca/situação, limpezas e foco, abertura
+pelos links de nome e Visualizar, ausência de filtro em Quitadas, conteúdo ainda indisponível
+em Visão Geral/Relatórios, Configurações, aviso, rede local e ausência de persistência. O teste
+de contraste mediu texto mínimo 5,96:1 no tema escuro e 4,83:1 no claro; borda/foco dos
+controles essenciais excederam 3:1. O Sass `@import` depreciado permanece como warning.
+
+Esse resultado incremental não homologa outros navegadores/dispositivos, não comprova zoom
+nativo de 200% e não constitui avaliação da ótica. A inspeção e medição completa dos estados
+de tabelas, selos e controles continua vinculada às tarefas de acessibilidade da FASE-005.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
