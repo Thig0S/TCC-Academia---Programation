@@ -131,6 +131,28 @@ comando interno é exclusivo do TestBed: a aplicação e os E2E continuam sem bo
 hook global ou chamada ao serviço pelo browser. O teste não representa operação visível ao
 usuário nem altera regras do núcleo financeiro.
 
+#### Regressão limpa FASE-005 — 16/11/2026
+
+Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.
+`npm ci` teve uma primeira tentativa com saída 1 (`EBUSY` em `sass-embedded.../dart-sass/src`)
+enquanto havia servidor em 4200; não foi encerrado processo nessa tentativa. Após nova
+conferência, o listener e seus processos filhos já tinham terminado por conta própria; a
+repetição de `npm ci` saiu 0, instalou 289 pacotes e a auditoria automática reportou 0
+vulnerabilidades. Os quatro avisos de scripts não autorizados foram preservados, sem aprovação.
+
+| Comando em `frontend/`          | Saída | Resultado                                                     |
+| ------------------------------- | ----- | ------------------------------------------------------------- |
+| `npm.cmd ci`                    | 0     | 289 pacotes; auditoria automática reportou 0 vulnerabilidades |
+| `npm.cmd run format:check`      | 0     | Prettier aprovado                                             |
+| `npm.cmd run build`             | 0     | 488,11 kB iniciais/93,81 kB estimados                        |
+| `npm.cmd test -- --watch=false` | 0     | 174/174 testes em 16 arquivos                                 |
+| `npm.cmd run test:e2e`          | 0     | 34/34, 17 por viewport Chromium                               |
+
+Budgets inalterados: bundle inicial aviso 500 kB/erro 1 MB e estilos por componente aviso
+4 kB/erro 8 kB; sem aviso de budget. Sass `@import` depreciado permanece. O runner usou
+`reuseExistingServer: false`, servidor próprio em 4200 e o encerrou ao terminar; nenhum
+processo alheio foi reutilizado ou encerrado nesta regressão final.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
