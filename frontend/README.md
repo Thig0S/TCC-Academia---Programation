@@ -235,6 +235,44 @@ Isso cobre contratos internos de CA-008/009/011/013/014/017/020/024/025, não UI
 CA nem CA-018/021 completos, recarga financeira por navegador ou aceite da ótica.
 As telas de consulta, comandos visíveis e indicadores dependem de FASE-005/006/007.
 
+### Regressão final e rastreabilidade — 16/11/2026
+
+Ambiente Windows, Node 24.21.0/npm 11.19.0, versões fixadas preservadas. Instalação
+limpa repetida sem bypass de peers ou aprovação de scripts; 289 pacotes instalados,
+0 vulnerabilidades reportadas pela auditoria automática (não é certificação).
+
+| Comando em `frontend/`          | Saída | Resultado                                                         |
+| ------------------------------- | ----- | ----------------------------------------------------------------- |
+| `npm.cmd ci`                    | 0     | Instalação limpa; quatro avisos de scripts não aprovados mantidos |
+| `npm.cmd run format:check`      | 0     | Todos os arquivos abrangidos aprovados                            |
+| `npm.cmd run build`             | 0     | 480,18 kB iniciais/91,57 kB estimados; Sass `@import` depreciado  |
+| `npm.cmd test -- --watch=false` | 0     | 156/156 testes, 13 arquivos                                       |
+| `npm.cmd run test:e2e`          | 0     | 26/26, 13 por viewport Chromium, servidor próprio em 4200         |
+
+Budgets não alterados: inicial 500 kB/1 MB e estilos 4/8 kB; nenhum warning de budget.
+Os E2E preservam aviso, temas, teclado/foco, contraste, indisponibilidade comercial,
+rede local e ausência de persistência observada; nenhum erro inesperado de console.
+Porta 4200 livre após o runner; nenhum servidor alheio reutilizado ou encerrado.
+
+Revisão de escopo da branch contra `main`: domínio puro, sessão, testes e documentos;
+App somente injeta a fonte. Manifesto/lockfile, HTML, rotas e configuração E2E intactos.
+Inspeção de `src/app` não encontrou storage, HTTP/fetch, cookies ou effects de cópias.
+Commits individuais de utilitários, vendas, recebimentos e sessão preservados; correção
+do seed e integração têm commits próprios com testes, documentação e tarefas.
+
+Rastreabilidade: PRD 1.4, RN-011–017/CA-008/009/011/013/014/017/020/024/025 →
+TDD 1.8, FASE-004/DEC-004/005/008/011/015/016 → Change `fase-004`, capacidades
+`dominio-vendas`, `recebimentos-parcelas`, `estado-demonstrativo` → testes colocados
+e evidências acima. Não se declara CA-018/021 completo nem aceite da ótica. Sem
+edição, nova regra de identificação, busca/filtros, interface comercial, persistência
+ou nova dependência. Firefox/WebKit, dispositivos reais, desempenho, cobertura
+percentual, UI comercial e avaliação de produto não executados por estarem fora
+do recorte. Arquivamento/sync e merge não executados; merge exige autorização.
+
+Na raiz, `openspec validate fase-004 --strict` e `git diff --check` aprovados com
+saída 0; Git apenas avisa LF/CRLF nos documentos da raiz. Tarefas 21/21 concluídas,
+revisão de rastreabilidade realizada e PR único preparado somente após todo o escopo.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch

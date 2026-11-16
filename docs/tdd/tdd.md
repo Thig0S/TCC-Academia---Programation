@@ -6,6 +6,12 @@
 
 ## 1. Identificação e situação
 
+**Verificação vigente — 16/11/2026:** seed adaptativo e integração implementados;
+regressão limpa da FASE-004 com 156 testes e 26 E2E aprovados, build e formatação
+saída 0. Evidências/limitações em `frontend/README.md`. O bloqueio anterior do seed
+foi resolvido pela política e refinamento abaixo. Não comprova aceite de produto,
+UI comercial ou integração na main; merge permanece sujeito a autorização.
+
 **Decisão vigente — 16/11/2026, revisão 1.8:** PRD 1.4 aprovado no Harness, seguido
 da aprovação desta política técnica para retomar o apply da FASE-004. Manter a
 referência capturada e 12 vendas; limitar o mês calculado de cada venda entre
