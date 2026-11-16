@@ -358,6 +358,103 @@ test('confere contraste efetivo, foco e superfícies com movimento reduzido', as
   });
 });
 
+test('confere semântica e contraste de tabelas, situações e controles de consulta nos dois temas', async ({
+  page,
+}) => {
+  const medirContraste = async (seletor: string) =>
+    page.locator(seletor).evaluateAll((elementos) => {
+      const rgb = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+      const luminancia = (cor: number[]) =>
+        cor
+          .slice(0, 3)
+          .map((canal) => {
+            const s = canal / 255;
+            return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+          })
+          .reduce((soma, canal, indice) => soma + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+      const compositar = (frente: number[], fundo: number[]) =>
+        frente
+          .slice(0, 3)
+          .map(
+            (canal, indice) => canal * (frente[3] ?? 1) + fundo[indice] * (1 - (frente[3] ?? 1)),
+          );
+      const fundo = (elemento: Element | null): number[] => {
+        if (!elemento) return [255, 255, 255];
+        const estilo = getComputedStyle(elemento);
+        const cor = rgb(estilo.backgroundColor);
+        if ((cor[3] ?? 1) === 1) return cor;
+        return compositar(cor, fundo(elemento.parentElement));
+      };
+      return elementos.map((elemento) => {
+        const texto = compositar(rgb(getComputedStyle(elemento).color), fundo(elemento));
+        const plano = fundo(elemento);
+        const [maior, menor] = [luminancia(texto), luminancia(plano)].sort((a, b) => b - a);
+        return {
+          texto: (elemento.textContent ?? '').trim(),
+          razao: (maior + 0.05) / (menor + 0.05),
+        };
+      });
+    });
+  const verificarContraste = async (tema: string, area: string) => {
+    const valores = await medirContraste('th, td, caption, .badge, button, label');
+    for (const valor of valores)
+      expect(valor.razao, `${tema}/${area}: ${valor.texto}`).toBeGreaterThanOrEqual(4.5);
+    console.log(
+      `Contraste ${tema}/${area}: mínimo ${Math.min(...valores.map((valor) => valor.razao)).toFixed(2)}:1`,
+    );
+  };
+
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
+    await expect(tabela.getByRole('caption')).toHaveText('Vendas em aberto');
+    await expect(tabela.getByRole('columnheader')).toHaveCount(8);
+    await expect(page.getByRole('region', { name: 'Vendas em aberto' })).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: /Buscar por nome/ })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('vendas encontradas');
+    for (const estado of ['Em aberto', 'Próximos dias', 'Atrasada'])
+      await expect(tabela.locator('.badge').filter({ hasText: estado }).first()).toBeVisible();
+    await verificarContraste(tema, 'Vendas');
+    await page.getByRole('button', { name: 'Limpar pesquisa' }).hover();
+    await verificarContraste(tema, 'Vendas/hover');
+    await page.mouse.move(0, 0);
+
+    await page.goto('/vendas/quitadas');
+    const quitadas = page.getByRole('table', { name: 'Vendas quitadas' });
+    await expect(quitadas.getByRole('caption')).toHaveText('Vendas quitadas');
+    await expect(page.getByLabel(/Buscar por nome/)).toBeVisible();
+    await expect(page.getByLabel(/Filtrar por situação/)).toHaveCount(0);
+    await expect(quitadas.getByText('Quitada', { exact: true }).first()).toBeVisible();
+    await verificarContraste(tema, 'Quitadas');
+    await page.getByRole('button', { name: 'Limpar pesquisa' }).hover();
+    await verificarContraste(tema, 'Quitadas/hover');
+    await page.mouse.move(0, 0);
+
+    const linkDetalhe = quitadas.getByRole('link', { name: /Abrir detalhes da venda/ }).first();
+    await linkDetalhe.click();
+    await expect(page.getByRole('region', { name: 'Parcelas da venda' })).toBeVisible();
+    await expect(page.getByRole('table').getByRole('caption')).toContainText('Parcelas da venda');
+    await verificarContraste(tema, 'Parcelas quitadas');
+    await expect(
+      page.getByRole('table').locator('.badge').filter({ hasText: 'Paga' }).first(),
+    ).toBeVisible();
+
+    await page.goto('/vendas');
+    await page
+      .getByRole('table', { name: 'Vendas em aberto' })
+      .getByRole('link', { name: /Abrir detalhes da venda/ })
+      .first()
+      .click();
+    await expect(
+      page.getByRole('table').locator('.badge').filter({ hasText: 'Aberto' }).first(),
+    ).toBeVisible();
+    await verificarContraste(tema, 'Parcelas abertas');
+  }
+});
+
 test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco', async ({
   page,
 }) => {

@@ -80,6 +80,26 @@ Esse resultado incremental não homologa outros navegadores/dispositivos, não c
 nativo de 200% e não constitui avaliação da ótica. A inspeção e medição completa dos estados
 de tabelas, selos e controles continua vinculada às tarefas de acessibilidade da FASE-005.
 
+### Acessibilidade visual de listas e parcelas — FASE-005
+
+As listas usam tabela semântica com caption, oito cabeçalhos com `scope`, links nomeados e
+região de rolagem identificada. Os selos mantêm o texto da situação, além da cor; o contador
+fica em `role="status"`. Botões de limpeza usam tokens do tema para texto e borda, incluindo
+estado hover, sem alterar foco ao digitar ou escolher situação.
+
+Medição Playwright em 16/11/2026, Chromium, ambos os viewports (1366×768 e 390×844) e temas
+escuro/claro: `th`, `td`, `caption`, selos, botões e labels foram medidos por cores computadas
+com composição de fundos transparentes. Razão mínima observada: 4,53:1 nas listas abertas,
+quitadas e parcelas de vendas quitadas; 4,69:1 nas parcelas de venda aberta. Os botões de
+limpeza também foram medidos em hover, com mínimo de 4,53:1 nos dois temas. Os testes
+confirmaram nomes dos campos, oito cabeçalhos, captions, leitura textual de Em aberto,
+Próximos dias, Atrasada, Quitada, Paga e Aberto, região e anúncio de resultados. A execução
+integral do E2E passou 32/32 (16 por viewport); warning Sass `@import` mantido.
+
+Essas medições cobrem as superfícies e estados exercitados, não certificam acessibilidade
+integral nem tecnologia assistiva; zoom nativo de 200% e avaliação da ótica não foram
+executados nesta verificação.
+
 ## Apply FASE-004 — 14/11/2026
 
 Autorizado pelo pedido explícito `/opsx-apply fase-004`, após revisão de PRD 1.3,
