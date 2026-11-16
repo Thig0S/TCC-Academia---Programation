@@ -23,10 +23,10 @@ A aplicação SHALL apresentar em Vendas somente vendas com saldo positivo e em 
 
 ### Requirement: Resumos globais independentes da pesquisa
 
-Vendas SHALL exibir Total em aberto, Valores em atraso, Recebido no mês e Vendas cadastradas, derivados de toda a fonte da sessão. A pesquisa SHALL não alterar esses valores. As listas e o detalhe SHALL identificar a referência civil fixa da sessão; valores monetários SHALL usar BRL e datas DD/MM/AAAA sem deslocamento de fuso.
+Vendas SHALL exibir Total em aberto, Valores em atraso, Recebido no mês e Vendas cadastradas, derivados de toda a fonte da sessão. Busca e filtro de situação SHALL não alterar esses valores. As listas e o detalhe SHALL identificar a referência civil fixa da sessão; valores monetários SHALL usar BRL e datas DD/MM/AAAA sem deslocamento de fuso.
 
 #### Scenario: Pesquisar sem modificar cartões
-- **WHEN** uma busca reduzir a lista de abertas a um registro ou a nenhum resultado
+- **WHEN** busca, situação ou sua combinação reduzir a lista de abertas a um registro ou a nenhum resultado
 - **THEN** os quatro cartões SHALL manter os totais globais anteriores
 - **AND** Vendas cadastradas SHALL incluir as quitadas e Recebido no mês SHALL usar o mês civil da referência e contar entrada/recebimentos uma vez
 
@@ -37,7 +37,7 @@ Vendas SHALL exibir Total em aberto, Valores em atraso, Recebido no mês e Venda
 
 ### Requirement: Busca única de nome e identificação
 
-Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação de nome/CPF/telefone/data e ação Limpar. Nome SHALL corresponder parcialmente sem distinguir acentos ou caixa; CPF/telefone SHALL admitir sequência de dígitos ignorando pontuação usual. Basta corresponder a um campo. A busca SHALL atuar somente na coleção atual, sem filtros extras ou busca global.
+Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação de nome/CPF/telefone/data e ação Limpar pesquisa. Nome SHALL corresponder parcialmente sem distinguir acentos ou caixa; CPF/telefone SHALL admitir sequência de dígitos ignorando pontuação usual. Basta corresponder a um campo. A busca SHALL atuar somente na coleção atual, sem busca global; Quitadas SHALL não oferecer filtros adicionais.
 
 #### Scenario: Pesquisar texto equivalente
 - **WHEN** a pessoa pesquisar parte do nome usando outra caixa ou sem acentos
@@ -51,10 +51,26 @@ Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação
 - **AND** os marcadores textuais sintéticos existentes, como CPF-DEMO-1 e TEL-DEMO-1, SHALL também ser localizáveis por seu texto, sem substituir o conjunto por dados pessoais plausíveis
 
 #### Scenario: Restringir e limpar pesquisa
-- **WHEN** a pessoa pesquisar um termo presente somente na outra coleção ou acionar Limpar
+- **WHEN** a pessoa pesquisar um termo presente somente na outra coleção ou acionar Limpar pesquisa
 - **THEN** a pesquisa restrita SHALL não incluir registros da outra coleção
-- **AND** Limpar ou informar termo vazio/espaços SHALL restaurar somente a coleção atual, sem mutar registros nem exigir preservar o termo após sair da página
+- **AND** Limpar pesquisa ou informar termo vazio/espaços SHALL remover somente a restrição do termo, preservando a situação selecionada nas abertas, sem mutar registros nem exigir preservar o termo após sair da página
 - **AND** limpar SHALL manter ou devolver o foco ao campo, sem navegar ou reiniciar a sessão
+
+### Requirement: Filtro de situação nas abertas
+
+Vendas SHALL oferecer um filtro de situação com Todas como padrão, Em aberto, Próximos dias e Atrasada. A seleção SHALL combinar-se com a busca por E, sem incluir quitadas, alterar a fonte ou afetar cartões globais. Limpar critérios SHALL restaurar termo vazio e Todas; critérios SHALL permanecer locais, sem obrigação de preservá-los ao sair.
+
+#### Scenario: Combinar situação e busca
+- **WHEN** a pessoa selecionar cada situação com e sem termo de busca
+- **THEN** SHALL ver somente vendas abertas que correspondam simultaneamente ao termo e à situação
+- **AND** Todas SHALL incluir também próximas e atrasadas da coleção aberta, sem restringir à situação Em aberto
+- **AND** uma combinação sem correspondências SHALL produzir zero resultados, sem trocar a situação automaticamente
+
+#### Scenario: Limpar todos os critérios
+- **WHEN** a pessoa acionar Limpar critérios depois de pesquisar e selecionar uma situação
+- **THEN** SHALL restaurar termo vazio e Todas, exibindo toda a coleção de abertas
+- **AND** o foco SHALL ir ao campo de busca e a contagem de resultados SHALL ser atualizada sem reiniciar a sessão
+- **AND** Limpar pesquisa isoladamente SHALL preservar a situação selecionada
 
 ### Requirement: Pesquisa de data civil exata
 
@@ -72,12 +88,12 @@ Um termo completo DD/MM/AAAA SHALL pesquisar exclusivamente a data exata da vend
 
 ### Requirement: Estados distintos de consulta
 
-As consultas SHALL distinguir coleção sem registros, pesquisa sem correspondências e venda não encontrada. Nenhum estado SHALL criar registros, sugerir consulta ainda indisponível em Vendas/Quitadas ou ocultar os retornos. Os estados SHALL ser comunicados por texto e não apenas por cor.
+As consultas SHALL distinguir coleção sem registros, busca/filtro sem correspondências e venda não encontrada. Nenhum estado SHALL criar registros, sugerir consulta ainda indisponível em Vendas/Quitadas ou ocultar os retornos. Os estados SHALL ser comunicados por texto e não apenas por cor.
 
 #### Scenario: Diferenciar vazio de ausência de resultados
-- **WHEN** a coleção estiver vazia sem pesquisa ou houver registros mas nenhum corresponder ao termo
+- **WHEN** a coleção fonte estiver vazia ou houver registros mas nenhum corresponder à busca e situação selecionadas
 - **THEN** SHALL explicar, respectivamente, ausência de vendas abertas/quitadas ou ausência de resultados para a pesquisa
-- **AND** a pesquisa sem resultados SHALL permitir limpar e restaurar os registros existentes
+- **AND** ausência de resultados por busca/filtro SHALL permitir limpar todos os critérios e restaurar os registros existentes
 - **AND** a coleção vazia SHALL não oferecer cadastro fictício ou quitação fictícia nesta fase
 
 #### Scenario: Identificar venda ausente

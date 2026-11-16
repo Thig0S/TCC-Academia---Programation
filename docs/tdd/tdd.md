@@ -11,7 +11,8 @@ PEN-005/012 resolvidas no Harness. FASE-004 implementada na `main` (PR #7,
 merge `1f184e3`, confirmado no GitHub e Git local); 156 testes e 26 E2E registrados
 em `frontend/README.md`, sem reexecução nesta revisão. A Change 004 ainda não está
 sincronizada/arquivada; isso fica fora do escopo. Esta revisão desenha a FASE-005:
-listas, quatro cartões globais em Vendas, busca nas duas coleções e detalhe/parcelas
+listas, quatro cartões globais em Vendas, busca nas duas coleções, filtro de situação
+somente nas abertas e detalhe/parcelas
 somente leitura. Não implementa consultas ou mutações. Autorizados somente PRD/TDD
 e artefatos OpenSpec da nova Change; novo pedido de apply após sua apresentação.
 DEC-017 detalha a proposta técnica; o roadmap abaixo passa a refletir esse estado.
@@ -734,7 +735,7 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-002 — Base técnica e automações | Criar a base em `frontend/`, configurações estritas, versões compatíveis, lockfile, formatação, scripts reais e infraestrutura mínima de testes unitários, componentes e E2E. | Inspeção e autorização da FASE-001; DEC-002/003/008/009; PEN-015/016 para versões e automações; PEN-013 para o ambiente E2E. | Instalação reprodutível, build estrito e testes mínimos aprovados no ambiente definido; comandos e versões registrados, sem sobrescrever conteúdo existente. |
 | FASE-003 — Estrutura visual e navegação | Construir navegação dos quatro módulos, rotas e retornos, aviso demonstrativo, tokens, temas e componentes compartilhados efetivamente necessários. Conteúdos dependentes do domínio entram nas fases seguintes. | FASE-002; DEC-003/006/007; PEN-006 antes dos temas. | Navegação e caminho desconhecido verificados; aviso visível; teclado e foco funcionais; alternância, contraste e recarga dos temas verificados conforme a decisão conciliada. |
 | FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Sync/arquivamento ainda pendentes e fora desta Change. |
-| FASE-005 — Consulta de vendas e parcelas | Listas de abertas/quitadas, quatro cartões globais em Vendas, detalhe/parcelas somente leitura, busca única, vazios e inexistência. | FASE-003/004; DEC-003/004/005/008/013/017; PRD 1.5/RN-018/019/CA-026. PEN-005/012 resolvidas para o recorte. | Busca sem mutação nem efeito nos cartões; URLs com ID completo, detalhe reativo, entrada separada e retornos; teclado, temas, layout, testes de consulta e regressão aprovados. Planejada, não implementada; novo apply após revisão. |
+| FASE-005 — Consulta de vendas e parcelas | Listas de abertas/quitadas, quatro cartões globais em Vendas, detalhe/parcelas somente leitura, busca única, filtro de situação nas abertas, vazios e inexistência. | FASE-003/004; DEC-003/004/005/008/013/017; PRD 1.5/RN-018/019/CA-026. PEN-005/012 resolvidas para o recorte; consolidar specs da 004 antes de sincronizar a 005. | Busca E situação sem mutação nem efeito nos cartões, limpezas isolada/completa; URLs com ID completo, detalhe reativo, entrada separada e retornos; teclado, temas, layout, testes de consulta e regressão aprovados. Planejada, não implementada; novo apply após revisão. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia e comandos do núcleo; modal de lote sequencial integral, mensagens e atualização das consultas. | FASE-005; DEC-004/005/007/010/015; PRD/PEN-008 e identificação de PEN-010 ainda pendentes. Recebimento segue PRD/RN-016. | Inválido, cancelamento, falha e duplicidade testados; lote atômico; Escape e retorno de foco no navegador. Planejada, não implementada. |
 | FASE-007 — Visão Geral, relatórios e configurações | Integrar resumos, períodos explícitos, controles aprovados e exportação ilustrativa; preservar Configurações já entregue. | FASE-005/006; DEC-003/004/005/015; PRD/RN-015 define métricas. Controles visuais e filtros adicionais exigem recorte próprio. | Indicadores reconciliados, vazios coerentes, sem métricas fixas ou exportação real/falso sucesso. Conteúdo financeiro não implementado; Configurações explicativa já possui evidências da FASE-003. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado, foco e contraste, conferir perda de alterações ao recarregar e preparar roteiro demonstrativo com limitações e evidências. | FASE-003 a FASE-007 no recorte aprovado; DEC-008; PEN-013 para compatibilidade e PEN-014 para avaliação com a ótica. | Build e cenários aplicáveis aprovados, sem erros inesperados no console; resultados e limitações registrados. Aprovação de produto somente após avaliação explícita, distinta da conclusão técnica. |
@@ -1173,8 +1174,13 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
   hífen, parênteses, espaço e +) compara substring dos dígitos, apenas se não vazia.
   Padrão completo DD/MM/AAAA tem precedência exclusiva: converter para data civil,
   validar com utilitário existente e comparar igualdade da data da venda; inválida
-  retorna zero resultados. Sem data parcial, tokenização, AND entre campos ou intervalo.
-  Vazio devolve coleção atual, preservando sua ordem; termo não persiste ao sair.
+  retorna zero resultados. Sem data parcial, tokenização, AND entre campos de busca ou intervalo.
+  Nas abertas, acrescentar seleção local Todas/Em aberto/Próximos dias/Atrasada.
+  Função pura recebe também esse critério e aplica busca E situação, preservando a
+  ordem da coleção; Todas não restringe. Quitadas recebe somente o termo. Termo vazio
+  remove apenas a restrição textual; Limpar pesquisa preserva situação e Limpar critérios
+  redefine termo vazio e Todas. Signals locais e computed acompanham ambos os critérios;
+  nenhum deles afeta resumo global, fonte financeira, URL ou armazenamento.
 - **Estado e apresentação:** nenhuma chamada a comandos de cadastro/recebimento;
   sem providers da fonte por rota. Quatro cartões em Vendas leem `resumo()` global,
   nunca a lista filtrada. Ambas as listas e detalhes identificam `referencia`.
@@ -1202,9 +1208,13 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 - **Conflito e migração das specs:** `navegacao-aplicacao` exige indisponibilidade
   nas páginas da FASE-003; modificar requisito/cenário para restringi-lo a Visão
   Geral/Relatórios e especificar consultas em Vendas/Quitadas. A delta 004 também
-  registra ausência de UI como recorte histórico. Não editar/arquivar a Change 004
-  nesta solicitação; nova capacidade deve declarar que a restrição era da fase 004,
-  não proibição permanente. Revisar `conteudo.spec.ts` e E2E só nos destinos afetados,
+  registra ausência de UI. Acrescentar delta `estado-demonstrativo` nesta Change para
+  modificar explicitamente o requisito Núcleo sem promessa de interface comercial,
+  permitindo somente consultas da FASE-005 e preservando comandos internos. Não basta
+  um comentário histórico em outra capacidade para substituir esse requisito.
+  A consolidação da 004 deve preceder a sincronização da 005; não editar/arquivar a
+  Change 004 nem incorporar a branch de arquivamento nesta solicitação.
+  Revisar `conteudo.spec.ts` e E2E só nos destinos afetados,
   preservando restrições nas páginas ainda indisponíveis e controles de privacidade.
 - **Verificação planejada:** unitários de busca (incluindo fixtures com CPF/telefone
   sintéticos formatados, nomes acentuados e datas extremas), TestBed com fonte e
@@ -1223,6 +1233,15 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 - **Condição de revisão:** mudança nas regras RN-018/019, necessidade de manter filtros
   na URL ou falha comprovada do Router com IDs exige revisar o desenho antes do código
   afetado, nunca trocar IDs silenciosamente ou contornar testes.
+
+**Refinamento da DEC-017 nesta conversa:** filtro de situação e combinação por E
+confirmados via Harness; mecanismo técnico continua proposto, não implementado.
+Testar cada situação, interseções positivas/negativas com nome/dígitos/data, limpeza
+isolada e completa, contagem anunciável, foco no campo ao limpar e nos controles de
+situação ao selecionar. Coleção fonte vazia difere de fonte não vazia sem resultados
+por situação/busca. Resumos devem permanecer idênticos em todos esses casos.
+Context7 consultado novamente em 16/11/2026 para Router/createUrlTree, paramMap/toSignal
+e computed com múltiplas dependências; suporte documental geral, não execução no patch.
 
 ## 16. Riscos, hipóteses e pendências
 
@@ -1331,6 +1350,13 @@ separadamente, após este registro técnico.
 | 1.7 — 14/11/2026 | Fronteira específica de preparação sem estado e doubles TestBed para falhas de atomicidade; funções puras preservadas | DEC-016 refinada, PRD 1.3 sem alteração | Bloqueio real do mock de módulo no apply e revisão técnica aprovada pelo solicitante; solução ainda não implementada |
 | 1.8 — 16/11/2026 | Política adaptativa do seed nas bordas e refinamento de dia/prefixo; registros anteriores preservados | DEC-015/016 aplicadas | Aprovação e implementação da FASE-004; evidências em frontend/README.md |
 | 1.9 — 16/11/2026 | Estado vigente da FASE-004 e roadmap; consulta de vendas da FASE-005 com busca aprovada, ID opaco e migração de testes/specs | DEC-017 proposta; PRD 1.5 | Autorização documental no Harness; fonte e documentação consultadas, sem código ou testes de aplicação |
+
+**Refinamento da revisão 1.9 — 16/11/2026:** reutilização explícita da feature
+existente; filtro de situação nas abertas conforme PRD/RN-019 e delta adicional de
+`estado-demonstrativo`. Arquivamento da 004 observado somente em outra branch,
+`chore/arquivar-fase-004` (`94559ed`), fora da base desta feature; sua integração não
+é executada neste planejamento. Registros anteriores de confirmação de PR remoto
+não equivalem a nova consulta nesta revisão. Sem código, instalação, build ou testes.
 
 **Verificação da revisão 1.4:** leitura da fonte, manifesto, testes e configuração E2E;
 confirmação de merge do PR #4 e de ancestralidade de seu commit na `main`; consultas
