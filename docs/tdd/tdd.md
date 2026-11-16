@@ -6,6 +6,19 @@
 
 ## 1. Identificação e situação
 
+**Decisão vigente — 16/11/2026, revisão 1.8:** PRD 1.4 aprovado no Harness, seguido
+da aprovação desta política técnica para retomar o apply da FASE-004. Manter a
+referência capturada e 12 vendas; limitar o mês calculado de cada venda entre
+janeiro/0001 e novembro/9999, preservando o dia-base ou o último dia do mês-alvo.
+Usar até quatro parcelas, reduzindo a quantidade ao número de meses disponíveis até
+dezembro/9999. Calcular valores e liquidações pelas preparações puras existentes,
+sem pressupor parcela de 20.000 centavos após reduzir a quantidade. Preservar o
+conjunto anterior onde couber; variedade de situações só é dispensada onde impossível.
+Testar bordas, transições e calendário gregoriano, determinismo e isolamento, além
+da integração do serviço, reconciliação e recriação. Sem restrição adicional do
+domínio, fallback de referência, UI nova ou dependências. Atualizar SDD antes do
+código. O bloqueio e as evidências descritos abaixo são históricos.
+
 **Estado do apply em 15/11/2026:** núcleo de recebimentos e sessão implementados na
 `feature/fase-004` (commits `72fba45`/`17255d2`), com regressão limpa registrada em
 `frontend/README.md`: 143/143 testes e 26/26 E2E. Progresso 18/21; não é conclusão
@@ -18,7 +31,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 14/11/2026, revisão 1.7.
+- **Data e revisão:** 16/11/2026, revisão 1.8.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** desenho consolidado para o núcleo financeiro da FASE-004, com PRD 1.3;
   busca, edição, identificação e controles das fases posteriores ainda possuem pendências.

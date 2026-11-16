@@ -1,5 +1,11 @@
 # Proposal
 
+> Retomada autorizada em 16/11/2026: PRD 1.4/TDD 1.8 e política técnica revisados
+> e aprovados via Harness antes do código. Adaptar datas/parcelamento do seed nas
+> bordas, sem trocar a referência nem restringir o domínio; manter 12 vendas e
+> dispensar situações somente quando impossíveis. Concluir 4.1, 5.2 e 5.3 na mesma
+> branch, com verificações e PR único apenas ao concluir. Registros abaixo históricos.
+
 > Retomada de apply em 15/11/2026: 18/21 tarefas concluídas. Recebimentos e fonte
 > de sessão implementados nos commits `72fba45`/`17255d2`; regressão limpa aprovada
 > (143 testes e 26 E2E), com evidências no README. Revisão final identificou lacuna

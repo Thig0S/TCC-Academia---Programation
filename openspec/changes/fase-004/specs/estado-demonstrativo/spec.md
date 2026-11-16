@@ -17,7 +17,14 @@ A demonstração SHALL capturar o dia civil local na abertura da aplicação e u
 
 ### Requirement: Conjunto inicial fictício e válido
 
-A sessão SHALL iniciar com 10 a 15 vendas explicitamente sintéticas e financeiramente válidas em relação à referência. SHALL incluir vendas abertas, atrasadas, próximas e quitadas, com e sem entrada, e nomes semelhantes para consultas futuras. SHALL não copiar dados de pessoas, planilhas, entrevistas ou capturas de referência.
+A sessão SHALL iniciar com 12 vendas sintéticas válidas em relação à referência em 0001–9999, com e sem entrada e nomes semelhantes. SHALL incluir abertas, atrasadas, próximas e quitadas onde possíveis pelo calendário, adaptando datas/parcelas nas bordas sem mudar referência ou invariantes financeiras. SHALL não copiar dados de pessoas, planilhas, entrevistas ou capturas.
+
+#### Scenario: Inicializar nas extremidades do calendário
+- **WHEN** a referência estiver nas bordas de 0001–9999
+- **THEN** SHALL produzir 12 vendas válidas, limitando o mês da venda entre janeiro/0001 e novembro/9999 e ajustando o dia ao mês
+- **AND** SHALL usar até quatro parcelas conforme os meses disponíveis até dezembro/9999, com valores e pagamentos integrais recalculados
+- **AND** SHALL preservar a referência e não gerar venda futura, ano zero ou vencimento além do calendário
+- **AND** SHALL dispensar uma situação somente onde impossível, preservando o conjunto anterior onde couber
 
 #### Scenario: Inicializar e isolar o conjunto demonstrativo
 - **WHEN** duas sessões independentes forem inicializadas com a mesma referência
