@@ -1,5 +1,11 @@
 # Prompt — Painel moderno de gestão de crediário (protótipo de MVP)
 
+> Revisão documental de 16/11/2026: requisitos vigentes em
+> `docs/prd/vendas-em-aberto.md` 1.6 e desenho em `docs/tdd/tdd.md` 1.10.
+> Ajustes visuais/paginação planejados na Change `ajutes-fase-005`, não implementados por
+> esta revisão. Ações de cadastro, edição e pagamento abaixo são direção futura
+> da FASE-006, não autorização para implementá-las nem exibir controles inoperantes.
+
 ## Visão geral do projeto
 
 Crie um **painel de gestão de vendas a prazo** moderno, limpo, intuitivo e profissional para uma ótica.
@@ -44,7 +50,7 @@ O design deve ser:
 - Bordas discretas e sombras suaves.
 - Cantos arredondados, com aproximadamente 10–14 px.
 - Tipografia moderna, como Inter.
-- Uma cor principal de destaque discreta, preferencialmente índigo ou azul.
+- Vermelho da identidade nos destaques, links e ações, conforme as referências light/dark em `frontend/public/imgs/exemplos/`.
 - Verde para pagamentos realizados com sucesso.
 - Vermelho para pagamentos em atraso.
 - Âmbar para pagamentos pendentes.
@@ -154,16 +160,16 @@ Botão de ação principal:
 
 **+ Nova venda**
 
-### Cartões de resumo
+### Indicadores exclusivos da Visão Geral
 
-Acima da tabela, exiba quatro cartões compactos de resumo financeiro:
+Não exiba estes cartões em Vendas ou Quitadas. Concentre-os somente em Visão Geral (FASE-007), sem antecipar sua implementação ao ajustar as listas:
 
 1. **Total em aberto** — Saldo total restante.
 2. **Valores em atraso** — Valor total em atraso.
-3. **Recebido no mês** — Pagamentos recebidos neste mês.
+3. **Recebimentos do mês** — Entradas e pagamentos recebidos no mês civil da referência.
 4. **Vendas cadastradas** — Quantidade de vendas registradas.
 
-Use valores demonstrativos e ícones adequados.
+Use valores derivados da fonte demonstrativa comum, não totais fixos ou filtrados pela lista. Relatórios mantém suas análises por período, sem duplicar essa faixa de quatro indicadores globais.
 
 ### Tabela de vendas
 
@@ -193,7 +199,7 @@ Requisitos de design:
 - Situações exibidas como etiquetas coloridas e minimalistas com cantos arredondados.
 - Efeitos ao passar o cursor sobre as linhas da tabela.
 - Menu de ações com três pontos.
-- Paginação opcional na parte inferior.
+- Paginação obrigatória em Vendas e Quitadas: 10 registros por página, números, anterior/próxima, indicação da página atual e faixa/total de resultados abaixo da tabela. Aplicar após busca/filtro, preservar ordem e retornar à página 1 ao mudar ou limpar critérios. Coleção reduzida ajusta a página válida; zero/uma página não oferece navegação fictícia.
 
 Utilize pelo menos 10 a 15 registros fictícios e realistas de vendas no contexto brasileiro.
 
@@ -211,11 +217,15 @@ Inclua:
 
 Evite duplicar a pesquisa no cabeçalho e na listagem. Não inclua vendas quitadas na listagem de vendas em aberto; elas terão uma página própria.
 
-Faça a pesquisa funcionar com dados demonstrativos locais, sem presumir critérios de combinação ou filtros adicionais não confirmados.
+Busca única por nome/CPF/telefone/data completa conforme PRD/RN-018/019; situação Todas, Em aberto, Próximos dias ou Atrasada somente nas abertas, combinada por E. Limpar pesquisa remove só o termo; Limpar critérios restaura termo vazio e Todas. Quitadas não recebe filtro adicional.
+
+Em 1366×768, zoom 100%, busca, situação e as duas limpezas ficam lado a lado em uma faixa compacta; 10 linhas e paginação devem estar visíveis sem rolagem da página, nos dois temas. Seguir `exemploListagemDeVendas.png` e `exemploDesignDark.png`, exceto cartões removidos, busca duplicada e ações fora do recorte. Links de navegação, cliente, Visualizar e retorno/breadcrumb seguem a identidade visual, sem azul/sublinhado padrão permanente, com hover/foco perceptíveis, contraste e semântica preservados. Em telas menores e zoom 200%, reorganizar/rolar com acesso a todo o conteúdo.
 
 ## 4. Detalhes da venda e parcelas
 
 Quando o usuário clicar no cliente de uma venda na seção de Vendas, abra os detalhes e as parcelas dessa venda em uma página ou painel lateral visualmente refinado. Não abra um cadastro independente de cliente nem uma seção separada de parcelas.
+
+Seguir `frontend/public/imgs/exemplos/exemploDadosDaVenda.png`: título/retorno compactos, dados do cliente e da venda lado a lado e informações condensadas, sem omitir entrada/descrição. No cenário padrão de 1366×768/100%, até 10 parcelas devem ficar visíveis sem rolagem da página. Excedentes usam rolagem interna acessível na tabela; textos extensos, telas menores e zoom 200% admitem adaptação sem corte de dados. A aparência não autoriza copiar informações pessoais ou ações ainda indisponíveis da referência.
 
 Exiba:
 
@@ -253,8 +263,8 @@ Colunas:
 Situações:
 
 - **Aberto**.
-- **Próximos dias** — Janela de 7 dias; os limites exatos, incluindo o tratamento do vencimento no dia atual, ainda devem ser confirmados.
-- **Atrasado**.
+- **Próximos dias** — Hoje até sete dias após a referência, inclusive.
+- **Atrasado** — Parcela pendente a partir do primeiro dia civil após vencer: vence em 10/11, atrasa em 11/11; não há tolerância extra ou contagem de 24 horas.
 - **Paga** — A parcela paga continua visível nos detalhes da venda.
 
 Exiba parcelas pagas em verde, atrasadas em vermelho e as demais em âmbar ou tons neutros, sempre com o texto da situação. Não crie regras adicionais de classificação sem confirmação.
@@ -299,6 +309,7 @@ Inclua:
 - Saldo total em aberto.
 - Saldo total em atraso.
 - Pagamentos recebidos neste mês.
+- Vendas cadastradas, incluindo quitadas.
 - Vendas recentes.
 - Próximos pagamentos e vencimentos de parcelas, com destaque para a janela de 7 dias definida para **Próximos dias**.
 - Pagamentos em atraso que exigem atenção.

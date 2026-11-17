@@ -6,7 +6,20 @@
 
 ## 1. Identificação e situação
 
-**Estado vigente — revisão 1.9, 16/11/2026:** PRD 1.5 revisado primeiro, com
+**Estado vigente — revisão 1.10, 16/11/2026:** PRD 1.6 revisado primeiro.
+Planejamento dos ajustes transferido, por confirmação no Harness, para a nova
+Change `ajutes-fase-005`; `fase-005` preserva o planejamento e as 20 tarefas anteriores.
+Refinamento documental da consulta existente na `feature/ajustes-fase-005`, limpa
+antes das edições; Change com 20/20 tarefas anteriores marcadas e commits locais de
+implementação/verificação, sem nova execução ou confirmação de merge remoto.
+DEC-018 substitui a exigência anterior de cartões em Vendas e a ausência de paginação
+na DEC-017. Novos ajustes ainda não implementados; não alterar fonte, dependências,
+regras financeiras ou seed. A regra civil de atraso no dia seguinte é mantida.
+Visão Geral permanece planejada na FASE-007, não antecipada por esta revisão.
+As descrições de indisponibilidade das consultas e da Change 004 não consolidada
+abaixo são históricas: o histórico local já registra `b6a3f8b` de seu arquivamento.
+
+**Registro anterior — revisão 1.9, 16/11/2026:** PRD 1.5 revisado primeiro, com
 PEN-005/012 resolvidas no Harness. FASE-004 implementada na `main` (PR #7,
 merge `1f184e3`, confirmado no GitHub e Git local); 156 testes e 26 E2E registrados
 em `frontend/README.md`, sem reexecução nesta revisão. A Change 004 ainda não está
@@ -58,7 +71,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 16/11/2026, revisão 1.9.
+- **Data e revisão:** 16/11/2026, revisão 1.10.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** núcleo financeiro entregue na FASE-004; desenho proposto da consulta
   da FASE-005 com PRD 1.5. Edição, identificação e controles posteriores ainda possuem pendências.
@@ -147,6 +160,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-019 | Context7 `/websites/angular_dev`, guia Signals e API WritableSignal (`https://angular.dev/guide/signals`, `https://angular.dev/api/core/WritableSignal`) | 14/11/2026 | Signal privado e leitura readonly; `asReadonly` não impede mutações profundas. Consulta geral, não comprova execução no patch 22.2.6 |
 | FON-020 | PRD 1.5; Harness de 16/11/2026; fonte, rotas, conteúdo, seed e testes existentes | Inspeção nesta revisão | Busca nas duas coleções aprovada; IDs com barras (`seed/venda/1`), serviço readonly e testes de indisponibilidade a revisar somente em Vendas |
 | FON-021 | Context7 `/websites/angular_dev`, `https://angular.dev/api/router/Router`, `https://angular.dev/guide/signals` | 16/11/2026 | Router constrói URLs por segmentos; signals/computed derivam filtros. Consulta geral, não comprova comportamento do patch 22.2.6; round-trip de ID e navegação precisam de teste local no apply |
+| FON-022 | PRD 1.6/FON-010; imagens de `frontend/public/imgs/exemplos/`; respostas no Harness | 16/11/2026 | Desktop 1366×768/100%, paginação de 10 nas duas coleções, detalhe compacto com excedente interno, links integrados, atraso civil mantido; autorização exclusivamente documental |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -522,6 +536,12 @@ o agregado anterior e não deixar o formulário permanentemente em envio.
 
 ## 10. Interface, estilos, formulários e acessibilidade
 
+**Contrato vigente do refinamento 1.10:** aplicar DEC-018 e PRD/CA-027/028/029 às
+listas/detalhe e aos links compartilhados afetados. As restrições históricas de não
+refinar o conteúdo principal ou de exigir sublinhado permanente cedem ao padrão das
+referências, sem retirar foco, semântica, contraste ou indicação de página atual.
+Não redesenhar a logo nem introduzir funcionalidades copiadas das imagens.
+
 ### Estilos e temas — DEC-006 e DEC-013
 
 **Registro histórico do refinamento visual 1.5, baseado no PRD 1.2:** a lateral terá superfície vermelha no tema
@@ -653,6 +673,7 @@ Não excluir esses cenários nem aceitar a falha do mecanismo de mock como teste
 | Referência e projeções | Data fixa por sessão, mês civil inclusivo, cartões globais, contagem incluindo quitadas e vazio zero | Funções e serviço na FASE-004; UI nas fases seguintes | PRD/CA-025; RN-015 |
 | Temas | Escuro inicial, alternância global e recarga restaurando escuro | Componente e E2E | DEC-006; PRD/PEN-006 |
 | Bootstrap | Layout responsivo, tabelas e campos legíveis, erros acessíveis, temas em páginas e `dialog`, sem dependência de plugins JavaScript | Componente, E2E e inspeção manual | DEC-013; FON-013 |
+| Refinamento de consulta | Paginação após critérios, limites/reset/redução de coleção; sem cartões em Vendas/Quitadas; geometria sem rolagem da página no cenário padrão; detalhe com excedente interno; links e comparação visual light/dark | Unitário, componente, E2E e inspeção visual, ainda não executados | DEC-018; PRD/CA-027/028/029 |
 | Modal | Teclado, foco inicial, Escape, retorno, acionador removido e cancelamento | E2E e inspeção manual | DEC-007; PRD/CA-016 |
 | Demonstração | Aviso visível, memória preservada entre rotas e descartada na recarga | E2E | PRD/CA-021 |
 | Relatórios | Projeções coerentes, zero com coleção vazia e exportação ilustrativa | Unitário e E2E | PRD/CA-014 e CA-015 |
@@ -735,9 +756,9 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-002 — Base técnica e automações | Criar a base em `frontend/`, configurações estritas, versões compatíveis, lockfile, formatação, scripts reais e infraestrutura mínima de testes unitários, componentes e E2E. | Inspeção e autorização da FASE-001; DEC-002/003/008/009; PEN-015/016 para versões e automações; PEN-013 para o ambiente E2E. | Instalação reprodutível, build estrito e testes mínimos aprovados no ambiente definido; comandos e versões registrados, sem sobrescrever conteúdo existente. |
 | FASE-003 — Estrutura visual e navegação | Construir navegação dos quatro módulos, rotas e retornos, aviso demonstrativo, tokens, temas e componentes compartilhados efetivamente necessários. Conteúdos dependentes do domínio entram nas fases seguintes. | FASE-002; DEC-003/006/007; PEN-006 antes dos temas. | Navegação e caminho desconhecido verificados; aviso visível; teclado e foco funcionais; alternância, contraste e recarga dos temas verificados conforme a decisão conciliada. |
 | FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Sync/arquivamento ainda pendentes e fora desta Change. |
-| FASE-005 — Consulta de vendas e parcelas | Listas de abertas/quitadas, quatro cartões globais em Vendas, detalhe/parcelas somente leitura, busca única, filtro de situação nas abertas, vazios e inexistência. | FASE-003/004; DEC-003/004/005/008/013/017; PRD 1.5/RN-018/019/CA-026. PEN-005/012 resolvidas para o recorte; consolidar specs da 004 antes de sincronizar a 005. | Busca E situação sem mutação nem efeito nos cartões, limpezas isolada/completa; URLs com ID completo, detalhe reativo, entrada separada e retornos; teclado, temas, layout, testes de consulta e regressão aprovados. Planejada, não implementada; novo apply após revisão. |
+| FASE-005 — Consulta de vendas e parcelas | Consultas somente leitura, busca/filtro e detalhe; refinamento sem cartões, paginação de 10 nas duas coleções, barra horizontal, detalhe compacto e links fiéis às referências. | FASE-003/004; DEC-017/018; PRD 1.6/RN-018/019/020/CA-026 a CA-029. Base da Change fase-005 preservada; novos ajustes na Change ajutes-fase-005, aguardando novo apply. | Tarefas anteriores registradas como executadas; novos ajustes não implementados. Exigir paginação correta, CA-028 nos dois temas, links acessíveis, atraso civil mantido e regressão registrada antes de concluir a nova Change de ajustes. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia e comandos do núcleo; modal de lote sequencial integral, mensagens e atualização das consultas. | FASE-005; DEC-004/005/007/010/015; PRD/PEN-008 e identificação de PEN-010 ainda pendentes. Recebimento segue PRD/RN-016. | Inválido, cancelamento, falha e duplicidade testados; lote atômico; Escape e retorno de foco no navegador. Planejada, não implementada. |
-| FASE-007 — Visão Geral, relatórios e configurações | Integrar resumos, períodos explícitos, controles aprovados e exportação ilustrativa; preservar Configurações já entregue. | FASE-005/006; DEC-003/004/005/015; PRD/RN-015 define métricas. Controles visuais e filtros adicionais exigem recorte próprio. | Indicadores reconciliados, vazios coerentes, sem métricas fixas ou exportação real/falso sucesso. Conteúdo financeiro não implementado; Configurações explicativa já possui evidências da FASE-003. |
+| FASE-007 — Visão Geral, relatórios e configurações | Concentrar os quatro indicadores globais exclusivamente na Visão Geral; integrar análises por período em Relatórios sem duplicar essa faixa; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018; PRD/RF-009/010/RN-015. Controles e filtros adicionais exigem recorte próprio. | Indicadores reconciliados e vazios coerentes; sem métricas fixas ou exportação real/falso sucesso. Não antecipada pelo refinamento da 005; Configurações explicativa possui evidências anteriores. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado, foco e contraste, conferir perda de alterações ao recarregar e preparar roteiro demonstrativo com limitações e evidências. | FASE-003 a FASE-007 no recorte aprovado; DEC-008; PEN-013 para compatibilidade e PEN-014 para avaliação com a ótica. | Build e cenários aplicáveis aprovados, sem erros inesperados no console; resultados e limitações registrados. Aprovação de produto somente após avaliação explícita, distinta da conclusão técnica. |
 
 Estado vigente das fases em 16/11/2026, sem nova execução de aplicação:
@@ -748,7 +769,7 @@ Estado vigente das fases em 16/11/2026, sem nova execução de aplicação:
 | FASE-002 | Implementada com evidências anteriores em frontend/README.md |
 | FASE-003 | Implementada com evidências anteriores e Change arquivada; sem aceite da ótica |
 | FASE-004 | Implementada e integrada na main via PR #7; Change ainda ativa, specs não consolidadas |
-| FASE-005 | Planejamento autorizado na Change fase-005; não implementada |
+| FASE-005 | 20/20 tarefas anteriores marcadas, com commits locais; refinamento DEC-018 planejado e pendente de novo apply, sem nova verificação de aplicação nesta revisão |
 | FASE-006 | Não implementada |
 | FASE-007 | Conteúdo financeiro não implementado; Configurações explicativa entregue na FASE-003 |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
@@ -836,6 +857,7 @@ DEC-015/016 possuem evidências do núcleo na FASE-004; DEC-017 está planejada.
 | DEC-015 | Domínio financeiro | Entrada separada, parcelas integrais, recebimento com alocações de lote sequencial e regras do PRD 1.3 | Confirmada; implementada com evidências da FASE-004 em frontend/README.md | DEC-004/005/011; PRD/RN-011 a RN-017 |
 | DEC-016 | Ciclo de vida e verificação do núcleo | Inicialização explícita na abertura, referência injetável, agregado imutável, comandos sem UI e testes de domínio/integração | Confirmada no apply anterior; implementada com evidências da FASE-004 | DEC-002/004/008/015; PRD/RN-009/015 |
 | DEC-017 | Consultas visíveis e busca | Consumir projeções readonly, derivar pesquisa local e vincular detalhe por ID opaco com Router | Proposta técnica; regras/recorte confirmados, não implementada | DEC-003/004/005/008/013; PRD 1.5/RN-018/019/CA-026 |
+| DEC-018 | Refinamento compacto da consulta | Paginação local de 10, sem cartões em Vendas, detalhe compacto, links e temas fiéis às referências | Confirmada no Harness; novos ajustes não implementados | DEC-017; PRD 1.6/RN-014/020/CA-027/028/029 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -1243,6 +1265,61 @@ por situação/busca. Resumos devem permanecer idênticos em todos esses casos.
 Context7 consultado novamente em 16/11/2026 para Router/createUrlTree, paramMap/toSignal
 e computed com múltiplas dependências; suporte documental geral, não execução no patch.
 
+### DEC-018 — Densidade visual, paginação e links da consulta
+
+- **Problema/contexto:** cartões e espaçamentos competem com as vendas/parcelas
+  na primeira tela. FON-022 exige aproximação visual às imagens sem copiar suas
+  funcionalidades conflitantes com o MVP.
+- **Escolha confirmada:** retirar os quatro cartões de Vendas, sem eliminar as
+  projeções financeiras da fonte. Sua exibição fica exclusivamente na Visão Geral,
+  FASE-007. Não implementar esse módulo agora nem converter resumos em totais filtrados.
+- **Paginação:** coleção → busca/situação → resultados completos → página de 10.
+  Estado local de página por lista, inicialmente 1, sem URL/storage. Alterar termo,
+  situação ou limpar critérios retorna à página 1; mudança da coleção limita a
+  página ao intervalo válido. Total e faixa derivam dos resultados filtrados, não
+  do seed ou da fatia. Zero resultados não gera páginas fictícias; uma página
+  dispensa navegação. Mostrar números, anterior/próxima e página atual; reticências
+  apenas como separador. Preservar ordem, IDs e coleção readonly. Usar operações
+  nativas de coleção e apresentação específica, sem biblioteca ou tabela genérica.
+  Paginação é navegação de resultados, não widget ARIA de abas; nomear a região e
+  indicar página atual, mantendo foco no controle e anúncio de faixa/total.
+- **Composição desktop:** 1366×768, zoom 100%, dois temas. Nas abertas, busca,
+  situação e as duas limpezas na mesma faixa; Quitadas mantém somente busca/limpeza.
+  Tabela com 10 linhas e paginação abaixo dentro do viewport. No detalhe, título e
+  retorno compactos, cliente e dados financeiros lado a lado, entrada/descrição
+  preservadas, seguidos da tabela com até 10 parcelas inteiras visíveis no cenário
+  padrão. Mais de 10 parcelas: região de altura limitada e rolagem vertical interna
+  acessível, cabeçalho identificável, sem paginação de parcelas e sem perder histórico.
+  Não fixar alturas que cortem texto/foco. Conteúdo extenso, 390×844 e zoom 200%
+  admitem reorganização/rolagem; não ocultar campos, aviso ou reduzir fonte para caber.
+- **Fidelidade e links:** claro com superfícies brancas/fundo claro; escuro quase
+  preto/grafite, bordas discretas, cantos e sombras suaves, densidade e tipografia
+  comparáveis às referências. Vermelho de identidade nos destaques. Âncoras de menu,
+  cliente, Visualizar e retorno/breadcrumb sem azul/sublinhado padrão permanente;
+  texto contrastante na lateral e destaque vermelho conforme superfície. Hover/foco
+  perceptíveis (sublinhado permitido); preservar destinos, semântica, indicação ativa,
+  contraste e teclado. Ações que não navegam continuam botões. Não copiar dados
+  pessoais, busca global duplicada, notificações, janela desktop ou mutações das imagens.
+- **Regra temporal preservada:** RN-014 já classifica vencimento anterior à referência
+  como atraso: vence 10/11, atrasa 11/11. Sem timer, tolerância extra ou mudança do seed.
+- **Alternativas rejeitadas/contrapartidas:** lista infinita e só compactar espaços
+  não limitam crescimento; dependência de tabela não se justifica. Paginação exige
+  testes de reset/limites; rolagem interna exige teclado e cabeçalho acessíveis.
+  Fidelidade visual não é cópia pixel a pixel de imagens com funcionalidades distintas.
+- **Origem/situação:** respostas e revisão confirmadas no Harness; planejamento
+  documental, novos ajustes não implementados ou medidos. Substitui cartões em Vendas,
+  ausência de paginação e restrições visuais conflitantes da DEC-017, mantendo busca,
+  IDs, fonte, somente leitura e arquitetura.
+- **Verificação:** PRD/CA-027/028/029. Fixtures 0/1/10/11/21 vendas, navegação sem
+  duplicação, reset e redução da coleção; integração com filtros e ausência de mutação.
+  Capturas light/dark e medições de limites de controles, 10 linhas e rodapé contra
+  viewport e ausência de overflow vertical da página no cenário padrão; repetir no
+  detalhe com 1/10/11 parcelas, entrada e descrição curta, e textos longos sem perda.
+  Regressão de datas ontem/hoje/amanhã, paga, meses/anos, teclado, foco, contraste,
+  zoom nativo e viewport pequeno. Registrar resultados reais somente no futuro apply.
+- **Condição de revisão:** impossibilidade de CA-028 sem sacrificar legibilidade exige
+  voltar ao solicitante, não ocultar campos ou alterar o critério silenciosamente.
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -1305,6 +1382,7 @@ continuam pendentes. Nenhuma hipótese é aprovada por inferência.
 | Base e automações iniciais | FON-015 e FON-016; PRD/RNF-008/010 | DEC-008/009/014 | 12, 14, 15 | Instalação, build estrito, Prettier e testes mínimos, sem aceite comercial |
 | Fonte técnica centralizada | FON-004 | DEC-012 | 15, 16 | IDs, fontes e coerência |
 | Consultas, pesquisa e recorte somente leitura; PRD/RF-002/003/005/008, RN-018/019, CA-026 | FON-020/021 | DEC-017 | 9, 14, 15 | Busca, URLs com ID opaco, vazio/inexistência, resumos globais e testes de UI; planejados na fase-005 |
+| Refinamento de consultas; PRD/RF-001/002/003/005/008/009, RN-014/020, CA-027/028/029 | FON-022 | DEC-018 substitui os trechos conflitantes da DEC-017 | 10, 12, 14, 15 | Paginação, geometria/capturas, links, atraso civil e regressão, ainda não executados |
 
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
 revisão do PRD e das referências relevantes, confirmação das escolhas por perguntas, consulta
@@ -1350,6 +1428,7 @@ separadamente, após este registro técnico.
 | 1.7 — 14/11/2026 | Fronteira específica de preparação sem estado e doubles TestBed para falhas de atomicidade; funções puras preservadas | DEC-016 refinada, PRD 1.3 sem alteração | Bloqueio real do mock de módulo no apply e revisão técnica aprovada pelo solicitante; solução ainda não implementada |
 | 1.8 — 16/11/2026 | Política adaptativa do seed nas bordas e refinamento de dia/prefixo; registros anteriores preservados | DEC-015/016 aplicadas | Aprovação e implementação da FASE-004; evidências em frontend/README.md |
 | 1.9 — 16/11/2026 | Estado vigente da FASE-004 e roadmap; consulta de vendas da FASE-005 com busca aprovada, ID opaco e migração de testes/specs | DEC-017 proposta; PRD 1.5 | Autorização documental no Harness; fonte e documentação consultadas, sem código ou testes de aplicação |
+| 1.10 — 16/11/2026 | PRD 1.6, refinamento visual, indicadores exclusivos da Visão Geral, paginação, links, detalhe compacto e roadmap/verificação | DEC-018 confirmada, ajustes não implementados | Pedido documental e confirmações no Harness; imagens locais inspecionadas, sem nova API, dependência, build ou teste de aplicação |
 
 **Refinamento da revisão 1.9 — 16/11/2026:** reutilização explícita da feature
 existente; filtro de situação nas abertas conforme PRD/RN-019 e delta adicional de
