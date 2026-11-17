@@ -70,6 +70,26 @@ describe('Projeções financeiras puras', () => {
     });
   });
 
+  it.each([
+    ['2027-11-10', '2027-11-10', 'Próximos dias'],
+    ['2027-11-10', '2027-11-11', 'Atrasado'],
+    ['2027-05-01', '2027-04-24', 'Próximos dias'],
+    ['2027-05-01', '2027-04-23', 'Aberto'],
+    ['2028-01-01', '2027-12-25', 'Próximos dias'],
+    ['2028-01-01', '2027-12-24', 'Aberto'],
+  ])(
+    'classifica vencimento %s na referência civil %s como %s',
+    (vencimento, referencia, situacao) => {
+      expect(
+        projetarParcela(
+          { id: 'p-limite', numero: 1, valorCentavos: 10000, vencimento },
+          [],
+          referencia,
+        ).situacao,
+      ).toBe(situacao);
+    },
+  );
+
   it('concilia entrada, duas parcelas pagas e próximo vencimento sem dupla contagem', () => {
     const projecao = projetarVenda(pagar(venda(), 2), '2027-03-31');
     expect(projecao).toMatchObject({
@@ -86,6 +106,55 @@ describe('Projeções financeiras puras', () => {
     ).toBe(projecao.saldoCentavos);
     expect(projetarVenda(venda(), '2027-03-01').situacao).toBe('Atrasada');
     expect(projetarVenda(venda('nova', '2027-03-31'), '2027-03-31').situacao).toBe('Em aberto');
+  });
+
+  it('reconcilia atraso no dia seguinte ao vencimento e mantém parcela paga fora do atraso', () => {
+    const preparada = prepararCadastro(
+      {
+        cliente: { nome: 'Cliente DEMO limite', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+        dataVenda: '2027-10-10',
+        valorTotalCentavos: 100000,
+        quantidadeParcelas: 4,
+        entrada: null,
+      },
+      '2028-02-01',
+      'venda-limite-civil',
+    );
+    if (preparada.tipo !== 'sucesso') throw new Error(preparada.mensagem);
+
+    const noVencimento = projetarVenda(preparada.valor, '2027-11-10');
+    expect(noVencimento).toMatchObject({
+      situacao: 'Próximos dias',
+      proximoVencimento: '2027-11-10',
+    });
+    expect(noVencimento.parcelas[0].situacao).toBe('Próximos dias');
+    expect(resumirVendas([preparada.valor], '2027-11-10').valoresEmAtrasoCentavos).toBe(0);
+
+    const noDiaSeguinte = projetarVenda(preparada.valor, '2027-11-11');
+    expect(noDiaSeguinte).toMatchObject({ situacao: 'Atrasada', proximoVencimento: '2027-11-10' });
+    expect(noDiaSeguinte.parcelas[0].situacao).toBe('Atrasado');
+    expect(resumirVendas([preparada.valor], '2027-11-11')).toMatchObject({
+      totalEmAbertoCentavos: 100000,
+      valoresEmAtrasoCentavos: 25000,
+      recebidoNoMesCentavos: 0,
+      vendasCadastradas: 1,
+    });
+
+    const comParcelaPaga = pagar(preparada.valor, 1, '2027-11-10');
+    const depoisDePagar = projetarVenda(comParcelaPaga, '2027-11-11');
+    expect(depoisDePagar).toMatchObject({
+      situacao: 'Em aberto',
+      totalPagoCentavos: 25000,
+      saldoCentavos: 75000,
+      quantidadePaga: 1,
+      proximoVencimento: '2027-12-10',
+    });
+    expect(depoisDePagar.parcelas[0]).toMatchObject({
+      situacao: 'Paga',
+      dataPagamento: '2027-11-10',
+      formaPagamento: 'Pix',
+    });
+    expect(resumirVendas([comParcelaPaga], '2027-11-11').valoresEmAtrasoCentavos).toBe(0);
   });
 
   it('deriva quitação, ausência de vencimento e separação de coleções sem mover registros', () => {
