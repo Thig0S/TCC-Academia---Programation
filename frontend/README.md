@@ -474,6 +474,12 @@ Em 17/11/2026, busca, situação e as duas ações de limpeza foram organizadas 
 
 Verificações incrementais: `npm.cmd run format:check` passou; `npm.cmd run build` saiu 0 (488,11 kB iniciais/93,81 kB estimados); `npm.cmd test -- --watch=false` passou (174/174 em 16 arquivos); `npm.cmd run test:e2e` passou (34/34, 17 por viewport Chromium). Uma execução E2E inicial detectou que o teste comparava bordas superiores, apesar dos controles alinhados pela base; a asserção foi corrigida para medir a base e a suíte completa passou na repetição. Sass `@import` permanece como aviso preexistente.
 
+### Apply ajustes FASE-005 — tarefa 2.1
+
+Foi adicionada derivação local de páginas de até dez itens e da faixa completa dos resultados, depois de `buscarVendas`, tanto para abertas quanto quitadas. A seleção usa `linkedSignal`: mudanças de termo/situação redefinem a página 1; redução do total limita a seleção à última página válida; limpar pesquisa/critério também força a página 1 mesmo quando os campos já estão vazios. Coleções e ordem são lidas sem mutação; nenhuma dependência, seed ou fonte de domínio foi alterada.
+
+Testes unitários verificam 0/1/10/11/21 resultados, faixas, divisão ordenada sem duplicação/omissão, limite após redução e ausência de mutação. Verificações incrementais em Windows/Node 24.21.0/npm 11.19.0: build passou (488,12 kB iniciais/93,93 kB estimados); testes passaram (183/183 em 17 arquivos). O aviso Sass `@import` permanece. A apresentação e os cenários de interação com páginas serão verificados na tarefa 2.2.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
