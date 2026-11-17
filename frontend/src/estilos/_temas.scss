@@ -1,5 +1,6 @@
 // Complementos locais: Bootstrap continua sendo a fonte dos tokens dos dois temas.
 app-root[data-bs-theme] {
+  --consulta-link: #a40021;
   .barra-lateral {
     --lateral-fundo: #ce0026;
     --lateral-degrade: none;
@@ -31,9 +32,24 @@ app-root[data-bs-theme] {
     --lateral-hover: #9b0027;
     --bs-border-color: #b45a70;
   }
+  &[data-bs-theme='dark'] {
+    --consulta-link: #ff9aaa;
+  }
   .perfil a,
   main a {
-    color: var(--bs-primary-text-emphasis);
+    color: var(--consulta-link);
+    text-decoration: none;
+  }
+  .area-principal main a:hover,
+  .area-principal main a:focus-visible,
+  .perfil a:hover,
+  .perfil a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .area-principal main a:focus-visible,
+  .perfil a:focus-visible {
+    outline-color: var(--consulta-link);
   }
   .controle-tema {
     --bs-btn-color: var(--bs-body-color);

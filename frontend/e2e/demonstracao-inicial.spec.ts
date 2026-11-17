@@ -629,6 +629,163 @@ test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco
   }
 });
 
+test('links afetados integram-se aos temas sem sublinhado permanente e mantêm contraste', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/vendas');
+  const medirContraste = async (elemento: import('@playwright/test').Locator) =>
+    elemento.evaluate((alvo) => {
+      const rgb = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+      const fundo = (elemento: Element | null): number[] => {
+        if (!elemento) return [255, 255, 255];
+        const estilo = getComputedStyle(elemento);
+        const cor = rgb(estilo.backgroundColor);
+        if ((cor[3] ?? 1) === 1) return cor;
+        const base = fundo(elemento.parentElement);
+        return cor
+          .slice(0, 3)
+          .map((canal, indice) => canal * (cor[3] ?? 1) + base[indice] * (1 - (cor[3] ?? 1)));
+      };
+      const luminancia = (cor: number[]) =>
+        cor
+          .slice(0, 3)
+          .map((canal) => {
+            const s = canal / 255;
+            return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+          })
+          .reduce((soma, canal, indice) => soma + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+      const texto = rgb(getComputedStyle(alvo).color);
+      const plano = fundo(alvo);
+      const [maior, menor] = [luminancia(texto), luminancia(plano)].sort((a, b) => b - a);
+      const corFoco = rgb(getComputedStyle(alvo).outlineColor);
+      const [maiorFoco, menorFoco] = [luminancia(corFoco), luminancia(plano)].sort((a, b) => b - a);
+      return {
+        razao: (maior + 0.05) / (menor + 0.05),
+        razaoFoco: (maiorFoco + 0.05) / (menorFoco + 0.05),
+        larguraFoco: getComputedStyle(alvo).outlineWidth,
+        decoracao: getComputedStyle(alvo).textDecorationLine,
+      };
+    });
+
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+
+    const nav = page.getByRole('navigation', { name: 'Navegação principal' });
+    const links = [
+      nav.getByRole('link', { name: 'Visão Geral', exact: true }),
+      nav.getByRole('link', { name: 'Vendas', exact: true }),
+      nav.getByRole('link', { name: 'Quitadas', exact: true }),
+      nav.getByRole('link', { name: 'Relatórios', exact: true }),
+      nav.getByRole('link', { name: 'Configurações', exact: true }),
+      page.getByRole('main').getByRole('link', { name: 'Quitadas', exact: true }),
+      page.getByRole('link', { name: 'Atalho para Configurações', exact: true }),
+      page
+        .getByRole('table')
+        .getByRole('link', { name: /Abrir detalhes da venda/ })
+        .first(),
+      page
+        .getByRole('table')
+        .getByRole('link', { name: /Visualizar venda/ })
+        .first(),
+    ];
+    for (const link of links) {
+      const normal = await medirContraste(link);
+      expect(normal.razao).toBeGreaterThanOrEqual(4.5);
+      expect(normal.decoracao).toBe('none');
+      await link.hover();
+      expect((await medirContraste(link)).decoracao).toContain('underline');
+      await page.mouse.move(0, 0);
+      await link.focus();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Shift+Tab');
+      await expect(link).toBeFocused();
+      const foco = await medirContraste(link);
+      expect(foco.razao).toBeGreaterThanOrEqual(4.5);
+      expect(foco.larguraFoco).toBe('3px');
+      if (!(await link.evaluate((elemento) => elemento.closest('.barra-lateral'))))
+        expect(foco.razaoFoco).toBeGreaterThanOrEqual(3);
+      expect(foco.decoracao).toContain('underline');
+    }
+
+    const ativo = page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true });
+    await expect(ativo).toHaveAttribute('aria-current', 'page');
+    expect((await medirContraste(ativo)).razao).toBeGreaterThanOrEqual(4.5);
+    expect((await medirContraste(ativo)).decoracao).toBe('none');
+    const lateral = page.locator('.barra-lateral');
+    const perfil = page.locator('.perfil');
+    const cliente = page
+      .getByRole('table')
+      .getByRole('link', { name: /Abrir detalhes da venda/ })
+      .first();
+    const visualizar = page
+      .getByRole('table')
+      .getByRole('link', { name: /Visualizar venda/ })
+      .first();
+    const destinos = [
+      { nome: 'menu', elemento: nav.getByRole('link', { name: 'Vendas', exact: true }) },
+      {
+        nome: 'perfil',
+        elemento: page.getByRole('link', { name: 'Atalho para Configurações', exact: true }),
+      },
+      { nome: 'cliente', elemento: cliente },
+      { nome: 'Visualizar', elemento: visualizar },
+    ];
+    const capturas = [];
+    for (const destino of destinos) {
+      const medida = await medirContraste(destino.elemento);
+      capturas.push({ link: destino.nome, razaoContraste: Number(medida.razao.toFixed(2)) });
+    }
+    await page
+      .screenshot({ fullPage: true, animations: 'disabled' })
+      .then((imagem) =>
+        testInfo.attach(`consulta-${tema}-links`, { body: imagem, contentType: 'image/png' }),
+      );
+    console.log(`Links ${tema}: ${JSON.stringify(capturas)}`);
+
+    await page.goto('/vendas/quitadas');
+    const quitadasAtiva = page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Quitadas', exact: true });
+    await expect(quitadasAtiva).toHaveAttribute('aria-current', 'page');
+    const estiloQuitadas = await quitadasAtiva.evaluate((elemento) => ({
+      peso: getComputedStyle(elemento).fontWeight,
+      decoracao: getComputedStyle(elemento).textDecorationLine,
+      fundo: getComputedStyle(elemento).backgroundColor,
+    }));
+    expect(estiloQuitadas.peso).toBe('700');
+    expect(estiloQuitadas.decoracao).toBe('none');
+    expect(estiloQuitadas.fundo).not.toBe('rgba(0, 0, 0, 0)');
+    expect((await medirContraste(quitadasAtiva)).razao).toBeGreaterThanOrEqual(4.5);
+
+    await page.goto('/vendas/seed%2Fvenda%2F1');
+    const retornos = page.getByRole('navigation', { name: 'Retornos de Vendas' }).getByRole('link');
+    for (let indice = 0; indice < (await retornos.count()); indice++) {
+      const retorno = retornos.nth(indice);
+      const medida = await medirContraste(retorno);
+      expect(medida.razao).toBeGreaterThanOrEqual(4.5);
+      expect(medida.decoracao).toBe('none');
+      await retorno.hover();
+      expect((await medirContraste(retorno)).decoracao).toContain('underline');
+      await page.mouse.move(0, 0);
+      await retorno.focus();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Shift+Tab');
+      await expect(retorno).toBeFocused();
+      const focoRetorno = await medirContraste(retorno);
+      expect(focoRetorno.razao).toBeGreaterThanOrEqual(4.5);
+      expect(focoRetorno.razaoFoco).toBeGreaterThanOrEqual(3);
+      expect(focoRetorno.decoracao).toContain('underline');
+    }
+    expect(await lateral.count()).toBe(1);
+    expect(await perfil.count()).toBe(1);
+  }
+});
+
 test('abre e recarrega cada destino com identidade, aviso e localização', async ({ page }) => {
   for (const [rota, titulo] of destinos) {
     await page.goto(rota);
