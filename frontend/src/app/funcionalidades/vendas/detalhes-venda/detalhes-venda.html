@@ -1,70 +1,87 @@
 @if (consulta(); as resultado) {
   @if (resultado.tipo === 'sucesso') {
-    <app-cabecalho titulo="Detalhes da venda" />
-    <p class="text-body-secondary">
-      Referência da demonstração: {{ formatarDataCivil(referencia) }}
-    </p>
-    <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3 mb-4">
-      <a routerLink="/vendas">Voltar para Vendas</a>
-      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
-    </nav>
+    <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
+    <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-2">
+      <p class="text-body-secondary mb-0">
+        Referência da demonstração: {{ formatarDataCivil(referencia) }}
+      </p>
+      <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+        <a routerLink="/vendas">Voltar para Vendas</a>
+        <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+      </nav>
+    </div>
 
-    <section class="card p-3 p-md-4 mb-4" aria-labelledby="identificacao-venda">
-      <h2 id="identificacao-venda" class="h4">{{ resultado.valor.cliente.nome }}</h2>
-      <dl class="row mb-0">
-        <dt class="col-sm-4">CPF</dt>
-        <dd class="col-sm-8">{{ resultado.valor.cliente.cpf }}</dd>
-        <dt class="col-sm-4">Telefone</dt>
-        <dd class="col-sm-8">{{ resultado.valor.cliente.telefone }}</dd>
-        @if (resultado.valor.cliente.descricao) {
-          <dt class="col-sm-4">Descrição</dt>
-          <dd class="col-sm-8">{{ resultado.valor.cliente.descricao }}</dd>
-        }
-        <dt class="col-sm-4">Data da venda</dt>
-        <dd class="col-sm-8">{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
-        <dt class="col-sm-4">Valor total</dt>
-        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
-        <dt class="col-sm-4">Total pago</dt>
-        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
-        <dt class="col-sm-4">Saldo devedor</dt>
-        <dd class="col-sm-8">{{ formatarDinheiro(resultado.valor.saldoCentavos) }}</dd>
-        <dt class="col-sm-4">Próximo vencimento</dt>
-        <dd class="col-sm-8">
-          {{
-            resultado.valor.proximoVencimento
-              ? formatarDataCivil(resultado.valor.proximoVencimento)
-              : 'Não há parcelas pendentes'
-          }}
-        </dd>
-        <dt class="col-sm-4">Situação</dt>
-        <dd class="col-sm-8"><app-selo-situacao [situacao]="resultado.valor.situacao" /></dd>
-        <dt class="col-sm-4">Parcelas pagas</dt>
-        <dd class="col-sm-8">
-          {{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}
-        </dd>
-      </dl>
-    </section>
-
-    <section class="card p-3 p-md-4 mb-4" aria-labelledby="titulo-entrada">
-      <h2 id="titulo-entrada" class="h5">Entrada</h2>
-      @if (resultado.valor.entrada; as entrada) {
-        <dl class="row mb-0">
-          <dt class="col-sm-4">Valor</dt>
-          <dd class="col-sm-8">{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
-          <dt class="col-sm-4">Data</dt>
-          <dd class="col-sm-8">{{ formatarDataCivil(entrada.data) }}</dd>
-          <dt class="col-sm-4">Forma</dt>
-          <dd class="col-sm-8">{{ entrada.forma }}</dd>
+    <div class="detalhe-resumo">
+      <section class="card p-3 detalhe-bloco" aria-labelledby="identificacao-venda">
+        <h2 id="identificacao-venda" class="h5">{{ resultado.valor.cliente.nome }}</h2>
+        <dl class="detalhe-campos mb-0">
+          <dt>CPF</dt>
+          <dd>{{ resultado.valor.cliente.cpf }}</dd>
+          <dt>Telefone</dt>
+          <dd>{{ resultado.valor.cliente.telefone }}</dd>
+          @if (resultado.valor.cliente.descricao) {
+            <dt>Descrição</dt>
+            <dd>{{ resultado.valor.cliente.descricao }}</dd>
+          }
         </dl>
-      } @else {
-        <p class="mb-0">Sem entrada</p>
-      }
-    </section>
+      </section>
 
-    <section aria-labelledby="titulo-parcelas">
+      <section class="card p-3 detalhe-bloco" aria-labelledby="dados-financeiros">
+        <h2 id="dados-financeiros" class="h5">Dados da venda</h2>
+        <dl class="detalhe-campos mb-2">
+          <dt>Data da venda</dt>
+          <dd>{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
+          <dt>Valor total</dt>
+          <dd>{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
+          <dt>Total pago</dt>
+          <dd>{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
+          <dt>Saldo devedor</dt>
+          <dd>{{ formatarDinheiro(resultado.valor.saldoCentavos) }}</dd>
+          <dt>Próximo vencimento</dt>
+          <dd>
+            {{
+              resultado.valor.proximoVencimento
+                ? formatarDataCivil(resultado.valor.proximoVencimento)
+                : 'Não há parcelas pendentes'
+            }}
+          </dd>
+          <dt>Situação</dt>
+          <dd><app-selo-situacao [situacao]="resultado.valor.situacao" /></dd>
+          <dt>Parcelas pagas</dt>
+          <dd>{{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}</dd>
+        </dl>
+        <section class="entrada-detalhe" aria-labelledby="titulo-entrada">
+          <h3 id="titulo-entrada" class="h6">Entrada</h3>
+          @if (resultado.valor.entrada; as entrada) {
+            <dl class="detalhe-campos mb-0">
+              <dt>Valor</dt>
+              <dd>{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
+              <dt>Data</dt>
+              <dd>{{ formatarDataCivil(entrada.data) }}</dd>
+              <dt>Forma</dt>
+              <dd>{{ entrada.forma }}</dd>
+            </dl>
+          } @else {
+            <p class="mb-0">Sem entrada</p>
+          }
+        </section>
+      </section>
+    </div>
+
+    <section class="parcelas-detalhe" aria-labelledby="titulo-parcelas">
       <h2 id="titulo-parcelas" class="h5">Parcelas</h2>
-      <div class="table-responsive" role="region" aria-label="Parcelas da venda" tabindex="0">
-        <table class="table table-striped align-middle">
+      <p id="orientacao-parcelas" class="visually-hidden">
+        Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
+      </p>
+      <div
+        class="table-responsive"
+        [class.parcelas-com-rolagem]="resultado.valor.parcelas.length > 10"
+        role="region"
+        aria-label="Parcelas da venda"
+        aria-describedby="orientacao-parcelas"
+        tabindex="0"
+      >
+        <table class="table table-striped table-sm align-middle tabela-parcelas-detalhe">
           <caption>
             Parcelas da venda de
             {{

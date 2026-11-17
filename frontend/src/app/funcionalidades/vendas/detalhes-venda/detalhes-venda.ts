@@ -11,6 +11,7 @@ import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demons
   selector: 'app-detalhes-venda',
   imports: [Cabecalho, RouterLink, SeloSituacao],
   templateUrl: './detalhes-venda.html',
+  styleUrl: './detalhes-venda.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalhesVenda {
