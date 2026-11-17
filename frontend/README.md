@@ -184,6 +184,34 @@ Em 17/11/2026, `npm.cmd test -- --watch=false` passou: 197/197 testes em 18 arqu
 O aviso preexistente de Sass `@import` permanece. Não foi alterado código de produção;
 os testes não representam uma UI de pagamento nem aceite comercial.
 
+#### Evidências de layout integrado — tarefa 4.2 de `ajutes-fase-005` (parcial)
+
+Em 17/11/2026, `npm.cmd run test:e2e:paginacao-fixture` passou 8/8 em Chromium
+1.65.0, servidor de fixture isolado na porta 4301 e viewports 1366×768 e 390×844.
+Os dados vieram do host sintético `src/testing/paginacao-fixture.ts`; não são seed
+nem fluxo comercial. Nos dois temas, desktop: 10 linhas até y=629,77, rodapé até
+y=730,27, documento 768 px, controles alinhados (diferença de base 0 px), sem
+scroll vertical ou horizontal da página. Capturas anexadas aos resultados Playwright
+foram revistas em light/dark; a composição mantém aviso, filtros, dez linhas e
+paginação. No mobile: documento 2325 px, largura 390 px sem overflow horizontal;
+controles empilhados (diferença de base 170 px) e conteúdo acessível por rolagem.
+As colunas da tabela exigem rolagem horizontal interna, sem ampliar o documento.
+
+Detalhe sintético com 10 parcelas, em ambos os temas no desktop: cliente e finanças
+começam em y=182; última linha em y=732,86; tabela em y=764,75; documento 768 px.
+Em 390×844, blocos empilham (topos y=383,02 e 553,02), documento 1733 px e largura
+390 px; dados, retorno, entrada, descrição e 10 linhas permanecem presentes. O
+cenário de 11 parcelas + descrição extensa passou nos dois temas e viewports, com
+região interna nomeada, cabeçalho sticky, todas as linhas e scroll acionado por
+teclado (`End`); no mobile mantém-se a rolagem vertical da página. Teste adicional
+confirmou paginação por teclado, foco retido e faixa anunciada.
+
+Zoom nativo 200%: verificação manual confirmada pelo solicitante nesta sessão para
+lista e detalhe, sem perda de legibilidade/conteúdo segundo o relato. O agente não
+operou os controles da interface do navegador nem reproduziu essa verificação; CSS
+viewport reduzido não foi usado como substituto. Evidência identificada como relato
+manual do solicitante, distinta das medições automatizadas e das evidências históricas.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.

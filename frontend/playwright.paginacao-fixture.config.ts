@@ -13,10 +13,13 @@ export default defineConfig({
   use: {
     baseURL,
     browserName: 'chromium',
-    viewport: { width: 1366, height: 768 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
+  projects: [
+    { name: 'chromium-1366x768', use: { viewport: { width: 1366, height: 768 } } },
+    { name: 'chromium-390x844', use: { viewport: { width: 390, height: 844 } } },
+  ],
   webServer: {
     command: 'npm.cmd run start:paginacao-fixture',
     url: baseURL,
