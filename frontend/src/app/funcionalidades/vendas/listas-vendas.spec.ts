@@ -44,6 +44,87 @@ describe('Listas de vendas', () => {
     });
   });
 
+  it('pagina resultados filtrados e limita a página após comando interno reduzir a coleção', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const criadas = [];
+    for (let indice = 0; servico.abertas().length < 21; indice++) {
+      const resultado = servico.cadastrarVenda({
+        cliente: {
+          nome: `Cliente de paginação ${indice}`,
+          cpf: `CPF-DEMO-PAG-${indice}`,
+          telefone: `TEL-DEMO-PAG-${indice}`,
+        },
+        dataVenda: servico.referencia,
+        valorTotalCentavos: 60000,
+        quantidadeParcelas: 1,
+        entrada: null,
+      });
+      if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+      criadas.push(resultado.valor);
+    }
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = harness.routeNativeElement!;
+    const tabela = () => pagina.querySelectorAll('tbody tr');
+    const faixas = () => pagina.querySelector('[aria-label="Faixa de resultados"]')!.textContent;
+
+    expect(tabela()).toHaveLength(10);
+    expect(faixas()).toContain(`1–10 de ${servico.abertas().length} vendas`);
+    const primeira = [...pagina.querySelectorAll('tbody th')].map((celula) => celula.textContent);
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(tabela()).toHaveLength(10);
+    expect(faixas()).toContain('11–20 de 21 vendas');
+    const segunda = [...pagina.querySelectorAll('tbody th')].map((celula) => celula.textContent);
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(tabela()).toHaveLength(1);
+    expect(faixas()).toContain('21–21 de 21 vendas');
+    const terceira = [...pagina.querySelectorAll('tbody th')].map((celula) => celula.textContent);
+    expect(new Set([...primeira, ...segunda, ...terceira]).size).toBe(21);
+
+    const busca = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
+    busca.value = criadas[0].cliente.nome;
+    busca.dispatchEvent(new Event('input', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(pagina.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(faixas()).toContain('1–1 de 1 vendas');
+    busca.value = '';
+    busca.dispatchEvent(new Event('input', { bubbles: true }));
+    await harness.fixture.whenStable();
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Página 3"]')!.click();
+    await harness.fixture.whenStable();
+    [...pagina.querySelectorAll('button')]
+      .find((botao) => botao.textContent?.includes('Limpar pesquisa'))!
+      .click();
+    await harness.fixture.whenStable();
+    expect(faixas()).toContain('1–10 de 21 vendas');
+
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Página 3"]')!.click();
+    await harness.fixture.whenStable();
+    [...pagina.querySelectorAll('button')]
+      .find((botao) => botao.textContent?.includes('Limpar critérios'))!
+      .click();
+    await harness.fixture.whenStable();
+    expect(faixas()).toContain('1–10 de 21 vendas');
+
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Página 3"]')!.click();
+    await harness.fixture.whenStable();
+    const parcela = criadas[0].parcelas[0];
+    expect(
+      servico.registrarPagamento({
+        vendaId: criadas[0].id,
+        parcelaIds: [parcela.id],
+        valorCentavos: parcela.valorCentavos,
+        data: servico.referencia,
+        forma: 'Pix',
+      }).tipo,
+    ).toBe('sucesso');
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('2');
+    expect(faixas()).toContain('11–20 de 20 vendas');
+    expect(tabela()).toHaveLength(10);
+  });
+
   it('não exibe cartões globais e preserva os derivados internos', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const resumoInicial = servico.resumo();

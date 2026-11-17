@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { TabelaVendas } from '../componentes/tabela-vendas/tabela-vendas';
+import { PaginacaoVendas } from '../componentes/paginacao-vendas/paginacao-vendas';
 import { formatarDataCivil } from '../data-civil';
 import { buscarVendas, FiltroSituacaoVenda } from '../venda.busca';
 import {
@@ -21,7 +22,7 @@ import {
 
 @Component({
   selector: 'app-listar-vendas',
-  imports: [Cabecalho, RouterLink, TabelaVendas],
+  imports: [Cabecalho, RouterLink, TabelaVendas, PaginacaoVendas],
   templateUrl: './listar-vendas.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -77,5 +78,9 @@ export class ListarVendas {
     this.situacao.set('Todas');
     this.paginaSelecionada.set(1);
     campo.focus();
+  }
+
+  protected selecionarPagina(pagina: number): void {
+    this.paginaSelecionada.set(pagina);
   }
 }

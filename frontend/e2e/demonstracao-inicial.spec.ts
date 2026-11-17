@@ -81,6 +81,11 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
   const busca = page.getByRole('searchbox', { name: /Buscar por nome/ });
   const situacao = page.getByLabel('Filtrar por situação');
   const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
+  const quantidadeAbertas = await tabela.locator('tbody tr').count();
+  await expect(page.locator('[aria-label="Faixa de resultados"]')).toHaveText(
+    `1–${quantidadeAbertas} de ${quantidadeAbertas} vendas`,
+  );
+  await expect(page.getByRole('navigation', { name: 'Paginação de vendas' })).toHaveCount(0);
   const primeiraLinha = tabela.locator('tbody tr').first();
   const nome = (await primeiraLinha.locator('th').innerText()).trim();
   const data = (await primeiraLinha.locator('td').nth(0).innerText()).trim();
@@ -121,6 +126,11 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
 
   await page.goto('/vendas/quitadas');
   const tabelaQuitadas = page.getByRole('table', { name: 'Vendas quitadas' });
+  const quantidadeQuitadas = await tabelaQuitadas.locator('tbody tr').count();
+  await expect(page.locator('[aria-label="Faixa de resultados"]')).toHaveText(
+    `1–${quantidadeQuitadas} de ${quantidadeQuitadas} vendas`,
+  );
+  await expect(page.getByRole('navigation', { name: 'Paginação de vendas' })).toHaveCount(0);
   await expect(page.getByLabel(/Buscar por nome/)).toBeVisible();
   await expect(page.getByLabel(/Filtrar por situação/)).toHaveCount(0);
   const linhaQuitada = tabelaQuitadas.locator('tbody tr').first();
@@ -426,7 +436,9 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Limpar critérios' })).toBeVisible();
     await verificarFaixaDesktop(4);
-    await expect(page.getByRole('status')).toContainText('vendas encontradas');
+    await expect(page.locator('main [role="status"]:not([aria-label])')).toContainText(
+      'vendas encontradas',
+    );
     for (const estado of ['Em aberto', 'Próximos dias', 'Atrasada'])
       await expect(tabela.locator('.badge').filter({ hasText: estado }).first()).toBeVisible();
     await verificarContraste(tema, 'Vendas');

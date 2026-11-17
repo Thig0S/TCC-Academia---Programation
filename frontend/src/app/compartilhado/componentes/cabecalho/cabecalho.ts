@@ -7,4 +7,5 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class Cabecalho {
   readonly titulo = input.required<string>();
+  readonly compacto = input(false);
 }

@@ -1,8 +1,12 @@
-<app-cabecalho titulo="Vendas quitadas" />
-<p><a routerLink="/vendas">Voltar para Vendas</a></p>
-<p class="text-body-secondary">Referência da demonstração: {{ formatarDataCivil(referencia) }}</p>
-<section class="card p-3 p-md-4 mb-4" aria-label="Pesquisa de vendas quitadas">
-  <div class="row g-3 align-items-end consulta-controles">
+<app-cabecalho titulo="Vendas quitadas" [compacto]="true" />
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-1">
+  <a routerLink="/vendas">Voltar para Vendas</a>
+  <p class="text-body-secondary mb-0">
+    Referência da demonstração: {{ formatarDataCivil(referencia) }}
+  </p>
+</div>
+<section class="card p-2 mb-2" aria-label="Pesquisa de vendas quitadas">
+  <div class="row g-2 align-items-end consulta-controles">
     <div class="col-12 col-lg-10">
       <label for="busca-vendas-quitadas" class="form-label">
         Buscar por nome, CPF, telefone ou data da venda
@@ -23,11 +27,11 @@
       </button>
     </div>
   </div>
-  <p id="orientacao-busca-vendas-quitadas" class="form-text mb-0 mt-2">
+  <p id="orientacao-busca-vendas-quitadas" class="form-text mb-0 mt-1">
     Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
   </p>
 </section>
-<p role="status" aria-live="polite" aria-atomic="true">
+<p class="mb-2" role="status" aria-live="polite" aria-atomic="true">
   {{ resultados().length }}
   {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
 </p>
@@ -36,5 +40,11 @@
 } @else if (resultados().length === 0) {
   <p>Nenhuma venda corresponde à pesquisa.</p>
 } @else {
-  <app-tabela-vendas [vendas]="resultados()" legenda="Vendas quitadas" />
+  <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" />
 }
+<app-paginacao-vendas
+  [faixa]="faixaResultados()"
+  [paginaAtual]="paginaSelecionada()"
+  [totalPaginas]="totalPaginas()"
+  (paginaAlterada)="selecionarPagina($event)"
+/>
