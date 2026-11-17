@@ -403,6 +403,14 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
       `Contraste ${tema}/${area}: mínimo ${Math.min(...valores.map((valor) => valor.razao)).toFixed(2)}:1`,
     );
   };
+  const verificarFaixaDesktop = async (esperados: number) => {
+    if (page.viewportSize()!.width < 1200) return;
+    const bases = await page
+      .locator('.consulta-controles > div')
+      .evaluateAll((colunas) => colunas.map((coluna) => coluna.getBoundingClientRect().bottom));
+    expect(bases).toHaveLength(esperados);
+    expect(Math.max(...bases) - Math.min(...bases)).toBeLessThanOrEqual(1);
+  };
 
   for (const tema of ['dark', 'light']) {
     await page.goto('/vendas');
@@ -414,6 +422,10 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(tabela.getByRole('columnheader')).toHaveCount(8);
     await expect(page.getByRole('region', { name: 'Vendas em aberto' })).toBeVisible();
     await expect(page.getByRole('searchbox', { name: /Buscar por nome/ })).toBeVisible();
+    await expect(page.getByRole('searchbox')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Limpar critérios' })).toBeVisible();
+    await verificarFaixaDesktop(4);
     await expect(page.getByRole('status')).toContainText('vendas encontradas');
     for (const estado of ['Em aberto', 'Próximos dias', 'Atrasada'])
       await expect(tabela.locator('.badge').filter({ hasText: estado }).first()).toBeVisible();
@@ -427,6 +439,9 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(quitadas.getByRole('caption')).toHaveText('Vendas quitadas');
     await expect(page.getByLabel(/Buscar por nome/)).toBeVisible();
     await expect(page.getByLabel(/Filtrar por situação/)).toHaveCount(0);
+    await expect(page.getByRole('searchbox')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
+    await verificarFaixaDesktop(2);
     await expect(quitadas.getByText('Quitada', { exact: true }).first()).toBeVisible();
     await verificarContraste(tema, 'Quitadas');
     await page.getByRole('button', { name: 'Limpar pesquisa' }).hover();
