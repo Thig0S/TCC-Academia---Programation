@@ -44,41 +44,34 @@ describe('Listas de vendas', () => {
     });
   });
 
-  it('mantém os cartões globais invariáveis à busca e à situação', async () => {
+  it('não exibe cartões globais e preserva os derivados internos', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const resumoInicial = servico.resumo();
     const harness = await RouterTestingHarness.create('/vendas');
     const pagina = harness.routeNativeElement!;
-    const cartoes = pagina.querySelector('[aria-label="Resumo global de vendas"]')!;
-    const textoInicial = cartoes.textContent;
 
-    expect(textoInicial).toContain(formatarDinheiro(resumoInicial.totalEmAbertoCentavos));
-    expect(textoInicial).toContain(formatarDinheiro(resumoInicial.valoresEmAtrasoCentavos));
-    expect(textoInicial).toContain(formatarDinheiro(resumoInicial.recebidoNoMesCentavos));
-    expect(textoInicial).toContain(String(resumoInicial.vendasCadastradas));
-    expect(resumoInicial.vendasCadastradas).toBe(servico.vendas().length);
-    expect(resumoInicial.vendasCadastradas).toBeGreaterThan(servico.abertas().length);
+    expect(pagina.querySelector('[aria-label="Resumo global de vendas"]')).toBeNull();
+    expect(pagina.textContent).not.toContain('Total em aberto');
+    expect(pagina.textContent).not.toContain('Valores em atraso');
+    expect(pagina.textContent).not.toContain('Recebido no mês');
+    expect(pagina.textContent).not.toContain('Vendas cadastradas');
+    expect(servico.resumo()).toEqual(resumoInicial);
 
     const campo = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
-    const alvo = servico.abertas()[0];
-    campo.value = alvo.cliente.nome;
+    campo.value = servico.abertas()[0].cliente.nome;
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     const situacao = pagina.querySelector<HTMLSelectElement>('#situacao-vendas')!;
-    const situacaoAlvo = alvo.situacao as FiltroSituacaoVenda;
-    situacao.value = situacaoAlvo;
+    situacao.value = servico.abertas()[0].situacao;
     situacao.dispatchEvent(new Event('change', { bubbles: true }));
     await harness.fixture.whenStable();
-    expect(pagina.querySelectorAll('tbody tr')).toHaveLength(
-      buscarVendas(servico.abertas(), alvo.cliente.nome, situacaoAlvo).length,
-    );
-    expect(cartoes.textContent).toBe(textoInicial);
+    expect(pagina.querySelector('[aria-label="Resumo global de vendas"]')).toBeNull();
+    expect(servico.resumo()).toEqual(resumoInicial);
 
-    campo.value = 'termo que não corresponde';
-    campo.dispatchEvent(new Event('input', { bubbles: true }));
-    await harness.fixture.whenStable();
-
-    expect(cartoes.textContent).toBe(textoInicial);
+    await harness.navigateByUrl('/vendas/quitadas');
+    expect(
+      harness.routeNativeElement?.querySelector('[aria-label="Resumo global de vendas"]'),
+    ).toBeNull();
     expect(servico.resumo()).toEqual(resumoInicial);
   });
 
@@ -308,9 +301,9 @@ describe('Listas de vendas', () => {
     const pagina = harness.routeNativeElement!;
     expect(pagina.textContent).toContain('Não há vendas em aberto.');
     expect(pagina.textContent).not.toContain('Nenhuma venda corresponde');
-    const cartoes = pagina.querySelector('[aria-label="Resumo global de vendas"]')!;
-    expect(cartoes.textContent?.match(/R\$/g)).toHaveLength(3);
-    expect(cartoes.textContent).toContain('Vendas cadastradas0');
+    expect(pagina.querySelector('[aria-label="Resumo global de vendas"]')).toBeNull();
+    expect(pagina.textContent).not.toContain('Total em aberto');
+    expect(pagina.textContent).not.toContain('Vendas cadastradas');
 
     await harness.navigateByUrl('/vendas/quitadas');
     expect(harness.routeNativeElement?.textContent).toContain('Não há vendas quitadas.');

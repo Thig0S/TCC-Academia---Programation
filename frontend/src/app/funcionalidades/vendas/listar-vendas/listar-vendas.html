@@ -1,32 +1,6 @@
 <app-cabecalho titulo="Vendas" />
 <p><a routerLink="/vendas/quitadas">Quitadas</a></p>
 <p class="text-body-secondary">Referência da demonstração: {{ formatarDataCivil(referencia) }}</p>
-<section class="row g-3 mb-4" aria-label="Resumo global de vendas">
-  <div class="col-12 col-sm-6 col-xl-3">
-    <article class="card h-100 p-3">
-      <h2 class="h6">Total em aberto</h2>
-      <p class="fs-5 mb-0">{{ formatarDinheiro(resumo().totalEmAbertoCentavos) }}</p>
-    </article>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <article class="card h-100 p-3">
-      <h2 class="h6">Valores em atraso</h2>
-      <p class="fs-5 mb-0">{{ formatarDinheiro(resumo().valoresEmAtrasoCentavos) }}</p>
-    </article>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <article class="card h-100 p-3">
-      <h2 class="h6">Recebido no mês</h2>
-      <p class="fs-5 mb-0">{{ formatarDinheiro(resumo().recebidoNoMesCentavos) }}</p>
-    </article>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-3">
-    <article class="card h-100 p-3">
-      <h2 class="h6">Vendas cadastradas</h2>
-      <p class="fs-5 mb-0">{{ resumo().vendasCadastradas }}</p>
-    </article>
-  </div>
-</section>
 <section class="card p-3 p-md-4 mb-4" aria-label="Pesquisa e filtros de vendas">
   <label for="busca-vendas" class="form-label"
     >Buscar por nome, CPF, telefone ou data da venda</label

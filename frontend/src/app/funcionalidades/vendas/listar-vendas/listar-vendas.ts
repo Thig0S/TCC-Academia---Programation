@@ -4,7 +4,6 @@ import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalh
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { TabelaVendas } from '../componentes/tabela-vendas/tabela-vendas';
 import { formatarDataCivil } from '../data-civil';
-import { formatarDinheiro } from '../dinheiro';
 import { buscarVendas, FiltroSituacaoVenda } from '../venda.busca';
 
 @Component({
@@ -18,8 +17,6 @@ export class ListarVendas {
   protected readonly vendas = this.servico.abertas;
   protected readonly referencia = this.servico.referencia;
   protected readonly formatarDataCivil = formatarDataCivil;
-  protected readonly formatarDinheiro = formatarDinheiro;
-  protected readonly resumo = this.servico.resumo;
   protected readonly termo = signal('');
   protected readonly situacao = signal<FiltroSituacaoVenda>('Todas');
   protected readonly resultados = computed(() =>

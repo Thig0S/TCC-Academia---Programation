@@ -154,9 +154,11 @@ describe('Inicialização e integração da sessão', () => {
     expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
       cadastro.cliente.nome,
     );
-    expect(harness.routeNativeElement?.textContent).toContain(
-      formatarDinheiro(resumoAberta.totalEmAbertoCentavos),
-    );
+    expect(
+      harness.routeNativeElement?.querySelector('[aria-label="Resumo global de vendas"]'),
+    ).toBeNull();
+    expect(harness.routeNativeElement?.textContent).not.toContain('Total em aberto');
+    expect(fonte.resumo()).toEqual(resumoAberta);
 
     const campo = harness.routeNativeElement!.querySelector<HTMLInputElement>('#busca-vendas')!;
     campo.value = 'termo sem correspondência';
@@ -199,9 +201,10 @@ describe('Inicialização e integração da sessão', () => {
     expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain(
       cadastro.cliente.nome,
     );
-    expect(harness.routeNativeElement?.textContent).toContain(
-      formatarDinheiro(resumoQuitada.totalEmAbertoCentavos),
-    );
+    expect(
+      harness.routeNativeElement?.querySelector('[aria-label="Resumo global de vendas"]'),
+    ).toBeNull();
+    expect(fonte.resumo()).toEqual(resumoQuitada);
     await harness.navigateByUrl('/vendas/quitadas');
     expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
       cadastro.cliente.nome,

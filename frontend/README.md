@@ -462,6 +462,12 @@ Na raiz, `openspec validate fase-004 --strict` e `git diff --check` aprovados co
 saída 0; Git apenas avisa LF/CRLF nos documentos da raiz. Tarefas 21/21 concluídas,
 revisão de rastreabilidade realizada e PR único preparado somente após todo o escopo.
 
+### Apply ajustes FASE-005 — tarefa 1.1
+
+Em 17/11/2026, retirados da lista de Vendas os quatro cartões globais; `ServicoDemonstracao.resumo` e seus derivados financeiros permanecem. Testes da lista cobrem ausência de cartões em Vendas e Quitadas e invariância dos derivados internos após critérios; integração cobre lista e detalhe na mesma fonte, sem mutações por consulta. Visão Geral e Relatórios continuam indisponíveis. Não houve alteração de rotas, seed, dependências ou comandos do domínio.
+
+Verificação incremental: Windows, Node v24.21.0/npm 11.19.0. `npm.cmd test -- --watch=false` passou: 174/174 testes em 16 arquivos. `npm.cmd run build` saiu 0 (488,11 kB iniciais; transferência estimada 93,82 kB). `npm.cmd run format:check` apontou inicialmente os dois testes editados; ambos foram formatados com Prettier direcionado. O build mantém o aviso existente de Sass `@import`. E2E e medições visuais não foram executados nesta tarefa.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch

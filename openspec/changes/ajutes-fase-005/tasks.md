@@ -7,7 +7,7 @@ não contam como execução desta Change. Aguardar novo pedido de apply.
 
 ## 1. Listas sem cartões e faixa compacta
 
-- [ ] 1.1 No apply autorizado, conferir branch/base/diff e artefatos revisados sem incorporar trabalho alheio; retirar os cartões e referências de apresentação não usadas em `listar-vendas`, preservando `ServicoDemonstracao.resumo`. Atualizar `listas-vendas.spec.ts` e integração que exigiam cartões para provar ausência nas duas coleções e derivados internos invariantes após critérios. Conferir Visão Geral/Relatórios ainda indisponíveis e nenhuma mutação/dependência/seed alterado; registrar resultados incrementais no README do frontend.
+- [x] 1.1 No apply autorizado, conferir branch/base/diff e artefatos revisados sem incorporar trabalho alheio; retirar os cartões e referências de apresentação não usadas em `listar-vendas`, preservando `ServicoDemonstracao.resumo`. Atualizar `listas-vendas.spec.ts` e integração que exigiam cartões para provar ausência nas duas coleções e derivados internos invariantes após critérios. Conferir Visão Geral/Relatórios ainda indisponíveis e nenhuma mutação/dependência/seed alterado; registrar resultados incrementais no README do frontend.
 - [ ] 1.2 Condensar busca, situação, Limpar pesquisa e Limpar critérios em uma faixa desktop, com rótulos, orientação e foco preservados; Quitadas continua somente com busca/limpeza. Verificar componente/E2E nos dois temas em 1366×768/100%, sem busca duplicada; testar limpezas e separação das coleções. Documentar resultados reais, executar formatação/build/testes afetados e criar commit funcional individual com testes/docs/tarefas.
 
 ## 2. Paginação de abertas e quitadas
