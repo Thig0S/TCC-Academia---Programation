@@ -147,6 +147,30 @@ Verificações desta tarefa: fixture Playwright 4/4; `npm.cmd test -- --watch=fa
 `@import` depreciado permanece como aviso. Os testes de viewport/parcelas usam Chromium e fixture
 isolada; não são homologação visual de outros navegadores nem avaliação da ótica.
 
+#### Superfícies e links da consulta — tarefa 3.2 de `ajutes-fase-005`
+
+Links de navegação, perfil, cliente, Visualizar e retornos usam vermelho da identidade
+no tema claro e tom vermelho claro no escuro, sem azul ou sublinhado permanente. Hover
+e foco por teclado sublinham os links; a rota ativa mantém `aria-current` e destaque
+de fundo/peso, e os retornos e ações continuam âncoras com seus destinos existentes.
+A logo, o skip link e as ações somente leitura foram preservados.
+
+Em 17/11/2026, comparação visual em Chromium com `exemploListagemDeVendas.png`,
+`exemploDadosDaVenda.png` e `exemploDesignDark.png`: foram preservados lateral vermelha,
+superfícies brancas no claro, grafite no escuro, densidade de tabela e destaque vermelho.
+Diferenças intencionais: sem cartões globais, filtros de data/ações de negócio,
+notificações ou busca global duplicada; a busca aprovada fica junto aos filtros locais.
+Não foi feita comparação pixel a pixel nem copiados dados das capturas.
+
+E2E Chromium, ambos os viewports (1366×768 e 390×844), passou 2/2 execuções da nova
+verificação de links. Contraste de texto normal medido: dark — menu 5,96:1, perfil
+10,41:1, cliente/Visualizar 7,68:1; light — menu 8,63:1, perfil 5,75:1,
+cliente/Visualizar 8,08:1. O teste também exige pelo menos 4,5:1 no foco, indicador
+de foco de 3 px e sublinhado em hover/foco; retornos têm contraste mínimo 4,5:1.
+A regressão E2E existente da lateral mede texto/ícones e foco nos extremos/meio do
+degradê, nos estados normal, hover, ativo e foco, nos dois temas. Aviso Sass `@import`
+permanece; esta execução não é certificação de acessibilidade nem aceite da ótica.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.

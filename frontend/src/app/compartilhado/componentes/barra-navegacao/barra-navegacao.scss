@@ -26,7 +26,19 @@ svg {
   color: var(--lateral-ativo-texto);
   font-weight: 700;
 }
-.pagina-atual {
+.nav-link[aria-current='page'] {
+  font-weight: 700;
+}
+.nav-link.pagina-atual {
+  text-decoration: none;
+}
+.subdestino[aria-current='page'] {
+  background: var(--lateral-hover);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--lateral-texto);
+}
+.nav-link:hover,
+.nav-link:focus-visible {
   text-decoration: underline;
   text-underline-offset: 0.3em;
 }
