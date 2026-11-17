@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.5 — consulta de vendas da FASE-005, em 16/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.6 — refinamento visual e paginação da FASE-005, em 16/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
@@ -15,7 +15,20 @@
 
 ## 2. Contexto, problema e evidências
 
-**Estado vigente — 16/11/2026:** FASE-004 implementada e integrada à `main` pelo
+**Revisão documental vigente — 16/11/2026:** ajuste solicitado sobre a FASE-005,
+com planejamento transferido por confirmação no Harness para a nova Change
+`ajutes-fase-005`. A Change `fase-005` preserva o conteúdo anterior e suas 20 tarefas;
+os ajustes deste PRD não devem ser aplicados duas vezes ou tratados como já entregues.
+A revisão começou na branch limpa `feature/ajustes-fase-005`. O CLI registra 20/20 tarefas anteriores
+marcadas e o histórico local contém commits de implementação/verificação; isso não
+comprova nova execução, aprovação ou merge remoto. Os novos ajustes abaixo são
+planejamento, não implementação. Registros anteriores de ausência das consultas e
+de cartões obrigatórios em Vendas são históricos e ficam substituídos nesta revisão.
+Os quatro indicadores serão exclusivos da Visão Geral, cuja UI continua na FASE-007;
+retirá-los de Vendas não autoriza antecipar esse módulo. RN-014 mantém atraso a partir
+do dia civil seguinte ao vencimento, sem nova tolerância ou contagem de 24 horas.
+
+**Estado anterior — 16/11/2026:** FASE-004 implementada e integrada à `main` pelo
 PR #7 (commit `1f184e3`), conferido no GitHub e no histórico local. Fonte única,
 12 vendas sintéticas, cadastro/recebimento internos e projeções financeiras existem.
 `frontend/README.md`, seção de regressão final, registra 156 testes e 26 E2E aprovados;
@@ -75,6 +88,7 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 | FON-007 | Confirmações no planejamento da FASE-003 | Conversa de 13/11/2026, exploração e proposta | Dois temas com escuro inicial e preferência em memória; Configurações explicativa; revisão pontual autorizada deste PRD e do TDD | Não aprova regras financeiras, hipóteses restantes, implementação ou aceite da ótica |
 | FON-008 | Decisões no planejamento da FASE-004 | Conversa de 14/11/2026 e mudança `fase-004` | Calendário, centavos, entrada, situações, referência, resumos e pagamento integral em lote sequencial confirmados pelo solicitante | Regras do MVP demonstrativo; não há aceite da ótica, autorização de apply ou validação operacional |
 | FON-009 | Decisões no planejamento da FASE-005 e revisão nesta conversa | Harness de 16/11/2026; inspeção de `frontend/src/app/` e `frontend/README.md`; registro anterior de PR #7 | Busca única nas duas coleções; filtro de situação somente nas abertas, combinado por E; listas, cartões globais e detalhe somente leitura | Planejamento autorizado; fase 005 não implementada, sem aceite comercial ou nova execução de testes |
+| FON-010 | Refinamento visual solicitado e confirmado no Harness | Conversa de 16/11/2026; `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`, `exemploDadosDaVenda.png`, `exemploDesignDark.png` e `exemploCadastrarVenda.png` na mesma pasta | Cartões somente na Visão Geral; barra horizontal; 10 vendas por página nas duas coleções; detalhe compacto com excedente interno; links integrados ao tema; atraso no dia seguinte | Referências visuais inspecionadas, sem copiar dados pessoais nem ações fora do recorte; ajustes não implementados nesta revisão |
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
@@ -110,7 +124,8 @@ Não se pressupõem contas, permissões ou autenticação por perfil. O perfil �
 
 - **Essencial:** estrutura com Visão Geral, Vendas, Relatórios e Configurações; aviso de demonstração; temas claro e escuro, escuro inicial e alternância acessível sem persistência; listagem de vendas em aberto com busca local; cadastro com dados do cliente; detalhes com parcelas; simulação controlada de pagamento; consulta de quitadas; consistência de saldos e estados; acessibilidade e validações. Sem esses elementos não é possível validar o fluxo principal com segurança demonstrativa.
 - **Importante:** edição de venda em situações permitidas, indicadores detalhados da Visão Geral e resumo financeiro de Relatórios. Completam a avaliação do processo, mas dependem de delimitar edição e regras de contabilização. Relatórios e Configurações continuam navegáveis mesmo antes do refinamento desses conteúdos.
-- **Desejável:** gráfico de recebimentos dos últimos meses, paginação e decoração discreta de avatar/ícones. Não devem atrasar a validação de cadastro e recebimento.
+- **Essencial no refinamento da consulta:** paginação de 10 vendas nas abertas e quitadas e layout compacto conforme CA-027/028, para manter os registros visíveis no desktop.
+- **Desejável:** gráfico de recebimentos dos últimos meses e decoração discreta de avatar/ícones. Não devem atrasar a validação de cadastro e recebimento.
 - **Futuro:** infraestrutura operacional e alternativas condicionadas às decisões abaixo. Não há compromisso de prazo.
 
 Prioridade expressa importância, não situação de validação. A revisão 1.3 resolve as regras financeiras RN-011 a RN-017; a 1.5 resolve busca e filtros de Quitadas por RN-018/019, somente para o MVP. Edição e validações de identificação ainda dependem de PEN-008/010; HIP-001 nunca foi aprovada e não autoriza comportamento alternativo.
@@ -156,18 +171,18 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** exibir somente vendas com saldo restante, botão Nova venda e colunas Cliente, Data da venda, Valor total, Parcelas pagas/total, Saldo devedor, Próximo vencimento, Situação e Ações. Oferecer acesso visível a visualizar e editar.
 - **Necessidade:** conferência e localização; OBJ-001; JOR-001.
 - **Ator, pré-condições e entradas:** atendimento; coleção sintética inicial com 10 a 15 vendas; abertura de Vendas.
-- **Resultado:** tabela legível e quatro resumos: Total em aberto, Valores em atraso, Recebido no mês e Vendas cadastradas; números derivados da fonte demonstrativa comum.
-- **Exceções:** distinguir coleção vazia de filtro sem resultados; nenhuma quitada na lista principal. Situações e resumos seguem RN-014/015; cartões globais não acompanham busca ou filtros da lista. Na FASE-005, o filtro de situação segue RN-019 e somente Visualizar é ação funcional; Nova venda e Editar aguardam a FASE-006, sem controles inoperantes.
+- **Resultado:** tabela compacta sem cartões financeiros em Vendas, paginada em 10 registros por página conforme RN-020; Total em aberto, Valores em atraso, Recebimentos do mês e Vendas cadastradas ficam exclusivos da Visão Geral (RF-009).
+- **Exceções:** distinguir coleção vazia de filtro sem resultados; nenhuma quitada na lista principal. Situações e cálculos seguem RN-014/015. Na FASE-005, o filtro de situação segue RN-019 e somente Visualizar é ação funcional; Nova venda e Editar aguardam a FASE-006, sem controles inoperantes.
 - **Prioridade:** Essencial, tela prioritária do produto.
 - **Origem/situação:** FON-001 §3 e FON-008; semântica de situações e cartões confirmada para o MVP, não implementada.
-- **Aceite:** CA-002, CA-003, CA-014.
+- **Aceite:** CA-002, CA-003, CA-014, CA-027, CA-028.
 
 ### RF-003 — Busca local de vendas
 
 - **Comportamento:** fornecer uma única área de pesquisa destacada em Vendas e em Quitadas, contemplando nome, CPF, telefone e data da venda, além de ação de limpar; orientação “Buscar por nome, CPF, telefone ou data da venda...”. Aplicar RN-018/019.
 - **Necessidade:** identificar a venda certa sem duplicar busca; OBJ-001; JOR-001.
 - **Ator, pré-condições e entradas:** atendimento; vendas sintéticas disponíveis; critério informado e limpeza.
-- **Resultado:** apresentar correspondências locais preservando a separação entre abertas e quitadas e permitir conferir a identidade antes de abrir.
+- **Resultado:** apresentar correspondências locais preservando a separação entre abertas e quitadas e permitir conferir a identidade antes de abrir. Nas abertas, campo único, situação, Limpar pesquisa e Limpar critérios ficam lado a lado em uma única faixa no desktop de referência (CA-028), sem busca duplicada no cabeçalho.
 - **Exceções:** informar ausência de resultados sem apagar vendas; busca vazia remove somente a restrição do termo, preservando a situação selecionada nas abertas. Data completa inválida não corresponde a registros, não muda de dia e não é reinterpretada como telefone. Sem busca global ou intervalo. Nas abertas, busca e situação são combinadas por E; Quitadas não possui filtro adicional.
 - **Prioridade:** Essencial, requisito central de consulta.
 - **Origem/situação:** FON-001 §§2, 3 e 13; FON-003 §1; FON-004 §§4 e 6; FON-009 confirma a semântica para FASE-005. Planejada, não implementada.
@@ -189,11 +204,11 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** ao acionar o cliente da venda, mostrar nome, CPF, telefone, descrição quando preenchida, data da venda, valor total, indicação de entrada, quantidade de parcelas, total pago, saldo e situação geral. Tabela de parcelas: número/total, valor, vencimento, situação, data e forma de pagamento e ações.
 - **Necessidade:** conferência antes de recebimento; OBJ-001 e OBJ-003; JOR-001 e JOR-004.
 - **Ator, pré-condições e entradas:** atendimento; venda existente; seleção da venda.
-- **Resultado:** parcelas da venda, inclusive as pagas, visíveis no seu contexto; situações textuais Aberto, Próximos dias, Atrasado e Paga.
+- **Resultado:** dados do cliente e da venda condensados lado a lado, seguidos das parcelas, conforme `exemploDadosDaVenda.png`; situações textuais Aberto, Próximos dias, Atrasado e Paga. CA-028 exige até 10 parcelas visíveis sem rolagem da página no cenário padrão; excedentes usam rolagem interna acessível, sem truncar o histórico.
 - **Exceções:** não abrir cadastro independente de cliente; datas/formas inexistentes indicadas como não informadas, nunca inventadas; situações seguem RN-014; entrada aparece separadamente e não aumenta a contagem de parcelas pagas.
 - **Prioridade:** Essencial, evita recebimento sem conferência.
 - **Origem/situação:** FON-001 §§4–6 e FON-008; classificação confirmada para o MVP, não implementada.
-- **Aceite:** CA-010, CA-011, CA-018, CA-020.
+- **Aceite:** CA-010, CA-011, CA-018, CA-020, CA-028, CA-029.
 
 ### RF-006 — Editar venda demonstrativa
 
@@ -222,7 +237,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** disponibilizar página dentro de Vendas para vendas totalmente pagas, com situação Quitada, acesso aos detalhes e parcelas pagas e a mesma busca única das abertas, restrita às quitadas (RN-019).
 - **Necessidade:** separar acompanhamento de saldo e histórico demonstrativo; OBJ-003; JOR-004.
 - **Ator, pré-condições e entradas:** atendimento; venda sintética já quitada ou última parcela paga em caso inequívoco; abrir Quitadas.
-- **Resultado:** venda liquidada deixa a lista de abertas e aparece uma única vez em Quitadas, sem perder parcelas.
+- **Resultado:** venda liquidada deixa a lista de abertas e aparece uma única vez em Quitadas, sem perder parcelas. A tabela segue RN-020, com 10 vendas por página e navegação numerada abaixo, sem cartões globais.
 - **Exceções:** indicar coleção vazia; não criar quinto módulo, filtros não confirmados ou saldo residual oculto.
 - **Prioridade:** Essencial, consequência obrigatória do recebimento integral.
 - **Origem/situação:** FON-001 §§3 e 6; FON-009 resolve filtros de PEN-012: somente busca única, sem controles extras. Conteúdo de consulta ainda não implementado.
@@ -230,7 +245,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 
 ### RF-009 — Exibir Visão Geral
 
-- **Comportamento:** mostrar saldo em aberto, saldo em atraso, recebimentos do mês, vendas recentes, próximos pagamentos/vencimentos e pagamentos em atraso que exigem atenção.
+- **Comportamento:** concentrar exclusivamente nesta aba os quatro indicadores Total em aberto, Valores em atraso, Recebimentos do mês e Vendas cadastradas, além de vendas recentes, próximos pagamentos/vencimentos e pagamentos em atraso que exigem atenção. Não duplicar esses cartões em Vendas, Quitadas ou Relatórios; RF-010 preserva suas análises por período, não essa faixa de indicadores globais.
 - **Necessidade:** leitura financeira do conjunto; OBJ-004; JOR-005.
 - **Ator, pré-condições e entradas:** gestão; fonte demonstrativa e data de referência identificada; acessar Visão Geral.
 - **Resultado:** valores conciliáveis com vendas, parcelas e pagamentos da mesma sessão; próximos dias e referência seguem RN-014/015.
@@ -302,12 +317,13 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | RN-011 | Primeira parcela no mês seguinte; dia original preservado; se inexistente, último dia do mês | 31/01/2027 → 28/02, 31/03, 30/04; sem somar 30 dias | FON-008; PEN-001 resolvida para MVP |
 | RN-012 | Dividir saldo em centavos: quociente inteiro em todas e mais um centavo nas primeiras até esgotar o resto | R$ 100/3 → R$ 33,34 + R$ 33,33 + R$ 33,33; soma exata e diferença máxima de um centavo | FON-008; PEN-003 resolvida para MVP |
 | RN-013 | Entrada é recebimento separado das parcelas, na data da venda, com forma obrigatória; compõe total pago e recebimentos | R$ 1.000 − R$ 200 de entrada → pago R$ 200, saldo R$ 800; não conta como parcela paga; formas de RN-016 | FON-008; PEN-002 resolvida para MVP |
-| RN-014 | Parcela liquidada é Paga; pendente antes da referência é Atrasado; hoje até +7 dias é Próximos dias; depois é Aberto | Venda: saldo zero = Quitada; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto | FON-008; PEN-004/007 resolvidas para MVP |
+| RN-014 | Parcela liquidada é Paga; pendente é Atrasado a partir do primeiro dia civil após vencer; hoje até +7 dias é Próximos dias; depois é Aberto | Vence em 10/11: não atrasada em 10/11, atrasada em 11/11. Sem tolerância extra ou relógio de 24 horas. Venda: saldo zero = Quitada; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto | FON-008/010; regra mantida e explicitada, PEN-004/007 resolvidas para MVP |
 | RN-015 | Referência = dia local da abertura, fixa na sessão; total em aberto soma saldos; atraso soma apenas parcelas vencidas; recebido no mês soma entradas e pagamentos por data civil; cadastradas inclui quitadas | Mês do primeiro ao último dia inclusive; períodos explícitos inclusivos; vendas por data de venda; busca/filtros de lista não alteram cartões; vazio = zero | FON-008; PEN-009 resolvida para o núcleo, controles de relatório na FASE-007 |
 | RN-016 | Receber integralmente uma ou mais parcelas consecutivas desde a primeira pendente, em uma confirmação atômica | Antecipação permitida, salto proibido; valor exato da soma; data entre venda e referência; forma única: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos | FON-008; PEN-011 resolvida para MVP |
 | RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; quantidade inteira positiva não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis; sem teto comercial arbitrário; entrada integral sem parcelas excluída | FON-008; PEN-010 parcialmente resolvida, identificação pendente |
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida para MVP, não implementada |
 | RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; Limpar critérios restaura termo vazio e Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009; PEN-012 resolvida no recorte do MVP, não implementada |
+| RN-020 | Abertas e Quitadas exibem 10 vendas por página, após aplicar busca e situação pertinente, preservando ordem e IDs | Paginação numerada abaixo da tabela, anterior/próxima, página atual e faixa/total de resultados; reticências não são páginas. Alterar/limpar critérios volta à página 1; se a coleção diminuir, ajustar à última página válida. Zero resultados não cria página fictícia nem ações habilitadas; uma página dispensa controles de troca. Sem persistência ou nova ordenação | FON-010; confirmada no Harness, ajuste ainda não implementado |
 
 Exemplo financeiro: venda fictícia de R$ 1.000,00, entrada de R$ 200,00 e quatro parcelas produz saldo inicial de R$ 800,00, pago inicial de R$ 200,00 e quatro parcelas de R$ 200,00. A entrada integra recebimentos na data da venda. Liquidar as duas primeiras parcelas num lote de R$ 400,00 resulta em pago de R$ 600,00, saldo de R$ 400,00 e duas de quatro parcelas pagas. Juros, renegociação e políticas de cobrança continuam excluídos.
 
@@ -321,7 +337,7 @@ Exemplo financeiro: venda fictícia de R$ 1.000,00, entrada de R$ 200,00 e quatr
 | RNF-004 | Privacidade e isolamento | Nenhum dado pessoal real ou transmissão a serviços de dados; ausência de armazenamento persistente dos registros | Revisar fonte sintética e uso de rede/armazenamento durante operações e recarga | Essencial | FON-001 e FON-002; confirmado por fonte |
 | RNF-005 | Integridade | Cada operação válida altera todos os derivados de forma coerente; erros/cancelamentos mantêm o estado anterior | Cenários CA-011 a CA-017, comparando centavos e registros antes/depois | Essencial | FON-002; confirmado por fonte |
 | RNF-006 | Usabilidade e desempenho | Busca e abertura de detalhes sem espera artificial; avaliação proposta de resposta em até 300 ms com 15 vendas na máquina de demonstração | Medição local após definir ambiente; observação de tarefas | Importante | FON-001; limite numérico é HIP-006, não medição existente |
-| RNF-007 | Layout e compatibilidade | Uso principal em computador, com formulários e ações utilizáveis em telas menores; tabela pode rolar sem ocultar acesso às ações | Proposta: testar 1366 × 768 e 390 × 844, teclado e zoom 200%; definir navegador em PEN-013 | Importante | FON-001 §1; tamanhos e zoom como roteiro proposto, não suporte comprovado |
+| RNF-007 | Layout e compatibilidade | Desktop 1366 × 768 a 100%: barra de critérios em uma linha, até 10 vendas e paginação visíveis sem rolagem da página; detalhe padrão com até 10 parcelas visíveis. Excedente de parcelas rola internamente. Em 390 × 844 e zoom nativo 200%, permitir reorganização/rolagem acessível sem perda de conteúdo | Medir geometria e capturas nos dois temas; testar teclado, textos extensos e zoom, conforme CA-028; PEN-013 ainda limita aceite geral de compatibilidade | Essencial no recorte de consulta | FON-010; critério confirmado, não verificado |
 | RNF-008 | Manutenibilidade e tecnologia | Angular + TypeScript; standalone, HTML separado, estado por signals, novos formulários com Signal Forms compatível; dados/cálculos fora da apresentação, tipos estritos | Revisão da estrutura/configuração e futuros testes de domínio | Essencial | FON-002; base e navegação existentes; domínio financeiro e formulários não implementados |
 | RNF-009 | Coerência visual | Temas claro e escuro, escuro inicial; alternância acessível com indicação do tema ativo, preservada entre rotas somente em memória; recarga restaura escuro; tokens e contraste consistentes | Revisão visual e por teclado das áreas existentes nos dois temas; componentes futuros herdam o mesmo contrato | Essencial | FON-001 e confirmação do solicitante em 13/11/2026; PEN-006 resolvida documentalmente |
 | RNF-010 | Limite arquitetural | Ausência de backend, banco, autenticação, APIs de dados externas e persistência; sem contratos futuros inventados | Revisão de escopo e futura inspeção de dependências/código | Essencial | FON-001 e FON-002; confirmado por fonte |
@@ -333,6 +349,20 @@ Não há alegação de conformidade legal, certificação de acessibilidade, car
 **Arquitetura de informação:** navegação lateral → Visão Geral / Vendas / Relatórios / Configurações. Em Vendas: abertas → detalhes da venda e suas parcelas → modal de pagamento; Nova venda e edição no mesmo contexto funcional; Quitadas como opção interna. A escolha de página ou painel lateral para detalhes deve preservar orientação e retorno, sem exigir uma seção Clientes.
 
 **Hierarquia visual:** título e subtítulo, ação principal, resumos pertinentes, área única de busca e tabela quando seus fluxos estiverem disponíveis. A listagem será o foco, não gráficos decorativos. Os dois temas usam superfícies e textos contrastantes e foco perceptível; situações futuras combinam texto e cor. Por solicitação explícita na revisão 1.2, a barra lateral usa vermelho da identidade no tema claro, orientado por `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`; no escuro, usa degradê vertical sutil de vermelho para vermelho mais escuro/vinho, orientado por `exemploDesignDark.png`. Textos e ícones claros, estados ativo/hover e foco devem permanecer contrastantes. Essa identidade também se aplica ao bloco de navegação em viewport pequeno, sem animação obrigatória. O destaque azul/índigo continua permitido fora da lateral; o restante da interface não é redesenhado nesta revisão. Na FASE-003, não antecipar tabelas, indicadores ou ações comerciais sem consumidor funcional.
+
+**Direção vigente da revisão 1.6 (substitui as restrições visuais históricas acima):**
+seguir as referências FON-010 em proporções, densidade, tipografia, superfícies,
+bordas suaves, cantos arredondados, ícones e selos. Claro com fundo claro e tabelas
+brancas; escuro com fundo quase preto, superfícies grafite e texto claro; vermelho
+de identidade nas ações/links, verde para pagas e vermelho para atraso, sempre com texto.
+Não copiar cartões para Vendas, dados pessoais, controles de janela/notificação,
+busca global ou ações não implementadas. Manter aviso e alternância acessível.
+Âncoras de navegação, cliente, Visualizar e retorno/breadcrumb não usam aparência
+azul/sublinhada padrão permanente: integrar ao componente, com destaque vermelho
+ou texto contrastante conforme a superfície; hover/foco perceptíveis, sublinhado
+permitido nesses estados, sem eliminar semântica de link, foco ou indicação ativa.
+Descrições extensas podem exigir espaço adicional acessível: não ocultar nem cortar
+dados para cumprir artificialmente o cenário padrão sem rolagem de CA-028.
 
 | Estado | Conteúdo e comportamento esperado |
 | --- | --- |
@@ -363,7 +393,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Requisitos:** RF-002; RNF-001.
 - **Dado** o conjunto inicial sintético de 10 a 15 vendas com situações variadas,
 - **Quando** abrir Vendas,
-- **Então** devem aparecer as colunas e os quatro resumos previstos, valores em BRL, datas DD/MM/AAAA, acesso a Nova venda e somente vendas não quitadas.
+- **Então** devem aparecer as colunas previstas, valores em BRL, datas DD/MM/AAAA e somente vendas não quitadas, em páginas de 10, sem os quatro cartões globais. Nova venda continua condicionada à FASE-006.
 
 ### CA-003 — Coleções vazias
 - **Requisitos:** RF-002, RF-008.
@@ -509,7 +539,25 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Requisitos:** RF-001/002/003/005/008/011; RN-018/019; RNF-002/003/009.
 - **Dado** o núcleo da FASE-004 e as duas coleções,
 - **Quando** consultar abertas/quitadas, pesquisar, limpar e abrir detalhes por link ou endereço direto,
-- **Então** consultar a mesma fonte sem mutação, distinguir coleção vazia de pesquisa/filtro sem resultados e registro inexistente, manter os quatro cartões globais em Vendas e exibir referência da sessão. Nas abertas, busca e filtro de situação combinam-se por E; limpar todos os critérios restaura a coleção. Quitadas possui somente busca. Detalhes mostram somente a venda selecionada, entrada separada e parcelas com situações/data/forma reais ou ausência explícita. Links preservam IDs completos; teclado, foco, dois temas e retorno permanecem funcionais. Não exibir ações inoperantes de cadastrar, editar ou receber: esses itens de CA-002/003 e RF-002/005 pertencem à FASE-006.
+- **Então** consultar a mesma fonte sem mutação, distinguir coleção vazia de pesquisa/filtro sem resultados e registro inexistente, não apresentar os quatro cartões globais em Vendas/Quitadas e exibir referência da sessão. Nas abertas, busca e filtro de situação combinam-se por E; limpar todos os critérios restaura a coleção paginada a partir da página 1. Quitadas possui somente busca. Detalhes mostram somente a venda selecionada, entrada separada e parcelas com situações/data/forma reais ou ausência explícita. Links preservam IDs completos; teclado, foco, dois temas e retorno permanecem funcionais. Não exibir ações inoperantes de cadastrar, editar ou receber: esses itens de CA-002/003 e RF-002/005 pertencem à FASE-006.
+
+### CA-027 — Paginação das duas coleções
+- **Requisitos:** RF-002/003/008; RN-018/019/020; RNF-002/003.
+- **Dado** mais de 10 vendas na coleção atual, inclusive fixtures com 11 e 21 registros,
+- **Quando** avançar por números/anterior/próxima e depois alterar ou limpar critérios,
+- **Então** mostrar no máximo 10 registros por página, sem duplicar/omitir resultados, contagem da coleção filtrada, página atual identificada e limites desabilitados; critérios retornam à página 1, sem mutar a fonte. Redução da coleção ajusta página inválida; zero/uma página não oferece navegação fictícia. Quitadas continua sem filtro de situação.
+
+### CA-028 — Consulta compacta e fidelidade visual
+- **Requisitos:** RF-002/003/005/008; RNF-007/009; FON-010.
+- **Dado** desktop 1366 × 768, zoom 100%, ambos os temas, 10 vendas ou venda com até 10 parcelas e textos curtos do cenário padrão,
+- **Quando** abrir cada lista e o detalhe no topo da página,
+- **Então** busca, situação e duas limpezas das abertas ficam lado a lado; tabela e paginação ficam visíveis sem rolagem vertical da página. No detalhe, blocos compactos de cliente/venda lado a lado preservam todos os campos e deixam as até 10 parcelas visíveis sem rolagem da página. Comparar capturas com as referências, descontando diferenças funcionais autorizadas. Com mais parcelas, somente o excedente rola internamente com cabeçalho e região identificáveis e teclado. Em viewport menor, zoom 200% ou textos extensos, reorganizar/rolar sem cortar conteúdo, diminuir artificialmente fonte ou ocultar aviso/campos.
+
+### CA-029 — Links e classificação de atraso
+- **Requisitos:** RF-001/002/005; RN-014; RNF-002/003/009; FON-010.
+- **Dado** os dois temas e parcela pendente com vencimento em 10/11,
+- **Quando** consultar com referência em 10/11 e 11/11 e percorrer links por teclado,
+- **Então** não indicar atraso no vencimento e indicar Atrasado no dia 11; paga permanece Paga e resumos/situação da venda usam a mesma regra civil. Navegação, cliente, Visualizar e retorno/breadcrumb seguem o design das referências, sem azul/sublinhado padrão permanente, com foco/hover e localização acessíveis e destinos preservados.
 
 ### Matriz de rastreabilidade
 
@@ -530,6 +578,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 | OBJ-005 | JOR-006 | RNF-009; RF-001/011/012 | FON-007; PEN-006 resolvida documentalmente | CA-023 |
 | OBJ-002/003/004 | JOR-002/004/005 | RF-004/007/009/010; RN-011 a RN-017 | FON-008 | CA-008/009/011/013/014/020/024/025 |
 | OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/011; RN-018/019 | FON-009 | CA-002/003/004/005/010/014/018/019/020/023/025/026, somente responsabilidades de consulta na FASE-005 |
+| OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/009; RN-014/020; RNF-007/009 | FON-010 | CA-002/020/026/027/028/029; ajustes planejados, indicadores exclusivos da Visão Geral na FASE-007 |
 
 RNF-001 a RNF-005, RNF-009 e RNF-010 também são transversais aos cenários pertinentes. RNF-006 a RNF-008 têm métodos próprios na seção 9: medições e inspeções futuras, não resultados deste PRD.
 
@@ -637,6 +686,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | 1.3 | 14/11/2026 | Conciliação do estado local da FASE-003; RN-011 a RN-017; revisão dos CA existentes e inclusão de CA-024/025; pagamento integral em lote sequencial; situação das pendências preservando IDs | Respostas explícitas no planejamento da fase-004; sem código, testes de aplicação ou aceite da ótica |
 | 1.4 | 16/11/2026 | Adaptar somente o conjunto sintético nas extremidades de 0001–9999, preservando referência, 12 vendas e regras financeiras; exceção à variedade apenas quando impossível | Política e implementação autorizadas via Harness na fase-004; sem aceite de produto |
 | 1.5 | 16/11/2026 | Registrar entrega/merge da FASE-004, resolver PEN-005/012 por RN-018/019 e CA-026; delimitar consultas da FASE-005 sem antecipar mutações | Respostas e autorização documental no Harness; não implementa consultas nem executa testes |
+| 1.6 | 16/11/2026 | Indicadores exclusivos da Visão Geral; paginação obrigatória RN-020, faixa horizontal, detalhe compacto, fidelidade light/dark e links; CA-027/028/029; explicitar atraso no dia seguinte sem mudar a regra | Pedido documental e confirmações no Harness; sem implementação ou nova execução de testes |
 
 **Refinamento da revisão 1.5 — 16/11/2026:** planejamento anterior da branch
 `feature/fase-005` reutilizado por autorização explícita. Confirmados busca única,

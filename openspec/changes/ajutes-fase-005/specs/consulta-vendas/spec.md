@@ -1,0 +1,193 @@
+# Spec Delta
+
+## MODIFIED Requirements
+
+### Requirement: Coleções de abertas e quitadas consultáveis
+
+A aplicação SHALL apresentar em Vendas somente vendas com saldo positivo e em Quitadas somente vendas com saldo zero. Ambas SHALL consultar a mesma fonte da sessão, preservar identidade e dados de cada venda e permitir abrir seus detalhes pelo nome do cliente e por ação Visualizar identificável.
+
+#### Scenario: Consultar as duas coleções
+- **WHEN** a pessoa acessar Vendas e Quitadas com o conjunto sintético inicial
+- **THEN** SHALL encontrar as vendas exclusivamente na coleção correspondente ao saldo, sem duplicá-las
+- **AND** SHALL ver Cliente, Data da venda, Valor total, Parcelas pagas/total, Saldo devedor, Próximo vencimento, Situação e Ações
+- **AND** quitadas SHALL mostrar Quitada, saldo zero, todas as parcelas pagas e ausência de próximo vencimento, sem data inventada
+
+#### Scenario: Preservar identidade entre nomes semelhantes
+- **WHEN** existirem vendas com nomes semelhantes e a pessoa acionar o nome ou Visualizar de uma linha
+- **THEN** SHALL abrir somente o detalhe da venda identificada naquela linha
+- **AND** o nome acessível da ação SHALL permitir distinguir seu contexto sem depender de hover
+
+### Requirement: Resumos globais independentes da pesquisa
+
+Vendas e Quitadas SHALL não exibir os quatro cartões globais, reservados à Visão Geral em fase própria. Consultar, buscar e paginar SHALL preservar os dados financeiros. Listas e detalhe SHALL identificar a referência civil fixa da sessão, valores em BRL e datas DD/MM/AAAA sem deslocamento de fuso.
+
+#### Scenario: Pesquisar sem modificar cartões
+- **WHEN** busca, situação ou sua combinação reduzir a lista de abertas a um registro ou a nenhum resultado
+- **THEN** Vendas e Quitadas SHALL não apresentar Total em aberto, Valores em atraso, Recebimentos do mês ou Vendas cadastradas como cartões globais
+- **AND** a consulta SHALL não alterar as projeções financeiras globais, cuja exibição na Visão Geral pertence à FASE-007, sem antecipá-la nesta fase
+
+#### Scenario: Consultar fonte vazia e referência estável
+- **WHEN** a fonte estiver vazia em cenário de avaliação ou a sessão atravessar meia-noite
+- **THEN** a consulta vazia SHALL não inventar valores ou cartões para preencher o espaço
+- **AND** a referência SHALL permanecer a capturada na abertura, inclusive ao navegar, e não ser substituída pelo dia da consulta
+
+### Requirement: Busca única de nome e identificação
+
+Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação de nome/CPF/telefone/data e ação Limpar pesquisa. Nome SHALL corresponder parcialmente sem distinguir acentos ou caixa; CPF/telefone SHALL admitir sequência de dígitos ignorando pontuação usual. Basta corresponder a um campo. A busca SHALL atuar somente na coleção atual, sem busca global; Quitadas SHALL não oferecer filtros adicionais.
+
+#### Scenario: Pesquisar texto equivalente
+- **WHEN** a pessoa pesquisar parte do nome usando outra caixa ou sem acentos
+- **THEN** SHALL encontrar os nomes que contêm esse texto normalizado
+- **AND** SHALL não combinar palavras como campos separados nem selecionar automaticamente homônimos
+
+#### Scenario: Pesquisar identificação com e sem pontuação
+- **WHEN** uma sequência de dígitos de CPF ou telefone for pesquisada com ou sem pontos, hífens, espaços, parênteses ou sinal de mais
+- **THEN** SHALL corresponder à mesma sequência contida na identificação da venda, ignorando essa pontuação
+- **AND** uma entrada sem qualquer dígito SHALL não corresponder a todas as identificações por uma sequência vazia
+- **AND** os marcadores textuais sintéticos existentes, como CPF-DEMO-1 e TEL-DEMO-1, SHALL também ser localizáveis por seu texto, sem substituir o conjunto por dados pessoais plausíveis
+
+#### Scenario: Restringir e limpar pesquisa
+- **WHEN** a pessoa pesquisar um termo presente somente na outra coleção ou acionar Limpar pesquisa
+- **THEN** a pesquisa restrita SHALL não incluir registros da outra coleção
+- **AND** Limpar pesquisa ou informar termo vazio/espaços SHALL remover somente a restrição do termo, preservando a situação selecionada nas abertas, sem mutar registros nem exigir preservar o termo após sair da página
+- **AND** limpar SHALL manter ou devolver o foco ao campo, sem navegar ou reiniciar a sessão
+
+### Requirement: Filtro de situação nas abertas
+
+Vendas SHALL oferecer um filtro de situação com Todas como padrão, Em aberto, Próximos dias e Atrasada. A seleção SHALL combinar-se com a busca por E, sem incluir quitadas ou alterar a fonte. Limpar critérios SHALL restaurar termo vazio e Todas; critérios SHALL permanecer locais, sem obrigação de preservá-los ao sair.
+
+#### Scenario: Combinar situação e busca
+- **WHEN** a pessoa selecionar cada situação com e sem termo de busca
+- **THEN** SHALL ver somente vendas abertas que correspondam simultaneamente ao termo e à situação
+- **AND** Todas SHALL incluir também próximas e atrasadas da coleção aberta, sem restringir à situação Em aberto
+- **AND** uma combinação sem correspondências SHALL produzir zero resultados, sem trocar a situação automaticamente
+
+#### Scenario: Limpar todos os critérios
+- **WHEN** a pessoa acionar Limpar critérios depois de pesquisar e selecionar uma situação
+- **THEN** SHALL restaurar termo vazio e Todas, exibindo a primeira página da coleção de abertas
+- **AND** o foco SHALL ir ao campo de busca e a contagem de resultados SHALL ser atualizada sem reiniciar a sessão
+- **AND** Limpar pesquisa isoladamente SHALL preservar a situação selecionada
+
+### Requirement: Pesquisa de data civil exata
+
+Um termo completo DD/MM/AAAA SHALL pesquisar exclusivamente a data exata da venda no calendário civil 0001–9999. Datas inválidas SHALL produzir ausência de correspondências sem exceção ou interpretação como CPF/telefone. Não SHALL haver busca de data parcial, intervalo ou mudança automática do dia informado.
+
+#### Scenario: Consultar dia exato
+- **WHEN** a pessoa informar a data completa de uma venda, incluindo ano de quatro dígitos
+- **THEN** SHALL encontrar somente vendas da coleção atual realizadas nesse dia
+- **AND** SHALL não pesquisar a data de vencimento ou de recebimento em seu lugar
+
+#### Scenario: Rejeitar data inexistente sem reinterpretar
+- **WHEN** a pesquisa for 31/02/2027, 29/02/1900 ou 01/01/0000
+- **THEN** SHALL não encontrar registros, sem erro inesperado e sem correspondência pelo trecho numérico da entrada
+- **AND** 29/02/2000 SHALL ser tratada como data válida, sem ajustes de fuso
+
+### Requirement: Estados distintos de consulta
+
+As consultas SHALL distinguir coleção sem registros, busca/filtro sem correspondências e venda não encontrada. Nenhum estado SHALL criar registros, sugerir consulta ainda indisponível em Vendas/Quitadas ou ocultar os retornos. Os estados SHALL ser comunicados por texto e não apenas por cor.
+
+#### Scenario: Diferenciar vazio de ausência de resultados
+- **WHEN** a coleção fonte estiver vazia ou houver registros mas nenhum corresponder à busca e situação selecionadas
+- **THEN** SHALL explicar, respectivamente, ausência de vendas abertas/quitadas ou ausência de resultados para a pesquisa
+- **AND** ausência de resultados por busca/filtro SHALL permitir limpar todos os critérios e restaurar os registros existentes
+- **AND** a coleção vazia SHALL não oferecer cadastro fictício ou quitação fictícia nesta fase
+
+#### Scenario: Identificar venda ausente
+- **WHEN** um identificador desconhecido for consultado no detalhe
+- **THEN** SHALL apresentar Venda não encontrada, sem reutilizar dados da consulta anterior
+- **AND** SHALL oferecer retorno explícito a Vendas e Quitadas, distinguindo ausência de registro de caminho desconhecido
+
+### Requirement: Detalhes e parcelas somente da venda selecionada
+
+O detalhe SHALL mostrar nome, CPF, telefone, descrição quando preenchida, data da venda, valor total, entrada, quantidade de parcelas, total pago, saldo e situação da venda selecionada. SHALL exibir todas as suas parcelas, inclusive pagas, com número/total, valor, vencimento, situação, data e forma de pagamento. Entrada SHALL permanecer separada das parcelas.
+
+#### Scenario: Conferir entrada e histórico
+- **WHEN** uma venda com entrada e parcelas pagas e pendentes for aberta
+- **THEN** SHALL mostrar valor, data e forma da entrada separadamente, sem contá-la como parcela paga
+- **AND** parcelas liquidadas SHALL apresentar sua data/forma efetivas e situação Paga; pendentes SHALL indicar ausência de data/forma sem inventar valores
+- **AND** pago, saldo, quantidades, próximo vencimento e situações SHALL corresponder às mesmas projeções da lista
+
+#### Scenario: Consultar sem entrada ou descrição
+- **WHEN** o detalhe de uma venda sem entrada e sem descrição for aberto
+- **THEN** SHALL informar Sem entrada, sem valor/data/forma fictícios de recebimento
+- **AND** descrição ausente SHALL não aparecer como texto inventado nem impedir a consulta
+
+### Requirement: Consulta acessível e sem mutações
+
+A consulta SHALL preservar aviso demonstrativo, dois temas, teclado, foco e privacidade. Nesta fase SHALL não oferecer cadastrar, editar, pagar ou exportar, nem alterar registros ao pesquisar, limpar ou navegar. Tabelas e busca SHALL ser legíveis nos viewports técnicos existentes; rolagem horizontal necessária SHALL ficar restrita à região da tabela.
+
+#### Scenario: Consultar por teclado em ambos os temas
+- **WHEN** a pessoa pesquisar, limpar, abrir detalhes e retornar por teclado nos dois temas e viewports técnicos
+- **THEN** SHALL alcançar os controles com foco perceptível, rótulos inequívocos, cabeçalhos de tabela e situações textuais
+- **AND** resultados SHALL ser anunciáveis sem mover o foco durante digitação; ações SHALL não depender de hover
+- **AND** texto comum SHALL atingir contraste mínimo 4,5:1, texto grande e indicadores essenciais de foco/controle 3:1
+- **AND** eventual região de rolagem da tabela SHALL ser identificável e operável por teclado, sem corte horizontal do restante da página
+
+#### Scenario: Navegar sem alterar ou persistir vendas
+- **WHEN** a pessoa consultar as listas e detalhes, pesquisar, limpar, alternar temas e recarregar
+- **THEN** SHALL não criar ou modificar vendas, pagamentos e dados pessoais, nem gravar storage, cookies ou banco do navegador
+- **AND** SHALL não consultar serviços externos ou expor mecanismos globais de teste para mutar o estado
+- **AND** a nova sessão SHALL restaurar referência/conjunto inicial conforme as regras do núcleo, sem prometer persistência
+- **AND** o recorte sem UI comercial da FASE-004 SHALL ser entendido como histórico; a FASE-005 acrescenta somente estas consultas, não as mutações da FASE-006
+
+## ADDED Requirements
+
+### Requirement: Paginação local das coleções de vendas
+
+Abertas e Quitadas SHALL apresentar até 10 vendas por página após os critérios, preservando ordem e identidade. Abaixo da tabela SHALL haver faixa/total de resultados e, quando necessário, navegação numerada com anterior/próxima e página atual identificada. Paginar SHALL não alterar a fonte ou incluir registros da outra coleção.
+
+#### Scenario: Percorrer resultados sem duplicação
+- **WHEN** a coleção filtrada tiver 11 ou 21 vendas e a pessoa percorrer números e anterior/próxima
+- **THEN** SHALL encontrar todas exatamente uma vez entre as páginas, com no máximo 10 por página
+- **AND** faixa/total SHALL representar os resultados filtrados; anterior na primeira e próxima na última SHALL estar indisponíveis
+- **AND** a página atual SHALL ser indicada visual e programaticamente; reticências SHALL não funcionar como páginas
+
+#### Scenario: Redefinir página com critérios ou redução da coleção
+- **WHEN** a pessoa alterar termo/situação, limpar pesquisa/critérios ou a coleção diminuir durante a consulta
+- **THEN** mudanças e limpezas de critérios SHALL voltar à página 1, preservando a semântica de cada limpeza
+- **AND** redução da coleção sem mudança de critérios SHALL limitar a seleção à última página válida, sem tabela vazia causada por página inexistente
+- **AND** zero resultados SHALL mostrar o estado sem resultados/coleção vazia pertinente, sem páginas fictícias; uma única página SHALL dispensar controles de troca
+- **AND** Quitadas SHALL continuar sem filtro de situação; paginação SHALL ser operável por teclado com anúncio de faixa/total e foco preservado no controle acionado
+
+### Requirement: Listagem compacta no desktop
+
+Em 1366×768 e zoom 100%, nos dois temas, o cenário padrão SHALL mostrar critérios, 10 linhas de vendas e paginação sem rolagem vertical da página. Nas abertas, busca, situação, Limpar pesquisa e Limpar critérios SHALL ficar lado a lado em uma faixa. Não SHALL haver busca duplicada no cabeçalho.
+
+#### Scenario: Ver vendas na primeira tela
+- **WHEN** a pessoa abrir Vendas ou Quitadas no topo em 1366×768/100%, com 10 resultados e textos curtos do cenário padrão
+- **THEN** SHALL ver as 10 linhas, cabeçalhos, critérios pertinentes e rodapé de paginação dentro do viewport, sem rolar a página
+- **AND** nas abertas, os quatro controles SHALL ocupar a mesma faixa horizontal; Quitadas SHALL não ganhar filtro extra
+- **AND** aviso, referência, legibilidade e acesso às ações SHALL ser preservados, sem reduzir artificialmente fonte ou ocultar informações
+
+### Requirement: Detalhe compacto com histórico completo
+
+Em desktop 1366×768/100%, o detalhe padrão SHALL apresentar cliente e dados da venda em blocos condensados lado a lado e até 10 parcelas visíveis sem rolagem da página. Mais parcelas SHALL permanecer acessíveis por rolagem interna da tabela, sem paginação de parcelas ou perda do histórico.
+
+#### Scenario: Conferir dados e dez parcelas sem rolar a página
+- **WHEN** abrir venda com até 10 parcelas, com entrada e descrição curta, no desktop de referência em qualquer tema
+- **THEN** SHALL ver os dados exigidos da venda/cliente, entrada separada, cabeçalho e todas as suas até 10 parcelas sem rolagem vertical da página
+- **AND** disposição e densidade SHALL seguir `frontend/public/imgs/exemplos/exemploDadosDaVenda.png`, sem copiar dados pessoais ou ações indisponíveis
+
+#### Scenario: Acessar excedente e conteúdo adaptado
+- **WHEN** houver mais de 10 parcelas, texto extenso, viewport 390×844 ou zoom nativo 200%
+- **THEN** o excedente de parcelas SHALL ser alcançável em região interna identificada, com teclado e cabeçalho identificável, sem cortar histórico
+- **AND** textos extensos, telas menores e zoom SHALL admitir reorganização/rolagem sem ocultar campos, aviso, ações, texto ou foco para satisfazer artificialmente o cenário padrão
+
+### Requirement: Fidelidade visual e âncoras integradas
+
+As consultas e links afetados SHALL seguir as referências de `frontend/public/imgs/exemplos/` em densidade, superfícies, tipografia, bordas, cantos e cores nos dois temas. Âncoras de menu, cliente, Visualizar e retorno/breadcrumb SHALL integrar-se ao design, sem azul/sublinhado padrão permanente, preservando semântica, destinos e acessibilidade.
+
+#### Scenario: Comparar light e dark e percorrer links
+- **WHEN** comparar consultas nos dois temas às imagens de listagem/detalhe e `exemploDesignDark.png` e percorrer links por teclado
+- **THEN** SHALL encontrar fundo claro/tabelas brancas no claro, fundo quase preto/superfícies grafite/texto claro no escuro, identidade vermelha nos destaques e selos com texto
+- **AND** links SHALL ter hover/foco perceptíveis, sublinhado permitido nesses estados, contraste e indicação ativa corretos; texto na lateral SHALL contrastar com sua superfície
+- **AND** diferenças funcionais aprovadas SHALL ser preservadas: sem cartões em Vendas, busca global duplicada, controles de janela/notificação ou ações fictícias; dados pessoais das imagens SHALL não ser copiados
+
+### Requirement: Atraso no dia civil seguinte ao vencimento
+
+Parcela pendente SHALL ser classificada Atrasado a partir do primeiro dia civil após vencer, sem tolerância adicional ou contagem de 24 horas. Parcela liquidada SHALL continuar Paga. Situação da venda e valores em atraso SHALL usar a mesma regra da referência fixa da sessão.
+
+#### Scenario: Comparar vencimento e dia seguinte
+- **WHEN** consultar parcela pendente que vence em 10/11 com referência em 10/11 e, em outra sessão de avaliação, em 11/11
+- **THEN** SHALL ser Próximos dias no dia 10 e Atrasado no dia 11
+- **AND** se liquidada SHALL ser Paga em ambas as referências; a venda e os derivados SHALL manter a classificação consistente sem mudar as regras financeiras existentes
