@@ -54,6 +54,51 @@ describe('DetalhesVenda', () => {
     });
   });
 
+  it('preserva dados com 1, 10 e 11 parcelas e só habilita rolagem interna acima de dez', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastrar = (
+      nome: string,
+      quantidadeParcelas: number,
+      descricao?: string,
+      entrada = false,
+    ) => {
+      const resultado = servico.cadastrarVenda({
+        cliente: {
+          nome,
+          cpf: `CPF-DEMO-${quantidadeParcelas}-${nome.length}`,
+          telefone: `TEL-DEMO-${quantidadeParcelas}-${nome.length}`,
+          descricao: descricao ?? null,
+        },
+        dataVenda: servico.referencia,
+        valorTotalCentavos: 110000,
+        quantidadeParcelas,
+        entrada: entrada ? { valorCentavos: 10000, data: servico.referencia, forma: 'Pix' } : null,
+      });
+      if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+      return resultado.valor;
+    };
+    const uma = cadastrar('Cliente Fixture uma parcela', 1);
+    const dez = cadastrar('Cliente Fixture dez parcelas', 10, 'Descrição curta.', true);
+    const onze = cadastrar('Cliente Fixture onze parcelas', 11, 'Descrição extensa '.repeat(40));
+    const harness = await RouterTestingHarness.create(urlPara(uma.id));
+    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Descrição');
+
+    await harness.navigateByUrl(urlPara(dez.id));
+    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(harness.routeNativeElement?.querySelector('.parcelas-com-rolagem')).toBeNull();
+    expect(harness.routeNativeElement?.textContent).toContain('Descrição curta.');
+    expect(harness.routeNativeElement?.textContent).toContain('Entrada');
+    expect(harness.routeNativeElement?.textContent).toContain(formatarDinheiro(10000));
+
+    await harness.navigateByUrl(urlPara(onze.id));
+    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(11);
+    expect(harness.routeNativeElement?.querySelector('.parcelas-com-rolagem')).not.toBeNull();
+    expect(harness.routeNativeElement?.textContent).toContain('Descrição extensa');
+    expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
+  });
+
   it('faz round-trip de um ID de venda da sessão sem alterar o identificador', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const cadastrada = servico.cadastrarVenda({

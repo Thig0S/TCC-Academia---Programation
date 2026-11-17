@@ -131,6 +131,22 @@ comando interno é exclusivo do TestBed: a aplicação e os E2E continuam sem bo
 hook global ou chamada ao serviço pelo browser. O teste não representa operação visível ao
 usuário nem altera regras do núcleo financeiro.
 
+#### Detalhe compacto — tarefa 3.1 de `ajutes-fase-005`
+
+O detalhe mantém cliente e dados financeiros lado a lado no desktop, inclui entrada e descrição,
+e exibe a tabela completa sem paginação. Com até dez parcelas, o teste browser isolado mediu
+1366×768, Chromium: as dez linhas terminaram em y=732,86 px, a região em y=764,75 px e o
+documento permaneceu em 768 px, sem rolagem da página. Com onze parcelas, a região interna
+tem foco por teclado, rolagem vertical, cabeçalho sticky e todas as linhas preservadas. A fixture
+cria dados sintéticos somente no host de teste; não altera seed, rotas ou serviço de produção.
+TestBed existente cobre venda de uma parcela, entrada presente/ausente, descrição ausente,
+valores em centavos, situação paga e navegação sem mutação.
+
+Verificações desta tarefa: fixture Playwright 4/4; `npm.cmd test -- --watch=false` 190/190 em
+18 arquivos; `npm.cmd run build` saiu 0 com 489,48 kB iniciais e 94,32 kB estimados. Sass
+`@import` depreciado permanece como aviso. Os testes de viewport/parcelas usam Chromium e fixture
+isolada; não são homologação visual de outros navegadores nem avaliação da ótica.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.
