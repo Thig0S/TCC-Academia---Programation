@@ -212,6 +212,31 @@ operou os controles da interface do navegador nem reproduziu essa verificação;
 viewport reduzido não foi usado como substituto. Evidência identificada como relato
 manual do solicitante, distinta das medições automatizadas e das evidências históricas.
 
+#### Verificação integrada final — tarefa 4.3 de `ajutes-fase-005`
+
+Executada em 17/11/2026, Windows 11, Node 24.21.0/npm 11.19.0, lockfile mantido,
+Angular 22.2.6, Playwright 1.65.0, Chromium, branch `feature/ajustes-fase-005`:
+
+| Comando (em `frontend/`, salvo validação)           | Resultado                                                                                                                                                                                                                                                           |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm.cmd ci`                                        | Exit 0; 289 pacotes adicionados. A auditoria automática reportou 12 vulnerabilidades altas; npm também listou scripts de instalação pendentes de aprovação para 4 pacotes. Não rodei `npm audit fix`, não aprovei scripts nem alterei manifesto/lockfile.           |
+| `npm.cmd run format:check`                          | Exit 0; todos os arquivos formatados.                                                                                                                                                                                                                               |
+| `npm.cmd run build`                                 | Exit 0; bundle inicial 490,33 kB, transferência estimada 94,50 kB, abaixo do budget de 500 kB. Aviso Sass `@import` depreciado.                                                                                                                                     |
+| `npm.cmd test -- --watch=false`                     | Exit 0; 197/197 testes em 18 arquivos. Aviso Sass.                                                                                                                                                                                                                  |
+| `npm.cmd run test:e2e`                              | Exit 0; 36/36, 18 por viewport (1366×768 e 390×844), Chromium. Playwright iniciou e encerrou servidor próprio em 4200 (`reuseExistingServer: false`). Cobriu navegação, filtros, temas, teclado/foco, movimento reduzido, contrastes, links e overflow. Aviso Sass. |
+| `npm.cmd run test:e2e:paginacao-fixture`            | Exit 0; 8/8, host sintético na porta 4301; medições/capturas constam na seção 4.2 acima. Aviso Sass.                                                                                                                                                                |
+| `openspec validate ajutes-fase-005 --strict` (raiz) | Exit 0; Change válida.                                                                                                                                                                                                                                              |
+| `git diff --check` (raiz)                           | Exit 0; avisos apenas de conversão LF/CRLF nos arquivos preexistentes e não commitados da Change histórica `fase-005`.                                                                                                                                              |
+
+Revisão de coerência feita na ordem PRD 1.6 (RN-014/018/019/020; CA-026–029) →
+TDD 1.10/DEC-018 → proposta, design, três deltas, tarefas e testes da Change; revisão
+do diff dos 10 commits da feature contra `origion/main`. Implementação permanece no
+escopo: listas sem cartões, paginação local, detalhe somente leitura, links/temas e
+regra civil de atraso mantida. Visão Geral não foi antecipada; seed, regras de produção
+e dependências não foram alterados. PRD/TDD seguem identificados como planejamento,
+sem aprovação da ótica; execução técnica não é aceite comercial. As cinco alterações
+locais pré-existentes em `openspec/changes/fase-005/` ficaram fora do diff e dos commits.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.
