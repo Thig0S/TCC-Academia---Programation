@@ -2,45 +2,49 @@
 <p><a routerLink="/vendas/quitadas">Quitadas</a></p>
 <p class="text-body-secondary">Referência da demonstração: {{ formatarDataCivil(referencia) }}</p>
 <section class="card p-3 p-md-4 mb-4" aria-label="Pesquisa e filtros de vendas">
-  <label for="busca-vendas" class="form-label"
-    >Buscar por nome, CPF, telefone ou data da venda</label
-  >
-  <div class="d-flex flex-wrap gap-2">
-    <input
-      #campoBusca
-      id="busca-vendas"
-      class="form-control flex-grow-1"
-      type="search"
-      [value]="termo()"
-      aria-describedby="orientacao-busca-vendas"
-      (input)="atualizarTermo($event)"
-    />
-    <button type="button" class="btn botao-consulta" (click)="limparPesquisa(campoBusca)">
-      Limpar pesquisa
-    </button>
+  <div class="row g-3 align-items-end consulta-controles">
+    <div class="col-12 col-lg-5">
+      <label for="busca-vendas" class="form-label"
+        >Buscar por nome, CPF, telefone ou data da venda</label
+      >
+      <input
+        #campoBusca
+        id="busca-vendas"
+        class="form-control flex-grow-1"
+        type="search"
+        [value]="termo()"
+        aria-describedby="orientacao-busca-vendas"
+        (input)="atualizarTermo($event)"
+      />
+    </div>
+    <div class="col-12 col-lg-3">
+      <label for="situacao-vendas" class="form-label">Filtrar por situação</label>
+      <select
+        id="situacao-vendas"
+        class="form-select"
+        [value]="situacao()"
+        (change)="atualizarSituacao($event)"
+      >
+        <option value="Todas">Todas</option>
+        <option value="Em aberto">Em aberto</option>
+        <option value="Próximos dias">Próximos dias</option>
+        <option value="Atrasada">Atrasada</option>
+      </select>
+    </div>
+    <div class="col-12 col-lg-2 d-grid">
+      <button type="button" class="btn botao-consulta" (click)="limparPesquisa(campoBusca)">
+        Limpar pesquisa
+      </button>
+    </div>
+    <div class="col-12 col-lg-2 d-grid">
+      <button type="button" class="btn botao-consulta" (click)="limparCriterios(campoBusca)">
+        Limpar critérios
+      </button>
+    </div>
   </div>
-  <p id="orientacao-busca-vendas" class="form-text">
+  <p id="orientacao-busca-vendas" class="form-text mb-0 mt-2">
     Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
   </p>
-  <label for="situacao-vendas" class="form-label">Filtrar por situação</label>
-  <select
-    id="situacao-vendas"
-    class="form-select"
-    [value]="situacao()"
-    (change)="atualizarSituacao($event)"
-  >
-    <option value="Todas">Todas</option>
-    <option value="Em aberto">Em aberto</option>
-    <option value="Próximos dias">Próximos dias</option>
-    <option value="Atrasada">Atrasada</option>
-  </select>
-  <button
-    type="button"
-    class="btn botao-consulta align-self-start mt-3"
-    (click)="limparCriterios(campoBusca)"
-  >
-    Limpar critérios
-  </button>
 </section>
 <p role="status" aria-live="polite" aria-atomic="true">
   {{ resultados().length }}

@@ -468,6 +468,12 @@ Em 17/11/2026, retirados da lista de Vendas os quatro cartões globais; `Servico
 
 Verificação incremental: Windows, Node v24.21.0/npm 11.19.0. `npm.cmd test -- --watch=false` passou: 174/174 testes em 16 arquivos. `npm.cmd run build` saiu 0 (488,11 kB iniciais; transferência estimada 93,82 kB). `npm.cmd run format:check` apontou inicialmente os dois testes editados; ambos foram formatados com Prettier direcionado. O build mantém o aviso existente de Sass `@import`. E2E e medições visuais não foram executados nesta tarefa.
 
+### Apply ajustes FASE-005 — tarefa 1.2
+
+Em 17/11/2026, busca, situação e as duas ações de limpeza foram organizadas em uma única faixa desktop nas abertas; Quitadas mantém somente busca e Limpar pesquisa. Rótulos, orientação, foco após limpeza e separação das coleções foram preservados. No viewport Chromium 1366×768, E2E verificou a mesma faixa nas duas coleções e nos temas escuro/claro, e confirmou um único campo de busca. Em 390×844 os controles continuam adaptáveis.
+
+Verificações incrementais: `npm.cmd run format:check` passou; `npm.cmd run build` saiu 0 (488,11 kB iniciais/93,81 kB estimados); `npm.cmd test -- --watch=false` passou (174/174 em 16 arquivos); `npm.cmd run test:e2e` passou (34/34, 17 por viewport Chromium). Uma execução E2E inicial detectou que o teste comparava bordas superiores, apesar dos controles alinhados pela base; a asserção foi corrigida para medir a base e a suíte completa passou na repetição. Sass `@import` permanece como aviso preexistente.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch
