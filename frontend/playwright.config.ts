@@ -4,6 +4,7 @@ const baseURL = 'http://127.0.0.1:4200';
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: 'paginacao-fixture.spec.ts',
   fullyParallel: true,
   forbidOnly: true,
   retries: 0,

@@ -56,6 +56,23 @@
           },
           "defaultConfiguration": "production"
         },
+        "build-paginacao-fixture": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/paginacao-fixture",
+            "index": "src/testing/paginacao-fixture-index.html",
+            "browser": "src/testing/paginacao-fixture-main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": ["src/styles.scss"]
+          }
+        },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
@@ -67,6 +84,14 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "serve-paginacao-fixture": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "vendas-em-aberto:build-paginacao-fixture",
+            "host": "127.0.0.1",
+            "port": 4301
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"

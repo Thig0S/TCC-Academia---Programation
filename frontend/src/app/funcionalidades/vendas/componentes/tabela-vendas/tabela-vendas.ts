@@ -9,6 +9,7 @@ import { ProjecaoVenda } from '../../venda.calculos';
   selector: 'app-tabela-vendas',
   imports: [RouterLink, SeloSituacao],
   templateUrl: './tabela-vendas.html',
+  styleUrl: './tabela-vendas.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TabelaVendas {

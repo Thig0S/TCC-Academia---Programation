@@ -480,6 +480,12 @@ Foi adicionada derivação local de páginas de até dez itens e da faixa comple
 
 Testes unitários verificam 0/1/10/11/21 resultados, faixas, divisão ordenada sem duplicação/omissão, limite após redução e ausência de mutação. Verificações incrementais em Windows/Node 24.21.0/npm 11.19.0: build passou (488,12 kB iniciais/93,93 kB estimados); testes passaram (183/183 em 17 arquivos). O aviso Sass `@import` permanece. A apresentação e os cenários de interação com páginas serão verificados na tarefa 2.2.
 
+### Apply ajustes FASE-005 — tarefa 2.2
+
+Integração da paginação compartilhada: TestBed percorreu 21 registros por páginas 10/10/1, verificou ausência de duplicação/omissão, reset após pesquisa e limpezas inclusive com campo vazio, e observou comando interno de pagamento reduzir a seleção inválida da página 3 para a última página válida (2). Teste E2E da aplicação/seed real passou em Chromium 1366×768 e 390×844; o seed tem apenas uma página em ambas as coleções, apresenta a faixa correta e não exibe navegação fictícia. Verificação final nesta tarefa: `npm.cmd run format:check` passou; build passou (489,48 kB iniciais/94,25 kB estimados); testes passaram (189/189 em 18 arquivos); E2E do seed real passou (34/34); E2E da fixture isolada passou (2/2). Sass `@import` permanece como aviso.
+
+Para cobrir cardinalidade ausente do seed sem alterar produção, foi criado target e bootstrap isolados de fixture (`build/serve-paginacao-fixture`) que compõem o App e componentes reais e acrescentam registros sintéticos apenas em memória. Em Chromium 1366×768/100%, ambos os temas passaram com 10 linhas e rodapé dentro do viewport; geometria registrada: primeira linha y=377,89 px, décima linha até y=629,77 px, rodapé até y=730,27 px, documento com 768 px. Capturas e JSON de geometria são anexados à execução Playwright da fixture. Navegação por teclado passou nas três páginas, mantendo foco e faixa anunciada. Isso comprova o cenário fixture, não altera a evidência do seed real. Warning Sass `@import` permanece.
+
 ## Apply FASE-003 — 13/11/2026
 
 Implementação autorizada explicitamente pelo pedido de apply `fase-003`, na branch

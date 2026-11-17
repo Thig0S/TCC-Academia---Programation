@@ -2,6 +2,7 @@ import {
   limitarPagina,
   obterFaixaPaginacao,
   obterPagina,
+  obterItensNavegacao,
   obterTotalPaginas,
   VENDAS_POR_PAGINA,
 } from './venda.paginacao';
@@ -39,6 +40,13 @@ describe('Paginação local de vendas', () => {
     expect(limitarPagina(2, obterTotalPaginas(10))).toBe(1);
     expect(limitarPagina(4, 0)).toBe(1);
     expect(limitarPagina(2, 3)).toBe(2);
+  });
+
+  it('gera navegação compacta com reticências em vez de controles fictícios', () => {
+    expect(obterItensNavegacao(4, 2)).toEqual([1, 2, 3, 4]);
+    expect(obterItensNavegacao(8, 1)).toEqual([1, 2, '...', 8]);
+    expect(obterItensNavegacao(8, 4)).toEqual([1, '...', 3, 4, 5, '...', 8]);
+    expect(obterItensNavegacao(8, 8)).toEqual([1, '...', 7, 8]);
   });
 
   it('não altera a coleção de entrada', () => {

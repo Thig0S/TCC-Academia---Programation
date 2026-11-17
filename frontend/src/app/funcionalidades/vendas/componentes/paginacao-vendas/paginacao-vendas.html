@@ -1,0 +1,58 @@
+<p
+  class="small text-body-secondary mb-1"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  aria-label="Faixa de resultados"
+>
+  @if (faixa().total === 0) {
+    0 resultados
+  } @else {
+    {{ faixa().inicio }}–{{ faixa().fim }} de {{ faixa().total }} vendas
+  }
+</p>
+@if (totalPaginas() > 1) {
+  <nav aria-label="Paginação de vendas">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item">
+        <button
+          type="button"
+          class="page-link"
+          aria-label="Página anterior"
+          [attr.aria-disabled]="paginaAtual() === 1"
+          (click)="mover(-1)"
+        >
+          Anterior
+        </button>
+      </li>
+      @for (item of itens(); track $index) {
+        <li class="page-item">
+          @if (item === '...') {
+            <span class="page-link" aria-hidden="true">…</span>
+          } @else {
+            <button
+              type="button"
+              class="page-link"
+              [attr.aria-label]="'Página ' + item"
+              [attr.aria-current]="item === paginaAtual() ? 'page' : null"
+              (click)="irPara(item)"
+            >
+              {{ item }}
+            </button>
+          }
+        </li>
+      }
+      <li class="page-item">
+        <button
+          type="button"
+          class="page-link"
+          aria-label="Próxima página"
+          [attr.aria-disabled]="paginaAtual() === totalPaginas()"
+          (click)="mover(1)"
+        >
+          Próxima
+        </button>
+      </li>
+    </ul>
+  </nav>
+}
