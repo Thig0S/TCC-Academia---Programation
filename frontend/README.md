@@ -171,6 +171,19 @@ A regressão E2E existente da lateral mede texto/ícones e foco nos extremos/mei
 degradê, nos estados normal, hover, ativo e foco, nos dois temas. Aviso Sass `@import`
 permanece; esta execução não é certificação de acessibilidade nem aceite da ótica.
 
+#### Regra civil de atraso — tarefa 4.1 de `ajutes-fase-005`
+
+A regra de domínio foi preservada. Testes de projeção agora verificam explicitamente
+vencimento em 10/11/2027: Próximos dias na própria data e Atrasado em 11/11; a parcela
+recebida em 10/11 permanece Paga no dia seguinte. Casos adicionais confirmam +7/+8
+cruzando mês (30/04–01/05) e ano (25/12–01/01). O cenário integrado reconcilia situação
+da parcela/venda, próximo vencimento, pagos, saldo, parcelas pagas e resumo de valores
+em atraso, antes e depois do recebimento, sem tolerância nem alteração de seed/relógio.
+
+Em 17/11/2026, `npm.cmd test -- --watch=false` passou: 197/197 testes em 18 arquivos.
+O aviso preexistente de Sass `@import` permanece. Não foi alterado código de produção;
+os testes não representam uma UI de pagamento nem aceite comercial.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.
