@@ -205,13 +205,14 @@ Quitadas restrito a main. Reexecução dirigida passou 14/14 (saída 0), comprov
 modalidade/foco/cancelamento/Escape/reabertura em ambos os temas/viewports.
 
 Ampliado o fluxo de quitação para os dois temas e acrescentada integração de entrada
-+ lote, com comparação dos resumos sem dupla contagem. Novas execuções reais:
 
-- `npm.cmd test -- --watch=false`: saída 0, 340/340 em 25 arquivos.
-- `npm.cmd run build`: saída 0, 509,14 kB iniciais/99,45 kB estimados; avisos
+- lote, com comparação dos resumos sem dupla contagem. Novas execuções reais:
+
+* `npm.cmd test -- --watch=false`: saída 0, 340/340 em 25 arquivos.
+* `npm.cmd run build`: saída 0, 509,14 kB iniciais/99,45 kB estimados; avisos
   Sass e budget excedido em 9,14 kB, budgets mantidos.
-- `npm.cmd run format:check`: saída 0.
-- `npm.cmd run test:e2e`: saída 1, 49/50. Todos os cenários novos de cadastro,
+* `npm.cmd run format:check`: saída 0.
+* `npm.cmd run test:e2e`: saída 1, 49/50. Todos os cenários novos de cadastro,
   edição, recebimento, quitação, modal/teclado e retorno de foco passaram nos dois
   viewports. Falhou o cenário histórico de contraste em mobile, dark/Parcelas
   abertas: a medição encontrou label de busca da lista (razão 1:1), embora o
@@ -283,6 +284,88 @@ coleção após quitação e ajuste de última página permanece aprovado na su�
 Seed de 12 vendas, alvo isolado da fixture e ausência de hooks globais preservados.
 Regressão final após todos os ajustes ainda será executada; zoom nativo e medição
 completa dos formulários continuam pendentes na tarefa 5.2, sem PR antecipado.
+
+### Tarefa 5.2 — medição dos novos formulários em andamento
+
+Acrescentado teste browser de contraste/overflow/capturas para cadastro com erros,
+prévia de 24 parcelas, edição e modal com seleção extensa, nos dois temas/viewports.
+Erros usam token `text-danger-emphasis`; controles novos recebem borda com token
+secundário e outline explícito de 3 px nos estados focus-visible, sem mudar fonte.
+Esses ajustes/testes ainda não têm commit nem verificação global posterior.
+
+`npx.cmd playwright test acessibilidade-formularios.spec.ts`: saída 1, 0/2 cenários
+completos. No escuro, as quatro etapas medidas superaram 4,5:1 de texto (mínimo
+4,5008:1) e 3:1 de bordas (mínimos 3,3866–3,4275:1), sem overflow horizontal do
+documento. Prévia/lista de 24 parcelas têm scroll interno operável por teclado;
+outline do campo inválido medido em 3 px. No claro, cadastro com erros falhou por
+borda abaixo de 3:1 (1,5243:1 desktop, 1,4454:1 mobile). O estilo de foco do
+Bootstrap ainda pode prevalecer sobre a borda base; medições também devem observar
+estado estável em vez de transição de tema. Diagnóstico/correção ainda não
+concluídos, sem reduzir mínimos ou declarar acessibilidade aprovada. Apply pausado
+para orientação; tarefa 5.2 continua aberta, progresso 12/15. Zoom nativo 200%
+não executado nem substituído por CSS zoom; sem regressão final ou PR.
+
+### Contraste corrigido e regressão posterior (ainda não concluída)
+
+Após autorização, bordas dos controles preservam token secundário também em foco;
+botões novos preservam a borda contrastante em hover/active/foco. Medição usa
+movimento reduzido para observar estado estável, sem sleeps ou diminuir mínimos;
+incluída asserção de contraste do outline. Duas execuções dirigidas posteriores
+passaram 2/2: texto mínimo 4,5008:1, bordas mínimas dark 7,2920:1/light 6,7811:1,
+foco medido pelo menos 3:1 e outline de 3 px nos campos inválidos. Capturas salvas
+explicitamente em `test-results/.../*.png`; revistas capturas de prévia/modal/
+erros, desktop/mobile e ambos os temas. Conteúdo extenso permanece rolável, sem
+overflow horizontal global. A primeira repetição com movimento reduzido revelou
+também borda do botão em hover de 2,3960:1; corrigida nos mesmos estados, mantendo
+as asserções. Isso não comprova zoom nativo ou acessibilidade integral.
+
+Regressão após os ajustes: build saída 0, 510,89 kB iniciais/99,58 kB estimados
+(Sass e budget excedido em 10,89 kB; limites inalterados); unitários/componentes
+340/340 em 25 arquivos, saída 0. `format:check` saiu 1 apenas em README.md atualizado.
+E2E completo saiu 1, 50/52: novos cenários de contraste passaram, mas fluxo de
+recebimento desktop viu quatro quitadas em vez de uma após preencher busca (indício
+de preenchimento no campo antigo durante a navegação); cenário histórico mobile
+mediu hover de Limpar pesquisa em Quitadas a 3,9560:1 (possível transição ainda
+ativa). Sem assumir correção: aguardando orientação para sincronizar os campos
+por destino, medir hover estável e normalizar README, preservando asserts.
+
+Progresso 12/15; ajustes visuais ainda sem commit. Zoom nativo, fechamento da
+regressão e conciliação final continuam pendentes, sem PR antecipado.
+
+### Regressão integrada aprovada — tarefa 6.1, zoom ainda pendente
+
+Após autorização, o preenchimento da pesquisa após entrar em Quitadas usa
+`#busca-vendas-quitadas`, evitando o campo ainda montado de Vendas. Medição
+histórica de hover usa movimento reduzido, como os testes novos, sem sleeps,
+retries ou mudanças nos mínimos. README normalizado pelo Prettier. Os novos
+arquivos E2E agora verificam console/pageerror explicitamente em cada cenário.
+
+Execuções reais posteriores, em Windows/Node 24.21.0/npm 11.19.0, Angular
+22.2.6 e Chromium do Playwright, viewports 1366×768 e 390×844:
+
+| Comando em frontend/                     | Resultado                                        |
+| ---------------------------------------- | ------------------------------------------------ |
+| `npm.cmd run format:check`               | Saída 0                                          |
+| `npm.cmd run build`                      | Saída 0, 510,89 kB iniciais/99,58 kB estimados   |
+| `npm.cmd test -- --watch=false`          | Saída 0, 340/340 em 25 arquivos                  |
+| `npm.cmd run test:e2e`                   | Saída 0, 52/52, sem console/pageerror inesperado |
+| `npm.cmd run test:e2e:paginacao-fixture` | Saída 0, 8/8                                     |
+
+Runners iniciaram/encerraram seus servidores em 4200/4301; nenhum processo alheio
+encerrado. Avisos mantidos: Sass `@import`, prebundling da fixture e bundle inicial
+10,89 kB acima do aviso de 500 kB (abaixo do erro de 1 MB); budgets inalterados.
+Inspeção de produção não encontrou storage, cookies, HTTP de negócio ou exportação;
+fluxos usam fonte em memória e dados de teste sintéticos, sem dados reais. Testes
+de recarga e isolamento preservados. Auditoria não é certificação de segurança.
+
+Capturas revistas de lista dark/light desktop e formulários/prévia/modal nos dois
+viewports: densidade de consulta restaurada, erros legíveis, foco explícito e
+rolagem interna para excedentes. A medição de formulários usa texto mínimo de
+4,5008:1, bordas dark 7,2920:1/light 6,7811:1 e foco pelo menos 3:1 nos estados
+exercitados; não é auditoria integral de acessibilidade. Zoom nativo de 200% ainda
+não executado pelo agente nem relatado pelo solicitante para estes fluxos novos.
+Logo, tarefa 5.2 continua aberta; regressão automatizada não encerra esse critério.
+Conciliação final e PR aguardam essa evidência; PEN-013/014/HIP-006 seguem abertos.
 
 ## Apply FASE-005 — busca de vendas
 

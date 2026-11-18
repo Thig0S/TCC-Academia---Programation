@@ -35,7 +35,7 @@ As questões de avaliação em design.md não mudam a UI planejada e permanecem 
 
 ## 6. Regressão integrada e rastreabilidade da entrega
 
-- [ ] 6.1 Executar em `frontend/` os scripts `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`, com servidores do runner e sem encerrar processos alheios. Registrar comandos, ambiente, contagens, avisos/falhas reais e ausência de console inesperado no README. Confirmar que nenhum fluxo usa storage, serviços de dados, exportação ou dados reais; regressão final complementa os testes incrementais, não os substitui.
+- [x] 6.1 Executar em `frontend/` os scripts `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`, com servidores do runner e sem encerrar processos alheios. Registrar comandos, ambiente, contagens, avisos/falhas reais e ausência de console inesperado no README. Confirmar que nenhum fluxo usa storage, serviços de dados, exportação ou dados reais; regressão final complementa os testes incrementais, não os substitui.
 - [ ] 6.2 Conciliar acompanhamento de implementação no PRD/TDD/README e tarefas com os resultados reais; não alterar requisitos/IDs, nem marcar avaliação PEN-013/014/HIP-006 como concluída. Executar `openspec validate fase-006 --strict`, `openspec validate --all --strict` e `git diff --check`, revisar deltas contra specs vigentes e confirmar todo o escopo desta Change entregue antes de preparar PR. Registrar evidências e verificações não executadas e criar commit documental próprio quando independente das funcionalidades.
 
 ## Planning Evidence
