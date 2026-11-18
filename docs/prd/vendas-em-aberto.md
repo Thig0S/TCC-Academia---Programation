@@ -20,9 +20,12 @@
 e refinamentos integrados pelo [PR #10](https://github.com/Thig0S/TCC-Academia---Programation/pull/10),
 commit `59af9a2`. O GitHub confirma o merge do PR #10 em 18/11/2026 às 01:19 UTC
 (17/11 no horário local). A Change `fase-005` foi arquivada pelo PR #11; os ajustes
-estão consolidados nas specs principais pelo commit `91208a7` desta branch documental.
+estão consolidados nas specs principais pelo commit `72ade92` da `main`.
 O registro dos ajustes fica em `openspec/changes/archive/2026-11-17-ajutes-fase-005/`.
-Esta consolidação ainda depende da integração da branch na `main`.
+Esta consolidação foi integrada à `main` pelo [PR #12](https://github.com/Thig0S/TCC-Academia---Programation/pull/12),
+commit `c845ce9`, em 18/11/2026 às 01:51:53 UTC (17/11 no horário local), conforme
+confirmação no GitHub. A referência anterior `91208a7` identifica o commit da branch
+original, não o hash resultante na `main`.
 
 Listas somente leitura, busca/filtro, paginação de 10, ausência de cartões em
 Vendas/Quitadas, detalhe compacto e links integrados estão entregues. As evidências
