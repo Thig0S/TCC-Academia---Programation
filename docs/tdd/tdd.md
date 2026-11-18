@@ -6,7 +6,20 @@
 
 ## 1. Identificação e situação
 
-**Estado vigente — revisão 1.12, 17/11/2026:** PRD 1.8 revisado primeiro por decisões
+**Acompanhamento de implementação — 18/11/2026:** reutilizados PRD 1.8 e TDD
+1.12, sem novas regras/decisões. Apply autorizado no Harness, em
+`feature/edicao-identificacao-vendas`, após integração documental do PR #13.
+DEC-019 implementada no núcleo: validadores puros compartilhados, identificação
+sintética compatível e comando `editarCliente`, com cópia defensiva, revalidação
+do agregado e publicação atômica. O adaptador sem estado `PreparadorEdicaoCliente`
+segue a fronteira de recebimento existente e permite doubles exclusivos do TestBed.
+Sem nova dependência, rota ou UI de negócio. Verificações reais no README:
+265 testes em 21 arquivos, 36 E2E da aplicação, 8 da fixture, build/formatação.
+FASE-006 continua parcial, exigindo SDD próprio para interfaces. PEN-013/014 e
+HIP-006 não foram encerradas por testes automatizados. Sync/archive, revisão,
+merge e aceite não são presumidos; as descrições de planejamento abaixo são históricas.
+
+**Registro do planejamento — revisão 1.12, 17/11/2026:** PRD 1.8 revisado primeiro por decisões
 explícitas no Harness. PEN-008/010 resolvidas documentalmente: edição restrita aos
 quatro campos do cliente em qualquer venda e identificação conforme RN-022/023.
 DEC-019 planeja validação compartilhada, comando restrito e futura adequação do seed;
@@ -810,7 +823,7 @@ Estado vigente das fases em 17/11/2026, sem nova execução de aplicação:
 | FASE-003 | Implementada com evidências anteriores e Change arquivada; sem aceite da ótica |
 | FASE-004 | Implementada e integrada na main via PR #7; specs consolidadas e Change arquivada via PR #8 |
 | FASE-005 | Consultas e ajustes integrados na main pelos PRs #9/#10; base arquivada pelo PR #11; specs dos ajustes sincronizadas em `72ade92` e registro em archive integrado pelo PR #12 (`c845ce9`) |
-| FASE-006 | Não implementada; regras de edição/identificação decididas, preparação interna/seed planejada na Change de decisões; UI ainda exige SDD próprio |
+| FASE-006 | Parcial na feature em 18/11/2026: identificação, seed e edição interna implementados/testados na Change de decisões; cadastro/edição/recebimento visíveis ainda exigem SDD próprio e implementação |
 | FASE-007 | Conteúdo financeiro não implementado; Configurações explicativa entregue na FASE-003 |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
 

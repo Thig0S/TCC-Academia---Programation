@@ -359,6 +359,14 @@ outros navegadores/sistemas e auditoria de dependências. Não há UI de ediçã
 avaliar modal/Escape/cancelamento visual. PEN-013/014 e HIP-006 continuam pendentes;
 versão do Chromium automatizado não equivale à coleta do Chrome da avaliação.
 
+Rastreabilidade final de 3.2: PRD/TDD receberam acompanhamento de implementação,
+sem alterar regras ou IDs, distinguindo núcleo entregue na feature da UI futura.
+Proposta/desenho preservam o histórico documental do PR #13 e registram o apply
+posterior autorizado. Deltas mantidas sem sync/archive. Na raiz,
+`openspec validate decisoes-edicao-identificacao-avaliacao --strict` passou e
+`git diff --check` passou com avisos de normalização LF/CRLF. Nenhuma mudança
+financeira, avaliação ou aprovação de PEN-013/014/HIP-006 foi incluída.
+
 #### Decisões de produto — PRD 1.8 / TDD 1.12 (registro histórico de planejamento)
 
 Após perguntas e aprovação explícita no Harness, foram definidos RN-021/022/023,

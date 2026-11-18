@@ -18,7 +18,7 @@ As questões de avaliação em `design.md` não alteram esse recorte e continuam
 ## 3. Regressão integrada e rastreabilidade
 
 - [x] 3.1 Executar scripts existentes em `frontend/`: `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`. Usar servidores do runner, sem hooks de produção ou processos alheios. Verificar regressão de busca parcial/data, separação abertas/quitadas, IDs, paginação, detalhe, temas e restrições de UI; registrar ambiente/comandos/contagens/avisos reais no README sem atribuir evidências antigas às novas regras.
-- [ ] 3.2 Reconciliar PRD/TDD/deltas com os testes e resultados efetivos; executar na raiz `openspec validate decisoes-edicao-identificacao-avaliacao --strict` e `git diff --check`. Conferir que PEN-013/014 e HIP-006 não foram marcadas como avaliadas/aprovadas e que nenhuma UI de negócio, edição financeira ou avaliação foi antecipada. Atualizar tarefas somente com evidências e manter commits no escopo autorizado.
+- [x] 3.2 Reconciliar PRD/TDD/deltas com os testes e resultados efetivos; executar na raiz `openspec validate decisoes-edicao-identificacao-avaliacao --strict` e `git diff --check`. Conferir que PEN-013/014 e HIP-006 não foram marcadas como avaliadas/aprovadas e que nenhuma UI de negócio, edição financeira ou avaliação foi antecipada. Atualizar tarefas somente com evidências e manter commits no escopo autorizado.
 
 ## Planning Evidence
 
@@ -38,7 +38,28 @@ As questões de avaliação em `design.md` não alteram esse recorte e continuam
   `frontend/` passou. Resultados e não executados em `frontend/README.md`.
   As seis tarefas acima continuam futuras, não comprovadas por planejamento completo.
 
-## Workflow follow-up
+## Implementation Evidence
+
+- Apply solicitado explicitamente em 18/11/2026, após integração documental do
+  PR #13 confirmada no GitHub. Feature criada da `main` limpa/alinhada a `origion/main`.
+- `c4c5d77`: identificação compartilhada e seed/fixtures compatíveis; 241 testes,
+  build, formatação, 36 E2E e 8 da fixture aprovados.
+- `3d79868`: contrato/preparação/serviço de edição interna com testes puros, serviço
+  e DOM reativo; 265 testes em 21 arquivos, build e formatação aprovados.
+- `5a20428`: regressão final documentada e correção autorizada da sincronização
+  do E2E. Trace confirmou preenchimento no campo de abertas antes da navegação;
+  campo específico de Quitadas preserva asserções. 36 E2E da aplicação e 8 da
+  fixture passaram na repetição, sem exceção aceita ou alteração de UI.
+- Resultados incrementais, falhas encontradas/corrigidas, ambiente, avisos e
+  verificações não executadas em `frontend/README.md`. PEN-013/014 e HIP-006 abertas.
+- As deltas descrevem o recorte implementado e permanecem sem sync. A expressão
+  “FASE-006” nelas inclui esta preparação, não conclusão de toda a UI da fase.
+- PRD/TDD e os registros históricos desta Change conciliados com o apply, preservando
+  IDs/regras e separando entrega interna de avaliação/UI futura. Validação estrita
+  desta Change e `git diff --check` passaram (somente avisos LF/CRLF no diff).
+  PR único de implementação a publicar após conclusão integral; merge não autorizado.
+
+## Workflow follow-up — registro do planejamento original
 
 - Atualizar o mesmo PR #13 com todo o escopo documental aprovado; não abrir PR
   separado nem confundir o PR documental com implementação das tarefas futuras.
