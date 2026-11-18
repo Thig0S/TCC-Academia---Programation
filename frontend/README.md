@@ -413,6 +413,28 @@ tecnologia assistiva, outros navegadores/sistemas, auditoria de segurança ou
 homologação operacional. Versão/janela do navegador no relato de zoom não
 informadas; não inferidas a partir do Chromium automatizado.
 
+### Consolidação documental e archive — sincronização das specs
+
+Após autorização explícita no Harness em 18/11/2026, a entrega documental foi feita
+em `docs/atualizar-documentacao-fase-006`, criada a partir da `feature/fase-006`.
+As cinco deltas foram sincronizadas em `openspec/specs`: `consulta-vendas`,
+`estado-demonstrativo` e `navegacao-aplicacao` tiveram requisitos modificados,
+`recebimentos-parcelas` recebeu os requisitos visuais de lote, modal acessível e
+quitação, e a nova capability `formularios-vendas` registra cadastro e edição.
+A Change foi movida para `openspec/changes/archive/2026-11-18-fase-006/`, com
+artefatos completos e 15/15 tarefas. PRD 1.9 e TDD 1.13 apenas conciliam estado e
+rastreabilidade e atualizam o roadmap; requisitos, IDs, decisões e pendências de
+avaliação não mudaram.
+
+Validações reais desta etapa: `openspec validate --specs --strict` e
+`openspec validate --all --strict` com oito specs aprovadas (nove itens antes do
+archive, incluindo `change/fase-006`); `git diff --check` sem erros; e
+`npm.cmd run format:check` com saída 0 após as edições. Nenhum teste de aplicação,
+build ou E2E foi reexecutado nesta consolidação; as evidências de regressão acima
+permanecem as últimas execuções reais, sem alteração de código desde então.
+Revisão, PR único e merge da FASE-006 continuam pendentes; não há aceite da ótica,
+conclusão da FASE-007/008 ou alteração de PEN-013/014/HIP-006.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.
