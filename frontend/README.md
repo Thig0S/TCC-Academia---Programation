@@ -184,7 +184,7 @@ Em 17/11/2026, `npm.cmd test -- --watch=false` passou: 197/197 testes em 18 arqu
 O aviso preexistente de Sass `@import` permanece. Não foi alterado código de produção;
 os testes não representam uma UI de pagamento nem aceite comercial.
 
-#### Evidências de layout integrado — tarefa 4.2 de `ajutes-fase-005` (parcial)
+#### Evidências de layout integrado — tarefa 4.2 de `ajutes-fase-005` (concluída)
 
 Em 17/11/2026, `npm.cmd run test:e2e:paginacao-fixture` passou 8/8 em Chromium
 1.65.0, servidor de fixture isolado na porta 4301 e viewports 1366×768 e 390×844.
@@ -236,6 +236,26 @@ regra civil de atraso mantida. Visão Geral não foi antecipada; seed, regras de
 e dependências não foram alterados. PRD/TDD seguem identificados como planejamento,
 sem aprovação da ótica; execução técnica não é aceite comercial. As cinco alterações
 locais pré-existentes em `openspec/changes/fase-005/` ficaram fora do diff e dos commits.
+
+#### Conciliação documental e arquivamento dos ajustes — 17/11/2026
+
+Implementação dos ajustes integrada pelo [PR #10](https://github.com/Thig0S/TCC-Academia---Programation/pull/10),
+commit `59af9a2`; merge confirmado no GitHub em 18/11/2026 às 01:19 UTC (17/11 local).
+As specs `consulta-vendas`, `estado-demonstrativo` e `temas-visuais` foram
+sincronizadas no commit `91208a7` da branch `docs/sincronizar-specs-ajustes-fase-005`.
+PRD 1.7 e TDD 1.11 conciliam o estado, sem alterar requisitos ou regras. A Change
+com 9/9 tarefas fica em `openspec/changes/archive/2026-11-17-ajutes-fase-005/`;
+essa consolidação documental ainda depende de integração da branch na `main`.
+O título da evidência 4.2 foi corrigido para concluída: medições automatizadas e
+relato manual de zoom já estavam registrados; nenhuma nova aprovação ou medição
+foi inferida dessa correção. Os resultados de aplicação acima são anteriores e
+não foram reexecutados neste fechamento exclusivamente documental.
+
+Verificações deste fechamento: `openspec validate ajutes-fase-005 --strict` antes
+de arquivar saiu 0; depois, `openspec validate --all --strict` aprovou as sete specs
+e `openspec list --json` confirmou nenhuma Change ativa. `npm.cmd run format:check`
+em `frontend/` passou; `git diff --check` passou com avisos LF/CRLF. Não houve nova
+instalação, build, execução de testes da aplicação ou medição visual.
 
 #### Regressão limpa FASE-005 — 16/11/2026
 

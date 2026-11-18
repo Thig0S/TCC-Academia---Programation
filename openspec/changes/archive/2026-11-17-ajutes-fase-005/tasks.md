@@ -1,9 +1,16 @@
 # Tasks
 
-Planejamento apenas, com base no PRD 1.6, TDD 1.10/DEC-018, `proposal.md`,
-`design.md` e três deltas. Nove tarefas de ajustes transferidas da revisão anterior
-da `fase-005`, reorganizadas abaixo; todas pendentes. Suas 20 tarefas históricas
-não contam como execução desta Change. Aguardar novo pedido de apply.
+Change implementada e integrada à `main` pelo PR #10 (commit `59af9a2`), com
+9/9 tarefas concluídas. Base de planejamento preservada: PRD 1.6, TDD 1.10/DEC-018,
+`proposal.md`, `design.md` e três deltas. As 20 tarefas da `fase-005` anterior não
+contam como execução desta Change e não devem ser reaplicadas.
+
+Estado conciliado em 17/11/2026: PRD 1.7 e TDD 1.11 registram a entrega sem mudar
+regras ou IDs. Specs principais sincronizadas pelo commit `91208a7`, verificadas
+contra todos os blocos das três deltas. Consolidação documental e arquivamento
+realizados na branch `docs/sincronizar-specs-ajustes-fase-005`, ainda pendentes de
+integração na `main`. Evidências anteriores de aplicação em `frontend/README.md`,
+seção de verificação integrada final da tarefa 4.3; sem reexecução nesta revisão.
 
 ## 1. Listas sem cartões e faixa compacta
 
@@ -27,6 +34,10 @@ não contam como execução desta Change. Aguardar novo pedido de apply.
 - [x] 4.3 Executar em `frontend/` os scripts existentes `npm.cmd ci`, `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false` e `npm.cmd run test:e2e`, preservando processos alheios e usando servidor próprio do runner; na raiz, `openspec validate ajutes-fase-005 --strict` e `git diff --check`. Registrar saídas/contagens/ambiente/budgets/warnings reais no README; revisar PRD → TDD → três deltas → testes e diff integral da Change, sem atribuir evidências anteriores aos ajustes. Somente após todas as tarefas/verificações aplicáveis concluídas, preparar o PR único da Change usando `.github/pull_request_template.md`, referências e limites explícitos; não abrir PR de planejamento nem mesclar sem autorização.
 
 ## Planning Evidence
+
+Os registros abaixo descrevem exclusivamente o planejamento de 16/11/2026,
+anterior ao apply e ao PR #10. As contagens, restrições de escopo e declarações de
+ausência de implementação/sync são históricas, não o estado atual da Change.
 
 - Raiz local confirmada por `openspec list --json` e `openspec context --json`.
   Schema configurado `spec-driven`; nome `ajutes-fase-005` preservado como solicitado.
@@ -60,11 +71,30 @@ não contam como execução desta Change. Aguardar novo pedido de apply.
 
 ## Workflow follow-up
 
-- Apresentar artefatos completos e aguardar novo pedido `/opsx-apply ajutes-fase-005`.
-- Commits por funcionalidade na mesma feature; um único PR para todo o escopo desta
-  Change após conclusão integral, sem incorporar trabalho alheio. Atualizações usam
-  o mesmo PR; merge depende de revisão/verificações e autorização explícita.
-- Preservar a `fase-005` anterior como histórico; não reaplicá-la/sincronizá-la depois
-  da nova delta para restaurar cartões. Sync/archive não fazem parte desta proposta.
+- Implementação concluída e integrada pelo PR #10; não aguardar nem executar novo
+  apply desta Change. A base `fase-005` foi arquivada pelo PR #11; não reaplicar suas
+  deltas para restaurar cartões ou substituir os refinamentos atuais.
+- Deltas dos ajustes sincronizadas antes do arquivamento; preservar os requisitos
+  principais atuais. A integração da consolidação documental desta branch ainda
+  depende do fluxo de revisão/PR, sem confundir arquivamento local com merge.
 - A Visão Geral recebe os indicadores somente na FASE-007, mediante planejamento
   e implementação próprios; não é tarefa pendente desta Change.
+
+## Archive Evidence
+
+- Em 17/11/2026, o solicitante autorizou as correções documentais e confirmou no
+  Harness o arquivamento sem reaplicar deltas já sincronizadas.
+- Antes de mover: `openspec status --change ajutes-fase-005 --json` confirmou 4/4
+  artefatos completos; `openspec list --json`, 9/9 tarefas. Comparação dos blocos
+  confirmou correspondência integral de 13 requisitos de consulta, um de estado e
+  dois de temas com as specs principais. `openspec validate ajutes-fase-005 --strict`
+  e `openspec validate --specs --strict` passaram, saída 0.
+- Diretório movido para `openspec/changes/archive/2026-11-17-ajutes-fase-005/`,
+  preservando `.openspec.yaml`, proposta, desenho, deltas e as nove tarefas concluídas.
+- Após mover: `openspec list --json` retornou nenhuma Change ativa;
+  `openspec validate --all --strict` aprovou as sete specs; em `frontend/`,
+  `npm.cmd run format:check` passou. `git diff --check` passou com avisos LF/CRLF.
+- Não executados: instalação, build, testes unitários/componentes/E2E, nova revisão
+  visual ou avaliação da ótica, pois este fechamento altera apenas documentação.
+  Resultados anteriores permanecem em `frontend/README.md`; arquivamento local
+  não comprova publicação, revisão, aprovação ou merge desta branch documental.
