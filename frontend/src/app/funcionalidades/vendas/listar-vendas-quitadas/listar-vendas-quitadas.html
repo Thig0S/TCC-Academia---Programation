@@ -40,7 +40,7 @@
 } @else if (resultados().length === 0) {
   <p>Nenhuma venda corresponde à pesquisa.</p>
 } @else {
-  <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" />
+  <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
 }
 <app-paginacao-vendas
   [faixa]="faixaResultados()"

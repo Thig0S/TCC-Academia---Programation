@@ -15,6 +15,7 @@ import { ProjecaoVenda } from '../../venda.calculos';
 export class TabelaVendas {
   readonly vendas = input.required<readonly ProjecaoVenda[]>();
   readonly legenda = input.required<string>();
+  readonly origem = input<'abertas' | 'quitadas'>('abertas');
   protected readonly formatarDataCivil = formatarDataCivil;
   protected readonly formatarDinheiro = formatarDinheiro;
 }

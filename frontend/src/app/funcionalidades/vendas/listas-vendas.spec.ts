@@ -32,7 +32,7 @@ describe('Listas de vendas', () => {
       expect(linhas[indice].textContent).toContain(formatarDinheiro(venda.saldoCentavos));
       expect(linhas[indice].textContent).toContain(venda.situacao);
       const links = [...linhas[indice].querySelectorAll('a')];
-      expect(links).toHaveLength(2);
+      expect(links).toHaveLength(3);
       const esperado = TestBed.inject(Router).serializeUrl(
         TestBed.inject(Router).createUrlTree(['/vendas', venda.id]),
       );
@@ -41,6 +41,12 @@ describe('Listas de vendas', () => {
       expect(links[0].getAttribute('aria-label')).toContain(venda.id);
       expect(links[1].getAttribute('aria-label')).toContain(venda.id);
       expect(links[1].textContent).toContain('Visualizar');
+      expect(links[2].getAttribute('href')).toBe(
+        TestBed.inject(Router).serializeUrl(
+          TestBed.inject(Router).createUrlTree(['/vendas', venda.id, 'editar']),
+        ),
+      );
+      expect(links[2].getAttribute('aria-label')).toContain(venda.id);
     });
   });
 
@@ -175,7 +181,7 @@ describe('Listas de vendas', () => {
       expect(linhas[indice].textContent).toContain(venda.cliente.nome);
       expect(linhas[indice].textContent).toContain('Quitada');
       expect(linhas[indice].textContent).toContain('Não há parcelas pendentes');
-      expect(linhas[indice].querySelectorAll('a')).toHaveLength(2);
+      expect(linhas[indice].querySelectorAll('a')).toHaveLength(3);
     });
   });
 
