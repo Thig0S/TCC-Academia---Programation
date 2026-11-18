@@ -129,6 +129,40 @@ Verificações incrementais reais em 18/11/2026:
 Edição, recebimento, verificação visual completa/zoom nativo e regressão final
 continuam pendentes. Sem avaliação de produto, aceite, sync/archive ou PR antecipado.
 
+### Edição restrita verificada — tarefas 3.1 a 3.3
+
+Página lazy `/vendas/:id/editar` consulta o ID completo por `paramMap`. Rascunho
+independente contém somente os quatro campos do cliente, reinicializado ao mudar
+ID; nenhum controle financeiro desabilitado ou editável. Identificação reutiliza
+o componente já consumido pelo cadastro. Editar nas duas tabelas e detalhe usa
+segmentos Router, nome acessível com cliente/ID e identidade lógica de foco.
+Contexto de origem é enum interno validado (abertas/quitadas/detalhe), não URL
+arbitrária. Cancelar retorna ao contexto ou, sem contexto válido, ao detalhe;
+registro ausente oferece Vendas/Quitadas e nenhum formulário. Sucesso exige
+resultado de negócio aceito, anuncia e abre detalhe; erros/exceções preservam
+rascunho e permitem retry. Envio inválido revela erro e foca o campo.
+
+Verificações reais em 18/11/2026, mesmo ambiente Windows/Angular/Chromium:
+
+- `npm.cmd test -- --watch=false`: saída 0, 329/329 em 24 arquivos. Dez casos novos
+  cobrem troca/ausência de ID com barras, nenhuma publicação ao digitar, quatro
+  situações financeiras, comparação profunda de finanças/resumos/outras vendas
+  inclusive CPF repetido, descrição vazia, erros, exceção/retry e cancelamento.
+  Integração existente de reatividade de busca/lista/detalhe permanece aprovada.
+- `npm.cmd run test:e2e`: saída 0, 46/46 em 1366×768 e 390×844, servidor próprio
+  em 4200. Novos percursos editam aberta e quitada via ações reais, corrigem CPF,
+  preservam bloco financeiro visível, pesquisam novos dados e conferem retorno/foco
+  ao cancelar a partir de detalhe e das duas listas, sem recarregar a sessão.
+- `npm.cmd run build`: saída 0; 507,04 kB iniciais/98,78 kB estimados; aviso de
+  budget excedido em 7,04 kB e Sass, sem alterar limites ou dependências.
+- `npm.cmd run format:check`: saída 0.
+
+Asserções históricas evoluídas somente para Editar: três links por linha com
+destino correto e teclado até Editar, voltando por Shift+Tab a Visualizar para
+conservar o percurso de detalhe. Exportação, indicadores nas listas e ações de
+Visão Geral/Relatórios continuam ausentes. Recebimento, visual/zoom e regressão
+final ainda pendentes; sem PR antecipado ou aceite da ótica.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.

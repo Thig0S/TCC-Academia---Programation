@@ -45,6 +45,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'vendas/:id/editar',
+    title: `Editar dados do cliente | ${produto}`,
+    loadComponent: () =>
+      import('./funcionalidades/vendas/editar-venda/editar-venda').then((m) => m.EditarVenda),
+  },
+  {
     path: 'vendas/:id',
     title: `Detalhes da venda | ${produto}`,
     loadComponent: () =>

@@ -160,7 +160,10 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
     await buscaQuitadas.fill('');
   }
   await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
-  await expect(page.getByRole('main')).not.toContainText(/cadastrar|editar|pagar|exportar/i);
+  await expect(page.getByRole('main')).not.toContainText(/cadastrar|pagar|exportar/i);
+  await expect(page.getByRole('link', { name: /Editar dados do cliente da venda/ })).toHaveCount(
+    await tabelaQuitadas.locator('tbody tr').count(),
+  );
 });
 
 test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no contexto de Vendas', async ({
@@ -499,6 +502,10 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
   const links = await tabela.getByRole('link').count();
   await page.keyboard.press('Tab');
   for (let indice = 1; indice < links; indice++) await page.keyboard.press('Tab');
+  await expect(
+    tabela.getByRole('link', { name: /Editar dados do cliente da venda/ }).last(),
+  ).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
   await expect(tabela.getByRole('link', { name: /Visualizar venda/ }).last()).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   if (largura <= 390) {

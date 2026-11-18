@@ -14,6 +14,70 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+for (const origem of ['/vendas', '/vendas/quitadas']) {
+  test(`edita cliente em ${origem}, preserva finanças e restaura foco ao cancelar`, async ({
+    page,
+  }) => {
+    await page.goto(origem);
+    await page
+      .getByRole('link', { name: /Visualizar venda de/ })
+      .first()
+      .click();
+    const dados = page.locator('section[aria-labelledby="dados-financeiros"]');
+    const antes = await dados.innerText();
+    const detalhe = page.url();
+    await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Editar dados do cliente', exact: true }),
+    ).toBeFocused();
+    await expect(page.locator('form input, form textarea')).toHaveCount(4);
+    await page.getByLabel('Nome', { exact: true }).fill('DEMO alteração cancelada');
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await expect(page).toHaveURL(detalhe);
+    await expect(
+      page.getByRole('link', { name: /Editar dados do cliente da venda/ }),
+    ).toBeFocused();
+    expect(await dados.innerText()).toBe(antes);
+    await page
+      .getByRole('link', {
+        name: origem === '/vendas' ? 'Voltar para Vendas' : 'Ver Vendas quitadas',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole('link', { name: /Editar dados do cliente da venda/ })
+      .first()
+      .click();
+    await page.getByLabel('CPF', { exact: true }).fill('11111111111');
+    await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+    await expect(page.getByLabel('CPF', { exact: true })).toBeFocused();
+    await page.getByLabel('CPF', { exact: true }).fill('900.000.001-75');
+    await page.getByLabel('Telefone com DDD').fill('(00) 91234-5678');
+    await page.getByLabel('Nome', { exact: true }).fill('Cliente DEMO E2E editado');
+    await page.getByLabel('Descrição (opcional)').fill('');
+    await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+    await expect(page).toHaveURL(detalhe);
+    await expect(page.getByRole('main')).toContainText('Cliente DEMO E2E editado');
+    expect(await dados.innerText()).toBe(antes);
+    await page
+      .getByRole('link', {
+        name: origem === '/vendas' ? 'Voltar para Vendas' : 'Ver Vendas quitadas',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
+      .fill('E2E editado');
+    await expect(page.locator('tbody tr')).toHaveCount(1);
+    await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${origem}$`));
+    await expect(
+      page.getByRole('link', { name: /Editar dados do cliente da venda.*E2E editado/ }),
+    ).toBeFocused();
+  });
+}
+
 test('cadastra sem entrada/descrição uma única vez com Enter repetido e descarta no reload', async ({
   page,
 }) => {

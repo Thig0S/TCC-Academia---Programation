@@ -47,6 +47,16 @@
               [attr.aria-label]="'Visualizar venda de ' + venda.cliente.nome + ', ID ' + venda.id"
               >Visualizar</a
             >
+            <a
+              class="ms-2"
+              [routerLink]="['/vendas', venda.id, 'editar']"
+              [state]="{ origemEdicao: origem() }"
+              [attr.data-foco-formulario]="'editar-' + venda.id"
+              [attr.aria-label]="
+                'Editar dados do cliente da venda de ' + venda.cliente.nome + ', ID ' + venda.id
+              "
+              >Editar</a
+            >
           </td>
         </tr>
       } @empty {
