@@ -1,6 +1,7 @@
 import { formaAceita } from '../parcelas/pagamento.modelos';
 import { gerarVencimentos, compararDatasCivis } from './data-civil';
 import { subtrairCentavos, validarCentavos } from './dinheiro';
+import { prepararCliente } from './identificacao.validacoes';
 import { ComandoCadastro, Resultado, Venda } from './venda.modelos';
 
 /** Prepara sem publicar. O identificador é reservado pelo chamador, não consumido aqui. */
@@ -10,19 +11,8 @@ export function prepararCadastro(
   id: string,
 ): Resultado<Venda> {
   try {
-    const cliente = {
-      nome: comando.cliente.nome.trim(),
-      cpf: comando.cliente.cpf.trim(),
-      telefone: comando.cliente.telefone.trim(),
-      descricao: comando.cliente.descricao?.trim() || null,
-    };
-    if (!cliente.nome || !cliente.cpf || !cliente.telefone) {
-      return {
-        tipo: 'validacao',
-        codigo: 'identificacao-obrigatoria',
-        mensagem: 'Informe nome, CPF e telefone do cliente.',
-      };
-    }
+    const cliente = prepararCliente(comando.cliente);
+    if (cliente.tipo !== 'sucesso') return cliente;
     const total = validarCentavos(comando.valorTotalCentavos);
     if (total === 0) throw new RangeError('O total da venda deve ser positivo.');
     if (compararDatasCivis(comando.dataVenda, referencia) > 0) {
@@ -59,7 +49,7 @@ export function prepararCadastro(
       mensagem: 'Venda demonstrativa preparada.',
       valor: {
         id,
-        cliente,
+        cliente: cliente.valor,
         dataVenda: comando.dataVenda,
         valorTotalCentavos: total,
         entrada,

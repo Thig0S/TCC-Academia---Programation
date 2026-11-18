@@ -6,7 +6,7 @@ import { prepararCadastro } from './venda.validacoes';
 const referencia = '2027-01-31';
 function comando(): ComandoCadastro {
   return {
-    cliente: { nome: 'Cliente DEMO', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+    cliente: { nome: 'Cliente DEMO', cpf: '90000000175', telefone: '00900000001' },
     dataVenda: referencia,
     valorTotalCentavos: 10000,
     quantidadeParcelas: 3,
@@ -21,7 +21,7 @@ function venda(dados: ComandoCadastro = comando(), id = 'v1'): Venda {
 }
 
 describe('Preparação pura de cadastro', () => {
-  it('aceita identificação presente sem checksum, cliente mestre ou descrição obrigatória', () => {
+  it('aceita identificação válida repetida sem cliente mestre ou descrição obrigatória', () => {
     const dados = comando();
     const primeira = venda(dados);
     const segunda = venda({ ...dados, cliente: { ...dados.cliente, descricao: '  ' } }, 'v2');
@@ -40,6 +40,18 @@ describe('Preparação pura de cadastro', () => {
     expect(
       prepararCadastro({ ...dados, cliente: { ...dados.cliente, [campo]: ' ' } }, referencia, 'v1'),
     ).toMatchObject({ tipo: 'validacao', codigo: 'identificacao-obrigatoria' });
+  });
+
+  it.each([
+    { cpf: 'CPF-DEMO' },
+    { cpf: '90000000176' },
+    { telefone: 'TEL-DEMO' },
+    { telefone: '+55 (00) 90000-0001' },
+  ])('revalida identificação no cadastro: %j', (alteracao) => {
+    const dados = { ...comando(), cliente: { ...comando().cliente, ...alteracao } };
+    const antes = structuredClone(dados);
+    expect(prepararCadastro(dados, referencia, 'v1').tipo).toBe('validacao');
+    expect(dados).toEqual(antes);
   });
 
   it('distribui o resto nas primeiras parcelas e preserva o dia-base', () => {

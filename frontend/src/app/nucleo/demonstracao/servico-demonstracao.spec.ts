@@ -8,7 +8,7 @@ import { ServicoDemonstracao } from './servico-demonstracao';
 const referencia = '2027-01-31';
 function cadastro(): ComandoCadastro {
   return {
-    cliente: { nome: 'Cliente DEMO teste', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+    cliente: { nome: 'Cliente DEMO teste', cpf: '90000000175', telefone: '00900000001' },
     dataVenda: '2027-01-01',
     valorTotalCentavos: 100000,
     quantidadeParcelas: 4,

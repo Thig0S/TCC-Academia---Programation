@@ -13,7 +13,7 @@ import { prepararCadastro } from './venda.validacoes';
 function venda(id = 'v1', dataVenda = '2027-01-01', entrada = true): Venda {
   const resultado = prepararCadastro(
     {
-      cliente: { nome: 'DEMO', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+      cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '00900000001' },
       dataVenda,
       valorTotalCentavos: 100000,
       quantidadeParcelas: 4,
@@ -111,7 +111,7 @@ describe('Projeções financeiras puras', () => {
   it('reconcilia atraso no dia seguinte ao vencimento e mantém parcela paga fora do atraso', () => {
     const preparada = prepararCadastro(
       {
-        cliente: { nome: 'Cliente DEMO limite', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+        cliente: { nome: 'Cliente DEMO limite', cpf: '90000000175', telefone: '00900000001' },
         dataVenda: '2027-10-10',
         valorTotalCentavos: 100000,
         quantidadeParcelas: 4,

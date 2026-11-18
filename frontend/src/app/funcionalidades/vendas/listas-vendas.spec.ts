@@ -51,8 +51,8 @@ describe('Listas de vendas', () => {
       const resultado = servico.cadastrarVenda({
         cliente: {
           nome: `Cliente de paginação ${indice}`,
-          cpf: `CPF-DEMO-PAG-${indice}`,
-          telefone: `TEL-DEMO-PAG-${indice}`,
+          cpf: '90000000175',
+          telefone: '00900000001',
         },
         dataVenda: servico.referencia,
         valorTotalCentavos: 60000,
@@ -192,7 +192,7 @@ describe('Listas de vendas', () => {
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(1);
     expect(pagina.querySelector('tbody')?.textContent).toContain('Cliente DEMO Aurora 1');
 
-    campo.value = 'CPF-DEMO-2';
+    campo.value = servico.abertas().find((v) => v.id === 'seed/venda/2')!.cliente.cpf;
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(pagina.querySelector('tbody')?.textContent).toContain('Cliente DEMO Aurora 2');
@@ -326,7 +326,7 @@ describe('Listas de vendas', () => {
       {
         cliente: {
           nome: 'Cliente de teste numérico',
-          cpf: '123.456.789-00',
+          cpf: '900.000.001-75',
           telefone: '(11) 91234-5678',
         },
         dataVenda: '2026-01-01',
@@ -338,7 +338,10 @@ describe('Listas de vendas', () => {
       'teste/venda/numerica',
     );
     if (preparado.tipo !== 'sucesso') throw new Error(preparado.mensagem);
-    const venda = calculos.projetarVenda(preparado.valor, '2026-01-01');
+    const venda = calculos.projetarVenda(
+      { ...preparado.valor, cliente: { ...preparado.valor.cliente, cpf: '900.000.001-75' } },
+      '2026-01-01',
+    );
     TestBed.overrideProvider(ServicoDemonstracao, {
       useValue: {
         referencia: '2026-01-01',
@@ -356,7 +359,7 @@ describe('Listas de vendas', () => {
     const harness = await RouterTestingHarness.create('/vendas');
     const pagina = harness.routeNativeElement!;
     const campo = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
-    campo.value = '456789';
+    campo.value = '00000175';
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(1);

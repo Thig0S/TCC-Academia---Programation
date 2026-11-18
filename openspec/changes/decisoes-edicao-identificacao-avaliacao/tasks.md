@@ -1,14 +1,14 @@
 # Tasks
 
-Planejamento aprovado para registro documental no PR #13, não autorização de apply.
-As tarefas abaixo são futuras e permanecem desmarcadas. Escopo: preparação interna
+Planejamento aprovado originalmente para registro documental no PR #13. Apply
+autorizado explicitamente no Harness em 18/11/2026. Escopo: preparação interna
 de edição/identificação/seed da FASE-006, não toda a UI ou avaliação do produto.
 As questões de avaliação em `design.md` não alteram esse recorte e continuam abertas.
 
 ## 1. Identificação e conjunto compatível
 
-- [ ] 1.1 Após novo pedido explícito de apply, conferir branch/diff e artefatos revisados; criar validadores puros compartilhados de CPF/telefone e integrá-los ao cadastro. Verificar com unitários CPF com/sem pontuação, verificadores, sequências repetidas, ausência/comprimento, telefone 10/11 com/sem formatação, rejeição de letras e +55, CPF repetido permitido e nenhuma consulta externa. Registrar comandos/resultados no README, sem inventar regras de DDD/prefixo ou alterar a busca parcial.
-- [ ] 1.2 Adequar seed e fixtures dependentes às novas validações, substituindo marcadores por números sintéticos compatíveis sem copiar dados reais ou garantir inexistência de titulares. Verificar 12 vendas, IDs/finanças preservados, determinismo, isolamento, datas extremas 0001–9999 e situações possíveis; ajustar asserções de busca e E2E afetadas, mantendo cobertura e cenários negativos explícitos. Documentar origem sintética e limitações no README, executar testes afetados/build/formatação e criar commit funcional coerente com 1.1, incluindo testes/docs/tarefas.
+- [x] 1.1 Após novo pedido explícito de apply, conferir branch/diff e artefatos revisados; criar validadores puros compartilhados de CPF/telefone e integrá-los ao cadastro. Verificar com unitários CPF com/sem pontuação, verificadores, sequências repetidas, ausência/comprimento, telefone 10/11 com/sem formatação, rejeição de letras e +55, CPF repetido permitido e nenhuma consulta externa. Registrar comandos/resultados no README, sem inventar regras de DDD/prefixo ou alterar a busca parcial.
+- [x] 1.2 Adequar seed e fixtures dependentes às novas validações, substituindo marcadores por números sintéticos compatíveis sem copiar dados reais ou garantir inexistência de titulares. Verificar 12 vendas, IDs/finanças preservados, determinismo, isolamento, datas extremas 0001–9999 e situações possíveis; ajustar asserções de busca e E2E afetadas, mantendo cobertura e cenários negativos explícitos. Documentar origem sintética e limitações no README, executar testes afetados/build/formatação e criar commit funcional coerente com 1.1, incluindo testes/docs/tarefas.
 
 ## 2. Edição interna exclusiva de cliente
 

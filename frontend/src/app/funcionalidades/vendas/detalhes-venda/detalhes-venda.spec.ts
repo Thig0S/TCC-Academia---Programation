@@ -65,8 +65,8 @@ describe('DetalhesVenda', () => {
       const resultado = servico.cadastrarVenda({
         cliente: {
           nome,
-          cpf: `CPF-DEMO-${quantidadeParcelas}-${nome.length}`,
-          telefone: `TEL-DEMO-${quantidadeParcelas}-${nome.length}`,
+          cpf: '90000000175',
+          telefone: '00900000001',
           descricao: descricao ?? null,
         },
         dataVenda: servico.referencia,
@@ -104,8 +104,8 @@ describe('DetalhesVenda', () => {
     const cadastrada = servico.cadastrarVenda({
       cliente: {
         nome: 'Cliente de sessão',
-        cpf: 'CPF-DEMO-SESSAO',
-        telefone: 'TEL-DEMO-SESSAO',
+        cpf: '90000000175',
+        telefone: '00900000001',
       },
       dataVenda: servico.referencia,
       valorTotalCentavos: 10000,
@@ -118,7 +118,7 @@ describe('DetalhesVenda', () => {
 
     const harness = await RouterTestingHarness.create(urlPara(cadastrada.valor.id));
     expect(harness.routeNativeElement?.textContent).toContain('Cliente de sessão');
-    expect(harness.routeNativeElement?.textContent).toContain('CPF-DEMO-SESSAO');
+    expect(harness.routeNativeElement?.textContent).toContain('90000000175');
   });
 
   it('separa a entrada, explicita sua ausência e mantém todas as parcelas pagas em Quitadas', async () => {
@@ -151,8 +151,8 @@ describe('DetalhesVenda', () => {
       {
         cliente: {
           nome: 'Cliente sem descrição',
-          cpf: 'CPF-DEMO-TESTE',
-          telefone: 'TEL-DEMO-TESTE',
+          cpf: '90000000175',
+          telefone: '00900000001',
         },
         dataVenda: '2026-01-01',
         valorTotalCentavos: 10000,

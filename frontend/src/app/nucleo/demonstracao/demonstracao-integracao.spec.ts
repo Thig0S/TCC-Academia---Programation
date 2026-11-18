@@ -10,7 +10,7 @@ import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
 import { ServicoDemonstracao } from './servico-demonstracao';
 
 const cadastro: ComandoCadastro = {
-  cliente: { nome: 'Cliente DEMO integração', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+  cliente: { nome: 'Cliente DEMO integração', cpf: '90000000175', telefone: '00900000001' },
   dataVenda: '2027-01-31',
   valorTotalCentavos: 60000,
   quantidadeParcelas: 3,

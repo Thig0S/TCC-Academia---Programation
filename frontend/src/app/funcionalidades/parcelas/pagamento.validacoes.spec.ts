@@ -10,7 +10,7 @@ const referencia = '2027-01-31';
 function venda(id = 'v1'): Venda {
   const r = prepararCadastro(
     {
-      cliente: { nome: 'DEMO', cpf: 'CPF-DEMO', telefone: 'TEL-DEMO' },
+      cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '00900000001' },
       valorTotalCentavos: 100000,
       quantidadeParcelas: 4,
       dataVenda: '2027-01-01',
