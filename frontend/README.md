@@ -1,5 +1,32 @@
 # Base técnica — Vendas em Aberto
 
+## Apply FASE-006 — dependência de formulários — 18/11/2026
+
+Apply autorizado na `feature/fase-006`, inicialmente limpa. Reutilizados PRD 1.8,
+TDD 1.12 e os oito arquivos de contexto da Change, revisados antes das alterações.
+Adicionado somente `@angular/forms@22.2.6` como dependência direta, alinhado aos
+peers core/common/platform-browser 22.2.6 e RxJS 7.8.2. O lock acrescenta a
+transitiva `@standard-schema/spec@1.1.0`; Zod 4.6.6 já existente passa também a
+dependência de produção, sem atualizar versões anteriores.
+
+Context7 consultado sobre validação/submissão. Os exports e declarações instalados
+confirmam `form`, `FormField`, `validate` e `submit` públicos desde 22.0, sem marca
+experimental nessas APIs. A presença de outras APIs experimentais no pacote não
+autoriza seu uso. A compilação dos formulários será comprovada nas tarefas seguintes.
+
+Verificações reais em Windows, Node 24.21.0/npm 11.19.0:
+
+- `npm.cmd install --save-exact @angular/forms@22.2.6`: saída 0.
+- `npm.cmd ci`: saída 0; 291 pacotes instalados e auditoria automática sem
+  vulnerabilidades reportadas. Mantidos os avisos de scripts não aprovados de quatro
+  pacotes; nenhum script aprovado nem `audit fix` executado.
+- `npm.cmd run build`: saída 0, 492,50 kB iniciais/94,95 kB estimados; aviso
+  preexistente Sass `@import`, sem mudança de budgets.
+- `npm.cmd run format:check`: saída 0.
+
+Esta etapa não entrega UI, testes de fluxos, avaliação ou aceite. PEN-013/014 e
+HIP-006 permanecem abertos. Sem sync/archive ou PR antecipado.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.
