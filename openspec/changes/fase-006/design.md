@@ -94,3 +94,28 @@ Não manter a asserção antiga de ausência global de Nova venda/Editar/Receber
 ## Open Questions
 
 Somente de avaliação posterior: versão Chrome/viewport CSS da execução, participantes/papéis/autoridade/consentimento e metas finais de PEN-013/014/HIP-006. Não bloqueiam o planejamento técnico desta UI nem estão resolvidas por ele; bloqueiam alegar avaliação/aceite completo. Nenhuma decisão de negócio bloqueante da FASE-006 foi presumida.
+
+## Implementation Evidence
+
+Apply autorizado em 18/11/2026, na feature original. Patch instalado confirma
+`form`, `FormField`, `validate` e `submit` públicos desde 22.0; somente forms como
+dependência direta nova, sem atualizar patches anteriores. Identificação recebe
+`Pick<FieldTree<RascunhoCliente>, keyof RascunhoCliente>`, não a raiz do cadastro:
+preserva referências dos quatro campos sem exigir compatibilidade do iterador
+com campos financeiros/booleanos. Correção do TS2322 revisada no Harness.
+
+Confirmar usa submit oficial e `onInvalid` para foco; mensagens de negócio são
+distintas da resolução da Promise e rascunhos permanecem após erro/exceção. Anúncio
+de sucesso fica em serviço transitório em memória, sem estado do histórico Router.
+Modal efetivamente usado pelo recebimento mantém showModal e ciclagem explícita
+nos limites de Tab/Shift+Tab após evidência browser de foco em BODY. Foco retorna
+ao acionador ou título de Parcelas após quitação, e desmonte descarta sem confirmar.
+IDs capturados na abertura não avançam para outras pendências após alteração da fonte.
+
+Referência de verificações: README, subseções incrementais e regressão integrada;
+340 testes em 25 arquivos, 52 E2E, 8 E2E da fixture. Geometria/capturas e contrastes
+nos dois temas em 1366×768/390×844; zoom nativo 200% é relato manual do solicitante,
+sem navegador/versão ou dimensões da janela informados. Limitações e falhas
+intermediárias mantidas no registro; Sass e budget inicial de 510,89 kB com aviso
+de 500 kB, sem mudar budgets. Não comprova avaliação/aceite da ótica. Sync/archive
+não executados; revisão/merge não presumidos.
