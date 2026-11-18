@@ -83,7 +83,7 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
     await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
-    const busca = page.getByRole('searchbox');
+    const busca = page.locator('#busca-vendas-quitadas');
     await busca.fill('Cliente Fixture Detalhe Dez');
     await expect(page.getByRole('status').first()).toContainText('1 venda encontrada');
     await page
@@ -146,7 +146,7 @@ test('mantém parcelas excedentes em região rolável interna e operável por te
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
     await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
-    await page.getByRole('searchbox').fill('Cliente Fixture Detalhe Onze');
+    await page.locator('#busca-vendas-quitadas').fill('Cliente Fixture Detalhe Onze');
     await expect(page.getByRole('status').first()).toContainText('1 venda encontrada');
     await page
       .getByRole('table', { name: 'Vendas quitadas' })
