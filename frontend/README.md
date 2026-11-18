@@ -241,6 +241,49 @@ viewports. Mantidos 340 unitários/componentes, build e formatação aprovados c
 execuções imediatamente anteriores; a única alteração posterior foi sincronização
 de teste E2E. Tarefas visuais/zoom e regressão final continuam pendentes; sem PR.
 
+### Verificação das consultas — regressão visual detectada
+
+`npm.cmd run test:e2e:paginacao-fixture` executado após o commit de recebimento:
+saída 1, 7/8 aprovados. Cenário desktop de dez vendas falhou com rodapé em
+849,52 px para viewport de 768 px. Captura revista: Editar aumentou a largura
+necessária das ações, estreitando Cliente e quebrando nomes de registros sintéticos
+em duas linhas. Regressão real de densidade, não tratada como aceite. Proposta de
+correção: evitar quebra dos nomes/ações da tabela compacta, preservando fonte e
+conteúdo; eventual excesso horizontal fica na região rolável já existente. Ainda
+não aplicada; apply pausado para orientação conforme fluxo.
+
+Os outros sete cenários passaram, incluindo teclado/paginação, dez parcelas e
+excedentes nos dois temas/viewports. Detalhe com dez parcelas no desktop mantém
+última parcela em 732,86 px, tabela em 764,75 px e documento de 768 px. No mobile,
+documento da lista de 2357 px e largura 390 px sem overflow horizontal global;
+detalhe com dez parcelas de 1733 px/390 px. Fixture é isolada, sem mudar seed ou
+introduzir hooks de produção. Tarefas 5.1/5.2 e regressão final continuam abertas;
+progresso 11/15, sem PR antecipado.
+
+### Compatibilidade das consultas e densidade corrigida — tarefa 5.1
+
+Após autorização, tabela compacta mantém nomes, cabeçalhos e ações sem quebra,
+com excesso horizontal restrito à região acessível existente, sem reduzir fonte,
+esconder colunas/dados ou mudar paginação. A primeira iteração só nos nomes/ações
+trouxe rodapé à tela, mas documento de 770 px; incluir cabeçalhos restaurou 768 px.
+Reexecução completa de `npm.cmd run test:e2e:paginacao-fixture`: saída 0, 8/8.
+Nos dois temas desktop: dez linhas até 629,77 px, rodapé 730,27 px, documento 768 px,
+controles alinhados (diferença 0); no mobile, documento 1591 px e largura 390 px,
+sem overflow horizontal global. Dez parcelas continuam no desktop até 732,86 px,
+região 764,75 px, documento 768 px. Capturas automáticas locais revistas na etapa
+visual, não confundidas com zoom nativo.
+
+Asserções históricas evoluídas nos commits funcionais somente para ações entregues:
+Editar tem destino/ID correto; Receber existe em abertas e não em quitadas;
+consulta ainda não publica. Exportação, indicadores globais nas listas e ações
+comerciais de Visão Geral/Relatórios continuam ausentes. Regressões executadas
+até aqui: 340 unitários/componentes e 50 E2E da aplicação aprovados, com nome/
+CPF/telefone parciais, datas, filtros, IDs opacos e paginação; teste de redução da
+coleção após quitação e ajuste de última página permanece aprovado na suíte.
+Seed de 12 vendas, alvo isolado da fixture e ausência de hooks globais preservados.
+Regressão final após todos os ajustes ainda será executada; zoom nativo e medição
+completa dos formulários continuam pendentes na tarefa 5.2, sem PR antecipado.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.
