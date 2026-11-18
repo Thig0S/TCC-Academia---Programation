@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.8 — decisões de edição, identificação e ambiente de avaliação, em 17/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.9 — consolidação documental e arquivamento da FASE-006, em 18/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -30,6 +30,19 @@ bundle inicial de 510,89 kB (aviso de 500 kB) mantidos com limites inalterados.
 Os requisitos/IDs desta revisão não mudaram; declarações anteriores de UI futura
 são históricas. Implementação na feature não presume aprovação, merge ou aceite
 da ótica. PEN-013/014/HIP-006 e FASE-007/avaliação global continuam pendentes.
+
+**Consolidação documental e arquivamento da FASE-006 — 18/11/2026:** após a
+implementação e a regressão aprovadas, as cinco deltas da Change foram sincronizadas
+nas specs principais: `consulta-vendas`, `estado-demonstrativo`, `navegacao-aplicacao`
+e `recebimentos-parcelas` foram ampliadas/ajustadas e a nova capability
+`formularios-vendas` registra cadastro e edição. A Change foi arquivada em
+`openspec/changes/archive/2026-11-18-fase-006/`, com 15/15 tarefas e artefatos
+completos. PRD 1.9 e TDD 1.13 apenas conciliam estado e rastreabilidade, sem alterar
+requisitos, IDs, metas ou pendências. Nenhum teste de aplicação foi reexecutado nesta
+consolidação; as evidências permanecem as de `frontend/README.md` (340 testes, 52 E2E,
+8 E2E da fixture, build e formatação) e o relato manual de zoom nativo. A FASE-006 está
+implementada na feature e aguarda revisão, PR único e merge; não há aceite da ótica
+nem conclusão da FASE-007/FASE-008. PEN-013/014/HIP-006 permanecem abertas.
 
 **Acompanhamento de implementação — 18/11/2026:** após pedido explícito de apply,
 o recorte interno de RN-021/022/023 foi implementado na feature branch
@@ -738,9 +751,9 @@ tentativas, participantes e contexto junto dos percentuais.
 | PEN-005 | Combinação, data e normalização da busca | Consulta nas duas coleções | RN-018/019 e CA-004/019/026, confirmados no Harness | Resolvida e implementada na FASE-005, PR #9; refinamentos no PR #10, sem aceite da ótica |
 | PEN-006 | Divergência histórica claro versus dois temas | Direção visual e alternância | Claro/escuro, escuro inicial e memória; specs e evidências da FASE-003 | Resolvida com evidências técnicas anteriores, não aceite da ótica |
 | PEN-007 | Situações gerais de vendas | Projeções | RN-014; Quitada, Atrasada, Próximos dias, Em aberto por prioridade | Resolvida para o MVP em 14/11/2026; não implementada |
-| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida por FON-011; núcleo implementado e testado na feature em 18/11/2026; UI futura na FASE-006 |
+| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida por FON-011; núcleo e UI entregues na feature em 18/11/2026, aguardando revisão/merge; sem aceite da ótica |
 | PEN-009 | Referência, períodos, universo dos resumos e efeito de filtros | Indicadores | RN-015 e CA-025; dia da abertura fixo, mês civil, cartões globais e cadastradas incluindo quitadas | Resolvida para o núcleo em 14/11/2026; controles de relatório na FASE-007 |
-| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; seed sintético compatível | Resolvida por FON-011; validações e seed implementados/testados na feature em 18/11/2026; sem unicidade; UI futura |
+| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; seed sintético compatível | Resolvida por FON-011; validações, seed e UI de cadastro/edição entregues na feature em 18/11/2026, aguardando revisão/merge; sem unicidade de CPF |
 | PEN-011 | Pagamento integral, ordem, lote, antecipação, datas e formas | Modelo de recebimento e saldo | RN-016 e CA-024; lote consecutivo desde primeira pendente, integral, antecipável, data/forma únicas | Resolvida para o MVP em 14/11/2026; não implementada |
 | PEN-012 | Conteúdos em Configurações e filtros em Quitadas | Telas secundárias | HIP-004 entregue na FASE-003; RN-019 confirma apenas busca única em Quitadas, sem filtros extras | Resolvida no recorte do MVP; Configurações entregue na FASE-003 e consulta de Quitadas nos PRs #9/#10; outros controles fora do escopo |
 | PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Compatibilidade e desempenho precisam de evidência | Máquina do solicitante, Windows/Chrome, 1920×1080, escala 125%, zoom 100%, seção 12; coletar versão Chrome e viewport CSS e executar roteiro | Parcialmente resolvida: ambiente definido, caracterização da execução e medições pendentes; sem mínimo universal homologado |
@@ -748,14 +761,15 @@ tentativas, participantes e contexto junto dos percentuais.
 
 **Decisões confirmadas e seus limites:** nome, quatro módulos, dados do cliente na venda, parcelas no detalhe e Quitadas interna vêm de FON-001; memória e arquitetura futura vêm de FON-002. FON-008 confirma RN-011 a RN-017 e HIP-005 para o MVP. A solicitação atual autoriza planejamento documental e OpenSpec, não apply, hipóteses remanescentes, aprovação da loja ou conclusão do desenvolvimento.
 
-PEN-008/010 estão resolvidas como decisões; o recorte interno foi implementado/testado
-na feature em 18/11/2026, mas a UI da FASE-006 e seu aceite não estão entregues.
-PEN-013 conserva a caracterização da execução/medições e PEN-014 conserva autoridade,
-metas e validação abertas. PEN-005/012 seguem resolvidas para a consulta entregue.
-Esta revisão 1.8 autoriza somente documentação e planejamento SDD, não inicia
-FASE-006/007 nem autoriza reaplicar a FASE-005 ou seus ajustes. Textos antigos de
-pendência de edição/identificação foram superados por FON-011; situações históricas
-do núcleo devem ser lidas com o estado vigente da seção 2.
+PEN-008/010 estão resolvidas como decisões; o núcleo e a UI da FASE-006 foram
+implementados e verificados na feature em 18/11/2026, aguardando revisão e merge,
+sem aceite da ótica. PEN-013 conserva a caracterização da execução/medições e
+PEN-014 conserva autoridade, metas e validação abertas. PEN-005/012 seguem
+resolvidas para a consulta entregue. Esta revisão 1.9 autoriza somente a consolidação
+documental, a sincronização de specs e o arquivamento da FASE-006; não autoriza
+merge, aceite nem início da FASE-007/008. Textos antigos de pendência de
+edição/identificação ou de UI futura foram superados por FON-011 e pelo apply;
+situações históricas do núcleo devem ser lidas com o estado vigente da seção 2.
 
 ## 15. Entregas e próximos passos
 
@@ -794,6 +808,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | 1.6 | 16/11/2026 | Indicadores exclusivos da Visão Geral; paginação obrigatória RN-020, faixa horizontal, detalhe compacto, fidelidade light/dark e links; CA-027/028/029; explicitar atraso no dia seguinte sem mudar a regra | Pedido documental e confirmações no Harness; sem implementação ou nova execução de testes |
 | 1.7 | 17/11/2026 | Conciliar estado da FASE-005 e ajustes com PRs #9/#10/#11, specs sincronizadas e evidências anteriores; atualizar PEN-005/012 sem alterar requisitos ou IDs | Solicitação de fechamento documental; sem código, novas regras, reexecução de testes da aplicação ou aceite da ótica |
 | 1.8 | 17/11/2026 | Resolver PEN-008/010 por RN-021/022/023 e CA-012/030; HIP-002 superada; definir ambiente com escala 125% e participação prevista; manter metas e aceite pendentes | Decisões e aprovação explícitas no Harness; somente PRD/TDD/README e planejamento OpenSpec no PR #13, sem implementação ou aceite da ótica |
+| 1.9 | 18/11/2026 | Conciliar a FASE-006 implementada, sincronizar as cinco deltas nas specs principais, criar a capability `formularios-vendas` e arquivar a Change; atualizar PEN-008/010 e os limites de autorização | Solicitação explícita de atualização documental e arquivamento no Harness; sem alteração de requisitos/IDs, nova execução de testes, merge ou aceite da ótica |
 
 **Refinamento da revisão 1.5 — 16/11/2026:** planejamento anterior da branch
 `feature/fase-005` reutilizado por autorização explícita. Confirmados busca única,

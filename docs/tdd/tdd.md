@@ -26,6 +26,18 @@ manual não informados. PEN-013/014/HIP-006, FASE-007 e avaliação global perma
 pendentes. Entrega na feature não presume merge ou aceite; sync/archive em etapa
 própria. Registros datados abaixo preservam o histórico, não ausência atual da UI.
 
+**Consolidação documental e arquivamento da FASE-006 — 18/11/2026:** após a
+implementação e a regressão aprovadas, as cinco deltas foram sincronizadas em
+`openspec/specs`: a capability `formularios-vendas` foi criada e `consulta-vendas`,
+`estado-demonstrativo`, `navegacao-aplicacao` e `recebimentos-parcelas` receberam as
+modificações previstas. A Change foi arquivada em
+`openspec/changes/archive/2026-11-18-fase-006/`, com 15/15 tarefas e artefatos
+completos. PRD 1.9 e TDD 1.13 conciliam estado e rastreabilidade sem alterar
+requisitos, decisões ou IDs. Nenhuma verificação de aplicação foi reexecutada nesta
+consolidação; validações documentais e `format:check` são registradas no README.
+A FASE-006 permanece na feature, aguardando revisão, PR único e merge; não há aceite
+da ótica nem conclusão da FASE-007/008.
+
 **Acompanhamento de implementação — 18/11/2026:** reutilizados PRD 1.8 e TDD
 1.12, sem novas regras/decisões. Apply autorizado no Harness, em
 `feature/edicao-identificacao-vendas`, após integração documental do PR #13.
@@ -139,11 +151,11 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 17/11/2026, revisão 1.12.
+- **Data e revisão:** 18/11/2026, revisão 1.13.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
-- **Situação:** núcleo financeiro e consultas da FASE-005 com refinamentos DEC-018
-  entregues; PRD 1.8 define edição e identificação, ainda não implementadas.
-  Avaliação, aceite e controles posteriores conservam suas pendências.
+- **Situação:** FASE-006 implementada e verificada na feature, com specs sincronizadas
+  e Change arquivada; revisão e merge pendentes. FASE-007/008, avaliação e aceite
+  conservam suas pendências.
 - **Origem:** solicitação de especificação técnica baseada no `AGENTS.md`, com Angular 22,
   standalone, zoneless e Signals, seguida de duas rodadas de perguntas.
 - **Autoridade:** escolhas técnicas e direção de temas confirmadas pelo solicitante nesta
@@ -818,8 +830,9 @@ a FASE-001 global permanece parcial enquanto depender de decisões das fases seg
 ### Roadmap de implementação — fases propostas, não autorização
 
 O roadmap detalha a sequência sem autorizar implementação. FASE-002/003/004/005 possuem
-evidências anteriores; FASE-001 permanece parcial e FASE-006 a FASE-008 aguardam entrega.
-PRD 1.7 concilia o estado das consultas sem mudar as regras. Não há nova execução de aplicação nesta revisão.
+evidências anteriores; FASE-006 está implementada e verificada na feature, aguardando
+revisão e merge; FASE-001 permanece parcial e FASE-007/008 seguem pendentes.
+PRD 1.9 concilia o estado sem mudar as regras. Não há nova execução de aplicação nesta revisão.
 Prazos, estimativas e responsáveis não foram definidos. As referências
 `PEN-xxx` abaixo pertencem à seção 16, que mantém a correspondência com as pendências do PRD.
 
@@ -830,11 +843,11 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-003 — Estrutura visual e navegação | Construir navegação dos quatro módulos, rotas e retornos, aviso demonstrativo, tokens, temas e componentes compartilhados efetivamente necessários. Conteúdos dependentes do domínio entram nas fases seguintes. | FASE-002; DEC-003/006/007; PEN-006 antes dos temas. | Navegação e caminho desconhecido verificados; aviso visível; teclado e foco funcionais; alternância, contraste e recarga dos temas verificados conforme a decisão conciliada. |
 | FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Specs consolidadas e Change arquivada via PR #8. |
 | FASE-005 — Consulta de vendas e parcelas | Consultas somente leitura, busca/filtro e detalhe; refinamento sem cartões, paginação de 10 nas duas coleções, barra horizontal, detalhe compacto e links fiéis às referências. | FASE-003/004; DEC-017/018; PRD 1.7/RN-018/019/020/CA-026 a CA-029, sem novos requisitos. | Implementada via PR #9 e refinada via PR #10; 20/20 tarefas da base e 9/9 dos ajustes. Evidências anteriores: 197 testes, 36 E2E reais, 8 E2E de fixtures; geometria/contraste e zoom manual registrados no README. Specs sincronizadas na main em `72ade92`; consolidação documental e arquivamento integrados pelo PR #12 (`c845ce9`), sem aceite da ótica. |
-| FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia, edição somente dos quatro campos do cliente, validação CPF/telefone e seed compatível; modal de lote sequencial e atualização das consultas. | FASE-005; DEC-004/005/007/010/015/019; PRD/RN-021/022/023 resolve PEN-008/010. Change de decisões implementa apenas regras internas/seed, não toda a UI da fase; desenho SDD da UI e apply próprio ainda necessários. Recebimento segue RN-016. | CA-007/012/016/017/030 no núcleo testados na feature em 18/11/2026; inválido/cancelamento/falha sem mutação financeira ou entre vendas. Lote visual, teclado/Escape/foco da UI ainda futuros. Preparação interna entregue, fase incompleta. |
+| FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia, edição somente dos quatro campos do cliente, validação CPF/telefone e seed compatível; modal de lote sequencial e atualização das consultas. | FASE-005; DEC-004/005/007/010/015/019; PRD/RN-021/022/023 resolve PEN-008/010. Recebimento segue RN-016. | Implementada e verificada na feature em 18/11/2026: 15/15 tarefas, 340 testes, 52 E2E, 8 E2E da fixture, build/formatação; zoom nativo de 200% por relato manual. Specs sincronizadas e Change arquivada em 18/11/2026; revisão, PR único e merge pendentes, sem aceite da ótica. |
 | FASE-007 — Visão Geral, relatórios e configurações | Concentrar os quatro indicadores globais exclusivamente na Visão Geral; integrar análises por período em Relatórios sem duplicar essa faixa; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018; PRD/RF-009/010/RN-015. Controles e filtros adicionais exigem recorte próprio. | Indicadores reconciliados e vazios coerentes; sem métricas fixas ou exportação real/falso sucesso. Não antecipada pelo refinamento da 005; Configurações explicativa possui evidências anteriores. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado/foco/contraste e preparar roteiro demonstrativo com limitações. | FASE-003 a FASE-007 no recorte aprovado; DEC-008/019; máquina de PEN-013 definida, versão Chrome/viewport útil a registrar; papéis/autoridade e metas de PEN-014/HIP-006 pendentes. | Resultados e limitações registrados no ambiente real; não equiparar resolução física a viewport CSS nem evidência Chromium a Chrome. Aceite somente por responsável ainda a definir após avaliação explícita, distinto da conclusão técnica. |
 
-Estado das fases, com acompanhamento do recorte interno em 18/11/2026:
+Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026:
 
 | Fase | Estado da implementação |
 | --- | --- |
@@ -843,7 +856,7 @@ Estado das fases, com acompanhamento do recorte interno em 18/11/2026:
 | FASE-003 | Implementada com evidências anteriores e Change arquivada; sem aceite da ótica |
 | FASE-004 | Implementada e integrada na main via PR #7; specs consolidadas e Change arquivada via PR #8 |
 | FASE-005 | Consultas e ajustes integrados na main pelos PRs #9/#10; base arquivada pelo PR #11; specs dos ajustes sincronizadas em `72ade92` e registro em archive integrado pelo PR #12 (`c845ce9`) |
-| FASE-006 | Parcial na feature em 18/11/2026: identificação, seed e edição interna implementados/testados na Change de decisões; cadastro/edição/recebimento visíveis ainda exigem SDD próprio e implementação |
+| FASE-006 | Implementada e verificada na feature em 18/11/2026 (15/15 tarefas; cadastro, edição e recebimento funcionais); specs principais sincronizadas em `openspec/specs` e Change arquivada em `openspec/changes/archive/2026-11-18-fase-006/`; revisão/merge pendentes |
 | FASE-007 | Conteúdo financeiro não implementado; Configurações explicativa entregue na FASE-003 |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
 
@@ -1569,6 +1582,7 @@ separadamente, após este registro técnico.
 | 1.10 — 16/11/2026 | PRD 1.6, refinamento visual, indicadores exclusivos da Visão Geral, paginação, links, detalhe compacto e roadmap/verificação | DEC-018 confirmada, ajustes não implementados | Pedido documental e confirmações no Harness; imagens locais inspecionadas, sem nova API, dependência, build ou teste de aplicação |
 | 1.11 — 17/11/2026 | PRD 1.7; conciliar estado, roadmap e DEC-018 com entrega dos PRs #9/#10, arquivamentos e specs sincronizadas na branch documental | Decisões e IDs preservados; sem nova arquitetura | Solicitação de fechamento documental; evidências anteriores do README e merge confirmado no GitHub, sem reexecução de aplicação |
 | 1.12 — 17/11/2026 | PRD 1.8, edição somente de cliente, validação CPF/telefone, seed compatível planejado e ambiente com escala Windows 125%; metas e autoridade ainda abertas | DEC-019; PEN-008/010 resolvidas documentalmente, PEN-013 parcial e PEN-014 aberta | Aprovação no Harness para documentos e Change de planejamento no PR #13; sem código, seed, novas APIs, avaliação ou aceite da ótica |
+| 1.13 — 18/11/2026 | FASE-006 implementada/verificada; cinco deltas sincronizadas nas specs principais, capability `formularios-vendas` criada e Change arquivada; roadmap e estado das fases atualizados | DEC-004/005/007/010/015/019 preservadas; sem requisitos, IDs ou regras novas | Solicitação explícita de consolidação documental no Harness; sem reexecução de aplicação, merge ou aceite da ótica |
 
 **Refinamento da revisão 1.9 — 16/11/2026:** reutilização explícita da feature
 existente; filtro de situação nas abertas conforme PRD/RN-019 e delta adicional de
