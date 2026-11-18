@@ -1,8 +1,8 @@
 # Tasks
 
-Planejamento somente. Nenhuma tarefa abaixo foi executada ou autorizada por este
-pedido de proposta. Revisar os quatro tipos de artefato antes de novo pedido de
-apply. PRD 1.8 e TDD 1.12 reutilizados; referências específicas em proposal/design.
+Registro original de planejamento, seguido de apply autorizado no Harness em
+18/11/2026 após revisão dos artefatos. Evidências incrementais e finais em
+`frontend/README.md`; PRD 1.8 e TDD 1.12 reutilizados, sem novas regras ou IDs.
 As questões de avaliação em design.md não mudam a UI planejada e permanecem abertas.
 
 ## 1. Dependência e fronteira dos formulários
@@ -31,12 +31,12 @@ As questões de avaliação em design.md não mudam a UI planejada e permanecem 
 ## 5. Compatibilidade das consultas e acessibilidade dos fluxos
 
 - [x] 5.1 Ajustar somente as asserções históricas de ausência de Nova venda/Editar/Receber nos testes de conteúdo, listas, detalhe, integração e E2E. Manter ausência de exportação, indicadores nas listas e ações comerciais de Visão Geral/Relatórios. Executar regressão de busca parcial/data, filtros, IDs opacos e paginação, incluindo limite/reset e redução da coleção após quitação em teste apropriado, sem mudar seed de 12 vendas ou expor hooks de produção (CA-018/019/021/027). Registrar resultados incrementais no README e incluir testes/docs no commit afetado.
-- [ ] 5.2 Verificar manualmente e com geometria/capturas os dois temas em 1366×768 e 390×844: consultas ainda compactas com dez linhas/dez parcelas no cenário padrão, novas ações alcançáveis, prévia/modal/textos extensos roláveis, erros e foco/contraste. Executar zoom nativo 200% real, sem substituí-lo por CSS zoom; registrar ambiente, método, resultados e qualquer bloqueio no README (CA-028; RNF-002/003/007/009). Corrigir somente regressões do escopo e commitar com seus testes/docs; evidência pendente impede declarar conclusão desse critério.
+- [x] 5.2 Verificar manualmente e com geometria/capturas os dois temas em 1366×768 e 390×844: consultas ainda compactas com dez linhas/dez parcelas no cenário padrão, novas ações alcançáveis, prévia/modal/textos extensos roláveis, erros e foco/contraste. Executar zoom nativo 200% real, sem substituí-lo por CSS zoom; registrar ambiente, método, resultados e qualquer bloqueio no README (CA-028; RNF-002/003/007/009). Corrigir somente regressões do escopo e commitar com seus testes/docs; evidência pendente impede declarar conclusão desse critério.
 
 ## 6. Regressão integrada e rastreabilidade da entrega
 
 - [x] 6.1 Executar em `frontend/` os scripts `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`, com servidores do runner e sem encerrar processos alheios. Registrar comandos, ambiente, contagens, avisos/falhas reais e ausência de console inesperado no README. Confirmar que nenhum fluxo usa storage, serviços de dados, exportação ou dados reais; regressão final complementa os testes incrementais, não os substitui.
-- [ ] 6.2 Conciliar acompanhamento de implementação no PRD/TDD/README e tarefas com os resultados reais; não alterar requisitos/IDs, nem marcar avaliação PEN-013/014/HIP-006 como concluída. Executar `openspec validate fase-006 --strict`, `openspec validate --all --strict` e `git diff --check`, revisar deltas contra specs vigentes e confirmar todo o escopo desta Change entregue antes de preparar PR. Registrar evidências e verificações não executadas e criar commit documental próprio quando independente das funcionalidades.
+- [x] 6.2 Conciliar acompanhamento de implementação no PRD/TDD/README e tarefas com os resultados reais; não alterar requisitos/IDs, nem marcar avaliação PEN-013/014/HIP-006 como concluída. Executar `openspec validate fase-006 --strict`, `openspec validate --all --strict` e `git diff --check`, revisar deltas contra specs vigentes e confirmar todo o escopo desta Change entregue antes de preparar PR. Registrar evidências e verificações não executadas e criar commit documental próprio quando independente das funcionalidades.
 
 ## Planning Evidence
 
@@ -53,7 +53,7 @@ As questões de avaliação em design.md não mudam a UI planejada e permanecem 
 
 ## Workflow follow-up
 
-- Revisar artefatos nesta branch/conversa; aguardar pedido explícito de apply.
+- Artefatos revisados nesta branch/conversa e apply posterior explicitamente autorizado.
 - No apply, manter commits individuais por funcionalidade com testes/docs/tarefas
   correspondentes, prefixo de tipo e descrição em português; não acumular entregas
   independentes em commit final nem incluir alterações alheias.
@@ -64,3 +64,18 @@ As questões de avaliação em design.md não mudam a UI planejada e permanecem 
   sem arquivar esta proposta pronta como se fosse entregue. Merge exige autorização
   explícita; conferir estado do PR e presença na main antes de alegar integração.
 - A FASE-007 e a avaliação global da FASE-008 permanecem mudanças posteriores.
+
+## Apply Evidence
+
+- Commits individuais de dependência, cadastro, edição, recebimento e correções de
+  densidade/acessibilidade na mesma feature; testes/docs acompanham as entregas.
+- Regressão aprovada em 18/11/2026: build/formatação, 340 testes em 25 arquivos,
+  52 E2E da aplicação e 8 E2E da fixture. Sem console/pageerror inesperado;
+  resultados e falhas intermediárias reais preservados no README.
+- Zoom nativo de 200% no roteiro dos fluxos novos/dos dois temas confirmado pelo
+  solicitante no Harness como sem problemas observados. Relato manual, não medição
+  independente; navegador/versão e janela não informados. PEN-013/014/HIP-006 abertas.
+- Fonte financeira, seed de 12 e limites de sessão preservados. Sem storage,
+  serviços externos de dados, exportação ou hooks globais de mutação.
+- Sass e budget inicial (510,89 kB contra aviso de 500 kB) registrados como avisos,
+  sem aumentar limites. Sem avaliação da ótica, sync/archive ou merge automático.

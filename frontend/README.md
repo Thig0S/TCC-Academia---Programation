@@ -367,6 +367,52 @@ não executado pelo agente nem relatado pelo solicitante para estes fluxos novos
 Logo, tarefa 5.2 continua aberta; regressão automatizada não encerra esse critério.
 Conciliação final e PR aguardam essa evidência; PEN-013/014/HIP-006 seguem abertos.
 
+### Zoom nativo — relato manual do solicitante, 18/11/2026
+
+Após iniciar servidor local próprio com `npm.cmd start` em 127.0.0.1:4200,
+fornecido roteiro pelo Harness para zoom nativo de 200% pelo menu do navegador:
+Vendas/Quitadas, cadastro e prévia de 24 parcelas, edição e modal de recebimento,
+nos temas escuro e claro; conferir textos, erros, foco, Tab/Shift+Tab, Escape,
+rolagem e acesso às ações. O solicitante respondeu **“Sem problemas observados”**
+à pergunta sobre o roteiro completo: fluxos legíveis e operáveis, sem cortes ou
+controles inacessíveis. Ambiente de trabalho Windows; navegador/versão e dimensões
+exatas da janela dessa execução não foram informados. O agente não operou nem
+mediu independentemente o zoom; evidência é relato manual, separado das capturas
+Chromium automatizadas em 1366×768/390×844. Não houve CSS zoom como substituto.
+
+Essa evidência complementa as medições e capturas descritas acima e encerra o
+recorte técnico da tarefa 5.2, não a avaliação/aceite da ótica. PEN-013/014 e
+HIP-006 permanecem abertas. Nenhum código alterado após a regressão aprovada de
+340 testes, 52 E2E e 8 E2E da fixture; somente conciliação documental posterior.
+
+### Conciliação final da Change — tarefa 6.2
+
+Revisados PRD 1.8/RF-004/005/006/007/008/011, RN-011–023 e critérios referidos na
+proposta, TDD 1.12/DEC-004/005/007/010/015/016/018/019 e deltas contra as specs
+principais. As cinco deltas acrescentam os fluxos comerciais e substituem somente
+as proibições históricas da UI somente leitura; as regras financeiras/sequenciais
+continuam as existentes. Nenhuma spec principal sincronizada ou Change arquivada.
+PRD/TDD e proposal/design/tasks conciliados com a implementação/evidências reais,
+mantendo IDs e pendências de avaliação. Todo o escopo das 15 tarefas verificado
+antes da preparação do PR único; aprovação/merge ainda não realizados.
+
+Validações posteriores à conciliação: `openspec validate fase-006 --strict`,
+`openspec validate --all --strict` (oito itens), `git diff --check` e
+`npm.cmd run format:check`, saídas 0. Avisos Git somente de conversão LF/CRLF nos
+documentos fora de frontend. Conferidos os commits separados por funcionalidade
+contra `origion/main`, sem alterações alheias ou atualização financeira/seed.
+
+Reexecução final na mesma data, antes do commit documental e do PR, sem alteração
+de código desde a regressão acima: `format:check` 0; `build` 0 (510,89 kB, mesmos
+avisos Sass/budget); `test -- --watch=false` 340/340 em 25 arquivos; `test:e2e`
+52/52 após liberar a porta 4200 ocupada por servidor `ng serve` alheio ao runner
+(encerrado a pedido do solicitante); `test:e2e:paginacao-fixture` 8/8. Servidores
+dos runners iniciados e encerrados próprios, sem matar processos de terceiros.
+Não executados: avaliação/aceite com a ótica, metas de desempenho de produto,
+tecnologia assistiva, outros navegadores/sistemas, auditoria de segurança ou
+homologação operacional. Versão/janela do navegador no relato de zoom não
+informadas; não inferidas a partir do Chromium automatizado.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.

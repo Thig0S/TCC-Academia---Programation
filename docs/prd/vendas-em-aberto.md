@@ -15,6 +15,22 @@
 
 ## 2. Contexto, problema e evidências
 
+**Acompanhamento da FASE-006 — 18/11/2026:** apply explicitamente autorizado na
+`feature/fase-006`, reutilizando PRD 1.8/TDD 1.12 e Change `fase-006`, sem novas
+regras de produto. Implementados cadastro com prévia/entrada, edição exclusiva
+dos quatro campos do cliente e recebimento sequencial em modal acessível, com
+confirmação, resultados, cancelamento, erros/retry e proteção contra envio duplicado.
+Consultas mantêm fonte única em memória, busca/paginação, densidade e temas;
+Visão Geral/Relatórios seguem indisponíveis. Evidências reais em
+`frontend/README.md`: 340 testes, 52 E2E da aplicação e 8 da fixture, build e
+formatação aprovados. Zoom nativo de 200% nos novos fluxos em ambos os temas:
+relato manual do solicitante no Harness, sem problemas observados; navegador/versão
+e janela não informados, sem medição independente do agente. Avisos de Sass e
+bundle inicial de 510,89 kB (aviso de 500 kB) mantidos com limites inalterados.
+Os requisitos/IDs desta revisão não mudaram; declarações anteriores de UI futura
+são históricas. Implementação na feature não presume aprovação, merge ou aceite
+da ótica. PEN-013/014/HIP-006 e FASE-007/avaliação global continuam pendentes.
+
 **Acompanhamento de implementação — 18/11/2026:** após pedido explícito de apply,
 o recorte interno de RN-021/022/023 foi implementado na feature branch
 `feature/edicao-identificacao-vendas`, sobre a `main` que integrou o PR documental

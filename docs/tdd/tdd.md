@@ -6,6 +6,26 @@
 
 ## 1. Identificação e situação
 
+**Acompanhamento da FASE-006 — 18/11/2026:** PRD 1.8 conciliado antes deste
+registro, sem alteração de requisitos/IDs; reutilizado TDD 1.12. Apply autorizado
+na `feature/fase-006` entrega rotas lazy `/vendas/nova` e `/vendas/:id/editar`,
+adaptadores puros, identificação compartilhada por referências dos quatro campos,
+Signal Forms públicos de `@angular/forms@22.2.6`, prévia sem publicação e comandos
+da fonte raiz. Modal usa `showModal`, ciclagem explícita de Tab/Shift+Tab nos limites,
+cancel/close e retorno pós-render com fallback após quitação. Seleção captura IDs
+do prefixo na abertura e não os desloca quando obsoleta. Sem Reactive Forms, CDK,
+plugins Bootstrap, nova store, persistência ou regra financeira nova.
+Rotas efetivas acima refinam os caminhos apenas propostos na seção 7, conforme
+desenho D1 da Change; não representam mudança de requisito de navegação.
+Regressão real no README: 340 unitários/componentes, 52 E2E, 8 E2E da fixture,
+build e formatação aprovados. Consultas mantêm dez linhas/dez parcelas no desktop;
+capturas/contrastes dos novos fluxos em ambos os temas/viewports e zoom nativo de
+200% por relato manual do solicitante, não medição independente. Limitações:
+Sass, bundle inicial de 510,89 kB (aviso de 500 kB), navegador/versão da verificação
+manual não informados. PEN-013/014/HIP-006, FASE-007 e avaliação global permanecem
+pendentes. Entrega na feature não presume merge ou aceite; sync/archive em etapa
+própria. Registros datados abaixo preservam o histórico, não ausência atual da UI.
+
 **Acompanhamento de implementação — 18/11/2026:** reutilizados PRD 1.8 e TDD
 1.12, sem novas regras/decisões. Apply autorizado no Harness, em
 `feature/edicao-identificacao-vendas`, após integração documental do PR #13.

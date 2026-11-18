@@ -34,3 +34,15 @@ As consultas já permitem conferir vendas, mas cadastrar, corrigir dados do clie
 - Dependência proposta: `@angular/forms` no mesmo patch 22.2.6 da base, com manifesto/lockfile alterados somente no apply e após verificar compatibilidade. Sem troca de framework, plugins Bootstrap, persistência ou serviço externo.
 - Fora do escopo: indicadores e Relatórios da FASE-007, infraestrutura operacional, edição financeira, exclusão, pagamentos parciais/excedentes, juros, descontos, estorno, exportação e aceite da ótica. PEN-013/014 e HIP-006 continuam abertos em seus recortes de avaliação.
 - Um único PR da Change somente após implementação autorizada e todas as verificações aplicáveis. Artefatos prontos não autorizam apply nem comprovam conclusão da fase.
+
+## Implementation Follow-up
+
+Em 18/11/2026, após revisão e pedido explícito de apply no Harness, implementado
+o escopo na mesma `feature/fase-006`, com commits por funcionalidade. PRD 1.8 e
+TDD 1.12 reutilizados e acompanhamento conciliado, sem novas regras/IDs. As
+restrições de planejamento acima são o registro da proposta original, não bloqueio
+do apply posterior autorizado. Evidências reais/falhas e correções em
+`frontend/README.md`: 340 testes, 52 E2E e 8 E2E da fixture, build/formatação;
+zoom nativo 200% por relato manual do solicitante, identificado como tal.
+Avisos Sass e budget inicial excedido preservados; nenhum aceite comercial,
+sync/archive ou merge presumido. Um único PR após fechamento documental integral.
