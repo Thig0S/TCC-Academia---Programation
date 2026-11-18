@@ -7,11 +7,17 @@ import {
   separarVendas,
   ProjecaoVenda,
 } from '../../funcionalidades/vendas/venda.calculos';
-import { ComandoCadastro, Resultado, Venda } from '../../funcionalidades/vendas/venda.modelos';
+import {
+  ComandoCadastro,
+  ComandoEdicaoCliente,
+  Resultado,
+  Venda,
+} from '../../funcionalidades/vendas/venda.modelos';
 import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes';
 import { criarDadosDemonstrativos } from './dados-demonstrativos';
 import { EstadoDemonstracao } from './demonstracao.modelos';
 import { PreparadorRecebimento } from './preparador-recebimento';
+import { PreparadorEdicaoCliente } from './preparador-edicao-cliente';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
 
 function congelar<T>(valor: T): T {
@@ -29,6 +35,7 @@ function copiarCongelado<T>(valor: T): T {
 @Injectable({ providedIn: 'root' })
 export class ServicoDemonstracao {
   private readonly preparador = inject(PreparadorRecebimento);
+  private readonly preparadorEdicao = inject(PreparadorEdicaoCliente);
   readonly referencia = inject(REFERENCIA_DEMONSTRACAO);
   private readonly estado = signal<EstadoDemonstracao>(
     copiarCongelado({
@@ -80,6 +87,21 @@ export class ServicoDemonstracao {
         [...atual.vendas, resultado.valor],
         resultado.valor.id,
         'Venda demonstrativa cadastrada.',
+      );
+    } catch (erro) {
+      return this.tratarFalha(erro);
+    }
+  }
+
+  editarCliente(comando: ComandoEdicaoCliente): Resultado<Venda> {
+    try {
+      const atual = this.estado();
+      const resultado = this.preparadorEdicao.preparar(atual.vendas, structuredClone(comando));
+      if (resultado.tipo !== 'sucesso') return resultado;
+      return this.publicar(
+        atual.vendas.map((venda) => (venda.id === resultado.valor.id ? resultado.valor : venda)),
+        resultado.valor.id,
+        'Dados do cliente atualizados na venda demonstrativa.',
       );
     } catch (erro) {
       return this.tratarFalha(erro);

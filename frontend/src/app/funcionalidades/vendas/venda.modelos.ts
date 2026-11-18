@@ -35,6 +35,12 @@ export interface ComandoCadastro {
   } | null;
 }
 
+/** Correção por venda, sem campos financeiros ou temporais editáveis. */
+export interface ComandoEdicaoCliente {
+  readonly vendaId: string;
+  readonly cliente: ComandoCadastro['cliente'];
+}
+
 export type Resultado<T> =
   | { readonly tipo: 'sucesso'; readonly valor: T; readonly mensagem: string }
   | {
