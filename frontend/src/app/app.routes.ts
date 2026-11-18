@@ -37,6 +37,14 @@ export const routes: Routes = [
       import('./funcionalidades/configuracoes/configuracoes').then((m) => m.Configuracoes),
   },
   {
+    path: 'vendas/nova',
+    title: `Nova venda | ${produto}`,
+    loadComponent: () =>
+      import('./funcionalidades/vendas/cadastrar-venda/cadastrar-venda').then(
+        (m) => m.CadastrarVenda,
+      ),
+  },
+  {
     path: 'vendas/:id',
     title: `Detalhes da venda | ${produto}`,
     loadComponent: () =>

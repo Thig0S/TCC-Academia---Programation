@@ -1,6 +1,9 @@
 @if (consulta(); as resultado) {
   @if (resultado.tipo === 'sucesso') {
     <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
+    @if (sucesso) {
+      <p role="status">{{ sucesso }}</p>
+    }
     <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-2">
       <p class="text-body-secondary mb-0">
         Referência da demonstração: {{ formatarDataCivil(referencia) }}

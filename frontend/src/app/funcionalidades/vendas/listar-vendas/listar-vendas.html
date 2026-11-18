@@ -1,6 +1,7 @@
 <app-cabecalho titulo="Vendas" [compacto]="true" />
 <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-1">
   <a routerLink="/vendas/quitadas">Quitadas</a>
+  <a routerLink="/vendas/nova" data-foco-formulario="nova-venda">Nova venda</a>
   <p class="text-body-secondary mb-0">
     Referência da demonstração: {{ formatarDataCivil(referencia) }}
   </p>
