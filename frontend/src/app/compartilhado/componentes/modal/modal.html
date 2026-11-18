@@ -1,0 +1,10 @@
+<dialog
+  #dialog
+  aria-labelledby="titulo-modal"
+  (cancel)="cancelar($event)"
+  (close)="aoFechar()"
+  (keydown)="conterFoco($event)"
+>
+  <h2 id="titulo-modal" class="h4">{{ titulo() }}</h2>
+  <div class="conteudo-modal"><ng-content /></div>
+</dialog>

@@ -1,0 +1,87 @@
+<app-modal titulo="Receber parcelas" [restaurarFoco]="restaurarFoco()" (fechado)="fechar()">
+  <p>Recebimento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos.</p>
+  <form novalidate (submit)="confirmar($event)">
+    <label for="quantidade-recebimento" class="form-label"
+      >Quantidade de parcelas consecutivas</label
+    >
+    <select
+      id="quantidade-recebimento"
+      class="form-select mb-1"
+      data-foco-inicial
+      [formField]="campos.quantidade"
+      aria-describedby="erro-quantidade-recebimento orientacao-sequencia"
+    >
+      @for (parcela of pendentes(); track parcela.id; let indice = $index) {
+        <option [value]="'' + (indice + 1)">{{ indice + 1 }}</option>
+      }
+    </select>
+    <app-erro-campo id="erro-quantidade-recebimento" [campo]="campos.quantidade" />
+    <p id="orientacao-sequencia" class="form-text">
+      Sempre desde a primeira pendente. É permitido antecipar sem desconto.
+    </p>
+    <section aria-label="Conferência das parcelas selecionadas" class="mb-3">
+      <ul
+        class="ps-3"
+        style="max-height: 10rem; overflow: auto"
+        tabindex="0"
+        aria-label="Parcelas selecionadas"
+      >
+        @for (parcela of selecionadas(); track parcela.id) {
+          <li>
+            Parcela {{ parcela.numero }}: {{ formatarDinheiro(parcela.valorCentavos) }}, vencimento
+            {{ formatarDataCivil(parcela.vencimento) }}
+          </li>
+        }
+      </ul>
+      <p class="fw-semibold">Soma exigida: {{ formatarDinheiro(soma()) }}</p>
+    </section>
+    <div class="mb-3">
+      <label for="valor-recebimento" class="form-label">Valor recebido (R$)</label>
+      <input
+        id="valor-recebimento"
+        class="form-control"
+        inputmode="decimal"
+        [formField]="campos.valor"
+        aria-describedby="erro-valor-recebimento"
+      />
+      <app-erro-campo id="erro-valor-recebimento" [campo]="campos.valor" />
+    </div>
+    <div class="mb-3">
+      <label for="data-recebimento" class="form-label">Data do recebimento</label>
+      <input
+        id="data-recebimento"
+        class="form-control"
+        type="date"
+        [formField]="campos.data"
+        aria-describedby="erro-data-recebimento"
+      />
+      <app-erro-campo id="erro-data-recebimento" [campo]="campos.data" />
+    </div>
+    <div class="mb-3">
+      <label for="forma-recebimento" class="form-label">Forma do recebimento</label>
+      <select
+        id="forma-recebimento"
+        class="form-select"
+        [formField]="campos.forma"
+        aria-describedby="erro-forma-recebimento"
+      >
+        <option value="">Selecione</option>
+        @for (forma of formas; track forma) {
+          <option [value]="forma">{{ forma }}</option>
+        }
+      </select>
+      <app-erro-campo id="erro-forma-recebimento" [campo]="campos.forma" />
+    </div>
+    <p role="alert">{{ mensagem() }}</p>
+    <div class="d-flex gap-3 flex-wrap">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="campos().submitting() || concluido()"
+      >
+        Confirmar recebimento demonstrativo
+      </button>
+      <button type="button" class="btn botao-consulta" (click)="cancelar()">Cancelar</button>
+    </div>
+  </form>
+</app-modal>
