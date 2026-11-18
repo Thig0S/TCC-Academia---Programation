@@ -23,16 +23,16 @@ A aplicação SHALL apresentar em Vendas somente vendas com saldo positivo e em 
 
 ### Requirement: Resumos globais independentes da pesquisa
 
-Vendas SHALL exibir Total em aberto, Valores em atraso, Recebido no mês e Vendas cadastradas, derivados de toda a fonte da sessão. Busca e filtro de situação SHALL não alterar esses valores. As listas e o detalhe SHALL identificar a referência civil fixa da sessão; valores monetários SHALL usar BRL e datas DD/MM/AAAA sem deslocamento de fuso.
+Vendas e Quitadas SHALL não exibir os quatro cartões globais, reservados à Visão Geral em fase própria. Consultar, buscar e paginar SHALL preservar os dados financeiros. Listas e detalhe SHALL identificar a referência civil fixa da sessão, valores em BRL e datas DD/MM/AAAA sem deslocamento de fuso.
 
 #### Scenario: Pesquisar sem modificar cartões
 - **WHEN** busca, situação ou sua combinação reduzir a lista de abertas a um registro ou a nenhum resultado
-- **THEN** os quatro cartões SHALL manter os totais globais anteriores
-- **AND** Vendas cadastradas SHALL incluir as quitadas e Recebido no mês SHALL usar o mês civil da referência e contar entrada/recebimentos uma vez
+- **THEN** Vendas e Quitadas SHALL não apresentar Total em aberto, Valores em atraso, Recebimentos do mês ou Vendas cadastradas como cartões globais
+- **AND** a consulta SHALL não alterar as projeções financeiras globais, cuja exibição na Visão Geral pertence à FASE-007, sem antecipá-la nesta fase
 
 #### Scenario: Consultar fonte vazia e referência estável
 - **WHEN** a fonte estiver vazia em cenário de avaliação ou a sessão atravessar meia-noite
-- **THEN** os cartões da fonte vazia SHALL mostrar zero, sem valores ilustrativos fixos
+- **THEN** a consulta vazia SHALL não inventar valores ou cartões para preencher o espaço
 - **AND** a referência SHALL permanecer a capturada na abertura, inclusive ao navegar, e não ser substituída pelo dia da consulta
 
 ### Requirement: Busca única de nome e identificação
@@ -58,7 +58,7 @@ Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação
 
 ### Requirement: Filtro de situação nas abertas
 
-Vendas SHALL oferecer um filtro de situação com Todas como padrão, Em aberto, Próximos dias e Atrasada. A seleção SHALL combinar-se com a busca por E, sem incluir quitadas, alterar a fonte ou afetar cartões globais. Limpar critérios SHALL restaurar termo vazio e Todas; critérios SHALL permanecer locais, sem obrigação de preservá-los ao sair.
+Vendas SHALL oferecer um filtro de situação com Todas como padrão, Em aberto, Próximos dias e Atrasada. A seleção SHALL combinar-se com a busca por E, sem incluir quitadas ou alterar a fonte. Limpar critérios SHALL restaurar termo vazio e Todas; critérios SHALL permanecer locais, sem obrigação de preservá-los ao sair.
 
 #### Scenario: Combinar situação e busca
 - **WHEN** a pessoa selecionar cada situação com e sem termo de busca
@@ -68,7 +68,7 @@ Vendas SHALL oferecer um filtro de situação com Todas como padrão, Em aberto,
 
 #### Scenario: Limpar todos os critérios
 - **WHEN** a pessoa acionar Limpar critérios depois de pesquisar e selecionar uma situação
-- **THEN** SHALL restaurar termo vazio e Todas, exibindo toda a coleção de abertas
+- **THEN** SHALL restaurar termo vazio e Todas, exibindo a primeira página da coleção de abertas
 - **AND** o foco SHALL ir ao campo de busca e a contagem de resultados SHALL ser atualizada sem reiniciar a sessão
 - **AND** Limpar pesquisa isoladamente SHALL preservar a situação selecionada
 
@@ -133,3 +133,63 @@ A consulta SHALL preservar aviso demonstrativo, dois temas, teclado, foco e priv
 - **AND** SHALL não consultar serviços externos ou expor mecanismos globais de teste para mutar o estado
 - **AND** a nova sessão SHALL restaurar referência/conjunto inicial conforme as regras do núcleo, sem prometer persistência
 - **AND** o recorte sem UI comercial da FASE-004 SHALL ser entendido como histórico; a FASE-005 acrescenta somente estas consultas, não as mutações da FASE-006
+
+### Requirement: Paginação local das coleções de vendas
+
+Abertas e Quitadas SHALL apresentar até 10 vendas por página após os critérios, preservando ordem e identidade. Abaixo da tabela SHALL haver faixa/total de resultados e, quando necessário, navegação numerada com anterior/próxima e página atual identificada. Paginar SHALL não alterar a fonte ou incluir registros da outra coleção.
+
+#### Scenario: Percorrer resultados sem duplicação
+- **WHEN** a coleção filtrada tiver 11 ou 21 vendas e a pessoa percorrer números e anterior/próxima
+- **THEN** SHALL encontrar todas exatamente uma vez entre as páginas, com no máximo 10 por página
+- **AND** faixa/total SHALL representar os resultados filtrados; anterior na primeira e próxima na última SHALL estar indisponíveis
+- **AND** a página atual SHALL ser indicada visual e programaticamente; reticências SHALL não funcionar como páginas
+
+#### Scenario: Redefinir página com critérios ou redução da coleção
+- **WHEN** a pessoa alterar termo/situação, limpar pesquisa/critérios ou a coleção diminuir durante a consulta
+- **THEN** mudanças e limpezas de critérios SHALL voltar à página 1, preservando a semântica de cada limpeza
+- **AND** redução da coleção sem mudança de critérios SHALL limitar a seleção à última página válida, sem tabela vazia causada por página inexistente
+- **AND** zero resultados SHALL mostrar o estado sem resultados/coleção vazia pertinente, sem páginas fictícias; uma única página SHALL dispensar controles de troca
+- **AND** Quitadas SHALL continuar sem filtro de situação; paginação SHALL ser operável por teclado com anúncio de faixa/total e foco preservado no controle acionado
+
+### Requirement: Listagem compacta no desktop
+
+Em 1366×768 e zoom 100%, nos dois temas, o cenário padrão SHALL mostrar critérios, 10 linhas de vendas e paginação sem rolagem vertical da página. Nas abertas, busca, situação, Limpar pesquisa e Limpar critérios SHALL ficar lado a lado em uma faixa. Não SHALL haver busca duplicada no cabeçalho.
+
+#### Scenario: Ver vendas na primeira tela
+- **WHEN** a pessoa abrir Vendas ou Quitadas no topo em 1366×768/100%, com 10 resultados e textos curtos do cenário padrão
+- **THEN** SHALL ver as 10 linhas, cabeçalhos, critérios pertinentes e rodapé de paginação dentro do viewport, sem rolar a página
+- **AND** nas abertas, os quatro controles SHALL ocupar a mesma faixa horizontal; Quitadas SHALL não ganhar filtro extra
+- **AND** aviso, referência, legibilidade e acesso às ações SHALL ser preservados, sem reduzir artificialmente fonte ou ocultar informações
+
+### Requirement: Detalhe compacto com histórico completo
+
+Em desktop 1366×768/100%, o detalhe padrão SHALL apresentar cliente e dados da venda em blocos condensados lado a lado e até 10 parcelas visíveis sem rolagem da página. Mais parcelas SHALL permanecer acessíveis por rolagem interna da tabela, sem paginação de parcelas ou perda do histórico.
+
+#### Scenario: Conferir dados e dez parcelas sem rolar a página
+- **WHEN** abrir venda com até 10 parcelas, com entrada e descrição curta, no desktop de referência em qualquer tema
+- **THEN** SHALL ver os dados exigidos da venda/cliente, entrada separada, cabeçalho e todas as suas até 10 parcelas sem rolagem vertical da página
+- **AND** disposição e densidade SHALL seguir `frontend/public/imgs/exemplos/exemploDadosDaVenda.png`, sem copiar dados pessoais ou ações indisponíveis
+
+#### Scenario: Acessar excedente e conteúdo adaptado
+- **WHEN** houver mais de 10 parcelas, texto extenso, viewport 390×844 ou zoom nativo 200%
+- **THEN** o excedente de parcelas SHALL ser alcançável em região interna identificada, com teclado e cabeçalho identificável, sem cortar histórico
+- **AND** textos extensos, telas menores e zoom SHALL admitir reorganização/rolagem sem ocultar campos, aviso, ações, texto ou foco para satisfazer artificialmente o cenário padrão
+
+### Requirement: Fidelidade visual e âncoras integradas
+
+As consultas e links afetados SHALL seguir as referências de `frontend/public/imgs/exemplos/` em densidade, superfícies, tipografia, bordas, cantos e cores nos dois temas. Âncoras de menu, cliente, Visualizar e retorno/breadcrumb SHALL integrar-se ao design, sem azul/sublinhado padrão permanente, preservando semântica, destinos e acessibilidade.
+
+#### Scenario: Comparar light e dark e percorrer links
+- **WHEN** comparar consultas nos dois temas às imagens de listagem/detalhe e `exemploDesignDark.png` e percorrer links por teclado
+- **THEN** SHALL encontrar fundo claro/tabelas brancas no claro, fundo quase preto/superfícies grafite/texto claro no escuro, identidade vermelha nos destaques e selos com texto
+- **AND** links SHALL ter hover/foco perceptíveis, sublinhado permitido nesses estados, contraste e indicação ativa corretos; texto na lateral SHALL contrastar com sua superfície
+- **AND** diferenças funcionais aprovadas SHALL ser preservadas: sem cartões em Vendas, busca global duplicada, controles de janela/notificação ou ações fictícias; dados pessoais das imagens SHALL não ser copiados
+
+### Requirement: Atraso no dia civil seguinte ao vencimento
+
+Parcela pendente SHALL ser classificada Atrasado a partir do primeiro dia civil após vencer, sem tolerância adicional ou contagem de 24 horas. Parcela liquidada SHALL continuar Paga. Situação da venda e valores em atraso SHALL usar a mesma regra da referência fixa da sessão.
+
+#### Scenario: Comparar vencimento e dia seguinte
+- **WHEN** consultar parcela pendente que vence em 10/11 com referência em 10/11 e, em outra sessão de avaliação, em 11/11
+- **THEN** SHALL ser Próximos dias no dia 10 e Atrasado no dia 11
+- **AND** se liquidada SHALL ser Paga em ambas as referências; a venda e os derivados SHALL manter a classificação consistente sem mudar as regras financeiras existentes
