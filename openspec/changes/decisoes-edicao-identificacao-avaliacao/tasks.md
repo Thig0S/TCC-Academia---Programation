@@ -17,7 +17,7 @@ As questões de avaliação em `design.md` não alteram esse recorte e continuam
 
 ## 3. Regressão integrada e rastreabilidade
 
-- [ ] 3.1 Executar scripts existentes em `frontend/`: `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`. Usar servidores do runner, sem hooks de produção ou processos alheios. Verificar regressão de busca parcial/data, separação abertas/quitadas, IDs, paginação, detalhe, temas e restrições de UI; registrar ambiente/comandos/contagens/avisos reais no README sem atribuir evidências antigas às novas regras.
+- [x] 3.1 Executar scripts existentes em `frontend/`: `npm.cmd run format:check`, `npm.cmd run build`, `npm.cmd test -- --watch=false`, `npm.cmd run test:e2e` e `npm.cmd run test:e2e:paginacao-fixture`. Usar servidores do runner, sem hooks de produção ou processos alheios. Verificar regressão de busca parcial/data, separação abertas/quitadas, IDs, paginação, detalhe, temas e restrições de UI; registrar ambiente/comandos/contagens/avisos reais no README sem atribuir evidências antigas às novas regras.
 - [ ] 3.2 Reconciliar PRD/TDD/deltas com os testes e resultados efetivos; executar na raiz `openspec validate decisoes-edicao-identificacao-avaliacao --strict` e `git diff --check`. Conferir que PEN-013/014 e HIP-006 não foram marcadas como avaliadas/aprovadas e que nenhuma UI de negócio, edição financeira ou avaliação foi antecipada. Atualizar tarefas somente com evidências e manter commits no escopo autorizado.
 
 ## Planning Evidence

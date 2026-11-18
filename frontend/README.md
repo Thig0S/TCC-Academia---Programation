@@ -331,6 +331,34 @@ inválido sem mutação/consumo de ID. Integração DOM verifica lista/detalhe/b
 reativos, quitadas, fonte mantida entre rotas, resumo invariável e uma atualização
 por edição aceita, nenhuma para comandos rejeitados.
 
+Regressão integrada final de 3.1 em 18/11/2026: Windows, Node 24.21.0, npm
+11.19.0, Chromium do Playwright 158.0.8127.18, viewports CSS técnicos 1366×768
+e 390×844. As execuções abaixo são desta implementação, não evidências herdadas:
+
+| Comando em `frontend/`                   | Resultado                                      |
+| ---------------------------------------- | ---------------------------------------------- |
+| `npm.cmd run format:check`               | Saída 0                                        |
+| `npm.cmd run build`                      | Saída 0; 492,50 kB iniciais/94,95 kB estimados |
+| `npm.cmd test -- --watch=false`          | Saída 0; 265/265, 21 arquivos                  |
+| `npm.cmd run test:e2e`                   | Saída 0; 36/36                                 |
+| `npm.cmd run test:e2e:paginacao-fixture` | Saída 0; 8/8 após correção de sincronização    |
+
+A primeira regressão final da fixture teve 7 aprovados/1 falha móvel. O trace
+confirmou `fill` no campo antigo `#busca-vendas` antes da rota Quitadas: corrida
+de navegação no teste, não falha de filtragem. Após autorização explícita no Harness,
+os dois preenchimentos após esse destino usam `#busca-vendas-quitadas`, sem sleeps,
+retries, mudança de aplicação ou relaxamento de asserções. Context7 Playwright
+consultado; suíte completa repetida com 8/8. Os runners administram seus próprios
+servidores. Capturas/geometrias são artefatos locais ignorados em `test-results/`.
+
+Regressão cobre nome/dígitos parciais/data, abertas/quitadas, IDs opacos, paginação,
+detalhe, temas, contraste, teclado/foco e UI sem ações de negócio fictícias.
+Avisos preexistentes: Sass `@import` e prebundling da fixture. Não executados:
+avaliação/aceite com a ótica, metas de desempenho/15 vendas, zoom nativo manual,
+outros navegadores/sistemas e auditoria de dependências. Não há UI de edição para
+avaliar modal/Escape/cancelamento visual. PEN-013/014 e HIP-006 continuam pendentes;
+versão do Chromium automatizado não equivale à coleta do Chrome da avaliação.
+
 #### Decisões de produto — PRD 1.8 / TDD 1.12 (registro histórico de planejamento)
 
 Após perguntas e aprovação explícita no Harness, foram definidos RN-021/022/023,
