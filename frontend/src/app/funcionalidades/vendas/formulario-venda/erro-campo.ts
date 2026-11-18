@@ -5,7 +5,7 @@ import { ReadonlyFieldTree } from '@angular/forms/signals';
   selector: 'app-erro-campo',
   template: `@if (campo()().touched()) {
     @for (erro of campo()().errors(); track $index) {
-      <p class="text-danger small mb-1">{{ erro.message }}</p>
+      <p class="text-danger-emphasis small mb-1">{{ erro.message }}</p>
     }
   }`,
   changeDetection: ChangeDetectionStrategy.OnPush,

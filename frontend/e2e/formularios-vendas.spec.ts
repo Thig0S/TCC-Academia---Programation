@@ -8,10 +8,17 @@ async function preencherCadastro(page: Page, nome: string) {
   await page.getByLabel('Quantidade de parcelas').fill('3');
 }
 
+const errosPorPagina = new WeakMap<Page, string[]>();
 test.beforeEach(async ({ page }) => {
-  page.on('pageerror', (erro) => {
-    throw erro;
+  const erros: string[] = [];
+  errosPorPagina.set(page, erros);
+  page.on('pageerror', (erro) => erros.push(erro.message));
+  page.on('console', (mensagem) => {
+    if (mensagem.type() === 'error') erros.push(mensagem.text());
   });
+});
+test.afterEach(async ({ page }) => {
+  expect(errosPorPagina.get(page), 'Console/pageerror inesperado nos fluxos').toEqual([]);
 });
 
 test('recebe parcela e lote antecipado, valida conferência e reconcilia quitação', async ({
@@ -100,9 +107,7 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
       .fill('Cliente DEMO E2E recebimento');
     await expect(page.locator('tbody tr')).toHaveCount(0);
     await page.getByRole('main').getByRole('link', { name: 'Quitadas', exact: true }).click();
-    await page
-      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
-      .fill('Cliente DEMO E2E recebimento');
+    await page.locator('#busca-vendas-quitadas').fill('Cliente DEMO E2E recebimento');
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await page
       .getByRole('link', { name: /Visualizar venda de Cliente DEMO E2E recebimento/ })

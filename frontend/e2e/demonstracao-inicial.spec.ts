@@ -375,6 +375,7 @@ test('confere contraste efetivo, foco e superfícies com movimento reduzido', as
 test('confere semântica e contraste de tabelas, situações e controles de consulta nos dois temas', async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   const medirContraste = async (seletor: string) =>
     page.locator(seletor).evaluateAll((elementos) => {
       const rgb = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
