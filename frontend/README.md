@@ -27,6 +27,108 @@ Verificações reais em Windows, Node 24.21.0/npm 11.19.0:
 Esta etapa não entrega UI, testes de fluxos, avaliação ou aceite. PEN-013/014 e
 HIP-006 permanecem abertos. Sem sync/archive ou PR antecipado.
 
+### Adaptadores de rascunhos — tarefa 1.2
+
+`formulario-venda/rascunhos.ts` mantém dinheiro/quantidades como texto, converte
+comandos independentes e associa erros de identificação, valor, quantidade, data
+e forma aos campos. Prévia chama `prepararCadastro` com `previa/local`, sem fonte,
+relógio ou reserva de ID. A edição copia somente os quatro campos. Recebimento
+copia IDs capturados e revalida o prefixo pelo domínio; seleção obsoleta fica no
+resumo, sem trocar pelas próximas pendências. A fonte continua autoridade final
+para validação do agregado, inclusive overflow global.
+
+Verificação incremental: `npm.cmd test -- --watch=false`, saída 0, 310/310 testes
+em 22 arquivos (45 casos novos). Cobertos vazios, identificação válida/inválida,
+CPF repetido, precisão/overflow, quantidades, datas cruzadas e limites do calendário,
+entrada, centavos e 31/01, seleção vazia/saltada/obsoleta e cópias sem mutação.
+Aviso Sass mantido. Os adaptadores não comprovam entrega dos formulários visuais.
+
+### Pausa no cadastro — tarefas 2.1/2.2 em andamento
+
+Criado esboço não concluído de cadastro lazy com Signal Forms, identificação,
+entrada condicional, prévia e submissão; integração inicial de Nova venda e retorno
+de foco. Não há evidência de conclusão dessas tarefas nem commit funcional.
+
+`npm.cmd run build` após esse esboço saiu 1: TS2322 na passagem da árvore completa
+`FieldTree<RascunhoCadastro>` para `FieldTree<RascunhoCliente>` em
+`cadastrar-venda.html`. O iterador da árvore completa inclui booleano, impedindo
+compatibilidade estrutural com a árvore somente de strings. Execução pausada
+conforme o fluxo de apply, aguardando orientação. Correção proposta: contrato
+explícito dos quatro campos filhos no componente de identificação, sem casts/any
+ou mudança de tecnologia. Os 310 testes aprovados acima antecedem este esboço;
+não comprovam o estado atual. Build atual falha; testes de componente/E2E e nova
+formatação do esboço ainda não executados. Nenhum PR, sync/archive ou merge.
+
+### Retomada autorizada — contrato da identificação
+
+Após revisão em explore e autorização explícita, o input da identificação passou
+a receber `Pick<FieldTree<RascunhoCliente>, keyof RascunhoCliente>`: referências
+dos quatro campos, sem exigir raiz/iterador do formulário completo, sem casts,
+`any`, segunda cópia do modelo ou mudança de tecnologia.
+
+`npm.cmd run build` passou (saída 0): 506,79 kB iniciais/98,71 kB estimados.
+Novo aviso de budget inicial excedido em 6,79 kB, além do Sass preexistente;
+budgets mantidos. Este resultado comprova a correção do TS2322, não a entrega.
+
+Continuada a implementação parcial com foco no primeiro erro por `onInvalid`,
+mensagem de negócio separada do resultado de submit, guarda de conclusão e anúncio
+transitório em serviço de memória, sem gravar mensagem no histórico do Router.
+Arquivos de código tocados formatados com Prettier; sem nova verificação global.
+
+`npm.cmd test -- --watch=false` saiu 1: 316/317 testes passaram, 22 arquivos
+aprovados e um com falha. Dos sete novos testes de cadastro, seis passaram
+(referência/prévia/invalidação sem publicação, erros/foco, envio único/sucesso,
+falha retornada e exceção com retry, cancelamento). Falhou a expectativa de quatro
+linhas após preencher entrada/forma. Inspeção do teste mostra helper disparando
+apenas `change` no select; `nativeControlCreate` do pacote instalado escuta `input`
+para controles nativos, inclusive select. Hipótese fundamentada de evento
+incompleto no teste, ainda não corrigida nem comprovada por reexecução/browser.
+
+Apply novamente pausado conforme instrução de parar em erros, aguardando orientação
+para ajustar os eventos do teste e repetir verificações, preservando a asserção
+de quatro parcelas e saldo de R$ 800,00. Tarefas 2.1/2.2/2.3 continuam abertas;
+alterações funcionais sem commit. Sem E2E, conclusão integral, PR ou aceite.
+
+### Cadastro verificado — tarefas 2.1 a 2.3
+
+Após autorização, o helper de teste passou a emitir `input` e `change` no select.
+Sem alteração de produção para esse erro, a suíte passou 317/317; adicionadas
+verificações de coleção vazia e abandono, passou 319/319 em 23 arquivos (saída 0).
+O teste de quatro parcelas/entrada mantém as asserções financeiras originais.
+
+Cadastro lazy em `/vendas/nova`, antes da rota dinâmica, usa um único rascunho
+Signal Forms e os adaptadores puros. Erros junto aos campos via `aria-describedby`,
+primeiro erro focado pelo callback oficial `onInvalid`; conversão revalidada na
+confirmação. Prévia é recalculada/invalida com os dados, sem publicar ou consumir
+IDs; entrada condicional e datas civis, descrição opcional. Identificação compartilha
+referências dos quatro campos, não uma cópia concorrente. Fonte segue autoridade
+final do agregado. Erros de negócio/exceções ficam em mensagem anunciável e liberam
+retry sem limpar os valores; resolver submit não é tratado como sucesso de negócio.
+
+Guarda de conclusão impede novo comando após sucesso até navegação. Anúncio do
+resultado é transitório em serviço em memória, consumido pelo detalhe, sem storage
+ou estado do histórico do Router. Cancelar volta a Vendas e restaura Nova venda
+por identidade lógica após renderização, com título como fallback. Outros links
+descartam o rascunho sem guardas de abandono. Botão Nova venda permanece funcional
+em coleção sem abertas. Nenhum indicador ou ação em Visão Geral/Relatórios.
+
+Verificações incrementais reais em 18/11/2026:
+
+- `npm.cmd test -- --watch=false`: 319/319, 23 arquivos, saída 0; inclui falha
+  retornada e exceção controladas, retry, envio concorrente, foco/erros, referência
+  fixa, calendário/limites/prévia e nenhuma publicação/consumo de ID antes de confirmar.
+- `npx.cmd playwright test formularios-vendas.spec.ts`: 6/6, saída 0.
+- `npm.cmd run test:e2e`: 42/42, saída 0, Chromium, 1366×768 e 390×844, servidor
+  próprio do runner em 4200. Novos cenários de UI conferem cadastro com/sem entrada
+  e descrição, Enter repetido/clique duplicado, exatamente uma venda por navegação
+  interna, descarte na recarga, prévia/erros/foco e cancelamento nos dois temas.
+- `npm.cmd run build`: saída 0, 506,89 kB iniciais/98,73 kB estimados; novo aviso
+  do budget de 500 kB excedido em 6,89 kB, sem aumentar budget. Aviso Sass mantido.
+- `npm.cmd run format:check`: saída 0.
+
+Edição, recebimento, verificação visual completa/zoom nativo e regressão final
+continuam pendentes. Sem avaliação de produto, aceite, sync/archive ou PR antecipado.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.

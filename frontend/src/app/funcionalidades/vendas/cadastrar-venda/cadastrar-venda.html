@@ -1,0 +1,137 @@
+<app-cabecalho titulo="Nova venda" />
+<p>
+  Referência da sessão: {{ formatarDataCivil(referencia) }}. Cadastro exclusivamente demonstrativo.
+</p>
+<a routerLink="/vendas">Voltar para Vendas</a>
+<form novalidate (submit)="confirmar($event)" class="mt-3">
+  <app-identificacao-cliente [campos]="campos" />
+  <fieldset class="card p-3 mb-3">
+    <legend class="h5">Dados da venda</legend>
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label for="data-venda" class="form-label">Data da venda</label>
+        <input
+          id="data-venda"
+          type="date"
+          class="form-control"
+          [formField]="campos.dataVenda"
+          aria-describedby="erro-data-venda"
+        />
+        <app-erro-campo id="erro-data-venda" [campo]="campos.dataVenda" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="valor-total" class="form-label">Valor total (R$)</label>
+        <input
+          id="valor-total"
+          inputmode="decimal"
+          class="form-control"
+          [formField]="campos.valorTotal"
+          aria-describedby="erro-total"
+        />
+        <app-erro-campo id="erro-total" [campo]="campos.valorTotal" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="quantidade-parcelas" class="form-label">Quantidade de parcelas</label>
+        <input
+          id="quantidade-parcelas"
+          inputmode="numeric"
+          class="form-control"
+          [formField]="campos.quantidadeParcelas"
+          aria-describedby="erro-quantidade"
+        />
+        <app-erro-campo id="erro-quantidade" [campo]="campos.quantidadeParcelas" />
+      </div>
+      <div class="col-12 form-check ms-2">
+        <input
+          id="tem-entrada"
+          type="checkbox"
+          class="form-check-input"
+          [formField]="campos.temEntrada"
+        />
+        <label for="tem-entrada" class="form-check-label">Há entrada</label>
+      </div>
+      @if (rascunho().temEntrada) {
+        <div class="col-12 col-md-6">
+          <label for="valor-entrada" class="form-label">Valor da entrada (R$)</label>
+          <input
+            id="valor-entrada"
+            inputmode="decimal"
+            class="form-control"
+            [formField]="campos.valorEntrada"
+            aria-describedby="erro-entrada"
+          />
+          <app-erro-campo id="erro-entrada" [campo]="campos.valorEntrada" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label for="forma-entrada" class="form-label">Forma da entrada</label>
+          <select
+            id="forma-entrada"
+            class="form-select"
+            [formField]="campos.formaEntrada"
+            aria-describedby="erro-forma-entrada"
+          >
+            <option value="">Selecione</option>
+            @for (forma of formas; track forma) {
+              <option [value]="forma">{{ forma }}</option>
+            }
+          </select>
+          <app-erro-campo id="erro-forma-entrada" [campo]="campos.formaEntrada" />
+        </div>
+        <p class="form-text">
+          A entrada será registrada na data da venda e não conta como parcela paga.
+        </p>
+      }
+    </div>
+  </fieldset>
+  <section class="card p-3 mb-3" aria-labelledby="titulo-previa">
+    <h2 id="titulo-previa" class="h5">Prévia das parcelas</h2>
+    @if (previa(); as venda) {
+      <p>
+        Entrada: {{ formatarDinheiro(venda.entrada?.valorCentavos ?? 0) }} · Saldo a parcelar:
+        {{
+          formatarDinheiro(
+            subtrairCentavos(venda.valorTotalCentavos, venda.entrada?.valorCentavos ?? 0)
+          )
+        }}
+      </p>
+      <div
+        class="table-responsive"
+        role="region"
+        aria-label="Prévia completa das parcelas"
+        tabindex="0"
+        style="max-height: 22rem; overflow: auto"
+      >
+        <table class="table table-sm">
+          <caption>
+            Parcelas previstas; nenhuma venda foi criada
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Parcela</th>
+              <th scope="col">Valor</th>
+              <th scope="col">Vencimento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (parcela of venda.parcelas; track parcela.id) {
+              <tr>
+                <th scope="row">{{ parcela.numero }}</th>
+                <td>{{ formatarDinheiro(parcela.valorCentavos) }}</td>
+                <td>{{ formatarDataCivil(parcela.vencimento) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p>Preencha e corrija os dados para conferir uma prévia válida. Nenhuma venda foi criada.</p>
+    }
+  </section>
+  <p role="alert">{{ mensagem() }}</p>
+  <div class="d-flex flex-wrap gap-3 mb-3">
+    <button type="submit" class="btn btn-primary" [disabled]="campos().submitting() || concluido()">
+      Confirmar cadastro demonstrativo
+    </button>
+    <button type="button" class="btn botao-consulta" (click)="cancelar()">Cancelar</button>
+  </div>
+</form>

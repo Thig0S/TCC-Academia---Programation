@@ -1,0 +1,47 @@
+<fieldset class="card p-3 mb-3">
+  <legend class="h5">Dados sintéticos do cliente</legend>
+  <p class="form-text">Use somente dados inventados. Não informe dados de pessoas reais.</p>
+  <div class="row g-3">
+    <div class="col-12">
+      <label for="nome-cliente" class="form-label">Nome</label>
+      <input
+        id="nome-cliente"
+        class="form-control"
+        [formField]="campos().nome"
+        aria-describedby="erro-nome"
+      />
+      <app-erro-campo id="erro-nome" [campo]="campos().nome" />
+    </div>
+    <div class="col-12 col-md-6">
+      <label for="cpf-cliente" class="form-label">CPF</label>
+      <input
+        id="cpf-cliente"
+        class="form-control"
+        inputmode="numeric"
+        [formField]="campos().cpf"
+        aria-describedby="erro-cpf"
+      />
+      <app-erro-campo id="erro-cpf" [campo]="campos().cpf" />
+    </div>
+    <div class="col-12 col-md-6">
+      <label for="telefone-cliente" class="form-label">Telefone com DDD</label>
+      <input
+        id="telefone-cliente"
+        class="form-control"
+        type="tel"
+        [formField]="campos().telefone"
+        aria-describedby="erro-telefone"
+      />
+      <app-erro-campo id="erro-telefone" [campo]="campos().telefone" />
+    </div>
+    <div class="col-12">
+      <label for="descricao-cliente" class="form-label">Descrição (opcional)</label>
+      <textarea
+        id="descricao-cliente"
+        class="form-control"
+        rows="3"
+        [formField]="campos().descricao"
+      ></textarea>
+    </div>
+  </div>
+</fieldset>

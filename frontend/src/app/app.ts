@@ -12,6 +12,7 @@ import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from
 import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barra-navegacao';
 import { ServicoTema } from './nucleo/configuracao/servico-tema';
 import { ServicoDemonstracao } from './nucleo/demonstracao/servico-demonstracao';
+import { RetornoFormulario } from './nucleo/demonstracao/retorno-formulario';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ import { ServicoDemonstracao } from './nucleo/demonstracao/servico-demonstracao'
 export class App {
   protected readonly servicoTema = inject(ServicoTema);
   private readonly demonstracao = inject(ServicoDemonstracao);
+  private readonly retornoFormulario = inject(RetornoFormulario);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -41,7 +43,17 @@ export class App {
       this.focoPendente = afterNextRender(
         () => {
           if (this.router.lastSuccessfulNavigation()?.id === evento.id) {
-            this.elemento.nativeElement.querySelector<HTMLElement>('main h1')?.focus();
+            const chave = this.retornoFormulario.consumir();
+            const acionador = chave
+              ? [
+                  ...this.elemento.nativeElement.querySelectorAll<HTMLElement>(
+                    '[data-foco-formulario]',
+                  ),
+                ].find((item) => item.dataset['focoFormulario'] === chave)
+              : null;
+            (
+              acionador ?? this.elemento.nativeElement.querySelector<HTMLElement>('main h1')
+            )?.focus();
           }
         },
         { injector: this.injector },

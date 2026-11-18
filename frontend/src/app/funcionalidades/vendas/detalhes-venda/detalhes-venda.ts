@@ -6,6 +6,7 @@ import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
+import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
 
 @Component({
   selector: 'app-detalhes-venda',
@@ -15,6 +16,7 @@ import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demons
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalhesVenda {
+  protected readonly sucesso = inject(RetornoFormulario).consumirSucesso();
   private readonly rota = inject(ActivatedRoute);
   private readonly servico = inject(ServicoDemonstracao);
   private readonly id = toSignal(this.rota.paramMap, { initialValue: this.rota.snapshot.paramMap });
