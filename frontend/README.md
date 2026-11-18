@@ -303,6 +303,34 @@ Verificações incrementais de 1.1/1.2 em `frontend/`:
   Fixture mantém aviso de prebundling desativado por otimização. Regressão final
   será repetida depois da edição interna.
 
+Contrato `ComandoEdicaoCliente`: somente `vendaId` e bloco de cliente com
+nome/CPF/telefone/descrição opcional. `prepararEdicaoCliente` seleciona por ID,
+revalida identificação e copia a venda atual, substituindo exclusivamente cliente;
+não chama cadastro nem regenera parcelas. Campos extras financeiros/temporais
+não têm efeito. Preparação aceita vendas sem entrada, com entrada, parcialmente
+pagas e quitadas, sem propagação por CPF ou compartilhamento de rascunhos/histórico.
+Verificação incremental de 2.1: `npm.cmd test -- --watch=false`, saída 0,
+255/255 testes em 20 arquivos; 14 novos casos puros de edição, incluindo comparação
+profunda do histórico/projeções/resumo, descrição, identificação inválida, ausência
+e falha inesperada.
+
+`ServicoDemonstracao.editarCliente` integra a preparação por adaptador sem estado,
+seguindo a fronteira existente de recebimento. Copia o comando, valida o agregado
+completo antes de publicar e congela resultado/estado com um único `set`. Não há
+publicação em ausência, validação ou falha; nova tentativa é independente. Como nos
+outros comandos da sessão, o contador só avança após sucesso. Nenhuma rota, formulário,
+botão ou dependência foi acrescentada. Context7 Angular consultado para DI/TestBed
+e atualização reativa com `whenStable`.
+
+Verificação incremental de 2.2 em `frontend/`: `npm.cmd test -- --watch=false`
+aprovou 265/265 testes em 21 arquivos; `npm.cmd run build` passou (492,50 kB
+iniciais/94,95 kB estimados; aviso Sass preexistente); `npm.cmd run format:check`
+passou. Cobertura de serviço compara todas as situações financeiras, rascunhos,
+campos extras ignorados, CPF repetido, congelamento, falha de preparação e agregado
+inválido sem mutação/consumo de ID. Integração DOM verifica lista/detalhe/busca
+reativos, quitadas, fonte mantida entre rotas, resumo invariável e uma atualização
+por edição aceita, nenhuma para comandos rejeitados.
+
 #### Decisões de produto — PRD 1.8 / TDD 1.12 (registro histórico de planejamento)
 
 Após perguntas e aprovação explícita no Harness, foram definidos RN-021/022/023,

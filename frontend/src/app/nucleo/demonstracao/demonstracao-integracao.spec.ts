@@ -131,6 +131,78 @@ describe('Inicialização e integração da sessão', () => {
     expect(host.observar).toHaveBeenCalledTimes(3);
   });
 
+  it('reflete edição nas listas, busca e detalhe com uma publicação e sem alterar resumos', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter(routes),
+        { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
+      ],
+    });
+    const fonte = TestBed.inject(ServicoDemonstracao);
+    const observador = TestBed.createComponent(ObservadorDemonstracao);
+    await observador.whenStable();
+    const harness = await RouterTestingHarness.create('/vendas');
+    const alvo = fonte.abertas()[0];
+    const resumo = fonte.resumo();
+    const componente = observador.componentInstance;
+    const chamadas = componente.observar.mock.calls.length;
+    const editar = (nome: string, cpf = alvo.cliente.cpf) =>
+      fonte.editarCliente({ vendaId: alvo.id, cliente: { ...alvo.cliente, nome, cpf } });
+    expect(editar('DEMO nome atualizado').tipo).toBe('sucesso');
+    await observador.whenStable();
+    await harness.fixture.whenStable();
+    expect(componente.observar).toHaveBeenCalledTimes(chamadas + 1);
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
+      'DEMO nome atualizado',
+    );
+    expect(harness.routeNativeElement?.textContent).not.toContain(alvo.cliente.nome);
+    const campo = harness.routeNativeElement!.querySelector<HTMLInputElement>('#busca-vendas')!;
+    campo.value = 'nome atualizado';
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(editar('DEMO outra grafia').tipo).toBe('sucesso');
+    await observador.whenStable();
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.textContent).toContain('Nenhuma venda corresponde');
+    const router = TestBed.inject(Router);
+    await harness.navigateByUrl(router.serializeUrl(router.createUrlTree(['/vendas', alvo.id])));
+    expect(harness.routeNativeElement?.textContent).toContain('DEMO outra grafia');
+    expect(editar('DEMO detalhe reativo').tipo).toBe('sucesso');
+    await observador.whenStable();
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.textContent).toContain('DEMO detalhe reativo');
+    const antesRejeicao = componente.observar.mock.calls.length;
+    const antes = fonte.vendas();
+    expect(editar('Inválido', 'CPF-DEMO').tipo).toBe('validacao');
+    expect(fonte.editarCliente({ vendaId: 'ausente', cliente: alvo.cliente }).tipo).toBe(
+      'inexistencia',
+    );
+    await observador.whenStable();
+    expect(componente.observar).toHaveBeenCalledTimes(antesRejeicao);
+    expect(fonte.vendas()).toBe(antes);
+    expect(fonte.resumo()).toEqual(resumo);
+    const quitada = fonte.quitadas()[0];
+    await harness.navigateByUrl('/vendas/quitadas');
+    expect(
+      fonte.editarCliente({
+        vendaId: quitada.id,
+        cliente: { ...quitada.cliente, nome: 'DEMO quitada corrigida' },
+      }).tipo,
+    ).toBe('sucesso');
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
+      'DEMO quitada corrigida',
+    );
+    const snapshot = fonte.vendas();
+    for (const rota of ['/relatorios', '/configuracoes', '/visao-geral', '/vendas']) {
+      await harness.navigateByUrl(rota);
+      expect(harness.routeDebugElement?.injector.get(ServicoDemonstracao)).toBe(fonte);
+      expect(fonte.vendas()).toBe(snapshot);
+      expect(fonte.resumo()).toEqual(resumo);
+    }
+  });
+
   it('mantém listas, cartões e detalhe na mesma fonte reativa; consulta e navegação não mutam', async () => {
     TestBed.configureTestingModule({
       providers: [

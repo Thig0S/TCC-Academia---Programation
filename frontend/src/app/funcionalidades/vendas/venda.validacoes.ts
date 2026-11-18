@@ -2,7 +2,37 @@ import { formaAceita } from '../parcelas/pagamento.modelos';
 import { gerarVencimentos, compararDatasCivis } from './data-civil';
 import { subtrairCentavos, validarCentavos } from './dinheiro';
 import { prepararCliente } from './identificacao.validacoes';
-import { ComandoCadastro, Resultado, Venda } from './venda.modelos';
+import { ComandoCadastro, ComandoEdicaoCliente, Resultado, Venda } from './venda.modelos';
+
+/** Não refaz cadastro nem parcelas; seleciona por ID e copia o histórico existente. */
+export function prepararEdicaoCliente(
+  vendas: readonly Venda[],
+  comando: ComandoEdicaoCliente,
+): Resultado<Venda> {
+  try {
+    const atual = vendas.find((venda) => venda.id === comando.vendaId);
+    if (!atual) {
+      return {
+        tipo: 'inexistencia',
+        codigo: 'venda-inexistente',
+        mensagem: 'Venda demonstrativa não encontrada.',
+      };
+    }
+    const cliente = prepararCliente(comando.cliente);
+    if (cliente.tipo !== 'sucesso') return cliente;
+    return {
+      tipo: 'sucesso',
+      mensagem: 'Edição dos dados do cliente preparada.',
+      valor: { ...structuredClone(atual), cliente: cliente.valor },
+    };
+  } catch {
+    return {
+      tipo: 'falha',
+      codigo: 'falha-preparacao-edicao',
+      mensagem: 'Não foi possível preparar a edição dos dados do cliente.',
+    };
+  }
+}
 
 /** Prepara sem publicar. O identificador é reservado pelo chamador, não consumido aqui. */
 export function prepararCadastro(
