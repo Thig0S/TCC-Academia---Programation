@@ -7,7 +7,7 @@ As questões de avaliação em design.md não mudam a UI planejada e permanecem 
 
 ## 1. Dependência e fronteira dos formulários
 
-- [ ] 1.1 Após pedido explícito de apply, conferir branch/diff e revisão dos artefatos, adicionar somente `@angular/forms@22.2.6` ao manifesto/lockfile e verificar peers, exports e estabilidade das APIs Signal Forms previstas em D2. Comprovar instalação reprodutível, build e formatação; incompatibilidade material bloqueia a execução, sem atualizar outros patches ou substituir tecnologia. Registrar versões/resultados e limitações em `frontend/README.md` e criar commit de dependência coerente.
+- [x] 1.1 Após pedido explícito de apply, conferir branch/diff e revisão dos artefatos, adicionar somente `@angular/forms@22.2.6` ao manifesto/lockfile e verificar peers, exports e estabilidade das APIs Signal Forms previstas em D2. Comprovar instalação reprodutível, build e formatação; incompatibilidade material bloqueia a execução, sem atualizar outros patches ou substituir tecnologia. Registrar versões/resultados e limitações em `frontend/README.md` e criar commit de dependência coerente.
 - [ ] 1.2 Criar adaptadores puros de rascunhos/erros para cadastro, edição e recebimento, reaproveitando identificação, dinheiro, datas e formas existentes. Verificar com unitários reais vazio, CPF/telefone válidos/inválidos, CPF repetido, vírgula decimal, precisão/overflow, quantidade inteira, datas/entrada cruzadas e nenhuma publicação. Documentar contratos e resultados no README; incluir testes/docs no commit da funcionalidade correspondente.
 
 ## 2. Cadastro com prévia e confirmação
