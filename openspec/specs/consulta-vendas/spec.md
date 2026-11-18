@@ -48,7 +48,8 @@ Cada coleção SHALL oferecer um único campo de busca com rótulo, orientação
 - **WHEN** uma sequência de dígitos de CPF ou telefone for pesquisada com ou sem pontos, hífens, espaços, parênteses ou sinal de mais
 - **THEN** SHALL corresponder à mesma sequência contida na identificação da venda, ignorando essa pontuação
 - **AND** uma entrada sem qualquer dígito SHALL não corresponder a todas as identificações por uma sequência vazia
-- **AND** os marcadores textuais sintéticos existentes, como CPF-DEMO-1 e TEL-DEMO-1, SHALL também ser localizáveis por seu texto, sem substituir o conjunto por dados pessoais plausíveis
+- **AND** após a adequação do seed na FASE-006, a consulta SHALL localizar os números sintéticos compatíveis com as validações de identificação, sem exigir marcadores CPF-DEMO/TEL-DEMO no conjunto inicial
+- **AND** pesquisa parcial SHALL não exigir comprimento completo ou verificadores de CPF, pois não é confirmação de cadastro/edição
 
 #### Scenario: Restringir e limpar pesquisa
 - **WHEN** a pessoa pesquisar um termo presente somente na outra coleção ou acionar Limpar pesquisa
