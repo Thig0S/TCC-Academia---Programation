@@ -1,5 +1,12 @@
 # Design
 
+> Acompanhamento em 18/11/2026: executado o apply interno autorizado após o PR #13.
+> As restrições “neste PR”/“entrega documental” abaixo referem-se ao planejamento
+> original. Implementação: validadores compartilhados, geração sintética determinística,
+> `prepararEdicaoCliente` e `ServicoDemonstracao.editarCliente`, com adaptador sem estado
+> seguindo o padrão de recebimento. Regressão e limitações em `frontend/README.md`.
+> Sem UI comercial, avaliação ou sincronização/arquivamento nesta execução.
+
 ## Context
 
 Motivação e limites em `proposal.md`. Fonte central: TDD 1.12/DEC-019, PRD 1.8/RN-021/022/023 e CA-007/012/016/017/030. Este desenho existe porque a validação alcança cadastro, novo comando interno, seed e testes, com conflito explícito na exigência de marcadores de busca.

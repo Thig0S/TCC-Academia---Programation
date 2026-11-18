@@ -1,5 +1,12 @@
 # Proposal
 
+> Acompanhamento em 18/11/2026: o PR #13 foi integrado somente com planejamento.
+> Novo pedido explícito de apply autorizou as tarefas internas desta Change em
+> `feature/edicao-identificacao-vendas`. Validadores, seed e edição interna foram
+> implementados/testados; evidências em `frontend/README.md` e `tasks.md`.
+> O escopo documental mencionado abaixo é o histórico do PR #13, não restrição ao
+> apply posterior. UI da FASE-006, avaliação, sync/archive e merge não foram executados.
+
 ## Why
 
 PEN-008 e PEN-010 impediam definir edição e identificação sem inventar regras. O solicitante resolveu esses limites e definiu seu ambiente de avaliação, mantendo metas e autoridade de aceite em discussão; é necessário registrar as decisões antes de qualquer implementação.

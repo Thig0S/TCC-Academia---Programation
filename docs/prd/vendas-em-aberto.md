@@ -15,7 +15,21 @@
 
 ## 2. Contexto, problema e evidências
 
-**Estado vigente — revisão 1.8, 17/11/2026:** PEN-008 e PEN-010 resolvidas como
+**Acompanhamento de implementação — 18/11/2026:** após pedido explícito de apply,
+o recorte interno de RN-021/022/023 foi implementado na feature branch
+`feature/edicao-identificacao-vendas`, sobre a `main` que integrou o PR documental
+#13 (`e12d360`). Cadastro e edição interna compartilham validação de identificação;
+seed e fixtures agora usam números sintéticos compatíveis. Edição altera somente
+os quatro campos do cliente, inclusive em quitadas, preservando finanças e outras
+vendas. Evidências desta implementação em `frontend/README.md`, seção
+“Apply — identificação e edição interna — 18/11/2026”: 265 testes em 21 arquivos,
+36 E2E da aplicação e 8 E2E da fixture, build e formatação aprovados. Não há
+formulário ou ação comercial nova; a FASE-006 permanece incompleta e sua UI exige
+SDD próprio. Sem sync/archive nesta execução, integração desta feature ou aceite
+presumidos. PEN-013/014 e HIP-006 mantêm suas pendências. As declarações abaixo de
+ausência de implementação documentam a revisão de planejamento, não o estado deste apply.
+
+**Registro do planejamento — revisão 1.8, 17/11/2026:** PEN-008 e PEN-010 resolvidas como
 decisões de produto pelo solicitante, não como implementação. Após o cadastro,
 somente nome, CPF, telefone e descrição poderão ser editados, inclusive em quitadas,
 sem propagação entre vendas; todos os dados financeiros e a data da venda ficam
@@ -367,9 +381,9 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida e busca implementada no PR #9 |
 | RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; Limpar critérios restaura termo vazio e Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009; PEN-012 resolvida no recorte do MVP; consulta implementada nos PRs #9/#10 |
 | RN-020 | Abertas e Quitadas exibem 10 vendas por página, após aplicar busca e situação pertinente, preservando ordem e IDs | Paginação numerada abaixo da tabela, anterior/próxima, página atual e faixa/total de resultados; reticências não são páginas. Alterar/limpar critérios volta à página 1; se a coleção diminuir, ajustar à última página válida. Zero resultados não cria página fictícia nem ações habilitadas; uma página dispensa controles de troca. Sem persistência ou nova ordenação | FON-010; confirmada no Harness e implementada no PR #10; evidências anteriores no README |
-| RN-021 | Após cadastro, editar somente nome, CPF, telefone e descrição de qualquer venda, inclusive quitada | Não alterar data da venda, total, entrada, parcelamento ou pagamentos; não propagar entre vendas; cancelamento/falha preservam original. Novos recebimentos continuam por RN-016, sem edição do histórico | FON-011; PEN-008 resolvida, não implementada |
-| RN-022 | CPF obrigatório em cadastro e edição: aceitar com/sem pontuação, exigir 11 dígitos e verificadores válidos, rejeitar sequências repetidas | Sem unicidade, consulta externa ou uso de dados reais. Validade matemática não comprova titularidade ou inexistência de pessoa real | FON-011; PEN-010 resolvida documentalmente, não implementada |
-| RN-023 | Telefone obrigatório brasileiro com DDD: após remover espaços, parênteses e hífen, exigir 10 ou 11 dígitos | Sem +55, lista de DDDs ou regras de prefixo; não consultar serviços externos. Não inferir que o número existe ou pertence a pessoa inexistente | FON-011; PEN-010 resolvida documentalmente, não implementada |
+| RN-021 | Após cadastro, editar somente nome, CPF, telefone e descrição de qualquer venda, inclusive quitada | Não alterar data da venda, total, entrada, parcelamento ou pagamentos; não propagar entre vendas; cancelamento/falha preservam original. Novos recebimentos continuam por RN-016, sem edição do histórico | FON-011; PEN-008 resolvida; núcleo testado na feature em 18/11/2026, UI futura |
+| RN-022 | CPF obrigatório em cadastro e edição: aceitar com/sem pontuação, exigir 11 dígitos e verificadores válidos, rejeitar sequências repetidas | Sem unicidade, consulta externa ou uso de dados reais. Validade matemática não comprova titularidade ou inexistência de pessoa real | FON-011; PEN-010 resolvida; validação testada na feature em 18/11/2026, UI futura |
+| RN-023 | Telefone obrigatório brasileiro com DDD: após remover espaços, parênteses e hífen, exigir 10 ou 11 dígitos | Sem +55, lista de DDDs ou regras de prefixo; não consultar serviços externos. Não inferir que o número existe ou pertence a pessoa inexistente | FON-011; PEN-010 resolvida; validação testada na feature em 18/11/2026, UI futura |
 
 Exemplo financeiro: venda fictícia de R$ 1.000,00, entrada de R$ 200,00 e quatro parcelas produz saldo inicial de R$ 800,00, pago inicial de R$ 200,00 e quatro parcelas de R$ 200,00. A entrada integra recebimentos na data da venda. Liquidar as duas primeiras parcelas num lote de R$ 400,00 resulta em pago de R$ 600,00, saldo de R$ 400,00 e duas de quatro parcelas pagas. Juros, renegociação e políticas de cobrança continuam excluídos.
 
@@ -708,9 +722,9 @@ tentativas, participantes e contexto junto dos percentuais.
 | PEN-005 | Combinação, data e normalização da busca | Consulta nas duas coleções | RN-018/019 e CA-004/019/026, confirmados no Harness | Resolvida e implementada na FASE-005, PR #9; refinamentos no PR #10, sem aceite da ótica |
 | PEN-006 | Divergência histórica claro versus dois temas | Direção visual e alternância | Claro/escuro, escuro inicial e memória; specs e evidências da FASE-003 | Resolvida com evidências técnicas anteriores, não aceite da ótica |
 | PEN-007 | Situações gerais de vendas | Projeções | RN-014; Quitada, Atrasada, Próximos dias, Em aberto por prioridade | Resolvida para o MVP em 14/11/2026; não implementada |
-| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida documentalmente por FON-011; implementação futura na FASE-006 |
+| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida por FON-011; núcleo implementado e testado na feature em 18/11/2026; UI futura na FASE-006 |
 | PEN-009 | Referência, períodos, universo dos resumos e efeito de filtros | Indicadores | RN-015 e CA-025; dia da abertura fixo, mês civil, cartões globais e cadastradas incluindo quitadas | Resolvida para o núcleo em 14/11/2026; controles de relatório na FASE-007 |
-| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; planejar seed sintético compatível na FASE-006 | Resolvida documentalmente por FON-011; novas validações e substituição do seed não implementadas; sem unicidade |
+| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; seed sintético compatível | Resolvida por FON-011; validações e seed implementados/testados na feature em 18/11/2026; sem unicidade; UI futura |
 | PEN-011 | Pagamento integral, ordem, lote, antecipação, datas e formas | Modelo de recebimento e saldo | RN-016 e CA-024; lote consecutivo desde primeira pendente, integral, antecipável, data/forma únicas | Resolvida para o MVP em 14/11/2026; não implementada |
 | PEN-012 | Conteúdos em Configurações e filtros em Quitadas | Telas secundárias | HIP-004 entregue na FASE-003; RN-019 confirma apenas busca única em Quitadas, sem filtros extras | Resolvida no recorte do MVP; Configurações entregue na FASE-003 e consulta de Quitadas nos PRs #9/#10; outros controles fora do escopo |
 | PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Compatibilidade e desempenho precisam de evidência | Máquina do solicitante, Windows/Chrome, 1920×1080, escala 125%, zoom 100%, seção 12; coletar versão Chrome e viewport CSS e executar roteiro | Parcialmente resolvida: ambiente definido, caracterização da execução e medições pendentes; sem mínimo universal homologado |
@@ -718,7 +732,8 @@ tentativas, participantes e contexto junto dos percentuais.
 
 **Decisões confirmadas e seus limites:** nome, quatro módulos, dados do cliente na venda, parcelas no detalhe e Quitadas interna vêm de FON-001; memória e arquitetura futura vêm de FON-002. FON-008 confirma RN-011 a RN-017 e HIP-005 para o MVP. A solicitação atual autoriza planejamento documental e OpenSpec, não apply, hipóteses remanescentes, aprovação da loja ou conclusão do desenvolvimento.
 
-PEN-008/010 estão resolvidas como decisões, não como funcionalidades entregues.
+PEN-008/010 estão resolvidas como decisões; o recorte interno foi implementado/testado
+na feature em 18/11/2026, mas a UI da FASE-006 e seu aceite não estão entregues.
 PEN-013 conserva a caracterização da execução/medições e PEN-014 conserva autoridade,
 metas e validação abertas. PEN-005/012 seguem resolvidas para a consulta entregue.
 Esta revisão 1.8 autoriza somente documentação e planejamento SDD, não inicia
