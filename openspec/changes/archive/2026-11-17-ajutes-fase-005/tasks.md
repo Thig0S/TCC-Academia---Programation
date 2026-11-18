@@ -6,10 +6,11 @@ Change implementada e integrada à `main` pelo PR #10 (commit `59af9a2`), com
 contam como execução desta Change e não devem ser reaplicadas.
 
 Estado conciliado em 17/11/2026: PRD 1.7 e TDD 1.11 registram a entrega sem mudar
-regras ou IDs. Specs principais sincronizadas pelo commit `91208a7`, verificadas
+regras ou IDs. Specs principais sincronizadas pelo commit `72ade92` da `main`, verificadas
 contra todos os blocos das três deltas. Consolidação documental e arquivamento
-realizados na branch `docs/sincronizar-specs-ajustes-fase-005`, ainda pendentes de
-integração na `main`. Evidências anteriores de aplicação em `frontend/README.md`,
+realizados na branch `docs/sincronizar-specs-ajustes-fase-005` e integrados na `main`
+pelo PR #12, commit `c845ce9`, conforme confirmação no GitHub. O hash `91208a7`
+identifica a sincronização na branch original, antes da integração. Evidências anteriores de aplicação em `frontend/README.md`,
 seção de verificação integrada final da tarefa 4.3; sem reexecução nesta revisão.
 
 ## 1. Listas sem cartões e faixa compacta
@@ -75,8 +76,8 @@ ausência de implementação/sync são históricas, não o estado atual da Chang
   apply desta Change. A base `fase-005` foi arquivada pelo PR #11; não reaplicar suas
   deltas para restaurar cartões ou substituir os refinamentos atuais.
 - Deltas dos ajustes sincronizadas antes do arquivamento; preservar os requisitos
-  principais atuais. A integração da consolidação documental desta branch ainda
-  depende do fluxo de revisão/PR, sem confundir arquivamento local com merge.
+  principais atuais. A consolidação documental e o arquivamento foram integrados
+  pelo PR #12 (`c845ce9`); não há integração pendente desta Change.
 - A Visão Geral recebe os indicadores somente na FASE-007, mediante planejamento
   e implementação próprios; não é tarefa pendente desta Change.
 
@@ -96,5 +97,11 @@ ausência de implementação/sync são históricas, não o estado atual da Chang
   `npm.cmd run format:check` passou. `git diff --check` passou com avisos LF/CRLF.
 - Não executados: instalação, build, testes unitários/componentes/E2E, nova revisão
   visual ou avaliação da ótica, pois este fechamento altera apenas documentação.
-  Resultados anteriores permanecem em `frontend/README.md`; arquivamento local
-  não comprova publicação, revisão, aprovação ou merge desta branch documental.
+  Resultados anteriores permanecem em `frontend/README.md`; o arquivamento local,
+  isoladamente, não comprovava publicação, revisão, aprovação ou merge.
+- Conferência pós-integração: GitHub confirmou o PR #12 integrado em 18/11/2026 às
+  01:51:53 UTC (17/11 local), commit `c845ce9ff0f9535ce915156c9b694cd16ae9ae95`,
+  também retornado por `git ls-remote origion refs/heads/main`. O commit oficial de
+  sincronização na `main` é `72ade92363b37bc66c18db73dbe9f32a75046afa`; `91208a7`
+  pertence à branch original. Esta correção não reaplica deltas nem altera tarefas,
+  requisitos ou evidências anteriores da aplicação.

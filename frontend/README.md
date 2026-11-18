@@ -242,10 +242,13 @@ locais pré-existentes em `openspec/changes/fase-005/` ficaram fora do diff e do
 Implementação dos ajustes integrada pelo [PR #10](https://github.com/Thig0S/TCC-Academia---Programation/pull/10),
 commit `59af9a2`; merge confirmado no GitHub em 18/11/2026 às 01:19 UTC (17/11 local).
 As specs `consulta-vendas`, `estado-demonstrativo` e `temas-visuais` foram
-sincronizadas no commit `91208a7` da branch `docs/sincronizar-specs-ajustes-fase-005`.
+sincronizadas no commit `72ade92` da `main` (o hash `91208a7` pertence à branch
+original `docs/sincronizar-specs-ajustes-fase-005`).
 PRD 1.7 e TDD 1.11 conciliam o estado, sem alterar requisitos ou regras. A Change
 com 9/9 tarefas fica em `openspec/changes/archive/2026-11-17-ajutes-fase-005/`;
-essa consolidação documental ainda depende de integração da branch na `main`.
+essa consolidação documental e o arquivamento foram integrados à `main` pelo
+[PR #12](https://github.com/Thig0S/TCC-Academia---Programation/pull/12), commit `c845ce9`,
+em 18/11/2026 às 01:51:53 UTC (17/11 local), conforme confirmação no GitHub.
 O título da evidência 4.2 foi corrigido para concluída: medições automatizadas e
 relato manual de zoom já estavam registrados; nenhuma nova aprovação ou medição
 foi inferida dessa correção. Os resultados de aplicação acima são anteriores e
@@ -256,6 +259,18 @@ de arquivar saiu 0; depois, `openspec validate --all --strict` aprovou as sete s
 e `openspec list --json` confirmou nenhuma Change ativa. `npm.cmd run format:check`
 em `frontend/` passou; `git diff --check` passou com avisos LF/CRLF. Não houve nova
 instalação, build, execução de testes da aplicação ou medição visual.
+
+Conferência pós-integração: API do GitHub e `git ls-remote origion refs/heads/main`
+confirmaram `c845ce9ff0f9535ce915156c9b694cd16ae9ae95` na `main`. A API confirmou
+`72ade92363b37bc66c18db73dbe9f32a75046afa` como o commit de sincronização nesse
+histórico e o PR #12 como integrado. Corrigidas somente referências de status e
+hash no PRD, TDD, neste README e no registro arquivado; sem novas regras ou
+reexecução dos testes da aplicação.
+
+Verificações desta correção pós-integração: na raiz, `openspec validate --all --strict`
+aprovou as sete specs e `git diff --check` passou com avisos LF/CRLF; em `frontend/`,
+`npm.cmd run format:check` passou. Reutilizados PRD 1.7, TDD 1.11 e o registro SDD
+arquivado: não há novo requisito, decisão ou tarefa funcional que exija outra Change.
 
 #### Regressão limpa FASE-005 — 16/11/2026
 
