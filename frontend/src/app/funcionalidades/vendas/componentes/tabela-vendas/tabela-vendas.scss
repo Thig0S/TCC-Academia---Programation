@@ -1,3 +1,8 @@
 .tabela-vendas-compacta.table-sm > :not(caption) > * > * {
   padding-block: 0;
 }
+
+.tabela-vendas-compacta th,
+.tabela-vendas-compacta tbody td:last-child {
+  white-space: nowrap;
+}
