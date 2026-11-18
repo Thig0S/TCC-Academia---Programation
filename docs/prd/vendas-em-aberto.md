@@ -5,17 +5,33 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.7 — conciliação documental da entrega da FASE-005 e seus ajustes, em 17/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.8 — decisões de edição, identificação e ambiente de avaliação, em 17/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
-- **Responsáveis e aprovadores:** não confirmados. Proprietário e funcionários são partes interessadas previstas, não aprovadores formalmente designados.
+- **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
 - **Proposta:** demonstrar uma alternativa à planilha auxiliar de crediário, concentrando cadastro de venda, identificação do cliente, consulta de parcelas e simulação de recebimento em uma navegação simples.
 - **Valor esperado:** validar se a equipe consegue cadastrar e conferir uma venda com menos dificuldade, distinguir clientes com nomes semelhantes e entender pagamentos e saldos. Redução efetiva de erros e ganhos de tempo ainda não foram medidos.
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
 
-**Estado vigente — revisão 1.7, 17/11/2026:** consultas da FASE-005 integradas à
+**Estado vigente — revisão 1.8, 17/11/2026:** PEN-008 e PEN-010 resolvidas como
+decisões de produto pelo solicitante, não como implementação. Após o cadastro,
+somente nome, CPF, telefone e descrição poderão ser editados, inclusive em quitadas,
+sem propagação entre vendas; todos os dados financeiros e a data da venda ficam
+imutáveis pela edição (RN-021). Cadastro e edição exigirão CPF de 11 dígitos com
+verificadores e telefone brasileiro de 10/11 dígitos (RN-022/023). Na FASE-006, os
+marcadores sintéticos do seed serão substituídos por números sintéticos compatíveis,
+sem coletar dados reais ou garantir inexistência de titulares. A alternativa inicial
+de edição financeira antes de receber foi retirada pelo solicitante, não aprovada.
+PEN-013 tem ambiente definido na seção 12, com escala Windows de 125% após correção
+explícita; versão do Chrome e avaliação permanecem por executar. PEN-014 e HIP-006
+continuam abertas: papéis/autoridade, metas e confirmação das entrevistas não foram
+definidos nem medidos. Autorizados somente PRD → TDD → artefatos OpenSpec da Change
+`decisoes-edicao-identificacao-avaliacao` e atualização do PR #13; sem código,
+alteração do seed, apply, avaliação ou merge.
+
+**Entrega vigente da FASE-005 — revisão 1.7 conciliada:** consultas integradas à
 `main` pelo [PR #9](https://github.com/Thig0S/TCC-Academia---Programation/pull/9)
 e refinamentos integrados pelo [PR #10](https://github.com/Thig0S/TCC-Academia---Programation/pull/10),
 commit `59af9a2`. O GitHub confirma o merge do PR #10 em 18/11/2026 às 01:19 UTC
@@ -34,9 +50,10 @@ registram 197 testes unitários/componentes, 36 E2E da aplicação, 8 E2E de fix
 build e formatação aprovados; o zoom nativo 200% é relato manual do solicitante.
 Nenhuma dessas verificações de aplicação foi reexecutada nesta revisão documental.
 Os quatro indicadores continuam reservados à Visão Geral na FASE-007. Cadastro,
-edição e recebimento visíveis continuam na FASE-006; PEN-008/010 e PEN-013/014
-permanecem abertos nos respectivos recortes. Não há aceite da ótica nem conclusão
-do MVP completo. Requisitos e critérios permanecem inalterados; afirmações de
+edição e recebimento visíveis continuam na FASE-006; as novas regras RN-021/022/023
+aguardam implementação e PEN-013/014 conservam pendências de avaliação. Não há aceite
+da ótica nem conclusão do MVP completo. A revisão 1.7 não mudou requisitos; a 1.8
+delimita edição/identificação. Afirmações de
 não implementação nos registros datados anteriores descrevem aquele momento,
 não substituem este estado vigente e não autorizam reaplicar Changes concluídas.
 
@@ -114,6 +131,7 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 | FON-008 | Decisões no planejamento da FASE-004 | Conversa de 14/11/2026 e mudança `fase-004` | Calendário, centavos, entrada, situações, referência, resumos e pagamento integral em lote sequencial confirmados pelo solicitante | Regras do MVP demonstrativo; não há aceite da ótica, autorização de apply ou validação operacional |
 | FON-009 | Decisões no planejamento da FASE-005 e revisão nesta conversa | Harness de 16/11/2026; inspeção de `frontend/src/app/` e `frontend/README.md`; registro anterior de PR #7 | Busca única nas duas coleções; filtro de situação somente nas abertas, combinado por E; listas, cartões globais e detalhe somente leitura | Planejamento autorizado; fase 005 não implementada, sem aceite comercial ou nova execução de testes |
 | FON-010 | Refinamento visual solicitado e confirmado no Harness | Conversa de 16/11/2026; `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`, `exemploDadosDaVenda.png`, `exemploDesignDark.png` e `exemploCadastrarVenda.png` na mesma pasta | Cartões somente na Visão Geral; barra horizontal; 10 vendas por página nas duas coleções; detalhe compacto com excedente interno; links integrados ao tema; atraso no dia seguinte | Referências visuais inspecionadas, sem copiar dados pessoais nem ações fora do recorte; ajustes não implementados nesta revisão |
+| FON-011 | Decisões e aprovação documental no Harness | Conversa de revisão do PR #13; confirmação final após corrigir escala Windows para 125%; consulta local `Get-CimInstance Win32_OperatingSystem` | Somente dados do cliente editáveis; CPF com verificadores; telefone BR 10/11 dígitos; seed compatível futuramente; máquina e participação previstas | Hardware/tela informados pelo solicitante; Windows 11 Home build 26200 observado localmente. Sem modelo de GPU inferido, versão de Chrome, medição, papéis de aceite ou aprovação da ótica; metas mantidas para discussão |
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
@@ -153,7 +171,7 @@ Não se pressupõem contas, permissões ou autenticação por perfil. O perfil �
 - **Desejável:** gráfico de recebimentos dos últimos meses e decoração discreta de avatar/ícones. Não devem atrasar a validação de cadastro e recebimento.
 - **Futuro:** infraestrutura operacional e alternativas condicionadas às decisões abaixo. Não há compromisso de prazo.
 
-Prioridade expressa importância, não situação de validação. A revisão 1.3 resolve as regras financeiras RN-011 a RN-017; a 1.5 resolve busca e filtros de Quitadas por RN-018/019, somente para o MVP. Edição e validações de identificação ainda dependem de PEN-008/010; HIP-001 nunca foi aprovada e não autoriza comportamento alternativo.
+Prioridade expressa importância, não situação de validação. A revisão 1.3 resolve as regras financeiras RN-011 a RN-017; a 1.5 resolve busca e filtros de Quitadas por RN-018/019, somente para o MVP. A revisão 1.8 resolve as decisões de PEN-008/010 por RN-021/022/023, sem implementá-las; HIP-001 nunca foi aprovada e não autoriza comportamento alternativo.
 
 ### Fora do escopo
 
@@ -173,7 +191,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | --- | --- | --- | --- | --- |
 | JOR-001 | Atendimento; OBJ-001; pessoa pede consulta da venda | Demonstração aberta; entrar em Vendas, pesquisar por dado disponível, conferir nome/CPF/telefone e abrir cliente da venda | Detalhes da venda correta; sem resultado, revisar e limpar busca; não selecionar automaticamente homônimos | RF-001, RF-002, RF-003, RF-005 |
 | JOR-002 | Atendimento; OBJ-002; nova venda fictícia | Acessar Nova venda, preencher cliente e venda, conferir entrada e prévia, confirmar | Venda aparece em aberto; erro preserva campos; cancelar não altera dados; regra pendente impede confirmar apenas o caso afetado | RF-004, RF-011 |
-| JOR-003 | Atendimento; OBJ-002; correção de venda fictícia | Abrir edição, revisar dados permitidos e confirmar | Listas e detalhes refletem alteração única; cancelar mantém original; edição financeira após pagamento depende de PEN-008 | RF-006, RF-011 |
+| JOR-003 | Atendimento; OBJ-002; correção de venda fictícia | Abrir edição, revisar nome, CPF, telefone ou descrição e confirmar | Listas e detalhes refletem alteração única apenas na venda selecionada; cancelar mantém original; dados financeiros e data da venda não são editáveis (RN-021) | RF-006, RF-011 |
 | JOR-004 | Atendimento; OBJ-003; recebimento fictício de parcelas | Conferir venda, selecionar uma ou mais parcelas consecutivas desde a primeira pendente, conferir soma, informar data/forma e confirmar uma vez | Lote integral e atômico; falha não muda valores; quitação inclui a venda na projeção de Quitadas | RF-005, RF-007, RF-008, RF-011 |
 | JOR-005 | Gestão; OBJ-004; revisão dos valores | Navegar por Visão Geral e Relatórios, ler indicadores e relacionar com vendas/parcelas | Compreensão de saldos, atrasos e recebimentos; exportação não gera arquivo; sem dados, totais zerados | RF-009, RF-010 |
 | JOR-006 | Participante; OBJ-005; início e encerramento da avaliação | Ler aviso, percorrer os quatro módulos e Configurações, utilizar teclado e recarregar | Reconhecer navegação e descarte das alterações; apresentação sem login ou promessa de persistência | RF-001, RF-011, RF-012 |
@@ -219,9 +237,9 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Necessidade:** reduzir dificuldade de cadastro e conferência; OBJ-002; JOR-002.
 - **Ator, pré-condições e entradas:** atendimento; Nova venda; campos descritos, sem exigir cliente prévio.
 - **Resultado:** uma venda sintética com parcelas e dados próprios de cliente passa a ser consultável; descrição preenchida aparece nos detalhes; prévia aplica desconto da entrada.
-- **Exceções:** campos inválidos preservados e identificados junto ao campo; descrição vazia não bloqueia. Calendário, centavos e entrada seguem RN-011/012/013/017. Formato/validação de CPF e telefone continua em PEN-010; não exigir unicidade. Não permitir venda futura nem entrada que quite todo o valor no cadastro.
+- **Exceções:** campos inválidos preservados e identificados junto ao campo; descrição vazia não bloqueia. Calendário, centavos e entrada seguem RN-011/012/013/017; CPF/telefone seguem RN-022/023, sem unicidade. Não permitir venda futura nem entrada que quite todo o valor no cadastro.
 - **Prioridade:** Essencial, principal dor relatada.
-- **Origem/situação:** FON-001 §§5 e 9; FON-002; FON-003 §1; FON-004 §6; FON-008 para regras financeiras do MVP; identificação ainda parcialmente pendente.
+- **Origem/situação:** FON-001 §§5 e 9; FON-002; FON-003 §1; FON-004 §6; FON-008 para finanças e FON-011 para identificação confirmada. UI de cadastro e novas validações não implementadas.
 - **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017.
 
 ### RF-005 — Consultar detalhes e parcelas da venda
@@ -237,13 +255,13 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 
 ### RF-006 — Editar venda demonstrativa
 
-- **Comportamento:** oferecer formulário com valores existentes e confirmação explícita, preservando os dados ao cancelar e atualizando somente após validação.
+- **Comportamento:** oferecer formulário com os valores existentes de nome, CPF, telefone e descrição, únicos campos editáveis após o cadastro, com confirmação explícita. Aplicar RN-021/022/023; preservar os dados ao cancelar e atualizar somente após validação.
 - **Necessidade:** avaliar correção e confiança ao alterar registros; OBJ-002; JOR-003.
-- **Ator, pré-condições e entradas:** atendimento; venda existente; alterações nos campos autorizados.
-- **Resultado:** detalhe, tabela e resumos permanecem consistentes após uma edição aceita.
-- **Exceções:** permissões de alteração após pagamentos e repercussões no parcelamento não foram definidas; não reescrever histórico pago. HIP-002 propõe limitar edição financeira até PEN-008; falhas não deixam alterações parciais.
-- **Prioridade:** Importante, complementa cadastro, com risco financeiro ainda aberto.
-- **Origem/situação:** FON-001 §§3 e 9; FON-002; existência confirmada por fonte, alcance pendente em PEN-008 e HIP-002.
+- **Ator, pré-condições e entradas:** atendimento; qualquer venda existente, inclusive com entrada, parcelas pagas ou totalmente quitada; somente alterações nos quatro campos autorizados.
+- **Resultado:** detalhe e tabela refletem os dados corrigidos apenas na venda selecionada, sem propagação para outras vendas com o mesmo CPF; resumos e histórico financeiro permanecem idênticos.
+- **Exceções:** data da venda, valor total, existência/valor/data/forma da entrada, quantidade/valores/vencimentos das parcelas e pagamentos não são editáveis, mesmo sem recebimentos. Registrar novos pagamentos por RF-007 não é edição desses dados. Cancelamento, validação rejeitada ou falha não deixam alterações parciais.
+- **Prioridade:** Importante, complementa cadastro preservando o histórico financeiro.
+- **Origem/situação:** FON-001 §§3 e 9; FON-002 e FON-011. PEN-008 resolvida documentalmente; HIP-002 superada pela RN-021. Não implementada nem validada pela ótica.
 - **Aceite:** CA-012, CA-016, CA-017.
 
 ### RF-007 — Simular registro de pagamento
@@ -331,7 +349,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | --- | --- | --- | --- |
 | RN-001 | Dados do cliente são informados em cada venda; nome, CPF e telefone são obrigatórios, descrição é opcional | Não presumir cadastro prévio, unicidade ou compartilhamento entre vendas | FON-001 §5; confirmada por fonte |
 | RN-002 | Quando houver entrada, valor a parcelar = valor total − entrada | Parcelamento e contabilização conforme RN-011/012/013/017 | FON-001 §9 e FON-008 |
-| RN-003 | A data inicial da venda é a referência da sessão e pode ser alterada para data não futura; vencimentos repetem o dia original nos meses seguintes | Mês sem esse dia usa seu último dia, sem deslocar os seguintes; RN-011 | FON-001 §9 e FON-008 |
+| RN-003 | No cadastro, a data inicial da venda é a referência da sessão e pode ser alterada para data não futura; vencimentos repetem o dia original nos meses seguintes | Após cadastro, data não editável por RN-021. Mês sem esse dia usa seu último dia, sem deslocar os seguintes; RN-011 | FON-001 §9, FON-008/011 |
 | RN-004 | Venda totalmente paga recebe situação Quitada, sai das abertas e preserva parcelas pagas | Demais situações seguem a prioridade aprovada em RN-014 | FON-001 §§3 e 6 e FON-008 |
 | RN-005 | Parcela admite Aberto, Próximos dias, Atrasado e Paga | Hoje até +7 dias inclusive são Próximos dias; RN-014 | FON-001 §4 e FON-008 |
 | RN-006 | Valores financeiros usam centavos inteiros e datas civis preservam o dia sem deslocamento de fuso | Representação não define arredondamento comercial ou juros | FON-002; restrição técnica confirmada |
@@ -345,10 +363,13 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | RN-014 | Parcela liquidada é Paga; pendente é Atrasado a partir do primeiro dia civil após vencer; hoje até +7 dias é Próximos dias; depois é Aberto | Vence em 10/11: não atrasada em 10/11, atrasada em 11/11. Sem tolerância extra ou relógio de 24 horas. Venda: saldo zero = Quitada; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto | FON-008/010; regra mantida e explicitada, PEN-004/007 resolvidas para MVP |
 | RN-015 | Referência = dia local da abertura, fixa na sessão; total em aberto soma saldos; atraso soma apenas parcelas vencidas; recebido no mês soma entradas e pagamentos por data civil; cadastradas inclui quitadas | Mês do primeiro ao último dia inclusive; períodos explícitos inclusivos; vendas por data de venda; busca/filtros de lista não alteram cartões; vazio = zero | FON-008; PEN-009 resolvida para o núcleo, controles de relatório na FASE-007 |
 | RN-016 | Receber integralmente uma ou mais parcelas consecutivas desde a primeira pendente, em uma confirmação atômica | Antecipação permitida, salto proibido; valor exato da soma; data entre venda e referência; forma única: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos | FON-008; PEN-011 resolvida para MVP |
-| RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; quantidade inteira positiva não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis; sem teto comercial arbitrário; entrada integral sem parcelas excluída | FON-008; PEN-010 parcialmente resolvida, identificação pendente |
+| RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; quantidade inteira positiva não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis; sem teto comercial arbitrário; entrada integral sem parcelas excluída | FON-008; finanças de PEN-010 resolvidas; identificação definida em RN-022/023 |
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida e busca implementada no PR #9 |
 | RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; Limpar critérios restaura termo vazio e Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009; PEN-012 resolvida no recorte do MVP; consulta implementada nos PRs #9/#10 |
 | RN-020 | Abertas e Quitadas exibem 10 vendas por página, após aplicar busca e situação pertinente, preservando ordem e IDs | Paginação numerada abaixo da tabela, anterior/próxima, página atual e faixa/total de resultados; reticências não são páginas. Alterar/limpar critérios volta à página 1; se a coleção diminuir, ajustar à última página válida. Zero resultados não cria página fictícia nem ações habilitadas; uma página dispensa controles de troca. Sem persistência ou nova ordenação | FON-010; confirmada no Harness e implementada no PR #10; evidências anteriores no README |
+| RN-021 | Após cadastro, editar somente nome, CPF, telefone e descrição de qualquer venda, inclusive quitada | Não alterar data da venda, total, entrada, parcelamento ou pagamentos; não propagar entre vendas; cancelamento/falha preservam original. Novos recebimentos continuam por RN-016, sem edição do histórico | FON-011; PEN-008 resolvida, não implementada |
+| RN-022 | CPF obrigatório em cadastro e edição: aceitar com/sem pontuação, exigir 11 dígitos e verificadores válidos, rejeitar sequências repetidas | Sem unicidade, consulta externa ou uso de dados reais. Validade matemática não comprova titularidade ou inexistência de pessoa real | FON-011; PEN-010 resolvida documentalmente, não implementada |
+| RN-023 | Telefone obrigatório brasileiro com DDD: após remover espaços, parênteses e hífen, exigir 10 ou 11 dígitos | Sem +55, lista de DDDs ou regras de prefixo; não consultar serviços externos. Não inferir que o número existe ou pertence a pessoa inexistente | FON-011; PEN-010 resolvida documentalmente, não implementada |
 
 Exemplo financeiro: venda fictícia de R$ 1.000,00, entrada de R$ 200,00 e quatro parcelas produz saldo inicial de R$ 800,00, pago inicial de R$ 200,00 e quatro parcelas de R$ 200,00. A entrada integra recebimentos na data da venda. Liquidar as duas primeiras parcelas num lote de R$ 400,00 resulta em pago de R$ 600,00, saldo de R$ 400,00 e duas de quatro parcelas pagas. Juros, renegociação e políticas de cobrança continuam excluídos.
 
@@ -445,7 +466,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Então** cada caso deve gerar uma única venda com suas parcelas; descrição vazia não deve impedir cadastro e descrição preenchida deve aparecer no detalhe. A data inicial deve ser o dia local do cadastro e aceitar alteração.
 
 ### CA-007 — Campos inválidos
-- **Requisitos:** RF-004, RF-007, RF-011; RNF-001.
+- **Requisitos:** RF-004, RF-006, RF-007, RF-011; RN-022/023; RNF-001.
 - **Dado** um formulário com campo obrigatório ausente ou valor inválido segundo a regra aprovada,
 - **Quando** tentar confirmar inclusive pelo caminho de envio,
 - **Então** erros em português devem ser revelados junto aos campos, valores preservados e nenhum registro criado ou pagamento efetivado; foco deve facilitar a correção.
@@ -475,10 +496,10 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Então** todas devem ficar Paga com data/forma comuns, saldo zero, situação Quitada, venda removida da projeção de abertas e incluída uma única vez em Quitadas; entrada e recebimento não podem ser duplicados nos resumos.
 
 ### CA-012 — Edição consistente
-- **Requisitos:** RF-006; RN-006, RN-008.
-- **Dado** PEN-008 resolvida ou HIP-002 aceita e uma venda elegível para a alteração,
-- **Quando** editar um campo permitido e confirmar,
-- **Então** detalhe, listagem e derivados afetados devem refletir a mesma versão, sem reescrever pagamentos existentes ou permitir mudanças financeiras ainda não autorizadas.
+- **Requisitos:** RF-006; RN-008, RN-021/022/023.
+- **Dado** uma venda sem recebimentos, com entrada, com parcelas pagas ou quitada,
+- **Quando** editar nome, CPF, telefone ou descrição e confirmar dados válidos,
+- **Então** detalhe e listagem devem refletir a mesma alteração apenas na venda selecionada, sem propagação mesmo com CPF repetido. Data da venda, total, entrada, parcelas, pagamentos, saldos e resumos devem permanecer inalterados; não oferecer edição financeira. Cancelamento e falhas seguem CA-016/017.
 
 ### CA-013 — Duplicidade e parcela já paga
 - **Requisitos:** RF-007, RF-011; RN-008.
@@ -593,7 +614,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 | OBJ-001 | JOR-001 | RF-003 | FON-001, FON-003, FON-004 | CA-004, CA-005, CA-019 |
 | OBJ-002 | JOR-002 | RF-004; RN-001, RN-002, RN-003, RN-006 | FON-001, FON-002, FON-003, FON-004, HIP-001 | CA-006 a CA-009, CA-016, CA-017 |
 | OBJ-001, OBJ-003 | JOR-001, JOR-004 | RF-005; RN-005 | FON-001 | CA-010, CA-011, CA-018, CA-020 |
-| OBJ-002 | JOR-003 | RF-006; RN-008 | FON-001, FON-002, HIP-002 | CA-012, CA-016, CA-017 |
+| OBJ-002 | JOR-003 | RF-006; RN-008/021/022/023 | FON-001, FON-002, FON-011 | CA-007, CA-012, CA-016, CA-017, CA-030 |
 | OBJ-003 | JOR-004 | RF-007; RN-007, RN-008 | FON-001, FON-002, FON-004, HIP-003 | CA-007, CA-011, CA-013, CA-016, CA-017 |
 | OBJ-003 | JOR-004 | RF-008; RN-004 | FON-001 | CA-003, CA-011, CA-014 |
 | OBJ-004 | JOR-005 | RF-009; RN-005, RN-010 | FON-001, HIP-005 | CA-014, CA-020 |
@@ -604,8 +625,15 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 | OBJ-002/003/004 | JOR-002/004/005 | RF-004/007/009/010; RN-011 a RN-017 | FON-008 | CA-008/009/011/013/014/020/024/025 |
 | OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/011; RN-018/019 | FON-009 | CA-002/003/004/005/010/014/018/019/020/023/025/026, somente responsabilidades de consulta na FASE-005 |
 | OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/009; RN-014/020; RNF-007/009 | FON-010 | CA-002/020/026/027/028/029; ajustes planejados, indicadores exclusivos da Visão Geral na FASE-007 |
+| OBJ-002 | JOR-002/003 | RF-004/006; RN-021/022/023 | FON-011 | CA-007/012/016/017/030; regras decididas, validações e seed compatível não implementados |
 
 RNF-001 a RNF-005, RNF-009 e RNF-010 também são transversais aos cenários pertinentes. RNF-006 a RNF-008 têm métodos próprios na seção 9: medições e inspeções futuras, não resultados deste PRD.
+
+### CA-030 — Identificação válida em cadastro e edição
+- **Requisitos:** RF-004/006; RN-001/022/023; RNF-004/005.
+- **Dado** dados exclusivamente sintéticos em um cadastro ou edição,
+- **Quando** confirmar CPF com e sem pontuação e telefone com e sem espaços/parênteses/hífen,
+- **Então** aceitar CPF com 11 dígitos e verificadores válidos, sem sequência repetida, e telefone de 10 ou 11 dígitos incluindo DDD, sem +55. CPF repetido entre vendas não bloqueia. CPF com comprimento/verificadores inválidos ou sequência repetida, telefone fora do comprimento ou com código +55 e campos obrigatórios vazios são rejeitados sem mutação. Não consultar serviços externos ou inferir titularidade. Na FASE-006, substituir os marcadores do seed por números sintéticos compatíveis, mantendo 12 vendas, IDs, valores e regras de calendário; não alegar anonimato ou inexistência de titulares por passarem na validação.
 
 ## 12. Métricas de sucesso e plano de validação
 
@@ -619,7 +647,22 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | MET-004 | Compreensão dos indicadores | Pedir explicação de saldo em aberto, atraso e recebido no mês, usando os registros sintéticos | Não medida | Proposta: ao menos 80% das respostas corretas segundo roteiro definido | Avaliação de Visão Geral e Relatórios |
 | MET-005 | Navegação e reconhecimento dos limites | Percurso por teclado e pergunta sobre uso de dados reais e recarga | Não medida | Proposta: todos os participantes reconhecem a demonstração e a perda de alterações; nenhuma barreira impeditiva nas tarefas essenciais | Início e encerramento da sessão |
 
-**Participantes previstos:** funcionários que cadastram/recebem e pessoa responsável pela gestão, convidados a confirmar. Quantidade, disponibilidade e consentimento para registrar observações dependem de PEN-014. Não apresentar avaliações com amostra pequena como prova estatística; registrar tentativas, participantes e contexto junto dos percentuais.
+**Ambiente de avaliação definido pelo solicitante (PEN-013):** computador do solicitante,
+Intel Core i7-1165G7, 16 GB RAM, placa gráfica informada como 128 MB e SSD de 954 GB.
+Não foram inferidos modelo de GPU ou memória gráfica total. Windows 11 Home,
+versão 10.0.26200/build 26200, observado por consulta local; Google Chrome, versão
+a registrar na execução. Tela 1920×1080, escala Windows 125% (correção final do
+solicitante), zoom Chrome 100%. Resolução física e escala não determinam o viewport
+CSS útil: registrar suas dimensões reais na avaliação, sem equiparar este ambiente
+aos testes Chromium em 1366×768/390×844 ou substituir CA-028. Trata-se de avaliação
+do protótipo, não ambiente de produção; nenhuma medição ou homologação nova foi feita.
+
+**Participantes previstos:** solicitante e equipe da ótica, conforme FON-011.
+Papéis específicos, quantidade, disponibilidade, consentimento e autoridade de aceite
+permanecem indefinidos em PEN-014. MET-001 a MET-005 e a meta de 300 ms/15 vendas
+de HIP-006 foram mantidas para discussão pelo solicitante, não aprovadas ou medidas.
+Não apresentar avaliações com amostra pequena como prova estatística; registrar
+tentativas, participantes e contexto junto dos percentuais.
 
 **Roteiro proposto:** explicar que nada é real; localizar uma venda entre nomes semelhantes; cadastrar venda simples sem entrada; corrigir campo inválido e cancelar uma edição; conferir prévia com entrada sem alegar recebimento; registrar pagamento integral de parcela elegível; conferir migração para Quitadas; interpretar resumos; navegar por teclado; recarregar e explicar o descarte. Casos de borda só entram no roteiro conclusivo após as decisões correspondentes.
 
@@ -635,7 +678,7 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | RIS-002 | Busca e classificação sem limites aprovados | Venda não encontrada ou vencimento classificado de forma indevida | PEN-004, PEN-005 e PEN-007 abertas | Registrar exemplos de borda e decisão antes do aceite conclusivo | Não confirmado |
 | RIS-003 | Inferir problemas universais de entrevistas reconstruídas | Priorizar solução que não simplifica o trabalho | Limitação explícita das fontes | Confirmar relatos; comparar tarefas e observar cadastro e consulta separadamente | Não confirmado |
 | RIS-004 | Confundir MVP com sistema operacional ou substituto da franquia | Uso de dados reais, perda de registros ou escopo excessivo | Não medida | Aviso persistente, dados sintéticos e exclusões explícitas; verificar compreensão | Não confirmado |
-| RIS-005 | Alterar venda com pagamentos sem política definida | Histórico reescrito e divergência de saldos | Regra aberta | PEN-008 e restrição proposta em HIP-002 | Não confirmado |
+| RIS-005 | Edição ultrapassar os quatro campos autorizados | Histórico reescrito e divergência de saldos | Política definida, implementação futura | Testar RN-021 e CA-012 em vendas com/sem entrada, pagamentos e quitação | Não confirmado |
 | RIS-006 | Divergência histórica sobre temas | Retrabalho visual e aprovação ambígua | Conciliação e evidências técnicas da FASE-003 | Preservar PRD/TDD/SDD e regressão de CA-023 nas próximas mudanças | Direção confirmada e implementada no recorte, sem aceite da ótica |
 | RIS-007 | Protótipo mais trabalhoso que a planilha | Baixa aceitação e mais tempo de atendimento | Preocupação expressa em FON-004, sem medição | Observar tarefas reais representadas por dados sintéticos, não apenas preferência estética | Não confirmado |
 | RIS-008 | Ambiente e estrutura incompletos interpretados como implementação | Planejamento baseado em entrega inexistente | Há pastas e saídas sem código verificável | Separar inspeção atual de planejamento; definir ambiente antes de implementar | Não confirmado |
@@ -648,11 +691,11 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | ID | Hipótese | Impacto no produto | Como validar ou decidir | Situação |
 | --- | --- | --- | --- | --- |
 | HIP-001 | Permitir roteiro parcial com bloqueios para calendário, centavos ou entrada indefinidos | Hipótese histórica de redução do roteiro | Substituída pelas decisões RN-011/012/013; nunca foi aprovada | Superada na revisão 1.3 |
-| HIP-002 | Até definir edição, não permitir alterações financeiras que reescrevam parcelas pagas; limitar correções ao que preserve histórico | Reduz risco, mas pode restringir tarefa esperada | Discutir exemplos de correção com a equipe e resolver PEN-008 | Proposta, não aprovada |
+| HIP-002 | Até definir edição, não permitir alterações financeiras que reescrevam parcelas pagas; limitar correções ao que preserve histórico | Hipótese histórica, não aprovada no formato original | Substituída por RN-021: somente quatro campos do cliente, sem edição financeira em qualquer venda | Superada na revisão 1.8 por decisão explícita; não implementada |
 | HIP-003 | Primeiro roteiro somente com uma parcela integral, sem entrada | Hipótese histórica mais restrita que a decisão atual | Substituída por RN-013/016, com entrada e lote sequencial integral | Superada na revisão 1.3; nunca aprovada no formato original |
 | HIP-004 | Configurações explica limites da demonstração, sem controles fictícios | Mantém página navegável sem inventar configurações | Conteúdo confirmado para FASE-003; evidências anteriores em frontend/README.md | Aceita e implementada nesse recorte; sem aceite da ótica |
 | HIP-005 | Usar o dia local da abertura como referência para sessão e dados sintéticos | Referência fixa durante a sessão, renovada ao recarregar | Confirmada pelo solicitante; RN-015 e CA-025 | Aceita na revisão 1.3; domínio não implementado |
-| HIP-006 | Resposta local em até 300 ms com 15 vendas e metas de tarefas da seção 12 são adequadas para a avaliação inicial | Define critérios provisórios de desempenho e usabilidade | Medir no ambiente escolhido e negociar metas com participantes | Proposta, não medida |
+| HIP-006 | Resposta local em até 300 ms com 15 vendas e metas de tarefas da seção 12 são adequadas para a avaliação inicial | Define critérios provisórios de desempenho e usabilidade | Negociar metas/método com participantes antes de medir; seed atual continua com 12 vendas | Mantida para discussão por FON-011; não aprovada nem medida |
 
 ### Pendências e conflitos
 
@@ -665,17 +708,23 @@ Não há linha de base medida. As metas abaixo são sugestões para discussão, 
 | PEN-005 | Combinação, data e normalização da busca | Consulta nas duas coleções | RN-018/019 e CA-004/019/026, confirmados no Harness | Resolvida e implementada na FASE-005, PR #9; refinamentos no PR #10, sem aceite da ótica |
 | PEN-006 | Divergência histórica claro versus dois temas | Direção visual e alternância | Claro/escuro, escuro inicial e memória; specs e evidências da FASE-003 | Resolvida com evidências técnicas anteriores, não aceite da ótica |
 | PEN-007 | Situações gerais de vendas | Projeções | RN-014; Quitada, Atrasada, Próximos dias, Em aberto por prioridade | Resolvida para o MVP em 14/11/2026; não implementada |
-| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Bloqueia edição financeira completa | Validar cenários de correção e preservação de histórico | Aberta; crítica para RF-006 completo |
+| PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida documentalmente por FON-011; implementação futura na FASE-006 |
 | PEN-009 | Referência, períodos, universo dos resumos e efeito de filtros | Indicadores | RN-015 e CA-025; dia da abertura fixo, mês civil, cartões globais e cadastradas incluindo quitadas | Resolvida para o núcleo em 14/11/2026; controles de relatório na FASE-007 |
-| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017 resolve invariantes financeiras; formato e validação de identificação aguardam decisão antes da FASE-006 | Parcialmente resolvida; não presumir CPF único nem checksum |
+| PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; planejar seed sintético compatível na FASE-006 | Resolvida documentalmente por FON-011; novas validações e substituição do seed não implementadas; sem unicidade |
 | PEN-011 | Pagamento integral, ordem, lote, antecipação, datas e formas | Modelo de recebimento e saldo | RN-016 e CA-024; lote consecutivo desde primeira pendente, integral, antecipável, data/forma únicas | Resolvida para o MVP em 14/11/2026; não implementada |
 | PEN-012 | Conteúdos em Configurações e filtros em Quitadas | Telas secundárias | HIP-004 entregue na FASE-003; RN-019 confirma apenas busca única em Quitadas, sem filtros extras | Resolvida no recorte do MVP; Configurações entregue na FASE-003 e consulta de Quitadas nos PRs #9/#10; outros controles fora do escopo |
-| PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Impede afirmar compatibilidade e desempenho medidos | Definir computador/navegador e executar roteiro proposto | Aberta; não bloqueia rascunho |
-| PEN-014 | Quem participa, aprova e quais metas finais? Quais trechos reconstruídos serão confirmados? | Impede alegar validação ou aprovação formal | Agendar avaliação sem prazo inventado e registrar decisões e evidências | Aberta; crítica para aprovação |
+| PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Compatibilidade e desempenho precisam de evidência | Máquina do solicitante, Windows/Chrome, 1920×1080, escala 125%, zoom 100%, seção 12; coletar versão Chrome e viewport CSS e executar roteiro | Parcialmente resolvida: ambiente definido, caracterização da execução e medições pendentes; sem mínimo universal homologado |
+| PEN-014 | Quem participa, aprova e quais metas finais? Quais trechos reconstruídos serão confirmados? | Impede alegar validação ou aprovação formal | Solicitante e equipe previstos; definir papéis/autoridade, metas, quantidade/consentimento e confirmar reconstruções antes do aceite | Aberta; participação prevista confirmada, demais definições e avaliação pendentes |
 
 **Decisões confirmadas e seus limites:** nome, quatro módulos, dados do cliente na venda, parcelas no detalhe e Quitadas interna vêm de FON-001; memória e arquitetura futura vêm de FON-002. FON-008 confirma RN-011 a RN-017 e HIP-005 para o MVP. A solicitação atual autoriza planejamento documental e OpenSpec, não apply, hipóteses remanescentes, aprovação da loja ou conclusão do desenvolvimento.
 
-PEN-008, identificação de PEN-010 e aceite de PEN-013/014 permanecem abertos para suas fases. PEN-005/012 estão resolvidas para o recorte de consulta já entregue. Esta revisão 1.7 apenas concilia o estado documental; não inicia a FASE-006/007, não aprova hipóteses remanescentes nem autoriza reaplicar a FASE-005 ou seus ajustes. As situações históricas de outras pendências resolvidas antes da entrega do núcleo devem ser lidas com o estado vigente da seção 2.
+PEN-008/010 estão resolvidas como decisões, não como funcionalidades entregues.
+PEN-013 conserva a caracterização da execução/medições e PEN-014 conserva autoridade,
+metas e validação abertas. PEN-005/012 seguem resolvidas para a consulta entregue.
+Esta revisão 1.8 autoriza somente documentação e planejamento SDD, não inicia
+FASE-006/007 nem autoriza reaplicar a FASE-005 ou seus ajustes. Textos antigos de
+pendência de edição/identificação foram superados por FON-011; situações históricas
+do núcleo devem ser lidas com o estado vigente da seção 2.
 
 ## 15. Entregas e próximos passos
 
@@ -713,6 +762,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | 1.5 | 16/11/2026 | Registrar entrega/merge da FASE-004, resolver PEN-005/012 por RN-018/019 e CA-026; delimitar consultas da FASE-005 sem antecipar mutações | Respostas e autorização documental no Harness; não implementa consultas nem executa testes |
 | 1.6 | 16/11/2026 | Indicadores exclusivos da Visão Geral; paginação obrigatória RN-020, faixa horizontal, detalhe compacto, fidelidade light/dark e links; CA-027/028/029; explicitar atraso no dia seguinte sem mudar a regra | Pedido documental e confirmações no Harness; sem implementação ou nova execução de testes |
 | 1.7 | 17/11/2026 | Conciliar estado da FASE-005 e ajustes com PRs #9/#10/#11, specs sincronizadas e evidências anteriores; atualizar PEN-005/012 sem alterar requisitos ou IDs | Solicitação de fechamento documental; sem código, novas regras, reexecução de testes da aplicação ou aceite da ótica |
+| 1.8 | 17/11/2026 | Resolver PEN-008/010 por RN-021/022/023 e CA-012/030; HIP-002 superada; definir ambiente com escala 125% e participação prevista; manter metas e aceite pendentes | Decisões e aprovação explícitas no Harness; somente PRD/TDD/README e planejamento OpenSpec no PR #13, sem implementação ou aceite da ótica |
 
 **Refinamento da revisão 1.5 — 16/11/2026:** planejamento anterior da branch
 `feature/fase-005` reutilizado por autorização explícita. Confirmados busca única,

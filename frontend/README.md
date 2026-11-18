@@ -272,6 +272,49 @@ aprovou as sete specs e `git diff --check` passou com avisos LF/CRLF; em `fronte
 `npm.cmd run format:check` passou. Reutilizados PRD 1.7, TDD 1.11 e o registro SDD
 arquivado: não há novo requisito, decisão ou tarefa funcional que exija outra Change.
 
+#### Decisões de produto — PRD 1.8 / TDD 1.12 (somente planejamento)
+
+Após perguntas e aprovação explícita no Harness, foram definidos RN-021/022/023,
+CA-012/030 e DEC-019: após cadastro, somente nome, CPF, telefone e descrição serão
+editáveis, inclusive em quitadas e apenas na venda selecionada. Data da venda,
+total, entrada, parcelamento e pagamentos não serão editáveis. Cadastro/edição
+exigirão CPF com 11 dígitos, verificadores e rejeição de sequências repetidas, sem
+unicidade, e telefone BR de 10/11 dígitos incluindo DDD, com espaços/parênteses/hífen
+permitidos e sem +55, lista de DDDs ou regras de prefixo. Sem serviços externos.
+
+As novas regras e a substituição dos marcadores CPF-DEMO/TEL-DEMO por números
+sintéticos compatíveis ficam planejadas para a FASE-006; não foram implementadas
+neste PR. A Change `openspec/changes/decisoes-edicao-identificacao-avaliacao/`
+contém proposta, desenho, três deltas e tarefas futuras desmarcadas. Ela prepara
+regras internas/seed, não entrega nem autoriza toda a UI da FASE-006. As specs
+principais e o código continuam descrevendo/implementando a entrega anterior.
+
+Ambiente de avaliação definido: máquina do solicitante, i7-1165G7, 16 GB RAM,
+placa gráfica informada como 128 MB (sem inferir modelo ou memória total), SSD
+954 GB; Windows 11 Home 10.0.26200/build 26200 observado por consulta local;
+Chrome com versão a registrar, tela 1920×1080, escala Windows **125%** e zoom
+Chrome 100%. Coletar viewport CSS real na execução; não equiparar resolução física
+aos testes Chromium em 1366×768/390×844 nem substituir CA-028. Não é ambiente de
+produção ou homologação concluída.
+
+PEN-008/010 resolvidas como decisões, ainda sem implementação. PEN-013 permanece
+parcial por versão Chrome/viewport/medições; PEN-014 prevê solicitante e equipe da
+ótica, mas mantém papéis/autoridade, quantidade/consentimento, metas e confirmação
+das entrevistas reconstruídas em aberto. MET-001 a MET-005 e HIP-006 (300 ms/15
+vendas) permanecem para discussão, não aprovadas nem medidas. Este registro não
+autoriza código, alteração do seed, apply, avaliação ou merge.
+
+Verificações desta revisão documental: na raiz,
+`openspec validate decisoes-edicao-identificacao-avaliacao --strict` passou;
+`openspec validate --all --strict` aprovou sete specs e a nova Change (8 itens).
+`openspec status --change decisoes-edicao-identificacao-avaliacao` confirmou 4/4
+artefatos de planejamento e `openspec list --json` confirmou 0/6 tarefas executadas.
+`git diff --check` passou com avisos LF/CRLF; `npm.cmd run format:check` em
+`frontend/` passou. Revisado PRD → TDD → deltas → desenho/tarefas, com conferência
+do diff sem alterações em código, testes, dependências ou specs principais.
+Não executados instalação, build, testes unitários/componentes/E2E, novas medições,
+revisão visual ou avaliação com a ótica, por ser entrega exclusivamente documental.
+
 #### Regressão limpa FASE-005 — 16/11/2026
 
 Ambiente: Windows 11, Node 24.21.0/npm 11.19.0, versões do manifesto/lockfile mantidas.
