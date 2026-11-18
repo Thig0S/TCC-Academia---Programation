@@ -177,7 +177,8 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await expect(page.getByRole('main')).toContainText('90000000175');
   await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
   await expect(page.getByRole('main').getByRole('table')).toBeVisible();
-  await expect(page.getByRole('main').locator('button, form')).toHaveCount(0);
+  await expect(page.getByRole('main').locator('form')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toBeVisible();
   const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
   await expect(navegacao.locator('div.modulo-ativo')).toContainText('Vendas');
   await expect(navegacao.getByRole('link', { name: 'Vendas', exact: true })).not.toHaveAttribute(
@@ -478,8 +479,11 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
       .getByRole('link', { name: /Abrir detalhes da venda/ })
       .first()
       .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
+    const parcelasAbertas = page.getByRole('region', { name: 'Parcelas da venda' });
+    await expect(parcelasAbertas).toBeVisible();
     await expect(
-      page.getByRole('table').locator('.badge').filter({ hasText: 'Aberto' }).first(),
+      parcelasAbertas.locator('.badge').filter({ hasText: 'Aberto' }).first(),
     ).toBeVisible();
     await verificarContraste(tema, 'Parcelas abertas');
   }

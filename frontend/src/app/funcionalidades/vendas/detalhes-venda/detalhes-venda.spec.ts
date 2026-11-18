@@ -46,7 +46,8 @@ describe('DetalhesVenda', () => {
     }
     expect(pagina.querySelector('a[routerLink="/vendas"]')).not.toBeNull();
     expect(pagina.querySelector('a[routerLink="/vendas/quitadas"]')).not.toBeNull();
-    expect(pagina.querySelectorAll('button, form, input').length).toBe(0);
+    expect(pagina.querySelectorAll('form, input').length).toBe(0);
+    expect(pagina.querySelector('[data-acao-receber]')).not.toBeNull();
     expect(servico.consultarVenda(venda.id)).toEqual({
       tipo: 'sucesso',
       valor: venda,

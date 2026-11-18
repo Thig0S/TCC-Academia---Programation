@@ -4,6 +4,9 @@
     @if (sucesso) {
       <p role="status">{{ sucesso }}</p>
     }
+    @if (mensagemRecebimento()) {
+      <p role="status">{{ mensagemRecebimento() }}</p>
+    }
     <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-2">
       <p class="text-body-secondary mb-0">
         Referência da demonstração: {{ formatarDataCivil(referencia) }}
@@ -23,6 +26,22 @@
           "
           >Editar</a
         >
+        @if (resultado.valor.saldoCentavos > 0) {
+          <button
+            type="button"
+            class="btn btn-sm botao-consulta py-0"
+            data-acao-receber
+            (click)="recebendo.set(true)"
+            [attr.aria-label]="
+              'Receber parcelas da venda de ' +
+              resultado.valor.cliente.nome +
+              ', ID ' +
+              resultado.valor.id
+            "
+          >
+            Receber
+          </button>
+        }
       </nav>
     </div>
 
@@ -84,7 +103,7 @@
     </div>
 
     <section class="parcelas-detalhe" aria-labelledby="titulo-parcelas">
-      <h2 id="titulo-parcelas" class="h5">Parcelas</h2>
+      <h2 id="titulo-parcelas" class="h5" tabindex="-1">Parcelas</h2>
       <p id="orientacao-parcelas" class="visually-hidden">
         Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
       </p>
@@ -134,6 +153,13 @@
         </table>
       </div>
     </section>
+    @if (recebendo()) {
+      <app-registrar-pagamento
+        [venda]="resultado.valor"
+        [restaurarFoco]="restaurarFoco"
+        (encerrado)="fecharRecebimento($event)"
+      />
+    }
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />
     <p>Não existe uma venda com este identificador.</p>

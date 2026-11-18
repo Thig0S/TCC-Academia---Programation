@@ -163,6 +163,84 @@ conservar o percurso de detalhe. Exportação, indicadores nas listas e ações 
 Visão Geral/Relatórios continuam ausentes. Recebimento, visual/zoom e regressão
 final ainda pendentes; sem PR antecipado ou aceite da ótica.
 
+### Recebimento em andamento — pausa nas verificações browser
+
+Implementação parcial das tarefas 4.1–4.3: encapsulamento de dialog com `showModal`,
+título associado, cancel/close e descarte no desmonte; foco inicial e callback de
+restauração pós-render para Receber/título de Parcelas. Formulário usa snapshot
+das pendências na abertura, quantidade do prefixo, soma/IDs capturados e campos
+valor/data/forma. Revalida pelo adaptador/domínio e comando da fonte, fecha somente
+após sucesso, preserva rascunho em erro e não desloca seleção obsoleta. Detalhe
+oferece Receber somente com saldo; nenhum plugin Bootstrap/CDK ou regra nova.
+
+`npm.cmd test -- --watch=false`: saída 0, 339/339 em 25 arquivos. Dez casos novos
+cobrem ciclo de vida com doubles de dialog (sem alegar top layer do jsdom), campos
+iniciais, erros/foco, lote antecipado e quitação com resumos, repetição, falha/
+exceção/retry, seleção obsoleta, cancelamento/close/desmonte sem publicação.
+
+`npx.cmd playwright test formularios-vendas.spec.ts`: saída 1, 10/14 aprovados.
+Falhas nos dois viewports (1366×768 e 390×844):
+
+- Fluxo de recebimento alcançou quitação, foco no título e ausência na coleção
+  aberta, mas o seletor global do link Quitadas encontrou dois links (menu e main).
+  A conferência final em Quitadas ainda não terminou. Correção proposta: escopo
+  explícito em main, sem alterar produto nem asserções de quitação.
+- Teste de modalidade confirmou `:modal` e foco inicial, mas o laço de Tab/Shift+Tab
+  encontrou foco fora do dialog. Causa ainda não diagnosticada; não comprova
+  contenção correta nem autoriza relaxar o critério. Cancelamento/Escape/reabertura
+  nos dois temas desse teste ainda não foram alcançados.
+
+Traces/capturas locais em `test-results/`, ignorados pelo Git. Apply pausado para
+orientação conforme fluxo, sem marcar tarefas 4.1–4.3, commit funcional ou PR.
+Build/formatação global e regressão integrada após recebimento não executados;
+evidências anteriores pertencem aos commits de cadastro/edição. Progresso 8/15.
+
+### Diagnóstico autorizado do modal e nova regressão
+
+Diagnóstico browser instrumentado confirmou foco em BODY após Tab de índice 9,
+apesar de `:modal` verdadeiro. Mantido `showModal`; acrescentada ciclagem explícita
+de Tab/Shift+Tab entre primeiro/último controles visíveis habilitados no wrapper,
+sem tabindex no dialog, CDK, relaxamento de teste ou mudança financeira. Seletor
+Quitadas restrito a main. Reexecução dirigida passou 14/14 (saída 0), comprovando
+modalidade/foco/cancelamento/Escape/reabertura em ambos os temas/viewports.
+
+Ampliado o fluxo de quitação para os dois temas e acrescentada integração de entrada
++ lote, com comparação dos resumos sem dupla contagem. Novas execuções reais:
+
+- `npm.cmd test -- --watch=false`: saída 0, 340/340 em 25 arquivos.
+- `npm.cmd run build`: saída 0, 509,14 kB iniciais/99,45 kB estimados; avisos
+  Sass e budget excedido em 9,14 kB, budgets mantidos.
+- `npm.cmd run format:check`: saída 0.
+- `npm.cmd run test:e2e`: saída 1, 49/50. Todos os cenários novos de cadastro,
+  edição, recebimento, quitação, modal/teclado e retorno de foco passaram nos dois
+  viewports. Falhou o cenário histórico de contraste em mobile, dark/Parcelas
+  abertas: a medição encontrou label de busca da lista (razão 1:1), embora o
+  snapshot final já mostre o detalhe. O teste aguarda badge "Aberto" genericamente
+  após clicar detalhe; essa condição pode coincidir ainda na lista, antes de
+  terminar a navegação. Hipótese de corrida de sincronização, não comprovada como
+  correção nem dispensa do requisito de contraste. Trace/captura em test-results.
+
+Tarefas 4.1/4.2 verificadas; 4.3 permanece aberta pela regressão afetada e commit
+pendente. Apply pausado conforme fluxo para orientação sobre investigar/sincronizar
+o teste histórico, mantendo os mínimos de contraste e repetindo a suíte completa.
+
+### Recebimento verificado — fechamento incremental 4.3
+
+Após autorização, o teste histórico aguarda título e região exclusivos do detalhe
+antes de localizar o selo e medir contraste. Sem sleeps/retries, alteração de cores
+ou redução de mínimos. `npm.cmd run test:e2e` completo repetido: saída 0, 50/50.
+Contraste das consultas/parcelas voltou a medir mínimos 4,53:1/4,69:1 nos dois temas
+e viewports; isso não substitui a medição específica de todos os novos formulários.
+
+O recebimento agora tem evidência browser de prefixo único/lote antecipado, valor
+divergente/data/forma, pagamento repetido, quitação, retirada de abertas/inclusão
+única em Quitadas, histórico visível e mesmo ID por navegação interna. Foco retorna
+a Receber ou ao título de Parcelas após quitação; Escape/Cancelar descartam, reabrir
+inicia limpo. Os cenários de quitação/cancelamento percorrem dark/light e ambos os
+viewports. Mantidos 340 unitários/componentes, build e formatação aprovados conforme
+execuções imediatamente anteriores; a única alteração posterior foi sincronização
+de teste E2E. Tarefas visuais/zoom e regressão final continuam pendentes; sem PR.
+
 ## Apply FASE-005 — busca de vendas
 
 Implementada a função pura `buscarVendas` em `src/app/funcionalidades/vendas/venda.busca.ts`.
