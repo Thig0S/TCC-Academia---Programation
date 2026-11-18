@@ -272,7 +272,38 @@ aprovou as sete specs e `git diff --check` passou com avisos LF/CRLF; em `fronte
 `npm.cmd run format:check` passou. Reutilizados PRD 1.7, TDD 1.11 e o registro SDD
 arquivado: não há novo requisito, decisão ou tarefa funcional que exija outra Change.
 
-#### Decisões de produto — PRD 1.8 / TDD 1.12 (somente planejamento)
+#### Apply — identificação e edição interna — 18/11/2026
+
+Pedido explícito de apply da Change `decisoes-edicao-identificacao-avaliacao`,
+em `feature/edicao-identificacao-vendas`, partindo da `main` limpa e alinhada a
+`origion/main` (`e12d360`). Reutilizados PRD 1.8/RN-021/022/023, CA-007/012/016/017/030
+e TDD 1.12/DEC-019; sem nova regra de produto, UI comercial ou avaliação.
+
+Identificação compartilhada em `identificacao.validacoes.ts`: CPF com verificadores
+e rejeição de sequências repetidas; telefone 10/11 dígitos sem +55 ou tabelas externas.
+Cadastro normaliza somente formatação permitida e continua aceitando CPF repetido.
+O seed e as fixtures usam números gerados deterministicamente, sem coleta ou cópia
+de pessoas. Validade matemática **não garante inexistência de titular**. Mantidos
+12 registros iniciais, namespaces, valores, datas e política de calendário anterior.
+A busca continua parcial, sem exigir validação de campo completo.
+
+Verificações incrementais de 1.1/1.2 em `frontend/`:
+
+- `npm.cmd test -- --watch=false`: 241/241 testes, 19 arquivos, saída 0. A primeira
+  execução encontrou uma fixture de CPF inválido num teste de busca (239 passaram,
+  1 falhou); corrigida para identificação sintética compatível, mantendo cobertura
+  de pontuação/substring. Os testes do seed cobrem determinismo, isolamento e bordas.
+- `npm.cmd run build`: saída 0, 491,36 kB iniciais/94,80 kB estimados. Aviso
+  preexistente de depreciação Sass `@import`, sem mudança de dependências.
+- `npm.cmd run format:check`: saída 0.
+- `npm.cmd run test:e2e`: 36/36; `npm.cmd run test:e2e:paginacao-fixture`: 8/8,
+  ambos com saída 0, Chromium em 1366×768 e 390×844. Primeiro E2E bloqueado
+  por servidor preexistente na porta 4200; retomado após liberação pelo usuário,
+  sem encerrar processo alheio ou alterar configs. Servidores próprios dos runners.
+  Fixture mantém aviso de prebundling desativado por otimização. Regressão final
+  será repetida depois da edição interna.
+
+#### Decisões de produto — PRD 1.8 / TDD 1.12 (registro histórico de planejamento)
 
 Após perguntas e aprovação explícita no Harness, foram definidos RN-021/022/023,
 CA-012/030 e DEC-019: após cadastro, somente nome, CPF, telefone e descrição serão

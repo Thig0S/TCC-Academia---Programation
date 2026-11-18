@@ -2,6 +2,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, inject } from '@an
 import { Router } from '@angular/router';
 import { App } from '../app/app';
 import { ServicoDemonstracao } from '../app/nucleo/demonstracao/servico-demonstracao';
+import { criarIdentificacaoSintetica } from '../app/nucleo/demonstracao/identificacao-sintetica';
 
 @Component({
   selector: 'app-paginacao-fixture',
@@ -18,8 +19,7 @@ export class PaginacaoFixture {
       const resultado = this.servico.cadastrarVenda({
         cliente: {
           nome: `Cliente Fixture ${indice}`,
-          cpf: `CPF-DEMO-FIXTURE-${indice}`,
-          telefone: `TEL-DEMO-FIXTURE-${indice}`,
+          ...criarIdentificacaoSintetica(100 + indice),
         },
         dataVenda: this.servico.referencia,
         valorTotalCentavos: 60000,
@@ -45,8 +45,7 @@ export class PaginacaoFixture {
       const venda = this.servico.cadastrarVenda({
         cliente: {
           nome,
-          cpf: `CPF-DEMO-${quantidadeParcelas}-FIXTURE`,
-          telefone: `TEL-DEMO-${quantidadeParcelas}-FIXTURE`,
+          ...criarIdentificacaoSintetica(200 + quantidadeParcelas),
           descricao,
         },
         dataVenda: this.servico.referencia,

@@ -26,7 +26,7 @@ function venda(
 }
 
 describe('buscarVendas', () => {
-  const aberta = venda('a', 'Ágata Silva', 'CPF-DEMO-1', 'TEL-DEMO-1', '2000-02-29', 'Em aberto');
+  const aberta = venda('a', 'Ágata Silva', '90000000175', '00900000001', '2000-02-29', 'Em aberto');
   const proxima = venda(
     'b',
     'Agata Souza',
@@ -53,9 +53,10 @@ describe('buscarVendas', () => {
     expect(buscarVendas(colecao, 'agata silva caio')).toEqual([]);
   });
 
-  it('localiza os marcadores sintéticos textuais e IDs numéricos com pontuação opcional', () => {
-    expect(buscarVendas(colecao, 'cpf-demo-1')).toEqual([aberta]);
-    expect(buscarVendas(colecao, 'tel-demo-1')).toEqual([aberta]);
+  it('localiza identificação sintética e dígitos parciais sem validar o campo completo', () => {
+    expect(buscarVendas(colecao, '900.000.001-75')).toEqual([aberta]);
+    expect(buscarVendas(colecao, '(00) 90000-0001')).toEqual([aberta]);
+    expect(buscarVendas(colecao, '00000175')).toEqual([aberta]);
     expect(buscarVendas(colecao, '123456789')).toEqual([proxima]);
     expect(buscarVendas(colecao, '(11) 91234-5678')).toEqual([proxima]);
     expect(buscarVendas(colecao, '+55 11 99999.0000')).toEqual([atrasada]);

@@ -4,13 +4,14 @@ import { somarCentavos } from '../../funcionalidades/vendas/dinheiro';
 import { projetarVendas } from '../../funcionalidades/vendas/venda.calculos';
 import { Resultado, Venda } from '../../funcionalidades/vendas/venda.modelos';
 import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes';
+import { criarIdentificacaoSintetica } from './identificacao-sintetica';
 
 function exigirSucesso<T>(resultado: Resultado<T>): T {
   if (resultado.tipo !== 'sucesso') throw new RangeError(resultado.mensagem);
   return resultado.valor;
 }
 
-/** Dados inteiramente inventados, sem identificação pessoal plausível ou fonte externa. */
+/** Dados gerados sem fonte pessoal externa; números válidos podem coincidir com titulares. */
 export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
   const { ano, mes, dia } = interpretarDataCivil(referencia);
   const indiceReferencia = (ano - 1) * 12 + mes - 1;
@@ -41,9 +42,8 @@ export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
         {
           cliente: {
             nome: `Cliente DEMO ${indice < 6 ? 'Aurora' : 'Aurora Azul'} ${indice + 1}`,
-            cpf: `CPF-DEMO-${indice + 1}`,
-            telefone: `TEL-DEMO-${indice + 1}`,
-            descricao: 'Registro sintético para demonstração, sem dados pessoais reais.',
+            ...criarIdentificacaoSintetica(indice + 1),
+            descricao: 'Registro gerado sinteticamente; não representa titularidade verificada.',
           },
           dataVenda,
           valorTotalCentavos: comEntrada ? 100000 : 80000,
