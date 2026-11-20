@@ -141,6 +141,150 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
   }
 });
 
+test('confere contraste de textos das páginas novas nos dois temas e viewports', async ({
+  page,
+}) => {
+  await page.goto('/visao-geral');
+  const medir = async () =>
+    page
+      .locator(
+        'main h1, main h2, main h3, main p, main a, main button, main th, main td, main caption',
+      )
+      .evaluateAll((elementos) => {
+        const canais = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+        const compor = (frente: number[], fundo: number[]) =>
+          frente
+            .slice(0, 3)
+            .map(
+              (canal, indice) => canal * (frente[3] ?? 1) + fundo[indice] * (1 - (frente[3] ?? 1)),
+            );
+        const fundo = (elemento: Element | null): number[] => {
+          if (!elemento) return [255, 255, 255];
+          const cor = canais(getComputedStyle(elemento).backgroundColor);
+          return (cor[3] ?? 1) === 1 ? cor : compor(cor, fundo(elemento.parentElement));
+        };
+        const luminancia = (cor: number[]) =>
+          cor
+            .slice(0, 3)
+            .map((canal) => canal / 255)
+            .map((canal) => (canal <= 0.04045 ? canal / 12.92 : ((canal + 0.055) / 1.055) ** 2.4))
+            .reduce((soma, canal, indice) => soma + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+        return elementos
+          .filter((elemento) => (elemento.textContent ?? '').trim())
+          .map((elemento) => {
+            const plano = fundo(elemento);
+            const texto = compor(canais(getComputedStyle(elemento).color), plano);
+            const [maior, menor] = [luminancia(texto), luminancia(plano)].sort((a, b) => b - a);
+            return {
+              texto: (elemento.textContent ?? '').trim().slice(0, 60),
+              razao: (maior + 0.05) / (menor + 0.05),
+            };
+          });
+      });
+
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    for (const rota of ['Visão Geral', 'Relatórios']) {
+      if (rota === 'Relatórios') {
+        await page
+          .getByRole('navigation', { name: 'Navegação principal' })
+          .getByRole('link', { name: 'Relatórios', exact: true })
+          .click();
+        await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+      }
+      const valores = await medir();
+      expect(valores.length, `${tema}/${rota}: textos examinados`).toBeGreaterThan(10);
+      for (const valor of valores)
+        expect(valor.razao, `${tema}/${rota}: ${valor.texto}`).toBeGreaterThanOrEqual(4.5);
+      console.log(
+        `Contraste ${tema}/${rota}: mínimo ${Math.min(...valores.map((valor) => valor.razao)).toFixed(2)}:1 (${valores.length} textos)`,
+      );
+      if (rota === 'Relatórios') {
+        const exportar = page.getByRole('button', { name: 'Exportar relatório' });
+        const linkRelatorios = page
+          .getByRole('navigation', { name: 'Navegação principal' })
+          .getByRole('link', { name: 'Relatórios', exact: true });
+        await linkRelatorios.focus();
+        let exportacaoFocada = false;
+        for (let passo = 0; passo < 12 && !exportacaoFocada; passo++) {
+          await page.keyboard.press('Tab');
+          exportacaoFocada = await exportar.evaluate(
+            (elemento) => document.activeElement === elemento,
+          );
+        }
+        expect(exportacaoFocada, `${tema}/Relatórios: botão alcançável por Tab`).toBe(true);
+        await expect(exportar).toBeFocused();
+        const controle = await exportar.evaluate((elemento) => {
+          const canais = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+          const compor = (frente: number[], fundo: number[]) =>
+            frente
+              .slice(0, 3)
+              .map(
+                (canal, indice) =>
+                  canal * (frente[3] ?? 1) + fundo[indice] * (1 - (frente[3] ?? 1)),
+              );
+          const fundo = (elemento: Element | null): number[] => {
+            if (!elemento) return [255, 255, 255];
+            const cor = canais(getComputedStyle(elemento).backgroundColor);
+            return (cor[3] ?? 1) === 1 ? cor : compor(cor, fundo(elemento.parentElement));
+          };
+          const luminancia = (cor: number[]) =>
+            cor
+              .slice(0, 3)
+              .map((canal) => canal / 255)
+              .map((canal) => (canal <= 0.04045 ? canal / 12.92 : ((canal + 0.055) / 1.055) ** 2.4))
+              .reduce((soma, canal, indice) => soma + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+          const razao = (frente: number[], plano: number[]) => {
+            const [maior, menor] = [luminancia(frente), luminancia(plano)].sort((a, b) => b - a);
+            return (maior + 0.05) / (menor + 0.05);
+          };
+          const estilo = getComputedStyle(elemento);
+          const superficie = fundo(elemento.parentElement);
+          return {
+            borda: razao(compor(canais(estilo.borderTopColor), superficie), superficie),
+            foco: razao(compor(canais(estilo.outlineColor), superficie), superficie),
+            outlineWidth: estilo.outlineWidth,
+            outlineStyle: estilo.outlineStyle,
+          };
+        });
+        expect(controle.borda, `${tema}/Relatórios: borda Exportar`).toBeGreaterThanOrEqual(3);
+        expect(controle.foco, `${tema}/Relatórios: foco Exportar`).toBeGreaterThanOrEqual(3);
+        expect(controle.outlineWidth).toBe('3px');
+        expect(controle.outlineStyle).toBe('solid');
+      }
+      if (rota === 'Relatórios' && tema === 'dark') {
+        await page
+          .getByRole('navigation', { name: 'Navegação principal' })
+          .getByRole('link', { name: 'Visão Geral', exact: true })
+          .click();
+        await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
+      }
+    }
+    const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
+    await navegacao.getByRole('link', { name: 'Vendas', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Vendas' })).toBeVisible();
+    await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
+    await navegacao.getByRole('link', { name: 'Quitadas', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeVisible();
+    await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
+    await navegacao.getByRole('link', { name: 'Relatórios', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+    await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
+    await navegacao.getByRole('link', { name: 'Configurações', exact: true }).click();
+    for (const limite of [
+      'Dados fictícios',
+      'Estado apenas em memória',
+      'Descarte ao recarregar',
+      'Sem uso operacional',
+    ]) {
+      await expect(page.getByRole('main')).toContainText(limite);
+    }
+    await navegacao.getByRole('link', { name: 'Visão Geral', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
+  }
+});
+
 test('abre cada resumo por teclado com ID opaco e orienta foco ao título do detalhe', async ({
   page,
 }) => {

@@ -18,6 +18,10 @@ button {
   border-color: var(--bs-body-color);
   background-color: var(--bs-body-color);
 }
+.botao-consulta:focus-visible {
+  outline: 3px solid var(--bs-primary-text-emphasis);
+  outline-offset: 4px;
+}
 :focus-visible,
 h1:focus,
 main:focus {
