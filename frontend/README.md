@@ -73,6 +73,21 @@ Verificações reais em Windows, Node 24.21.0/npm 11.19.0:
 - Permanece o aviso Sass preexistente para `@import` global. Build e fixture E2E
   ainda não foram executados nesta etapa; serão registrados no fechamento integrado.
 
+### Verificação integrada FASE-007 — tarefa 3.1
+
+O cenário `reconcilia cadastro, entrada, quitação e edição entre listas, Visão Geral
+e Relatórios` passou 2/2 em Chromium 1366×768 e 390×844. Conferiu em centavos
+entrada inicial, saldo remanescente, recebimentos do mês, venda do mês, quitação por
+lote, retirada de saldo/atraso, presença em Quitadas, invariância do detalhe após
+edição de identificação, invariância dos cartões sob filtro e descarte da sessão ao
+recarregar. A referência exibida coincidiu com a data do cadastro.
+
+A primeira falha desse cenário era do próprio teste: `page.goto()` causava recarga
+completa e, portanto, descartava corretamente o estado em memória antes da
+reconciliação. O cenário foi ajustado para navegar pelos links internos da SPA; não
+foi necessária alteração das regras ou do código financeiro. Ao final, uma recarga
+completa confirmou o descarte demonstrativo esperado.
+
 Evidência é Chromium, não valida Chrome alvo nem aceite da ótica. A checagem de
 overflow e teclado não substitui a revisão dedicada de contraste/textos extensos e
 zoom nativo 200% da tarefa 3.2. PEN-013/014/HIP-006 continuam pendentes; sem sync,

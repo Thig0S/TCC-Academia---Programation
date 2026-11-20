@@ -21,7 +21,7 @@ DEC-020; quatro deltas em `specs/`. Não há decisões bloqueantes neste recorte
 
 ## 3. Verificação integrada e fechamento técnico
 
-- [ ] 3.1 Adicionar/executar cenário E2E integrado de cadastro com entrada, recebimento de lote/quitação, edição da identificação, navegação e recarga; verificar reconciliação em centavos entre detalhe, abertas/quitadas, painel e relatórios, referência fixa, filtros sem efeito nos cartões e descarte de mutações na recarga.
+- [x] 3.1 Adicionar/executar cenário E2E integrado de cadastro com entrada, recebimento de lote/quitação, edição da identificação, navegação e recarga; verificar reconciliação em centavos entre detalhe, abertas/quitadas, painel e relatórios, referência fixa, filtros sem efeito nos cartões e descarte de mutações na recarga.
 - [ ] 3.2 Verificar teclado, foco, mensagens, textos extensos, contraste 4,5:1 textual e 3:1 controles/foco nos dois temas e em 1366×768/390×844, além de zoom nativo 200%; registrar evidências, ambiente e impedimentos reais sem usar CSS zoom ou declarar aceite global; comparar Configurações e ausência de cartões em Vendas/Quitadas/Relatórios.
 - [ ] 3.3 Executar em `frontend/` os scripts `npm test -- --watch=false`, `npm run test:e2e`, `npm run test:e2e:paginacao-fixture`, `npm run build` e `npm run format:check`; registrar saídas/contagens/avisos reais no README e corrigir regressões do escopo sem ampliar budgets para mascarar falhas.
 - [ ] 3.4 Conciliar estado de implementação/verificações em PRD, TDD e tarefas preservando IDs e pendências PEN-013/014/HIP-006; verificar rastreabilidade dos quatro deltas e `openspec validate fase-007 --strict`, sem marcar requisitos implementados sem evidência ou confundir conclusão técnica com aceite da ótica.
