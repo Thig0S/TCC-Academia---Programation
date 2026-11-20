@@ -26,6 +26,17 @@ Configurações permanece explicativa. Esta revisão autoriza planejamento, não
 avaliação global ou aceite. Registros anteriores de indisponibilidade continuam
 descrevendo o código observado nesta revisão, não o comportamento futuro planejado.
 
+**Acompanhamento da implementação FASE-007 — 20/11/2026:** o recorte acima foi
+implementado na `feature/fase-007` sem alteração de requisitos, regras financeiras
+ou IDs. Visão Geral, Relatórios e preservação de Configurações estão entregues; o
+E2E integrado conciliou cadastro, entrada, quitação, edição, filtros e recarga. A
+regressão técnica registrou 356 testes unitários, 64 E2E, 8 E2E da fixture, build
+com aviso de budget e formatação aprovada (`frontend/README.md`). A verificação
+visual de contraste/foco passou nos temas/viewports, mas zoom nativo 200% não pôde
+ser aplicado neste ambiente e a tarefa 3.2 permanece aberta; 3.4/Change ainda não
+concluídas. Isto não altera a situação de rascunho para validação, nem comprova
+aceite da ótica. PEN-013/014/HIP-006 permanecem abertas.
+
 **Acompanhamento da FASE-006 — 18/11/2026:** apply explicitamente autorizado na
 `feature/fase-006`, reutilizando PRD 1.8/TDD 1.12 e Change `fase-006`, sem novas
 regras de produto. Implementados cadastro com prévia/entrada, edição exclusiva
