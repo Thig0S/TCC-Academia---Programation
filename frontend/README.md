@@ -38,6 +38,46 @@ Os E2E usam Chromium e não comprovam Chrome alvo, uso operacional ou aceite da 
 Sem alteração dos limites de bundle, PRD/TDD ou especificações principais nesta
 entrega; Relatórios e regressão integrada ainda pendentes.
 
+## Apply FASE-007 — Relatórios — 20/11/2026
+
+Entregues quatro tabelas completas: recebimentos do mês (uma linha por entrada ou
+lote, sem somar alocações novamente), vendas do mês (inclui quitadas), saldos
+positivos por venda e parcelas vencidas. As duas últimas seções são posições na
+referência atual, separadas das movimentações mensais. Período e posição são
+identificados, cada seção tem total próprio e estado vazio próprio, e as tabelas
+mantêm todos os registros elegíveis sem limite de cinco. Links por segmentos Router
+preservam IDs opacos. Não há seletor, gráfico nem faixa global de indicadores.
+O recorte segue RF-010/CA-014 ao separar mês e posição na referência; exportação
+honesta atende CA-015 sem arquivo ou promessa de sucesso.
+
+Exportar relatório permanece uma ação ilustrativa: explicação persistente associada
+ao botão e mensagem `role="status"` após acionamento. Testes verificaram operação
+por teclado, ausência de download/requisição e igualdade do conteúdo financeiro
+antes/depois. Configurações preserva os quatro limites; sua explicação de dados
+fictícios agora esclarece que páginas e alterações são somente demonstrativas, sem
+afirmar que as consultas ainda não existem. Recarga continua descartando a sessão.
+
+Verificações reais em Windows, Node 24.21.0/npm 11.19.0:
+
+- `npm test -- --watch=false`: saída 0, 356/356 em 29 arquivos. Inclui limites
+  inclusivos, fevereiro bissexto e anos 0001/9999, venda anterior recebida no mês,
+  entrada/lote sem dupla contagem, quitação, posições acima de cinco registros,
+  zeros, overflow, imutabilidade e componentes reativos com links opacos.
+- `npm run test:e2e -- e2e/demonstracao-inicial.spec.ts`: saída 0, 42/42 em Chromium
+  1366×768 e 390×844; inclui rotas diretas/internas, foco, aviso, Configurações e
+  acionamento de exportação sem arquivo, rede ou mutação.
+- `npm run test:e2e -- e2e/demonstracao-inicial.spec.ts --grep "Relatórios mantém"`:
+  saída 0, 2/2 adicionais; quatro tabelas com linhas alcançáveis e sem overflow
+  horizontal em tema escuro/claro nos dois viewports.
+- `npx prettier --check` nos arquivos desta funcionalidade e migração: saída 0.
+- Permanece o aviso Sass preexistente para `@import` global. Build e fixture E2E
+  ainda não foram executados nesta etapa; serão registrados no fechamento integrado.
+
+Evidência é Chromium, não valida Chrome alvo nem aceite da ótica. A checagem de
+overflow e teclado não substitui a revisão dedicada de contraste/textos extensos e
+zoom nativo 200% da tarefa 3.2. PEN-013/014/HIP-006 continuam pendentes; sem sync,
+archive, PR ou merge nesta etapa.
+
 ## Apply FASE-006 — dependência de formulários — 18/11/2026
 
 Apply autorizado na `feature/fase-006`, inicialmente limpa. Reutilizados PRD 1.8,

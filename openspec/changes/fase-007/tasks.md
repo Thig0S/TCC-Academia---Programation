@@ -13,11 +13,11 @@ DEC-020; quatro deltas em `specs/`. Não há decisões bloqueantes neste recorte
 
 ## 2. Relatórios mensais e posição atual
 
-- [ ] 2.1 Criar detalhamento puro em `relatorios/relatorios.calculos.ts` para entradas/lotes e vendas do mês, saldos e vencidas na referência; verificar testes de intervalo inclusivo, primeiro/último dia, ano bissexto/0001/9999, venda anterior recebida no mês, quitadas, zero e mais de cinco, soma segura e reconciliação com `consultarPeriodo` sem dupla contagem ou mutação da fonte.
-- [ ] 2.2 Integrar as quatro seções completas à página, com leitura reativa explícita de `vendas()`, mês/posição diferenciados, totais próprios, links e vazios; verificar componentes após publicações aceitas, edição, cancelamento e falha, sem seletor/gráfico/faixa global nem truncamento silencioso.
-- [ ] 2.3 Adicionar Exportar relatório com explicação permanente e mensagem anunciável; verificar componente e E2E por teclado, ausência de download/requisição de dados, falso sucesso e mutação, conforme `relatorios-financeiros` e CA-015.
-- [ ] 2.4 Migrar as expectativas restantes de indisponibilidade em `conteudo.spec.ts` e `e2e/demonstracao-inicial.spec.ts`; verificar navegação direta/interna, foco e manutenção das quatro explicações de Configurações, aviso e temas conforme deltas de navegação/estado.
-- [ ] 2.5 Documentar entrega e resultados reais de Relatórios em `frontend/README.md`, incluindo tabelas extensas, temas e viewports; verificar alinhamento com RF-010/CA-014/015 e testes executados, atualizar tarefas e criar commit próprio da funcionalidade após verificações aplicáveis.
+- [x] 2.1 Criar detalhamento puro em `relatorios/relatorios.calculos.ts` para entradas/lotes e vendas do mês, saldos e vencidas na referência; verificar testes de intervalo inclusivo, primeiro/último dia, ano bissexto/0001/9999, venda anterior recebida no mês, quitadas, zero e mais de cinco, soma segura e reconciliação com `consultarPeriodo` sem dupla contagem ou mutação da fonte.
+- [x] 2.2 Integrar as quatro seções completas à página, com leitura reativa explícita de `vendas()`, mês/posição diferenciados, totais próprios, links e vazios; verificar componentes após publicações aceitas, edição, cancelamento e falha, sem seletor/gráfico/faixa global nem truncamento silencioso.
+- [x] 2.3 Adicionar Exportar relatório com explicação permanente e mensagem anunciável; verificar componente e E2E por teclado, ausência de download/requisição de dados, falso sucesso e mutação, conforme `relatorios-financeiros` e CA-015.
+- [x] 2.4 Migrar as expectativas restantes de indisponibilidade em `conteudo.spec.ts` e `e2e/demonstracao-inicial.spec.ts`; verificar navegação direta/interna, foco e manutenção das quatro explicações de Configurações, aviso e temas conforme deltas de navegação/estado.
+- [x] 2.5 Documentar entrega e resultados reais de Relatórios em `frontend/README.md`, incluindo tabelas extensas, temas e viewports; verificar alinhamento com RF-010/CA-014/015 e testes executados, atualizar tarefas e criar commit próprio da funcionalidade após verificações aplicáveis.
 
 ## 3. Verificação integrada e fechamento técnico
 
