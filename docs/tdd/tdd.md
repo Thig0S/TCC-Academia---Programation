@@ -6,6 +6,14 @@
 
 ## 1. Identificação e situação
 
+**Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
+primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
+DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
+Inspeção read-only confirma `ServicoDemonstracao.resumo`, `vendas`,
+`consultarPeriodo` e páginas ainda indisponíveis. Testes de conteúdo e E2E exigem
+migração explícita desse contrato, sem perder Configurações. Planejamento na
+`feature/fase-007`, não implementação, teste executado ou conclusão da FASE-008.
+
 **Acompanhamento da FASE-006 — 18/11/2026:** PRD 1.8 conciliado antes deste
 registro, sem alteração de requisitos/IDs; reutilizado TDD 1.12. Apply autorizado
 na `feature/fase-006` entrega rotas lazy `/vendas/nova` e `/vendas/:id/editar`,
@@ -151,7 +159,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 18/11/2026, revisão 1.13.
+- **Data e revisão:** 20/11/2026, revisão 1.14.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** FASE-006 implementada e verificada na feature, com specs sincronizadas
   e Change arquivada; revisão e merge pendentes. FASE-007/008, avaliação e aceite
@@ -844,7 +852,7 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Specs consolidadas e Change arquivada via PR #8. |
 | FASE-005 — Consulta de vendas e parcelas | Consultas somente leitura, busca/filtro e detalhe; refinamento sem cartões, paginação de 10 nas duas coleções, barra horizontal, detalhe compacto e links fiéis às referências. | FASE-003/004; DEC-017/018; PRD 1.7/RN-018/019/020/CA-026 a CA-029, sem novos requisitos. | Implementada via PR #9 e refinada via PR #10; 20/20 tarefas da base e 9/9 dos ajustes. Evidências anteriores: 197 testes, 36 E2E reais, 8 E2E de fixtures; geometria/contraste e zoom manual registrados no README. Specs sincronizadas na main em `72ade92`; consolidação documental e arquivamento integrados pelo PR #12 (`c845ce9`), sem aceite da ótica. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia, edição somente dos quatro campos do cliente, validação CPF/telefone e seed compatível; modal de lote sequencial e atualização das consultas. | FASE-005; DEC-004/005/007/010/015/019; PRD/RN-021/022/023 resolve PEN-008/010. Recebimento segue RN-016. | Implementada e verificada na feature em 18/11/2026: 15/15 tarefas, 340 testes, 52 E2E, 8 E2E da fixture, build/formatação; zoom nativo de 200% por relato manual. Specs sincronizadas e Change arquivada em 18/11/2026; revisão, PR único e merge pendentes, sem aceite da ótica. |
-| FASE-007 — Visão Geral, relatórios e configurações | Concentrar os quatro indicadores globais exclusivamente na Visão Geral; integrar análises por período em Relatórios sem duplicar essa faixa; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018; PRD/RF-009/010/RN-015. Controles e filtros adicionais exigem recorte próprio. | Indicadores reconciliados e vazios coerentes; sem métricas fixas ou exportação real/falso sucesso. Não antecipada pelo refinamento da 005; Configurações explicativa possui evidências anteriores. |
+| FASE-007 — Visão Geral, relatórios e configurações | Quatro indicadores exclusivos da Visão Geral e três resumos de cinco; Relatórios do mês fixo e posição de saldos/atrasos na referência; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018/020; PRD 1.10 RF-009/010/RN-015. Sem seletor, gráfico ou novos filtros. | Planejada, não implementada: reconciliação após cadastro/recebimento/edição, vazios, ordem/janela/limites, links opacos, temas, teclado, responsividade e exportação honesta; verificar conforme DEC-020 e registrar evidências. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado/foco/contraste e preparar roteiro demonstrativo com limitações. | FASE-003 a FASE-007 no recorte aprovado; DEC-008/019; máquina de PEN-013 definida, versão Chrome/viewport útil a registrar; papéis/autoridade e metas de PEN-014/HIP-006 pendentes. | Resultados e limitações registrados no ambiente real; não equiparar resolução física a viewport CSS nem evidência Chromium a Chrome. Aceite somente por responsável ainda a definir após avaliação explícita, distinto da conclusão técnica. |
 
 Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026:
@@ -947,6 +955,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-017 | Consultas visíveis e busca | Consumir projeções readonly, derivar pesquisa local e vincular detalhe por ID opaco com Router | Implementada no PR #9; cartões e refinamentos substituídos pela DEC-018 no PR #10 | DEC-003/004/005/008/013; PRD 1.7/RN-018/019/CA-026 |
 | DEC-018 | Refinamento compacto da consulta | Paginação local de 10, sem cartões em Vendas, detalhe compacto, links e temas fiéis às referências | Implementada no PR #10; evidências anteriores no README, sem aceite da ótica | DEC-017; PRD 1.7/RN-014/020/CA-027/028/029 |
 | DEC-019 | Edição, identificação e avaliação | Comando restrito aos dados do cliente, validação compartilhada, seed compatível futuro e avaliação separada de homologação | Regras confirmadas pelo solicitante; desenho proposto, não implementado; metas/aceite pendentes | DEC-004/010/015/016; PRD 1.8/RN-021/022/023/CA-030 e PEN-013/014 |
+| DEC-020 | Visão Geral e Relatórios | Resumos de cinco, mês fixo e posição atual derivados da fonte raiz | Recorte confirmado; desenho proposto, não implementado | DEC-003/004/005/008/015/018; PRD 1.10 RF-009/010, CA-014/015/020/025 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -1468,6 +1477,58 @@ e computed com múltiplas dependências; suporte documental geral, não execuç�
   sem substituir regras financeiras ou arquiteturas vigentes. Revisão necessária
   se forem solicitadas edição financeira, outros formatos/países ou uso operacional.
 
+### DEC-020 — Resumos financeiros visíveis sem novo estado canônico
+
+- **Problema e contexto:** RF-009/010 ainda têm páginas indisponíveis, embora o núcleo
+  já forneça resumo global, projeções e consulta inclusiva por período.
+- **Escopo e restrições:** PRD 1.10, CA-014/015/020/025; FASE-007 apenas. Nenhuma
+  biblioteca, persistência, comando financeiro ou regra de contabilização nova.
+- **Escolha:** páginas OnPush derivam dados por `computed` da fonte raiz existente.
+  Visão Geral lê `resumo` e calcula listas puras em arquivo local de funcionalidade;
+  Relatórios deriva o mês por `limitesDoMes(referencia)` e chama `consultarPeriodo`
+  dentro de derivação que também lê `vendas()`, garantindo invalidação reativa após
+  publicação. O método de consulta, isoladamente, não constitui signal público.
+- **Estrutura proposta:** `visao-geral/visao-geral.calculos.ts` para seleção/ordenação
+  sem mutar arrays readonly; `relatorios/relatorios.calculos.ts` para detalhamento de
+  entradas e recebimentos por data, reutilizando os somadores seguros existentes.
+  Testes junto aos arquivos; HTML separado e SCSS local apenas quando necessário.
+  Não criar store intermediária ou abstração genérica de dashboard.
+- **Contratos:** listas do painel limitadas a cinco, ordenação estável conforme PRD;
+  usar situações projetadas para próximos/atrasados, evitando aritmética de +7 dias
+  fora de 0001–9999. Links por segmentos Router preservam IDs com barras. Relatórios
+  apresenta recebimentos do mês (entrada ou lote com origem identificada), vendas
+  do mês incluindo quitadas, saldos positivos por venda e parcelas atrasadas; estas
+  duas últimas seções usam a referência da sessão, não o filtro de data de venda.
+  Nenhum truncamento silencioso. Totais em centavos e exibição BRL/DD/MM/AAAA.
+- **Interação e acessibilidade:** sem formulários, seletores ou gráfico. Botão
+  Exportar relatório acompanhado de aviso permanente de indisponibilidade; ao acionar,
+  mensagem anunciável sem download, HTTP ou sucesso fictício. Reutilizar tokens,
+  Bootstrap só estilos, cabeçalho, foco de rota e tema. Vazios por seção, tabelas
+  com nomes/cabeçalhos e eventual rolagem interna acessível, sem perda de conteúdo.
+- **Alternativas:** seletor de período e gráfico foram excluídos pelo recorte
+  escolhido; snapshots/cópias de totais duplicariam estado e prejudicariam reatividade.
+- **Justificativa e contrapartidas:** menor escopo e reconciliação direta; não permite
+  análise histórica interativa. Desempate estável é detalhe menor assumido e documentado.
+- **Origem e situação:** recorte confirmado pelo solicitante no Harness em 20/11;
+  detalhamento técnico proposto com base em DEC-003/004/005/008/015/018. Não implementada.
+- **Fontes:** PRD 1.10; `servico-demonstracao.ts`, `venda.calculos.ts`, `conteudo.spec.ts`
+  e `frontend/e2e/demonstracao-inicial.spec.ts`; Context7 `/websites/angular_dev`,
+  https://angular.dev/guide/signals, consultado em 20/11/2026, confirma derivações
+  readonly/lazy e atualização por dependências. Não comprova execução em Angular 22.2.6.
+- **Roadmap interno:** projeções puras/testes → painel/testes → relatórios/testes →
+  regressão e evidências; painel e relatórios não exigem novos comandos. Cada entrega
+  funcional tem commit próprio após verificações, todas no PR único ao concluir a Change.
+- **Verificação planejada:** unitários para zero, mais de cinco, empates, limites de
+  mês/calendário e sem dupla contagem de lote; componentes com TestBed/fonte substituída
+  para vazio e reatividade; E2E com cadastro, entrada, pagamento, quitação e edição,
+  navegação de retorno, IDs opacos e recarga. Migrar asserts de indisponibilidade nos
+  testes existentes, mantendo Configurações, aviso, foco e temas. Executar scripts
+  existentes de teste, E2E/fixture, build e formatação de `frontend/package.json`.
+  Medir contraste nos dois temas, 1366×768 e 390×844 e verificar zoom nativo 200%;
+  registrar limitações sem substituir por CSS zoom ou concluir PEN-013/014/HIP-006.
+- **Condições de revisão:** qualquer seletor, gráfico ou posição histórica exige
+  PRD/TDD antes de SDD; nenhuma pendência global de aceite foi resolvida aqui.
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -1569,6 +1630,7 @@ separadamente, após este registro técnico.
 
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
+| 1.14 — 20/11/2026 | PRD 1.10, recorte e roadmap da FASE-007; derivações e verificação financeira/visual | DEC-020, sem alterar decisões anteriores | Respostas no Harness e inspeção read-only; sem implementação ou testes de aplicação |
 | 1.0 — 12/11/2026 | Documento inicial, entrevista, arquitetura, Mermaid, plano de testes e pendências | DEC-001 a DEC-012 | Solicitação e respostas do usuário; fontes locais e documentação oficial |
 | 1.1 — 12/11/2026 | Roadmap com oito fases, entregas, dependências, bloqueios e critérios de conclusão; correção do destino documental; skill e modelo passam a exigir roadmap | DEC-012 detalhada; demais decisões preservadas | Solicitação explícita do usuário para revisar o TDD e a skill de geração |
 | 1.2 — 12/11/2026 | Bootstrap como base visual, SCSS complementar, integração de temas e atualização de ferramentas, roadmap e verificações | DEC-013 adicionada; DEC-006 parcialmente substituída | Solicitação explícita do usuário para usar Bootstrap em vez de CSS puro |
