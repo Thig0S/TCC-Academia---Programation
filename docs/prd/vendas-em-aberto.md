@@ -31,11 +31,12 @@ implementado na `feature/fase-007` sem alteração de requisitos, regras finance
 ou IDs. Visão Geral, Relatórios e preservação de Configurações estão entregues; o
 E2E integrado conciliou cadastro, entrada, quitação, edição, filtros e recarga. A
 regressão técnica registrou 356 testes unitários, 64 E2E, 8 E2E da fixture, build
-com aviso de budget e formatação aprovada (`frontend/README.md`). A verificação
-visual de contraste/foco passou nos temas/viewports, mas zoom nativo 200% não pôde
-ser aplicado neste ambiente e a tarefa 3.2 permanece aberta; 3.4/Change ainda não
-concluídas. Isto não altera a situação de rascunho para validação, nem comprova
-aceite da ótica. PEN-013/014/HIP-006 permanecem abertas.
+com aviso de budget e formatação aprovada (`frontend/README.md`). As verificações
+de contraste, foco, teclado, mensagens e textos extensos passaram nos
+dois temas/viewports; a tarefa 3.2 foi concluída com evidência E2E e relato manual do
+solicitante de zoom nativo 200% (sem medição independente). A Change fase-007 está
+tecnicamente completa após 3.4, sem aceite global/da ótica; PEN-013/014/HIP-006
+permanecem abertas. Resultados e limitações em `frontend/README.md`.
 
 **Acompanhamento da FASE-006 — 18/11/2026:** apply explicitamente autorizado na
 `feature/fase-006`, reutilizando PRD 1.8/TDD 1.12 e Change `fase-006`, sem novas

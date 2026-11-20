@@ -102,13 +102,29 @@ dos resumos/foco no título, exportação anunciável e tabelas roláveis, além
 verificações das quatro explicações de Configurações e ausência de indicadores em
 Vendas, Quitadas e Relatórios.
 
-Zoom nativo 200% continua sem evidência: atalhos Ctrl+Shift+= em execução Chromium
-headed via Playwright e na sessão de navegador interativo não alteraram DPR (1) nem
-largura CSS. O ambiente não disponibiliza controle confiável de zoom do navegador;
-não usei CSS `zoom` nem escala de página como substituto. Exige verificação manual
-em navegador desktop com zoom nativo e permanece pendente; por isso, a tarefa 3.2
-segue aberta. A medição automatizada de contraste não representa aceite global nem
-substitui validação com tecnologia assistiva/usuários.
+**Complemento da tarefa 3.2 — 20/11/2026:** em solicitação manual, a pessoa
+confirmou zoom nativo do navegador a 200% e relatou que não surgiu barra lateral,
+os elementos não foram distorcidos e permaneceram alinhados conforme o zoom era
+aplicado. É evidência declarativa do solicitante, não medição/reprodução independente;
+browser e versão usados no relato não foram informados. Não foi usado CSS `zoom` como
+substituto.
+
+Na mesma data, `npm.cmd run test:e2e -- e2e/demonstracao-inicial.spec.ts
+e2e/acessibilidade-formularios.spec.ts --workers=1` passou 48/48 em Chromium,
+Windows, viewports 1366×768 e 390×844. Cobriu contraste textual (mínimo medido
+6,78:1 nas páginas novas; 4,50:1 nos formulários/erros), controles e foco (mínimo
+3:1), operação por teclado, erros e mensagens, textos longos/prévia de 24 parcelas,
+rolagem interna do modal, Configurações e ausência de cartões globais em Vendas,
+Quitadas e Relatórios. O documento não teve overflow horizontal nos cenários
+medidos. Uma primeira execução com dois workers teve uma falha em asserção de faixa
+de resultados da lista (estado observado `1–3 de 3` em vez de `1–0 de 0`); não se
+reproduziu na execução serial de 48/48. O runner reportou a depreciação Sass já
+conhecida de `@import`.
+
+Com o relato de zoom e essas verificações, a tarefa técnica 3.2 foi concluída. Isto
+não é medição independente do zoom nativo, homologação do Chrome alvo, auditoria
+integral de acessibilidade nem aceite global/da ótica; tecnologia assistiva e
+avaliação por usuários permanecem fora desta evidência.
 
 ### Regressão final FASE-007 — tarefa 3.3
 
