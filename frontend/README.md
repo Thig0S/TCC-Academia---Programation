@@ -88,6 +88,28 @@ reconciliação. O cenário foi ajustado para navegar pelos links internos da SP
 foi necessária alteração das regras ou do código financeiro. Ao final, uma recarga
 completa confirmou o descarte demonstrativo esperado.
 
+### Verificação de acessibilidade FASE-007 — tarefa 3.2 (parcial)
+
+Em 20/11/2026, Windows/Node 24.21.0/npm 11.19.0, a nova medição Playwright
+executou em Chromium 1366×768 e 390×844, tema escuro e claro. Foram examinados
+33 textos na Visão Geral e 151 em Relatórios: contraste mínimo medido de 7,29:1
+no escuro e 6,78:1 no claro. Borda e foco do botão Exportar passaram o mínimo 3:1;
+foco por teclado apresentou outline sólido de 3 px. A primeira medição identificou
+3,29:1 no texto do botão secundário padrão; foi trocado para o estilo demonstrativo
+de consulta e adicionada regra de outline específica para `:focus-visible`. Após a
+correção, as verificações passaram. Também passaram 6/6 E2E de navegação por teclado
+dos resumos/foco no título, exportação anunciável e tabelas roláveis, além de
+verificações das quatro explicações de Configurações e ausência de indicadores em
+Vendas, Quitadas e Relatórios.
+
+Zoom nativo 200% continua sem evidência: atalhos Ctrl+Shift+= em execução Chromium
+headed via Playwright e na sessão de navegador interativo não alteraram DPR (1) nem
+largura CSS. O ambiente não disponibiliza controle confiável de zoom do navegador;
+não usei CSS `zoom` nem escala de página como substituto. Exige verificação manual
+em navegador desktop com zoom nativo e permanece pendente; por isso, a tarefa 3.2
+segue aberta. A medição automatizada de contraste não representa aceite global nem
+substitui validação com tecnologia assistiva/usuários.
+
 Evidência é Chromium, não valida Chrome alvo nem aceite da ótica. A checagem de
 overflow e teclado não substitui a revisão dedicada de contraste/textos extensos e
 zoom nativo 200% da tarefa 3.2. PEN-013/014/HIP-006 continuam pendentes; sem sync,
