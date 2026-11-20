@@ -1,5 +1,43 @@
 # Base técnica — Vendas em Aberto
 
+## Apply FASE-007 — Visão Geral — 20/11/2026
+
+Entregue a página de Visão Geral com os quatro indicadores derivados de
+`ServicoDemonstracao.resumo()` e três resumos calculados sem mutar as projeções:
+até cinco vendas recentes (quitadas incluídas), até cinco parcelas próximas e até
+cinco atrasadas. As parcelas usam as situações já projetadas pelo domínio; a janela
+próxima permanece hoje a +7 dias inclusivos e datas extremas não geram aritmética
+fora do calendário. Empates mantêm a ordem da fonte, e os links de detalhe usam
+segmentos Router para preservar IDs com barras. Referência, mês, recortes, limites e
+mensagens vazias são identificados na página. Os quatro indicadores não dependem
+dos resumos limitados.
+Esse recorte mantém alinhamento com CA-014/020: posição global reconciliável,
+vendas quitadas incluídas e filtros de Vendas sem efeito sobre os indicadores.
+
+As expectativas temporárias de indisponibilidade foram migradas somente para Visão
+Geral; Configurações continua com suas quatro explicações e Relatórios permanece
+indisponível até o segundo grupo da Change. Não houve alteração no domínio, seed,
+persistência, dependências ou regras financeiras.
+
+Verificações reais em Windows, Node 24.21.0/npm 11.19.0:
+
+- `npm test -- --watch=false`: saída 0, 346/346 em 27 arquivos. Inclui seleções
+  puras para listas vazias, limites, ordenação/empates, quitadas, situações de
+  parcelas e bordas civis; componente com fonte substituída, vazios, reatividade,
+  identificação editada sem alteração do resumo e links com ID opaco.
+- `npm run test:e2e -- e2e/demonstracao-inicial.spec.ts`: saída 0, 40/40 em Chromium
+  1366×768 e 390×844. Os resumos exibiram cinco links cada; navegação por teclado
+  abriu IDs `seed/venda/...` e moveu foco ao título do detalhe. Ambos os temas foram
+  exercitados em cada viewport, sem overflow horizontal observado na Visão Geral.
+- `npx prettier --check` nos arquivos da entrega: saída 0.
+- O runner reportou aviso Sass preexistente sobre `@import` em `src/styles.scss`.
+
+A checagem de overflow não substitui inspeção de contraste dos elementos da página,
+zoom nativo 200% ou avaliação visual completa; esses itens permanecem na tarefa 3.2.
+Os E2E usam Chromium e não comprovam Chrome alvo, uso operacional ou aceite da ótica.
+Sem alteração dos limites de bundle, PRD/TDD ou especificações principais nesta
+entrega; Relatórios e regressão integrada ainda pendentes.
+
 ## Apply FASE-006 — dependência de formulários — 18/11/2026
 
 Apply autorizado na `feature/fase-006`, inicialmente limpa. Reutilizados PRD 1.8,
