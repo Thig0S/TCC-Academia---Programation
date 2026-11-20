@@ -110,6 +110,36 @@ em navegador desktop com zoom nativo e permanece pendente; por isso, a tarefa 3.
 segue aberta. A medição automatizada de contraste não representa aceite global nem
 substitui validação com tecnologia assistiva/usuários.
 
+### Regressão final FASE-007 — tarefa 3.3
+
+Execuções integrais em `frontend/`, Windows/Node 24.21.0/npm 11.19.0, em 20/11/2026:
+
+- `npm test -- --watch=false`: saída 0; 356/356 testes em 29 arquivos.
+- `npm run test:e2e`: saída 0; 64/64 em Chromium 1366×768 e 390×844. Inclui
+  cenário integrado 3.1, contraste das páginas novas, controles/foco, navegação,
+  Configurações, exportação e regressões existentes. Sem falhas de console/pageerror.
+- `npm run test:e2e:paginacao-fixture`: saída 0; 8/8 nos dois viewports e temas.
+  Permanecem medições intencionais de geometria/rolagem interna da fixture longa.
+- `npm run build`: saída 0; bundle inicial 511,34 kB e transferência estimada
+  99,50 kB. O aviso de budget de 500 kB permanece excedido em 11,34 kB; limite de
+  erro de 1 MB e budgets foram mantidos. Também reportado aviso Sass `@import`.
+- `npm run format:check`: saída 0; todos os arquivos formatados.
+- A fixture também avisou que prebundling não será usado com otimização de scripts.
+  Não houve falhas de compilação; os avisos acima não foram ocultados.
+
+### Conciliação documental FASE-007 — tarefa 3.4 (20/11/2026)
+
+PRD 1.10 e TDD 1.14 receberam acompanhamentos de implementação sem alterar requisitos,
+decisões ou IDs. Ambos registram o estado parcial de 3.2, o zoom nativo pendente,
+as evidências da tarefa 3.3 e a ausência de aceite. Permanecem explicitamente abertas
+PEN-013, PEN-014 e HIP-006; a FASE-008 e a aprovação da ótica não foram declaradas
+concluídas. Os quatro deltas da Change continuam vinculados às capabilities de
+Visão Geral, Relatórios, navegação e estado demonstrativo, sem sincronização das
+specs principais nesta etapa.
+
+`openspec validate fase-007 --strict`: válido. A Change continua parcialmente
+implementada, com task 3.2 aberta; não houve sync, archive, PR ou merge.
+
 Evidência é Chromium, não valida Chrome alvo nem aceite da ótica. A checagem de
 overflow e teclado não substitui a revisão dedicada de contraste/textos extensos e
 zoom nativo 200% da tarefa 3.2. PEN-013/014/HIP-006 continuam pendentes; sem sync,

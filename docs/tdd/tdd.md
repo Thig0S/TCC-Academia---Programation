@@ -1,18 +1,29 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
 > Technical Design Document: documento de desenho técnico do MVP visual. Não representa
-> implementação, aprovação da ótica ou desenvolvimento orientado a testes. Todos os fluxos,
-> arquivos e testes descritos como planejados ainda precisam de implementação autorizada.
+> aprovação da ótica nem desenvolvimento orientado a testes. Registros de planejamento abaixo
+> são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
+> roadmap. Implementação técnica não equivale a aceite do produto.
 
 ## 1. Identificação e situação
 
 **Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
 primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
 DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
-Inspeção read-only confirma `ServicoDemonstracao.resumo`, `vendas`,
-`consultarPeriodo` e páginas ainda indisponíveis. Testes de conteúdo e E2E exigem
-migração explícita desse contrato, sem perder Configurações. Planejamento na
-`feature/fase-007`, não implementação, teste executado ou conclusão da FASE-008.
+Inspeção read-only confirmou `ServicoDemonstracao.resumo`, `vendas` e
+`consultarPeriodo`; a indisponibilidade descrita nesta revisão é histórica.
+
+**Acompanhamento da implementação FASE-007 — 20/11/2026:** DEC-020 foi aplicada na
+`feature/fase-007`, sem alteração de arquitetura, dependências, requisitos ou IDs.
+Visão Geral e Relatórios leem a fonte raiz existente, Configurações segue
+explicativa e exportação permanece indisponível. A Change está em 10/13 tarefas:
+3.1 e 3.3 concluídas; 3.2 parcialmente verificada, com zoom nativo 200% pendente;
+3.4 em andamento. Evidências correntes e avisos estão em `frontend/README.md`:
+356 testes unitários, 64 E2E, 8 E2E da fixture, build 511,34 kB (11,34 kB acima
+do budget de aviso de 500 kB, sem alterar budgets) e `format:check` aprovado. A
+compatibilidade Chrome, a validação manual nativa de zoom e o aceite permanecem
+pendentes. Não confundir conclusão técnica desta Change com FASE-008 ou aprovação
+da ótica.
 
 **Acompanhamento da FASE-006 — 18/11/2026:** PRD 1.8 conciliado antes deste
 registro, sem alteração de requisitos/IDs; reutilizado TDD 1.12. Apply autorizado
@@ -852,7 +863,7 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-004 — Domínio demonstrativo e estado | Modelos, 12 vendas sintéticas, funções puras, estado raiz, cadastro e recebimento sequencial internos, projeções e testes. | DEC-004/005/015/016; PRD 1.4. Sem UI comercial ou edição. | Implementada e integrada via PR #7; evidências anteriores: 156 testes, 26 E2E e build/formatação aprovados. Specs consolidadas e Change arquivada via PR #8. |
 | FASE-005 — Consulta de vendas e parcelas | Consultas somente leitura, busca/filtro e detalhe; refinamento sem cartões, paginação de 10 nas duas coleções, barra horizontal, detalhe compacto e links fiéis às referências. | FASE-003/004; DEC-017/018; PRD 1.7/RN-018/019/020/CA-026 a CA-029, sem novos requisitos. | Implementada via PR #9 e refinada via PR #10; 20/20 tarefas da base e 9/9 dos ajustes. Evidências anteriores: 197 testes, 36 E2E reais, 8 E2E de fixtures; geometria/contraste e zoom manual registrados no README. Specs sincronizadas na main em `72ade92`; consolidação documental e arquivamento integrados pelo PR #12 (`c845ce9`), sem aceite da ótica. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia, edição somente dos quatro campos do cliente, validação CPF/telefone e seed compatível; modal de lote sequencial e atualização das consultas. | FASE-005; DEC-004/005/007/010/015/019; PRD/RN-021/022/023 resolve PEN-008/010. Recebimento segue RN-016. | Implementada e verificada na feature em 18/11/2026: 15/15 tarefas, 340 testes, 52 E2E, 8 E2E da fixture, build/formatação; zoom nativo de 200% por relato manual. Specs sincronizadas e Change arquivada em 18/11/2026; revisão, PR único e merge pendentes, sem aceite da ótica. |
-| FASE-007 — Visão Geral, relatórios e configurações | Quatro indicadores exclusivos da Visão Geral e três resumos de cinco; Relatórios do mês fixo e posição de saldos/atrasos na referência; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018/020; PRD 1.10 RF-009/010/RN-015. Sem seletor, gráfico ou novos filtros. | Planejada, não implementada: reconciliação após cadastro/recebimento/edição, vazios, ordem/janela/limites, links opacos, temas, teclado, responsividade e exportação honesta; verificar conforme DEC-020 e registrar evidências. |
+| FASE-007 — Visão Geral, relatórios e configurações | Quatro indicadores exclusivos da Visão Geral e três resumos de cinco; Relatórios do mês fixo e posição de saldos/atrasos na referência; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018/020; PRD 1.10 RF-009/010/RN-015. Sem seletor, gráfico ou novos filtros. | Implementação na `feature/fase-007`; 10/13 tarefas. Painel, Relatórios e reconciliação integrados implementados e verificados; regressão: 356 testes, 64 E2E, 8 fixture, build/format executados. Tarefa 3.2 permanece parcial por zoom nativo 200% não verificável no ambiente; 3.4 requer conciliação/strict validate. Sem aceite da ótica. |
 | FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado/foco/contraste e preparar roteiro demonstrativo com limitações. | FASE-003 a FASE-007 no recorte aprovado; DEC-008/019; máquina de PEN-013 definida, versão Chrome/viewport útil a registrar; papéis/autoridade e metas de PEN-014/HIP-006 pendentes. | Resultados e limitações registrados no ambiente real; não equiparar resolução física a viewport CSS nem evidência Chromium a Chrome. Aceite somente por responsável ainda a definir após avaliação explícita, distinto da conclusão técnica. |
 
 Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026:
@@ -865,7 +876,7 @@ Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026
 | FASE-004 | Implementada e integrada na main via PR #7; specs consolidadas e Change arquivada via PR #8 |
 | FASE-005 | Consultas e ajustes integrados na main pelos PRs #9/#10; base arquivada pelo PR #11; specs dos ajustes sincronizadas em `72ade92` e registro em archive integrado pelo PR #12 (`c845ce9`) |
 | FASE-006 | Implementada e verificada na feature em 18/11/2026 (15/15 tarefas; cadastro, edição e recebimento funcionais); specs principais sincronizadas em `openspec/specs` e Change arquivada em `openspec/changes/archive/2026-11-18-fase-006/`; revisão/merge pendentes |
-| FASE-007 | Conteúdo financeiro não implementado; Configurações explicativa entregue na FASE-003 |
+| FASE-007 | Parcialmente implementada e verificada na `feature/fase-007` (10/13 tarefas); zoom nativo 200% pendente em 3.2, conciliação/validação SDD pendente em 3.4; sem aceite/merge |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
 
 **Recorte histórico da FASE-003 — revisão 1.4, entregue posteriormente:** somente estrutura visual, navegação e temas.
@@ -1510,7 +1521,9 @@ e computed com múltiplas dependências; suporte documental geral, não execuç�
 - **Justificativa e contrapartidas:** menor escopo e reconciliação direta; não permite
   análise histórica interativa. Desempate estável é detalhe menor assumido e documentado.
 - **Origem e situação:** recorte confirmado pelo solicitante no Harness em 20/11;
-  detalhamento técnico proposto com base em DEC-003/004/005/008/015/018. Não implementada.
+  detalhamento técnico e implementação na `feature/fase-007` com base em
+  DEC-003/004/005/008/015/018. Aplicação parcial comprovada por testes da Change;
+  zoom nativo 200% segue bloqueado pelo ambiente, e aceite final da ótica não realizado.
 - **Fontes:** PRD 1.10; `servico-demonstracao.ts`, `venda.calculos.ts`, `conteudo.spec.ts`
   e `frontend/e2e/demonstracao-inicial.spec.ts`; Context7 `/websites/angular_dev`,
   https://angular.dev/guide/signals, consultado em 20/11/2026, confirma derivações
@@ -1526,6 +1539,13 @@ e computed com múltiplas dependências; suporte documental geral, não execuç�
   existentes de teste, E2E/fixture, build e formatação de `frontend/package.json`.
   Medir contraste nos dois temas, 1366×768 e 390×844 e verificar zoom nativo 200%;
   registrar limitações sem substituir por CSS zoom ou concluir PEN-013/014/HIP-006.
+- **Verificação realizada — 20/11/2026:** 356 unitários, 64 E2E de aplicação, 8
+  E2E da fixture e `format:check` passaram; build concluiu com bundle inicial de
+  511,34 kB, excedendo o aviso de 500 kB em 11,34 kB, sem aumentar budgets. E2E
+  de contraste mediu mínimos 7,29:1 (escuro) e 6,78:1 (claro) para textos de
+  Visão Geral/Relatórios nos dois viewports, e foco/borda do Exportar atende 3:1.
+  Zoom nativo não foi aplicado pelos atalhos em Chromium headed nem no navegador
+  interativo disponível; sem CSS zoom. A tarefa 3.2 fica aberta até medição manual.
 - **Condições de revisão:** qualquer seletor, gráfico ou posição histórica exige
   PRD/TDD antes de SDD; nenhuma pendência global de aceite foi resolvida aqui.
 
