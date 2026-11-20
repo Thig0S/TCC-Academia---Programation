@@ -29,11 +29,8 @@ test('abre a estrutura e carrega a logo local sem distorção', async ({ page })
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
   await expect(page.getByText(produto, { exact: true })).toBeVisible();
-  await expect(
-    page.getByText('Os fluxos comerciais ainda não estão disponíveis nesta demonstração.', {
-      exact: true,
-    }),
-  ).toBeVisible();
+  await expect(page.getByText('Indicadores financeiros globais')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Vendas recentes' })).toBeVisible();
   await expect(page.locator('form, input')).toHaveCount(0);
   const logo = page.locator('.identidade img');
   await expect(logo).toBeVisible();
@@ -58,19 +55,86 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
 });
 
-test('Visão Geral e Relatórios explicam indisponibilidade sem consulta ou ações fictícias', async ({
+test('Visão Geral apresenta indicadores e resumos limitados; Relatórios segue indisponível', async ({
   page,
 }) => {
-  for (const [rota, titulo] of destinos.filter(([rota]) =>
-    ['/visao-geral', '/relatorios'].includes(rota),
-  )) {
-    await page.goto(rota);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
-    await expect(page.getByRole('main')).toContainText(/nenhuma consulta foi realizada/i);
-    await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
-    await expect(page.getByRole('main').locator('button')).toHaveCount(0);
-    await expect(page.getByRole('button')).toHaveCount(1);
-    await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|\d/);
+  await page.goto('/visao-geral');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
+  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  await expect(
+    page.getByRole('main').getByRole('heading', { name: 'Indicadores financeiros globais' }),
+  ).toHaveCount(1);
+  await expect(page.locator('[aria-label="Indicadores financeiros globais"] article')).toHaveCount(
+    4,
+  );
+  for (const resumo of ['Vendas recentes', 'Parcelas próximas', 'Parcelas atrasadas']) {
+    const secao = page.getByRole('region', { name: resumo });
+    await expect(secao).toBeVisible();
+    await expect(secao.getByRole('link')).toHaveCount(5);
+    await expect(secao).toContainText('Até 5');
+  }
+  await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
+  await expect(page.getByRole('main').locator('button')).toHaveCount(0);
+
+  await page.goto('/relatorios');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatórios');
+  await expect(page.getByRole('main')).toContainText(/nenhuma consulta foi realizada/i);
+  await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
+  await expect(page.getByRole('main').locator('button')).toHaveCount(0);
+  await expect(page.getByRole('button')).toHaveCount(1);
+  await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|\d/);
+});
+
+test('abre cada resumo por teclado com ID opaco e orienta foco ao título do detalhe', async ({
+  page,
+}) => {
+  await page.goto('/configuracoes');
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Visão Geral', exact: true })
+    .focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeFocused();
+
+  for (const nome of ['Vendas recentes', 'Parcelas próximas', 'Parcelas atrasadas']) {
+    const secao = page.getByRole('region', { name: nome });
+    const link = secao.getByRole('link').first();
+    const href = await link.getAttribute('href');
+    const cliente = await link.innerText();
+    expect(href).toMatch(/^\/vendas\/seed%2Fvenda%2F\d+$/i);
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/vendas\/seed%2Fvenda%2F\d+$/i);
+    await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeFocused();
+    await expect(page.getByRole('main')).toContainText(cliente);
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Visão Geral', exact: true })
+      .focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeFocused();
+  }
+});
+
+test('Visão Geral preserva os indicadores e os três resumos nos dois temas sem corte horizontal', async ({
+  page,
+}) => {
+  await page.goto('/visao-geral');
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(
+      page.locator('[aria-label="Indicadores financeiros globais"] article'),
+    ).toHaveCount(4);
+    for (const nome of ['Vendas recentes', 'Parcelas próximas', 'Parcelas atrasadas']) {
+      const secao = page.getByRole('region', { name: nome });
+      await expect(secao.getByRole('link')).toHaveCount(5);
+      await expect(secao).toBeVisible();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
   }
 });
 
@@ -532,7 +596,14 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
   for (const rota of ['/visao-geral', '/relatorios']) {
     await page.goto(rota);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|cadastrar|pagar|exportar/i);
+    if (rota === '/relatorios')
+      await expect(page.getByRole('main')).not.toContainText(
+        /R\$|\bCPF\b|cadastrar|pagar|exportar/i,
+      );
+    else {
+      await expect(page.getByRole('main')).toContainText('Total em aberto');
+      await expect(page.getByRole('main')).toContainText('Até 5');
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

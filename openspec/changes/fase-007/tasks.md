@@ -6,10 +6,10 @@ DEC-020; quatro deltas em `specs/`. Não há decisões bloqueantes neste recorte
 
 ## 1. Visão Geral e resumos da sessão
 
-- [ ] 1.1 Criar seleções puras em `visao-geral/visao-geral.calculos.ts`, sem mutar a fonte; verificar testes de zero/uma/mais de cinco vendas e parcelas, ordem/empates, inclusão de quitadas, liquidação, ontem/hoje/+7/+8 e bordas 0001/9999 conforme `visao-geral`.
-- [ ] 1.2 Integrar os quatro indicadores de `resumo()` e os três resumos reativos à página, com referência/mês, identificação, limite e vazios próprios; verificar testes de componente com fonte substituída, links de ID opaco, atualização após cadastro/recebimento e invariância financeira após edição/rejeição.
-- [ ] 1.3 Migrar somente as expectativas de indisponibilidade de Visão Geral em `conteudo.spec.ts` e `e2e/demonstracao-inicial.spec.ts`; adicionar E2E de resumos e navegação por teclado com foco no título e IDs com barras, mantendo cobertura de Relatórios ainda indisponível até o grupo 2; verificar suítes afetadas aprovadas sem ignorar testes.
-- [ ] 1.4 Documentar a entrega e resultados reais do painel em `frontend/README.md`, incluindo ambos os temas, 1366×768/390×844 e limites observados; verificar consistência com CA-014/020 e testes executados, atualizar tarefas e criar commit próprio da funcionalidade apenas após verificações aplicáveis.
+- [x] 1.1 Criar seleções puras em `visao-geral/visao-geral.calculos.ts`, sem mutar a fonte; verificar testes de zero/uma/mais de cinco vendas e parcelas, ordem/empates, inclusão de quitadas, liquidação, ontem/hoje/+7/+8 e bordas 0001/9999 conforme `visao-geral`.
+- [x] 1.2 Integrar os quatro indicadores de `resumo()` e os três resumos reativos à página, com referência/mês, identificação, limite e vazios próprios; verificar testes de componente com fonte substituída, links de ID opaco, atualização após cadastro/recebimento e invariância financeira após edição/rejeição.
+- [x] 1.3 Migrar somente as expectativas de indisponibilidade de Visão Geral em `conteudo.spec.ts` e `e2e/demonstracao-inicial.spec.ts`; adicionar E2E de resumos e navegação por teclado com foco no título e IDs com barras, mantendo cobertura de Relatórios ainda indisponível até o grupo 2; verificar suítes afetadas aprovadas sem ignorar testes.
+- [x] 1.4 Documentar a entrega e resultados reais do painel em `frontend/README.md`, incluindo ambos os temas, 1366×768/390×844 e limites observados; verificar consistência com CA-014/020 e testes executados, atualizar tarefas e criar commit próprio da funcionalidade apenas após verificações aplicáveis.
 
 ## 2. Relatórios mensais e posição atual
 
