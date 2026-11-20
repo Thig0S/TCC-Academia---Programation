@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.9 — consolidação documental e arquivamento da FASE-006, em 18/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.10 — planejamento da FASE-007, em 20/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,17 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Planejamento da FASE-007 — 20/11/2026:** confirmado pelo solicitante no Harness:
+Relatórios usa somente o mês civil da referência fixa da sessão, sem seletor de
+período ou gráfico. Visão Geral apresenta os quatro indicadores globais e três
+resumos limitados a cinco itens cada: vendas recentes por data decrescente,
+parcelas pendentes de hoje a +7 dias e parcelas atrasadas por vencimento crescente.
+Cada resumo informa seu limite e oferece links para os detalhes. Saldos e atrasos
+em Relatórios são a posição na referência, não uma reconstrução histórica mensal.
+Configurações permanece explicativa. Esta revisão autoriza planejamento, não apply,
+avaliação global ou aceite. Registros anteriores de indisponibilidade continuam
+descrevendo o código observado nesta revisão, não o comportamento futuro planejado.
 
 **Acompanhamento da FASE-006 — 18/11/2026:** apply explicitamente autorizado na
 `feature/fase-006`, reutilizando PRD 1.8/TDD 1.12 e Change `fase-006`, sem novas
@@ -340,6 +351,14 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Origem/situação:** FON-001 §7 e FON-008; referência, mês e entrada definidos para o MVP; apresentação dos indicadores não implementada.
 - **Aceite:** CA-014, CA-020.
 
+**Recorte FASE-007 confirmado:** até cinco vendas recentes (incluindo quitadas),
+ordenadas por data da venda decrescente; até cinco parcelas pendentes na janela
+referência até +7 dias inclusivos e até cinco atrasadas, ordenadas por vencimento
+crescente. Cada bloco informa que é um resumo limitado, distingue ausência de
+itens e permite abrir a venda correspondente. Sem paginação, gráfico ou filtros.
+Empates preservam a ordem da fonte; parcelas da mesma venda preservam sua ordem.
+Nas extremidades do calendário, a janela inclui somente datas representáveis.
+
 ### RF-010 — Exibir resumo financeiro em Relatórios
 
 - **Comportamento:** apresentar recebimentos mensais, valores em aberto, parcelas vencidas e vendas por período com dados comuns à demonstração; exibir Exportar relatório como ação apenas ilustrativa.
@@ -350,6 +369,15 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Prioridade:** Importante para conteúdo; acesso à página é essencial em RF-001.
 - **Origem/situação:** FON-001 §8 e FON-008; semântica dos períodos definida; interface futura não autorizada por esta revisão.
 - **Aceite:** CA-014, CA-015.
+
+**Recorte FASE-007 confirmado:** recebimentos e vendas do mês civil da referência,
+com início/fim identificados, sem seletor ou gráfico. Recebimentos incluem entradas
+e lotes uma única vez pela data efetiva; vendas incluem quitadas pela data da venda.
+Apresentar também a posição atual dos valores em aberto por venda e das parcelas
+vencidas, com referência explícita e sem sugerir posição histórica do mês. Usar
+tabelas/listas e totais próprios das seções, nunca repetir a faixa de quatro cartões.
+Sem truncamento silencioso nos relatórios; zero e ausência de registros são estados
+válidos. Exportar relatório informa sua indisponibilidade sem arquivo ou falso sucesso.
 
 ### RF-011 — Explicitar demonstração e proteger operações locais
 
@@ -555,6 +583,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Dado** RN-013/015/016 e referência da sessão explicitamente identificada,
 - **Quando** comparar detalhes, abertas, quitadas, Visão Geral e Relatórios antes e depois de uma mutação válida,
 - **Então** saldos e recebimentos devem reconciliar em centavos sem duplicação; conjunto vazio deve produzir totais zerados e períodos devem estar identificados.
+- **E na FASE-007** os relatórios mensais usam o mês completo da referência, sem seletor; saldos e parcelas vencidas identificam sua posição nessa referência. Os três resumos da Visão Geral respeitam ordem, janela inclusiva e limite de cinco, informam o recorte e abrem detalhes. Filtros de Vendas não alteram os quatro indicadores globais exclusivos da Visão Geral.
 
 ### CA-015 — Exportação somente ilustrativa
 - **Requisito:** RF-010; RNF-010.
@@ -799,6 +828,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 
 | Versão | Data | Alteração | Motivo |
 | --- | --- | --- | --- |
+| 1.10 | 20/11/2026 | Delimitar RF-009/010 e CA-014 para mês fixo e resumos de cinco, sem gráfico ou seletor; preservar IDs e pendências globais | Respostas explícitas no Harness ao propor fase-007; planejamento somente |
 | 1.0 | 11/11/2026 | Criação do PRD com IDs iniciais, fontes locais, escopo, jornadas, requisitos, aceite, hipóteses e pendências | Atender à solicitação de transformar o README em documento de produto sem implementar código |
 | 1.1 | 13/11/2026 | Conciliação de PEN-006, aceite delimitado de HIP-004/PEN-012, CA-023 e recorte da FASE-003; atualização do estado da base | Confirmações do solicitante na exploração e no planejamento; sem implementação ou aceite da ótica |
 | 1.2 | 13/11/2026 | Identidade vermelha da lateral no claro e degradê vermelho/vinho no escuro, mantendo contraste e os demais limites | Pedido visual explícito durante o apply da fase-003; zoom nativo 200% permanece pendente e sem PR |
