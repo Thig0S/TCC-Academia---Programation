@@ -34,17 +34,18 @@ describe('Conteúdo honesto da demonstração', () => {
     expect(pagina.querySelectorAll('form, input, select, textarea, button, table').length).toBe(0);
   });
 
-  it('mantém Relatórios explicitamente indisponível até sua entrega', async () => {
+  it('apresenta análises do mês e posições atuais completas em Relatórios', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
-    expect(pagina.textContent).toContain('Conteúdo ainda não disponível');
-    expect(pagina.textContent?.toLocaleLowerCase('pt-BR')).toContain(
-      'nenhuma consulta foi realizada',
-    );
-    expect(pagina.querySelectorAll('form, input, select, textarea, button, table').length).toBe(0);
-    expect(pagina.textContent).not.toMatch(/R\$|\bCPF\b|\d/);
-    for (const link of pagina.querySelectorAll('a')) {
-      expect(['/vendas', '/vendas/quitadas']).toContain(link.getAttribute('href'));
-    }
+    expect(pagina.textContent).toContain('Análise mensal');
+    expect(pagina.textContent).toContain('Recebimentos do mês');
+    expect(pagina.textContent).toContain('Vendas do mês');
+    expect(pagina.textContent).toContain('Posição em aberto');
+    expect(pagina.textContent).toContain('Parcelas vencidas');
+    expect(pagina.querySelectorAll('table')).toHaveLength(4);
+    expect(pagina.querySelectorAll('button')).toHaveLength(1);
+    expect(pagina.querySelectorAll('select, canvas, form, input, textarea').length).toBe(0);
+    expect(pagina.querySelector('[aria-label="Indicadores financeiros globais"]')).toBeNull();
+    expect(pagina.textContent).not.toContain('Conteúdo ainda não disponível');
   });
 });

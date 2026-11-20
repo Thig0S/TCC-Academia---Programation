@@ -55,9 +55,7 @@ test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
   await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
 });
 
-test('Visão Geral apresenta indicadores e resumos limitados; Relatórios segue indisponível', async ({
-  page,
-}) => {
+test('Visão Geral e Relatórios apresentam as consultas financeiras definidas', async ({ page }) => {
   await page.goto('/visao-geral');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
   await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
@@ -78,11 +76,69 @@ test('Visão Geral apresenta indicadores e resumos limitados; Relatórios segue 
 
   await page.goto('/relatorios');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatórios');
-  await expect(page.getByRole('main')).toContainText(/nenhuma consulta foi realizada/i);
-  await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
-  await expect(page.getByRole('main').locator('button')).toHaveCount(0);
-  await expect(page.getByRole('button')).toHaveCount(1);
-  await expect(page.getByRole('main')).not.toContainText(/R\$|\bCPF\b|\d/);
+  await expect(page.getByRole('main')).toContainText(
+    /Mês civil de \d{2}\/\d{2}\/\d{4} a \d{2}\/\d{2}\/\d{4}/,
+  );
+  for (const secao of [
+    'Recebimentos do mês',
+    'Vendas do mês',
+    'Posição em aberto',
+    'Parcelas vencidas',
+  ]) {
+    await expect(page.getByRole('heading', { name: secao })).toBeVisible();
+  }
+  await expect(page.locator('main table')).toHaveCount(4);
+  await expect(page.getByRole('button', { name: 'Exportar relatório' })).toBeVisible();
+  await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
+  await expect(page.locator('form, input, select, textarea, canvas')).toHaveCount(0);
+});
+
+test('Exportar relatório anuncia indisponibilidade sem download, rede ou mutação', async ({
+  page,
+}) => {
+  await page.goto('/relatorios');
+  const tabelasAntes = await page.locator('main table').allInnerTexts();
+  const requisicoes: string[] = [];
+  const downloads: string[] = [];
+  page.on('request', (requisicao) => {
+    if (['fetch', 'xhr'].includes(requisicao.resourceType())) requisicoes.push(requisicao.url());
+  });
+  page.on('download', (download) => downloads.push(download.suggestedFilename()));
+
+  const botao = page.getByRole('button', { name: 'Exportar relatório' });
+  await expect(botao).toHaveAttribute('aria-describedby', 'indisponibilidade-exportacao');
+  await expect(page.locator('#indisponibilidade-exportacao')).toHaveText(
+    'Exportação não disponível no protótipo.',
+  );
+  await botao.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status')).toHaveText(
+    'A exportação de relatórios não está disponível no protótipo.',
+  );
+  await expect(botao).toBeFocused();
+  expect(await page.locator('main table').allInnerTexts()).toEqual(tabelasAntes);
+  expect(requisicoes).toEqual([]);
+  expect(downloads).toEqual([]);
+});
+
+test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', async ({ page }) => {
+  await page.goto('/relatorios');
+  const secoes = ['Recebimentos do mês', 'Vendas do mês', 'Posição em aberto', 'Parcelas vencidas'];
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('main table')).toHaveCount(4);
+    for (const nome of secoes) {
+      const regiao = page.locator(`[role="region"][aria-label="${nome}"]`);
+      await expect(regiao).toHaveAttribute('tabindex', '0');
+      await expect(regiao.getByRole('table')).toBeVisible();
+      await expect(regiao.getByRole('rowgroup').nth(1).getByRole('row').first()).toBeVisible();
+    }
+    await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
 });
 
 test('abre cada resumo por teclado com ID opaco e orienta foco ao título do detalhe', async ({
@@ -596,11 +652,11 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
   for (const rota of ['/visao-geral', '/relatorios']) {
     await page.goto(rota);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    if (rota === '/relatorios')
-      await expect(page.getByRole('main')).not.toContainText(
-        /R\$|\bCPF\b|cadastrar|pagar|exportar/i,
-      );
-    else {
+    if (rota === '/relatorios') {
+      await expect(page.getByRole('main')).toContainText('Recebimentos do mês');
+      await expect(page.getByRole('main')).toContainText('Posição em aberto');
+      await expect(page.locator('main table')).toHaveCount(4);
+    } else {
       await expect(page.getByRole('main')).toContainText('Total em aberto');
       await expect(page.getByRole('main')).toContainText('Até 5');
     }
