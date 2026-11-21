@@ -4,7 +4,7 @@
 
 ### Requirement: Consistência visual e legibilidade
 
-Cada tema SHALL abranger navegação, cabeçalho, aviso, Visão Geral, Vendas, detalhes, formulários, recebimento, Relatórios, Configurações, modais e controles existentes. Toda a aplicação SHALL usar uma linguagem visual coerente com as referências fornecidas, com superfícies, tipografia, espaçamento, bordas, cantos, identidade cromática e estados visuais consistentes. Textos, bordas, foco e indicação ativa SHALL continuar perceptíveis, sem depender apenas de cor. Elementos SHALL respeitar movimento reduzido e contraste mínimo de 4,5:1 para texto comum, 3:1 para texto grande e indicadores essenciais de foco/controle.
+Cada tema SHALL abranger navegação, cabeçalho, Visão Geral, Vendas, detalhes, formulários, recebimento, Relatórios, Configurações, modais e controles existentes. Toda a aplicação SHALL usar uma linguagem visual coerente com as referências fornecidas, com superfícies, tipografia, espaçamento, bordas, cantos, identidade cromática e estados visuais consistentes. Textos, bordas, foco e indicação ativa SHALL continuar perceptíveis, sem depender apenas de cor. Elementos SHALL respeitar movimento reduzido e contraste mínimo de 4,5:1 para texto comum, 3:1 para texto grande e indicadores essenciais de foco/controle. A informação demonstrativa SHALL permanecer em Configurações e confirmações, sem aviso global persistente.
 
 #### Scenario: Conferir todas as superfícies nos dois temas
 
@@ -23,7 +23,7 @@ Cada tema SHALL abranger navegação, cabeçalho, aviso, Visão Geral, Vendas, d
 - **AND** as referências principais de acabamento do conteúdo SHALL ser `mercadao_oculos_dashboard_light.html` e `mercadao_oculos_dashboard_dark.html`, em `frontend/public/imgs/exemplos/`, respectivamente para claro e escuro; seus scripts, dados e comportamentos SHALL não determinar funcionalidades do MVP
 - **AND** `exemploListagemDeVendas.png`, `exemploDadosDaVenda.png` e `exemploCadastrarVenda.png` SHALL permanecer complementares para composição de listagem, detalhe e cadastro; `exemploDesignDark.png` SHALL continuar complementar para linguagem escura e referência da lateral preservada
 - **AND** edição, recebimento, Visão Geral, Relatórios, Configurações e estados de erro/ausência SHALL derivar o mesmo padrão visual, sem exigir cópia literal de uma tela que não possui referência própria
-- **AND** a comparação SHALL considerar hierarquia, alinhamento, superfícies, cores, tipografia, espaçamento, bordas e cantos; diferenças para preservar acessibilidade, aviso, identidade original e comportamentos aprovados SHALL ser explicitadas em vez de exigir igualdade pixel a pixel
+- **AND** a comparação SHALL considerar hierarquia, alinhamento, superfícies, cores, tipografia, espaçamento, bordas e cantos; diferenças para preservar acessibilidade, divulgação demonstrativa em Configurações/confirmações, identidade original e comportamentos aprovados SHALL ser explicitadas em vez de exigir igualdade pixel a pixel
 
 #### Scenario: Usar preferência de movimento reduzido
 
@@ -70,6 +70,8 @@ As seções existentes SHALL usar painéis com bordas suaves, cantos arredondado
 
 - **WHEN** acessar Relatórios e Configurações nos dois temas
 - **THEN** períodos, títulos, totais e consultas existentes em Relatórios SHALL receber painéis e hierarquia visual sem truncamento dos registros
+- **AND** as quatro tabelas de Relatórios SHALL usar fonte de dados 18 px, line-height 20 px e o padding compartilhado com Vendas/Quitadas e parcelas: dados 10 px horizontal/4 px vertical, cabeçalhos 10 px horizontal/8 px vertical
+- **AND** links, ordem, conteúdo, captions, totais, estados vazios e regiões de rolagem identificadas SHALL permanecer preservados; Relatórios SHALL poder rolar verticalmente como página, sem exigir que todas as seções caibam na primeira tela
 - **AND** os quatro indicadores globais SHALL não ser repetidos em Relatórios, e a exportação SHALL continuar explicitamente indisponível, sem CSV
 - **AND** Configurações SHALL apresentar as quatro explicações atuais com organização visual refinada, sem novos controles, preferências ou conteúdo copiado dos exemplos
 

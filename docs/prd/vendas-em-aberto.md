@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.14 — remoção do aviso global e da ação Limpar critérios, em 21/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.15 — tipografia uniforme também em Relatórios, em 21/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,14 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Padronização das tabelas — revisão 1.15, 21/11/2026:** conforme solicitação
+explícita no Harness, as quatro tabelas de Relatórios adotam o mesmo padrão das
+tabelas de Vendas/Quitadas e parcelas: fonte de 18 px, line-height de 20 px e
+padding de 10×4 px nas células de dados e 10×8 px nos cabeçalhos (horizontal×vertical).
+Manter todos os dados, ordem, conteúdo e rolagem horizontal contida nas regiões já
+existentes; não impor a densidade vertical de Vendas à página completa de Relatórios.
+Este ajuste é exclusivamente visual.
 
 **Revisão de consulta — 1.14, 21/11/2026:** conforme confirmação explícita no
 Harness, remover o aviso global persistente e a ação “Limpar critérios” de Vendas.
@@ -219,6 +227,7 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 | FON-010 | Refinamento visual solicitado e confirmado no Harness | Conversa de 16/11/2026; `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`, `exemploDadosDaVenda.png`, `exemploDesignDark.png` e `exemploCadastrarVenda.png` na mesma pasta | Cartões somente na Visão Geral; barra horizontal; 10 vendas por página nas duas coleções; detalhe compacto com excedente interno; links integrados ao tema; atraso no dia seguinte | Referências visuais inspecionadas, sem copiar dados pessoais nem ações fora do recorte; ajustes não implementados nesta revisão |
 | FON-011 | Decisões e aprovação documental no Harness | Conversa de revisão do PR #13; confirmação final após corrigir escala Windows para 125%; consulta local `Get-CimInstance Win32_OperatingSystem` | Somente dados do cliente editáveis; CPF com verificadores; telefone BR 10/11 dígitos; seed compatível futuramente; máquina e participação previstas | Hardware/tela informados pelo solicitante; Windows 11 Home build 26200 observado localmente. Sem modelo de GPU inferido, versão de Chrome, medição, papéis de aceite ou aprovação da ótica; metas mantidas para discussão |
 | FON-012 | Refinamento visual explícito no Harness | Conversa de 21/11/2026, solicitação de fonte 18 px/padding comum e confirmação para compactar os blocos do detalhe após medição | Aplicar às tabelas de Vendas/Quitadas e parcelas, mantendo CA-028 sem remover campos ou reduzir a fonte | Verificação técnica registrada em `frontend/README.md`; não implica aceite da ótica |
+| FON-013 | Refinamento visual explícito no Harness | Solicitação de 21/11/2026 para aplicar às tabelas de Relatórios o padrão tipográfico de Vendas | Fonte 18 px, line-height 20 px e padding 10×4 px em dados / 10×8 px em cabeçalhos nas quatro tabelas | Verificado por estilos computados/E2E nos dois temas e viewports; sem aceite da ótica |
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
@@ -397,7 +406,7 @@ Nas extremidades do calendário, a janela inclui somente datas representáveis.
 - **Comportamento:** apresentar recebimentos mensais, valores em aberto, parcelas vencidas e vendas por período com dados comuns à demonstração; exibir Exportar relatório como ação apenas ilustrativa.
 - **Necessidade:** conferir utilidade do resumo financeiro; OBJ-004; JOR-005.
 - **Ator, pré-condições e entradas:** gestão; fonte demonstrativa disponível; acessar Relatórios.
-- **Resultado:** cartões ou gráficos com períodos identificados; nenhuma geração de arquivo ou transmissão de dados.
+- **Resultado:** tabelas/listas e totais por seção com períodos identificados; as quatro tabelas usam fonte de 18 px, line-height de 20 px e o padding comum definido para as tabelas do MVP. Nenhuma geração de arquivo ou transmissão de dados.
 - **Exceções:** ação ilustrativa deve informar indisponibilidade no protótipo, sem anunciar exportação concluída. Consultas de domínio usam intervalos civis inclusivos explícitos, recebimentos por sua data e vendas pela data da venda; controles de seleção e gráfico permanecem no planejamento da FASE-007.
 - **Prioridade:** Importante para conteúdo; acesso à página é essencial em RF-001.
 - **Origem/situação:** FON-001 §8 e FON-008; semântica dos períodos definida; interface futura não autorizada por esta revisão.
@@ -628,6 +637,13 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Dado** Relatórios aberto,
 - **Quando** encontrar ou acionar Exportar relatório,
 - **Então** seu caráter ilustrativo deve estar explícito, sem gerar arquivo, chamar serviço externo ou anunciar exportação concluída.
+
+### CA-031 — Tipografia consistente nas tabelas de Relatórios
+- **Requisitos:** RF-010; RNF-003/007/009.
+- **Dado** Relatórios com registros em suas quatro seções, em ambos os temas,
+- **Quando** consultar recebimentos do mês, vendas do mês, posição em aberto e parcelas vencidas,
+- **Então** cada tabela deve usar fonte de dados 18 px, line-height 20 px e padding consistente com Vendas/Quitadas e parcelas: células de dados 10 px horizontal/4 px vertical, cabeçalhos 10 px horizontal/8 px vertical.
+- **E** conteúdo, ordem, totais, links, captions e estados vazios devem permanecer inalterados; a rolagem horizontal deve permanecer contida na região identificada de cada tabela, sem exigir que as quatro seções caibam sem rolagem vertical da página.
 
 ### CA-016 — Cancelamento sem alteração
 - **Requisitos:** RF-004, RF-006, RF-007, RF-011; RN-008; RNF-002.

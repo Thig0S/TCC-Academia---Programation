@@ -31,6 +31,11 @@ na faixa de filtros. O atalho contextual para Quitadas sai do cabeçalho, sem re
 rota da navegação lateral. DEC-023 registra esse contrato; os testes atualizados não
 devem reintroduzir as ações removidas.
 
+**Tabelas de Relatórios — revisão 1.19, 21/11/2026:** PRD 1.15/FON-013 estende
+às quatro tabelas de Relatórios os 18 px, line-height 20 px e paddings já adotados
+nas tabelas de Vendas/Quitadas e parcelas. DEC-024 mantém as regiões e rolagem
+existentes e não impõe à página longa de Relatórios a densidade vertical de Vendas.
+
 **Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
 primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
 DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
@@ -288,6 +293,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-023 | PRD 1.8/FON-011 e aprovação no Harness; inspeção de `venda.validacoes.ts`, `servico-demonstracao.ts`, seed e specs principais; consulta local do Windows | 17/11/2026 | Edição só de nome/CPF/telefone/descrição, CPF com verificadores, telefone 10/11, adequação futura do seed e ambiente do solicitante com escala 125%; sem implementação ou novas APIs de biblioteca |
 | FON-024 | PRD 1.13 e confirmações explícitas no Harness | 21/11/2026 | Tabelas de Vendas/Quitadas e parcelas com tipografia de 18 px e padding consistente; compactar o resumo sem perda de dados e manter densidade em ambos os temas |
 | FON-025 | PRD 1.14 e confirmação explícita no Harness | 21/11/2026 | Sem aviso global persistente ou ação conjunta “Limpar critérios”; contexto demonstrativo em Configurações/confirmações e limpeza via termo + situação Todas |
+| FON-026 | PRD 1.15 e solicitação explícita no Harness | 21/11/2026 | Tabelas de Relatórios com fonte 18 px, line-height 20 px e paddings iguais aos de Vendas/Quitadas e parcelas; verificação em dois temas/viewports registrada no frontend/README.md |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -1008,6 +1014,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-020 | Visão Geral e Relatórios | Resumos de cinco, mês fixo e posição atual derivados da fonte raiz | Recorte confirmado; desenho proposto, não implementado | DEC-003/004/005/008/015/018; PRD 1.10 RF-009/010, CA-014/015/020/025 |
 | DEC-022 | Tipografia das tabelas | Fonte de 18 px e padding consistente em vendas e parcelas, com line-height controlado | Implementada e verificada nos dois temas/viewports; zoom nativo 200% permanece pendente | DEC-018/021; PRD 1.13/RF-002/005/RNF-007/CA-028; FON-024 |
 | DEC-023 | Aviso e limpeza de consultas | Sem aviso global ou “Limpar critérios”; ação Nova venda na faixa, restaurar lista via campo e situação | Implementação do solicitante e regressão ajustada; unitários 363/363, E2E 80/80, fixture 12/12 | DEC-018/022; PRD 1.14/RF-001/003/RN-019/CA-001/005/028; FON-025 |
+| DEC-024 | Tipografia das tabelas de Relatórios | Igualar dados/cabeçalhos das quatro tabelas ao padrão de 18 px e padding compartilhado | Implementada/verificada nos dois temas e viewports; regressão completa teve falha intermitente externa repetida com sucesso isoladamente | DEC-020/022; PRD 1.15/RF-010/RNF-003/007/009/CA-031; FON-026 |
 
 ### DEC-023 — Remoção do aviso global e limpeza conjunta
 
@@ -1024,6 +1031,22 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 - **Origem/situação:** confirmação explícita no Harness em 21/11/2026; implementação
   recebida do solicitante e verificações registradas em `frontend/README.md`. Build,
   formatação, unitários e E2E passaram; zoom nativo 200% da Change permanece pendente.
+
+### DEC-024 — Tipografia compartilhada nas tabelas de Relatórios
+
+- **Problema/contexto:** as quatro tabelas de Relatórios ainda usam escala menor e
+  padding diferente das tabelas de consulta, embora sejam superfícies tabulares do mesmo MVP.
+- **Escolha:** aplicar em todas as tabelas de Relatórios a fonte de 18 px, line-height
+  de 20 px, padding de 10 px horizontal/4 px vertical nos dados e 10 px horizontal/8 px
+  vertical nos cabeçalhos, compartilhando o padrão de DEC-022.
+- **Limites:** preservar dados, ordem, totais, links, captions, vazios e região rolável
+  identificada de cada tabela. Não impor que as quatro seções caibam no viewport sem
+  rolagem vertical; eventual rolagem horizontal segue contida como hoje.
+- **Verificação:** aferir estilos computados nas quatro tabelas, nos dois temas e viewports;
+  confirmar links, contraste, foco/teclado, conteúdo e vazios via unitários/E2E, build e formato.
+- **Origem/situação:** pedido explícito em 21/11/2026, PRD 1.15/FON-013; implementação,
+  medições e limitações da regressão registradas em `frontend/README.md`. Não implica aceite
+  da ótica.
 
 ### DEC-001 — MVP visual no navegador
 

@@ -1,6 +1,6 @@
 # Tasks
 
-> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.14 e TDD 1.18 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
+> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.15 e TDD 1.19 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações, e estende o padrão tabular às quatro tabelas de Relatórios. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
@@ -35,6 +35,7 @@
 ## 6. Refinar Relatórios, Configurações e estados auxiliares
 
 - [x] 6.1 Refinar os quatro blocos de consultas de Relatórios com painéis, totais e períodos hierarquizados; verificar testes próprios e E2E nos dois temas/viewports para mês fixo, posição na referência, reconciliação, todos os registros e vazios. Conferir ausência dos quatro indicadores globais, seletor e gráfico, e exportação indisponível sem download/rede; executar build e registrar capturas/contrastes no README.
+- [x] 6.3 Aplicar às quatro tabelas de Relatórios fonte de 18 px, line-height de 20 px e padding compartilhado definido em DEC-024. Preservar os dados, ordem, links, captions, totais, estados vazios e rolagem horizontal interna; não impor ausência de rolagem vertical da página. Verificar estilos computados, contraste, foco/teclado, unitários, E2E nos dois temas/viewports, build e formatação; registrar evidências e resultados no README.
 - [x] 6.2 Refinar apresentação das quatro explicações de Configurações e das páginas/registro ausentes; verificar testes de conteúdo/componentes e E2E nos dois temas/viewports para conteúdo existente, ausência de controles novos, retornos e foco. Conferir também aparência coerente dos erros/vazios já tratados nas entregas anteriores; executar build e registrar capturas e contraste no README, sem criar mensagens ou funcionalidades copiadas dos HTMLs.
 
 ## 7. Consolidar verificação integrada

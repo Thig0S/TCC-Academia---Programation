@@ -130,6 +130,30 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
       await expect(regiao).toHaveAttribute('tabindex', '0');
       await expect(regiao.getByRole('table')).toBeVisible();
       await expect(regiao.getByRole('rowgroup').nth(1).getByRole('row').first()).toBeVisible();
+      const tabela = regiao.getByRole('table');
+      const estilos = await tabela.evaluate((elemento) => {
+        const cabecalho = getComputedStyle(elemento.querySelector('thead th')!);
+        const celula = getComputedStyle(elemento.querySelector('tbody td')!);
+        return {
+          fonte: getComputedStyle(elemento).fontSize,
+          lineHeight: getComputedStyle(elemento).lineHeight,
+          paddingCabecalhoVertical: cabecalho.paddingTop,
+          paddingCabecalhoHorizontal: cabecalho.paddingLeft,
+          paddingCelulaVertical: celula.paddingTop,
+          paddingCelulaHorizontal: celula.paddingLeft,
+        };
+      });
+      expect(estilos).toEqual({
+        fonte: '18px',
+        lineHeight: '20px',
+        paddingCabecalhoVertical: '8px',
+        paddingCabecalhoHorizontal: '10px',
+        paddingCelulaVertical: '4px',
+        paddingCelulaHorizontal: '10px',
+      });
+      expect(await regiao.evaluate((elemento) => getComputedStyle(elemento).overflowX)).toBe(
+        'auto',
+      );
     }
     await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

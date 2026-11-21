@@ -12,7 +12,7 @@ Estado observado na exploração e reconfirmado no planejamento:
 - Cadastro/edição têm templates próprios, identificação compartilhada e prévia; detalhe tem CSS local com composição compacta, overrides e rolagem para excedentes. Preservar comportamento; não transplantar o shell modal dos exemplos.
 - `e2e/demonstracao-inicial.spec.ts`, `e2e/formularios-vendas.spec.ts` e `e2e/paginacao-fixture.spec.ts` já cobrem temas, foco, contrastes, captura, fluxos e geometria. Adaptar seletor visual só quando necessário, sem afrouxar asserções funcionais.
 
-PRD 1.11 e TDD 1.15 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano.
+PRD 1.15 e TDD 1.19 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano.
 
 ## Goals / Non-Goals
 
@@ -62,13 +62,13 @@ Manter utilitários literais nos templates e CSS local apenas para composição 
 
 | Superfície | Aplicação planejada | Invariantes principais |
 | --- | --- | --- |
-| Área principal/cabeçalho/aviso | Alinhamento, superfície, espaçamento e hierarquia; sem copiar busca/perfil/notificações superiores dos HTMLs | Aviso permanente, alternância, título focável, navegação e lateral intactos |
+| Área principal/cabeçalho | Alinhamento, superfície, espaçamento e hierarquia; sem copiar busca/perfil/notificações superiores dos HTMLs ou aviso global persistente | Alternância, título focável, navegação e lateral intactos; divulgação demonstrativa em Configurações/confirmações |
 | Visão Geral | Valores destacados, rótulos secundários, painéis e divisórias; SVG local decorativo somente se útil | Quatro indicadores, três resumos de até cinco, referência/período e links |
-| Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; dados a 18 px, line-height 20 px e padding de célula compartilhado com parcelas; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, dois tipos de limpeza e busca local |
+| Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; dados a 18 px, line-height 20 px e padding de célula compartilhado com parcelas; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, Limpar pesquisa/situação e busca local |
 | Cadastro/edição | Painéis cliente/venda/prévia, campos de superfície elevada e ações hierarquizadas | Mesmos campos/rótulos, validações, entrada e prévia; edição dos quatro campos |
 | Detalhe | Cliente/venda lado a lado, valores destacados e parcelas a 18 px com mesmo line-height/padding das tabelas de vendas | Página, entrada separada, dados completos, até dez parcelas visíveis e excedente interno |
 | Recebimento | Aparência do `dialog`, campos e resumos coerente com formulários | Modal nativo, valor exato, sequência, confirmação/cancelamento/foco |
-| Relatórios | Quatro seções de consultas em painéis, totais e períodos destacados | Mês fixo, posição na referência, todos os registros e exportação indisponível |
+| Relatórios | Quatro seções de consultas em painéis; todas as tabelas com dados a 18 px, line-height 20 px e padding de dados/cabeçalhos idênticos ao padrão de Vendas/Quitadas e parcelas | Mês fixo, posição na referência, todos os registros, regiões roláveis e exportação indisponível |
 | Configurações/ausências | Divisões, títulos/descrições e mensagens coerentes | Conteúdo explicativo atual, sem controles novos; retornos e estados distintos |
 
 Não substituir links existentes por eventos de clique em linha ou menus de reticências que escondam ações. Não acrescentar dados/indicadores para imitar os exemplos. Decoração não pode alterar nomes acessíveis, árvore de campos ou cálculos.
@@ -77,7 +77,7 @@ Não substituir links existentes por eventos de clique em linha ou menus de reti
 
 ### D4 — Densidade e acessibilidade condicionam medidas
 
-Calibrar espaçamento de listas/detalhe a partir do espaço real após cabeçalho, aviso e critérios. Usar fonte de 18 px, line-height de 20 px e padding uniforme nas células das tabelas de vendas e parcelas: dados com 10 px horizontal/4 px vertical; cabeçalho com 10 px horizontal/8 px vertical. Preservar os cenários CA-027/028: dez vendas ou até dez parcelas no desktop padrão, com paginação quando necessária, sem rolagem vertical da página. Se a tabela de parcelas ultrapassar esse limite, compactar/reorganizar os blocos existentes de cliente/venda, preservando todos os campos e sem reduzir sua fonte, antes de alterar o critério de rolagem. Reorganização e rolagem são permitidas em 390×844, textos extensos e zoom nativo 200%; horizontal apenas na região da tabela. Não usar `overflow: hidden`, elipse de dados obrigatórios ou fonte artificialmente menor para cumprir geometria.
+Calibrar espaçamento de listas/detalhe a partir do espaço real após cabeçalho, aviso e critérios. Usar fonte de 18 px, line-height de 20 px e padding uniforme nas células das tabelas de vendas, parcelas e Relatórios: dados com 10 px horizontal/4 px vertical; cabeçalho com 10 px horizontal/8 px vertical. Preservar os cenários CA-027/028: dez vendas ou até dez parcelas no desktop padrão, com paginação quando necessária, sem rolagem vertical da página. Relatórios mantêm rolagem vertical normal entre suas quatro seções, sem exigência de caberem na primeira tela. Se a tabela de parcelas ultrapassar o limite desktop, compactar/reorganizar os blocos existentes de cliente/venda, preservando todos os campos e sem reduzir sua fonte, antes de alterar o critério de rolagem. Reorganização e rolagem são permitidas em 390×844, textos extensos e zoom nativo 200%; horizontal apenas na região identificada da tabela. Não usar `overflow: hidden`, elipse de dados obrigatórios ou fonte artificialmente menor para cumprir geometria.
 
 Conferir CSS de detalhe e seus overrides ao ajustar medidas, sem remover regras apenas por parecerem antigas. Manter regiões roláveis identificadas, cabeçalhos, foco, erros associados e mensagens anunciáveis. Se a direção visual não couber sem perda de legibilidade, parar o caso afetado e solicitar revisão; não reduzir paginação ou mudar os critérios por conta própria.
 
