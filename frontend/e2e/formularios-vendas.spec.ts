@@ -15,6 +15,70 @@ async function valorEmCentavos(elemento: Locator): Promise<number> {
   return Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
 }
 
+test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois temas', async ({
+  page,
+}, testInfo) => {
+  for (const largura of [1366, 1024, 768, 767, 390]) {
+    await page.setViewportSize({ width: largura, height: 844 });
+    for (const tema of ['dark', 'light']) {
+      await page.goto('/vendas/nova');
+      if (tema === 'light')
+        await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+      const formulario = page.locator('form');
+      const grupos = formulario.locator(':scope > div').first();
+      const previa = formulario.locator(':scope > section[aria-labelledby="titulo-previa"]');
+      const caixaFormulario = await grupos.boundingBox();
+      const caixaPrevia = await previa.boundingBox();
+      expect(caixaFormulario).not.toBeNull();
+      expect(caixaPrevia).not.toBeNull();
+      if (largura >= 768) {
+        expect(caixaFormulario!.x).toBeLessThan(caixaPrevia!.x);
+        expect(Math.abs(caixaFormulario!.y - caixaPrevia!.y)).toBeLessThanOrEqual(1);
+      } else {
+        expect(caixaFormulario!.y + caixaFormulario!.height).toBeLessThanOrEqual(caixaPrevia!.y);
+      }
+
+      await preencherCadastro(page, `Cliente responsivo ${largura}`);
+      await page.getByLabel('Descrição (opcional)').fill('Descrição ampla de teste');
+      await expect(previa.locator('tbody tr')).toHaveCount(3);
+      await expect(previa.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCSS(
+        'overflow-x',
+        'auto',
+      );
+      await expect(page.getByLabel('Nome', { exact: true })).toBeVisible();
+      await expect(page.getByLabel('Valor total (R$)', { exact: true })).toHaveValue('100');
+      const semOverflowGlobal = await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      );
+      expect(semOverflowGlobal, `overflow horizontal global em ${largura}px/${tema}`).toBe(true);
+
+      const larguraNome = await page
+        .getByLabel('Nome', { exact: true })
+        .evaluate((elemento) => elemento.getBoundingClientRect().width);
+      const larguraValor = await page
+        .getByLabel('Valor total (R$)', { exact: true })
+        .evaluate((elemento) => elemento.getBoundingClientRect().width);
+      if (largura >= 1024) {
+        expect(larguraNome).toBeGreaterThan(larguraValor);
+      }
+      if (tema === 'dark')
+        console.log(
+          `Nova venda ${largura}px: formulário ${Math.round(caixaFormulario!.width)}px, prévia ${Math.round(caixaPrevia!.width)}px, nome ${Math.round(larguraNome)}px, valor ${Math.round(larguraValor)}px, overflow global=${!semOverflowGlobal}`,
+        );
+
+      if ([1366, 390].includes(largura)) {
+        const captura = await page.screenshot({ fullPage: true });
+        await testInfo.attach(`nova-venda-${tema}-${largura}px`, {
+          body: captura,
+          contentType: 'image/png',
+        });
+      }
+    }
+  }
+});
+
 async function indicadoresVisaoGeral(page: Page): Promise<string[]> {
   return page.locator('[aria-label="Indicadores financeiros globais"] article').allInnerTexts();
 }

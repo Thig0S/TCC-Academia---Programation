@@ -206,16 +206,21 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
-    for (const rota of ['Visão Geral', 'Relatórios']) {
+    for (const rota of ['Visão Geral', 'Relatórios', 'Nova venda']) {
       if (rota === 'Relatórios') {
         await page
           .getByRole('navigation', { name: 'Navegação principal' })
           .getByRole('link', { name: 'Relatórios', exact: true })
           .click();
         await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+      } else if (rota === 'Nova venda') {
+        await page.goto('/vendas/nova');
+        await expect(page.getByRole('heading', { level: 1, name: 'Nova venda' })).toBeVisible();
       }
       const valores = await medir();
-      expect(valores.length, `${tema}/${rota}: textos examinados`).toBeGreaterThan(10);
+      expect(valores.length, `${tema}/${rota}: textos examinados`).toBeGreaterThan(
+        rota === 'Nova venda' ? 8 : 10,
+      );
       for (const valor of valores)
         expect(valor.razao, `${tema}/${rota}: ${valor.texto}`).toBeGreaterThanOrEqual(4.5);
       console.log(

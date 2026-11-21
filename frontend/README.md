@@ -325,6 +325,34 @@ Inspeção da captura desktop clara com texto extenso confirmou painéis, campos
 ações e prévia rolável por teclado, sem corte global; dados e fonte diferem
 deliberadamente dos exemplos. Mobile permanece empilhado, verificado pelo E2E.
 
+### Cadastro com prévia lateral — tarefa 5.4 — 21/11/2026
+
+Em Nova venda, os painéis de identificação e dados financeiros ficam à esquerda e
+a prévia completa à direita a partir de 768 px; abaixo disso, empilham nessa ordem.
+A grade interna responde à largura real do painel para evitar campos financeiros
+estreitos por causa do menu lateral. Nome/descrição ocupam mais largura quando há
+espaço; valor total, quantidade e entrada usam colunas menores e padding mais
+compacto. Em uma coluna estreita, os campos voltam a ocupar a largura disponível,
+sem truncar rótulos ou limitar o valor digitado. O ajuste opt-in no componente de
+identificação preserva seu layout de edição. Um único `<form>`, foco, validações,
+entrada, cálculo e estados da prévia não mudaram.
+
+O E2E responsivo mediu nos dois temas e larguras 1366/1024/768/767/390 px:
+1366 px, formulário 589 px e prévia 482 px, nome 563 px e valor 132 px; 1024 px,
+400/328 px e nome/valor 374/85 px; 768 px, 260/212 px; abaixo do breakpoint,
+767 px, ambos 743 px, e 390 px, ambos 366 px. O topo alinhou a partir de 768 px,
+os blocos empilharam a 767 px e não houve overflow horizontal global; a tabela
+manteve `overflow-x: auto` na região identificada. Capturas dark/light em 1366 e
+390 px estão anexadas ao resultado do teste
+`Nova venda mantém formulário e prévia responsivos sem overflow nos dois temas`.
+
+Verificações: testes unitários 363/363; E2E de `formularios-vendas.spec.ts` 20/20
+nos viewports 1366×768 e 390×844; E2E combinado de layout/contraste 4/4. Contraste
+mínimo medido no cadastro: 4,90:1 em ambos os temas. Build principal 299,92 kB
+iniciais/80,59 kB estimados; build da fixture 301,65 kB/81,07 kB; `npm run
+format:check` aprovado. A suíte E2E integral não foi repetida nesta extensão; zoom
+nativo 200% permanece pendente em 7.3 e não é substituído pelos viewports medidos.
+
 ### Edição — tarefa 5.2
 
 Identificação compartilhada mantém seus painéis/campos elevados; texto auxiliar

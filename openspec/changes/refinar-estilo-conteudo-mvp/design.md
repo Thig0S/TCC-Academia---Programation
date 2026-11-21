@@ -12,7 +12,7 @@ Estado observado na exploração e reconfirmado no planejamento:
 - Cadastro/edição têm templates próprios, identificação compartilhada e prévia; detalhe tem CSS local com composição compacta, overrides e rolagem para excedentes. Preservar comportamento; não transplantar o shell modal dos exemplos.
 - `e2e/demonstracao-inicial.spec.ts`, `e2e/formularios-vendas.spec.ts` e `e2e/paginacao-fixture.spec.ts` já cobrem temas, foco, contrastes, captura, fluxos e geometria. Adaptar seletor visual só quando necessário, sem afrouxar asserções funcionais.
 
-PRD 1.16 e TDD 1.20 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano. O cadastro lateral (DEC-025/CA-032) é uma extensão apenas documental, aguardando autorização própria de apply.
+PRD 1.16 e TDD 1.20 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano. O cadastro lateral (DEC-025/CA-032) foi implementado depois da autorização separada; verificações e limites reais estão em `frontend/README.md`, enquanto zoom nativo 200% permanece pendente.
 
 ## Goals / Non-Goals
 
@@ -65,7 +65,7 @@ Manter utilitários literais nos templates e CSS local apenas para composição 
 | Área principal/cabeçalho | Alinhamento, superfície, espaçamento e hierarquia; sem copiar busca/perfil/notificações superiores dos HTMLs ou aviso global persistente | Alternância, título focável, navegação e lateral intactos; divulgação demonstrativa em Configurações/confirmações |
 | Visão Geral | Valores destacados, rótulos secundários, painéis e divisórias; SVG local decorativo somente se útil | Quatro indicadores, três resumos de até cinco, referência/período e links |
 | Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; dados a 18 px, line-height 20 px e padding de célula compartilhado com parcelas; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, Limpar pesquisa/situação e busca local |
-| Cadastro | Em `md` (768 px), formulário à esquerda e prévia à direita alinhados ao topo; abaixo disso, empilhar; nome/descrição mais amplos que valor/quantidade | Mesmos campos/rótulos, validações, entrada, prévia completa e ações; implementação desse novo layout ainda não autorizada |
+| Cadastro | Em `md` (768 px), formulário à esquerda e prévia à direita alinhados ao topo; abaixo disso, empilhar; nome/descrição mais amplos que valor/quantidade quando a largura permitir | Mesmos campos/rótulos, validações, entrada, prévia completa e ações; evidências e limite de zoom em `frontend/README.md` |
 | Edição | Preservar painéis e campos atuais, sem receber indiretamente a compactação do cadastro | Somente os quatro campos do cliente; comportamento e aparência padrão preservados |
 | Detalhe | Cliente/venda lado a lado, valores destacados e parcelas a 18 px com mesmo line-height/padding das tabelas de vendas | Página, entrada separada, dados completos, até dez parcelas visíveis e excedente interno |
 | Recebimento | Aparência do `dialog`, campos e resumos coerente com formulários | Modal nativo, valor exato, sequência, confirmação/cancelamento/foco |
@@ -133,7 +133,7 @@ Zoom nativo 200% precisa de registro manual de navegador/versão, escala Windows
 
 ## Migration Plan
 
-1. Revisar esta proposta e deltas; aguardar autorização separada de apply. Planejamento permanece na `feature/refinar-estilo-conteudo-mvp`, sem PR antecipado.
+1. Revisar proposta e deltas. O apply geral foi autorizado; a extensão de cadastro recebeu autorização separada e foi implementada na `feature/refinar-estilo-conteudo-mvp`, sem PR antecipado.
 2. No apply, registrar referências e linha de base; refinar fundação/compartilhados sem tocar na lateral.
 3. Entregar Visão Geral, consultas, formulários/recebimento e Relatórios/Configurações/estados em unidades coerentes, com verificações e commits individuais.
 4. Consolidar matriz visual, zoom e regressão integral. Em `frontend/`: `npm test -- --watch=false`, `npm run test:e2e`, `npm run test:e2e:paginacao-fixture`, `npm run build`, `npx ng run vendas-em-aberto:build-paginacao-fixture` e `npm run format:check`. Na raiz: validação estrita da Change. A fixture não possui configuração `production`.

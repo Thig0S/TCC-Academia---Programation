@@ -11,8 +11,9 @@
 RF-004 e CA-032 sustentam a DEC-025. Planejar duas colunas a partir de `md`
 (48rem/768 px na configuração padrão), formulário à esquerda e prévia à direita;
 abaixo disso, empilhar. O solicitante aprovou a documentação e autorizou o apply em
-21/11/2026; a implementação e suas verificações ainda não estão comprovadas. Não
-reutilizar resultados anteriores como prova do novo layout.
+21/11/2026. Implementação e verificações específicas estão registradas em
+`frontend/README.md`; a suíte E2E integral e o zoom nativo 200% permanecem,
+respectivamente, não repetida nesta extensão e pendente na tarefa 7.3.
 
 **Conciliação da migração visual — revisão 1.15, 20/11/2026:** PRD 1.11
 explicita a aplicação da linguagem visual das referências em todos os módulos e
@@ -1046,7 +1047,8 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 
 - **Origem/escopo:** PRD 1.16/FON-014, RF-004 e CA-032; mesma Change e branch
   `refinar-estilo-conteudo-mvp`. Planejamento aprovado e apply autorizado pelo
-  solicitante em 21/11/2026; implementação/verificações pendentes de evidência.
+  solicitante em 21/11/2026; implementação e evidências específicas registradas em
+  `frontend/README.md`, sem aceite da ótica.
 - **Estado observado:** `cadastrar-venda.html` apresenta identificação, dados da
   venda e prévia sequencialmente dentro de um único `form`. A identificação é
   compartilhada com edição; a prévia já é derivada do rascunho sem publicação.
@@ -1087,7 +1089,8 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
   aplicável, builds principal/fixture e formatação, registrar capturas/limitações em
   `frontend/README.md`. Zoom nativo 200% permanece a tarefa manual 7.3; resultados
   antigos não comprovam esse layout. Nenhuma dessas verificações foi executada
-  nesta revisão documental.
+  nesta revisão documental. Resultados da implementação posterior estão em
+  `frontend/README.md`; zoom nativo 200% continua pendente.
 - **Referência técnica:** documentação Tailwind consultada via Context7 em 21/11/2026
   (`responsive-design`, `styling-with-utility-classes`): variantes mobile-first,
   `md` padrão em 48rem e grade com `minmax`; não comprova o resultado no aplicativo.

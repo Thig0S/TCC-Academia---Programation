@@ -1,10 +1,22 @@
-<fieldset class="mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm">
+<fieldset
+  [class]="
+    gradeAdaptativa()
+      ? 'mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm @container'
+      : 'mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm'
+  "
+>
   <legend class="text-lg font-semibold">Dados sintéticos do cliente</legend>
   <p class="text-sm text-text-muted">
     Use somente dados inventados. Não informe dados de pessoas reais.
   </p>
-  <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-    <div class="min-w-0 md:col-span-2">
+  <div
+    [class]="
+      gradeAdaptativa()
+        ? 'grid grid-cols-1 gap-3 @min-[22rem]:grid-cols-2'
+        : 'grid grid-cols-1 gap-3 md:grid-cols-2'
+    "
+  >
+    <div [class]="gradeAdaptativa() ? 'min-w-0 @min-[22rem]:col-span-2' : 'min-w-0 md:col-span-2'">
       <label for="nome-cliente" class="mb-1 block text-sm font-medium">Nome</label>
       <input
         id="nome-cliente"
@@ -36,7 +48,7 @@
       />
       <app-erro-campo id="erro-telefone" [campo]="campos().telefone" />
     </div>
-    <div class="min-w-0 md:col-span-2">
+    <div [class]="gradeAdaptativa() ? 'min-w-0 @min-[22rem]:col-span-2' : 'min-w-0 md:col-span-2'">
       <label for="descricao-cliente" class="mb-1 block text-sm font-medium"
         >Descrição (opcional)</label
       >

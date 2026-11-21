@@ -1,12 +1,12 @@
 # Tasks
 
-> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.15 e TDD 1.19 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações, e estende o padrão tabular às quatro tabelas de Relatórios. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
+> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.16 e TDD 1.20 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações, estende o padrão tabular às quatro tabelas de Relatórios e acrescenta o layout lateral de Nova venda. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
 > Extensão PRD 1.16/TDD 1.20 (DEC-025/CA-032): documentação aprovada e tarefa 5.4
-> autorizada pelo solicitante em 21/11/2026. Resultados já registrados são históricos
-> e não comprovam o novo layout; manter 7.3 pendente até verificação manual.
+> implementada/verificada; evidências específicas estão em `frontend/README.md`.
+> Manter 7.3 pendente até verificação manual de zoom nativo.
 
 ## 1. Registrar linha de base e proteger contratos
 
@@ -36,7 +36,7 @@
 - [x] 5.2 Refinar edição com a mesma linguagem, preservando somente os quatro campos editáveis; verificar testes de edição e E2E nos dois temas/viewports, incluindo quitada, cancelamento, erro e atualização isolada da identificação sem mudança financeira. Executar build e registrar capturas, foco e contrastes no README; manter ausência de registro distinta de erro de validação.
 - [x] 5.3 Refinar apresentação do recebimento no modal existente; verificar testes do modal/recebimento e E2E nos dois temas/viewports para sequência de parcelas, valor exato, datas/formas atuais, falha/retry, confirmação única, cancelamento/Escape, contenção e retorno de foco após quitação. Executar build e registrar capturas/contrastes no README, sem alterar mecanismo nativo, comandos ou regras.
 
-- [ ] 5.4 Reorganizar Nova venda em formulário à esquerda e prévia à direita alinhados ao topo a partir de md/768 px; empilhar abaixo disso. Compactar prioritariamente valor/quantidade e entrada sem reduzir fonte ou dados aceitos, mantendo nome/descrição mais amplos e demais proporções relativas. Preservar um único formulário, campos/bindings, ações, validação, foco, prévia dinâmica completa/estado inválido e região rolável. Isolar estilos do cadastro para não redesenhar edição/recebimento/lateral. Verificar unitários de cadastro/identificação/edição e E2E nos dois temas (1366×768, 390×844, fronteiras 767/768 px e largura intermediária): geometria/proporção, ausência de overflow global, entrada, erros, parcelas excedentes, teclado/contraste, confirmação única, cancelamento e falha/retry. Executar regressão aplicável, builds principal/fixture, formatação e validação estrita OpenSpec; registrar capturas/resultados reais e limitações no README, com commit próprio da entrega. Zoom nativo 200% continua em 7.3, sem conclusão por viewport reduzido.
+- [x] 5.4 Reorganizar Nova venda em formulário à esquerda e prévia à direita alinhados ao topo a partir de md/768 px; empilhar abaixo disso. Compactar prioritariamente valor/quantidade e entrada sem reduzir fonte ou dados aceitos, mantendo nome/descrição mais amplos e demais proporções relativas. Preservar um único formulário, campos/bindings, ações, validação, foco, prévia dinâmica completa/estado inválido e região rolável. Isolar estilos do cadastro para não redesenhar edição/recebimento/lateral. Verificar unitários de cadastro/identificação/edição e E2E nos dois temas (1366×768, 390×844, fronteiras 767/768 px e largura intermediária): geometria/proporção, ausência de overflow global, entrada, erros, parcelas excedentes, teclado/contraste, confirmação única, cancelamento e falha/retry. Executar regressão aplicável, builds principal/fixture, formatação e validação estrita OpenSpec; registrar capturas/resultados reais e limitações no README, com commit próprio da entrega. Zoom nativo 200% continua em 7.3, sem conclusão por viewport reduzido.
 
 ## 6. Refinar Relatórios, Configurações e estados auxiliares
 
