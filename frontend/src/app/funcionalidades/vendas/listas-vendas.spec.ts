@@ -107,9 +107,12 @@ describe('Listas de vendas', () => {
 
     pagina.querySelector<HTMLButtonElement>('[aria-label="Página 3"]')!.click();
     await harness.fixture.whenStable();
-    [...pagina.querySelectorAll('button')]
-      .find((botao) => botao.textContent?.includes('Limpar critérios'))!
-      .click();
+    const situacao = pagina.querySelector<HTMLSelectElement>('#situacao-vendas')!;
+    situacao.value = 'Atrasada';
+    situacao.dispatchEvent(new Event('change', { bubbles: true }));
+    await harness.fixture.whenStable();
+    situacao.value = 'Todas';
+    situacao.dispatchEvent(new Event('change', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(faixas()).toContain('1–10 de 21 vendas');
 
@@ -264,7 +267,7 @@ describe('Listas de vendas', () => {
     expect(pagina.textContent).toContain('Nenhuma venda corresponde');
   });
 
-  it('limpa só a pesquisa ou restaura todos os critérios e devolve foco ao campo', async () => {
+  it('limpa a pesquisa sem alterar situação e permite restaurar Todas', async () => {
     const harness = await RouterTestingHarness.create('/vendas');
     const pagina = harness.routeNativeElement!;
     const campo = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
@@ -272,9 +275,11 @@ describe('Listas de vendas', () => {
     const limparPesquisa = [...pagina.querySelectorAll('button')].find((botao) =>
       botao.textContent?.includes('Limpar pesquisa'),
     )!;
-    const limparCriterios = [...pagina.querySelectorAll('button')].find((botao) =>
-      botao.textContent?.includes('Limpar critérios'),
-    )!;
+    expect(
+      [...pagina.querySelectorAll('button')].some((botao) =>
+        botao.textContent?.includes('Limpar critérios'),
+      ),
+    ).toBe(false);
 
     campo.value = 'Cliente DEMO';
     campo.dispatchEvent(new Event('input', { bubbles: true }));
@@ -290,11 +295,13 @@ describe('Listas de vendas', () => {
     campo.value = 'outro termo';
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
-    limparCriterios.click();
+    situacao.value = 'Todas';
+    situacao.dispatchEvent(new Event('change', { bubbles: true }));
+    campo.value = '';
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(campo.value).toBe('');
     expect(situacao.value).toBe('Todas');
-    expect(document.activeElement).toBe(campo);
   });
 
   it('Quitadas oferece busca local, sem filtro de situação, e não inclui vendas abertas', async () => {

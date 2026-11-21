@@ -27,11 +27,9 @@ describe('Estrutura navegável', () => {
     expect(pagina.querySelector('img')?.alt).toBe('');
   });
 
-  it('mantém o aviso literal e perfil claramente estático', async () => {
+  it('não exibe aviso global e mantém perfil claramente estático', async () => {
     const { pagina } = await renderizar();
-    expect(pagina.querySelector('[data-testid="aviso-demonstracao"]')?.textContent?.trim()).toBe(
-      'Demonstração com dados fictícios. As alterações são perdidas ao recarregar.',
-    );
+    expect(pagina.querySelector('[data-testid="aviso-demonstracao"]')).toBeNull();
     expect(pagina.textContent).toContain('Perfil estático · sem autenticação');
     expect(pagina.querySelectorAll('form, input').length).toBe(0);
     expect(pagina.querySelectorAll('nav svg[aria-hidden="true"]').length).toBe(4);

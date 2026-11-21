@@ -1,7 +1,6 @@
 import { expect, test as base } from '@playwright/test';
 
 const produto = 'Mercadão dos Óculos - Vendas em Aberto';
-const aviso = 'Demonstração com dados fictícios. As alterações são perdidas ao recarregar.';
 const destinos = [
   ['/visao-geral', 'Visão Geral'],
   ['/vendas', 'Vendas'],
@@ -45,14 +44,12 @@ test('abre a estrutura e carrega a logo local sem distorção', async ({ page })
   ).toEqual({ carregada: true, proporcao: true });
 });
 
-test('mantém o aviso completo ao abrir e recarregar', async ({ page }) => {
+test('não exibe aviso global ao abrir ou recarregar', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
-  await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
-  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
-  await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
 });
 
 test('Visão Geral e Relatórios apresentam as consultas financeiras definidas', async ({ page }) => {
@@ -423,7 +420,8 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
   await expect(situacao).toHaveValue(situacaoLinha);
   await expect(busca).toBeFocused();
   await busca.fill('sem-correspondencia');
-  await page.getByRole('button', { name: 'Limpar critérios' }).click();
+  await situacao.selectOption('Todas');
+  await busca.fill('');
   await expect(situacao).toHaveValue('Todas');
   await expect(busca).toBeFocused();
 
@@ -476,7 +474,7 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
     await expect(tabelaQuitadas.locator('tbody')).toContainText(nomeQuitado);
     await buscaQuitadas.fill('');
   }
-  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
   await expect(page.getByRole('main')).not.toContainText(/cadastrar|pagar|exportar/i);
   await expect(page.getByRole('link', { name: /Editar dados do cliente da venda/ })).toHaveCount(
     await tabelaQuitadas.locator('tbody tr').count(),
@@ -502,7 +500,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
     'aria-current',
     'page',
   );
-  await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
 
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
@@ -574,7 +572,7 @@ test('alterna tema com Enter e Espaço sem mudar foco ou rota', async ({ page })
     await expect(botao).toHaveAttribute('aria-pressed', tema === 'dark' ? 'true' : 'false');
     await expect(botao).toBeFocused();
     await expect(page).toHaveURL(/\/vendas$/);
-    await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+    await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
   }
 });
 
@@ -738,7 +736,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
   const verificarFaixaDesktop = async (esperados: number) => {
     if (page.viewportSize()!.width < 1200) return;
     const bases = await page
-      .locator('.consulta-controles > div')
+      .locator('.consulta-controles > *')
       .evaluateAll((colunas) => colunas.map((coluna) => coluna.getBoundingClientRect().bottom));
     expect(bases).toHaveLength(esperados);
     expect(Math.max(...bases) - Math.min(...bases)).toBeLessThanOrEqual(1);
@@ -760,7 +758,8 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(page.getByRole('searchbox', { name: /Buscar por nome/ })).toBeVisible();
     await expect(page.getByRole('searchbox')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Limpar critérios' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Nova venda', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Limpar critérios' })).toHaveCount(0);
     await verificarFaixaDesktop(4);
     await expect(page.locator('main [role="status"]:not([aria-label])')).toContainText(
       'vendas encontradas',
@@ -1026,7 +1025,6 @@ test('links afetados integram-se aos temas sem sublinhado permanente e mantêm c
       nav.getByRole('link', { name: 'Quitadas', exact: true }),
       nav.getByRole('link', { name: 'Relatórios', exact: true }),
       nav.getByRole('link', { name: 'Configurações', exact: true }),
-      page.getByRole('main').getByRole('link', { name: 'Quitadas', exact: true }),
       page.getByRole('link', { name: 'Atalho para Configurações', exact: true }),
       page
         .getByRole('table')
@@ -1135,7 +1133,7 @@ test('links afetados integram-se aos temas sem sublinhado permanente e mantêm c
   }
 });
 
-test('abre e recarrega cada destino com identidade, aviso e localização', async ({ page }) => {
+test('abre e recarrega cada destino sem aviso global e com localização', async ({ page }) => {
   for (const [rota, titulo] of destinos) {
     await page.goto(rota);
     for (const recarregar of [false, true]) {
@@ -1143,7 +1141,7 @@ test('abre e recarrega cada destino com identidade, aviso e localização', asyn
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
       await expect(page).toHaveTitle(`${titulo} | ${produto}`);
       await expect(page.getByText(produto, { exact: true })).toBeVisible();
-      await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+      await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
       await expect(page.locator('[aria-current="page"]')).toHaveCount(1);
       expect(
         await page.evaluate(
@@ -1194,17 +1192,15 @@ test('orienta foco por teclado, atalho, histórico e retorno de caminho desconhe
   await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeFocused();
 });
 
-test('declara pt-BR e permite ler título e aviso sem corte horizontal', async ({ page }) => {
+test('declara pt-BR e permite ler o título sem corte horizontal', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect(page.getByTestId('aviso-demonstracao')).toBeVisible();
+  await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
 
   const leitura = await page.evaluate(() => {
     const largura = document.documentElement.clientWidth;
-    const elementos = Array.from(
-      document.querySelectorAll('h1, [data-testid="aviso-demonstracao"]'),
-    );
+    const elementos = Array.from(document.querySelectorAll('h1'));
     return {
       semRolagemHorizontal: document.documentElement.scrollWidth <= largura,
       textosDentroDaTela: elementos.every((elemento) => {
@@ -1215,8 +1211,6 @@ test('declara pt-BR e permite ler título e aviso sem corte horizontal', async (
         );
       }),
       estilosAplicados:
-        getComputedStyle(document.querySelector('[data-testid="aviso-demonstracao"]')!)
-          .borderRadius !== '0px' &&
         getComputedStyle(document.querySelector('.barra-lateral')!).display === 'flex',
     };
   });
@@ -1271,7 +1265,7 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
     }
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', 'light');
-    await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
+    await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
     await page.waitForLoadState('networkidle');
 
     expect(await context.cookies()).toEqual([]);

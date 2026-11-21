@@ -23,6 +23,14 @@ confirmou compactar os blocos existentes do detalhe para recuperar espaço sem
 remover dados. A implementação passou a fixture nos dois temas/viewports; medidas
 e a única limitação pendente constam em `frontend/README.md`.
 
+**Consulta sem aviso global — revisão 1.18, 21/11/2026:** PRD 1.14 registra a
+remoção confirmada do aviso persistente e do botão “Limpar critérios”. A transparência
+do caráter demonstrativo permanece em Configurações e confirmações; restaurar a lista
+aberta exige limpar pesquisa e selecionar “Todas”. A ação “Nova venda” ocupa a posição
+na faixa de filtros. O atalho contextual para Quitadas sai do cabeçalho, sem remover a
+rota da navegação lateral. DEC-023 registra esse contrato; os testes atualizados não
+devem reintroduzir as ações removidas.
+
 **Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
 primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
 DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
@@ -279,6 +287,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-022 | PRD 1.6/FON-010; imagens de `frontend/public/imgs/exemplos/`; respostas no Harness | 16/11/2026 | Desktop 1366×768/100%, paginação de 10 nas duas coleções, detalhe compacto com excedente interno, links integrados, atraso civil mantido; autorização exclusivamente documental |
 | FON-023 | PRD 1.8/FON-011 e aprovação no Harness; inspeção de `venda.validacoes.ts`, `servico-demonstracao.ts`, seed e specs principais; consulta local do Windows | 17/11/2026 | Edição só de nome/CPF/telefone/descrição, CPF com verificadores, telefone 10/11, adequação futura do seed e ambiente do solicitante com escala 125%; sem implementação ou novas APIs de biblioteca |
 | FON-024 | PRD 1.13 e confirmações explícitas no Harness | 21/11/2026 | Tabelas de Vendas/Quitadas e parcelas com tipografia de 18 px e padding consistente; compactar o resumo sem perda de dados e manter densidade em ambos os temas |
+| FON-025 | PRD 1.14 e confirmação explícita no Harness | 21/11/2026 | Sem aviso global persistente ou ação conjunta “Limpar critérios”; contexto demonstrativo em Configurações/confirmações e limpeza via termo + situação Todas |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -998,6 +1007,23 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-019 | Edição, identificação e avaliação | Comando restrito aos dados do cliente, validação compartilhada, seed compatível futuro e avaliação separada de homologação | Regras confirmadas pelo solicitante; desenho proposto, não implementado; metas/aceite pendentes | DEC-004/010/015/016; PRD 1.8/RN-021/022/023/CA-030 e PEN-013/014 |
 | DEC-020 | Visão Geral e Relatórios | Resumos de cinco, mês fixo e posição atual derivados da fonte raiz | Recorte confirmado; desenho proposto, não implementado | DEC-003/004/005/008/015/018; PRD 1.10 RF-009/010, CA-014/015/020/025 |
 | DEC-022 | Tipografia das tabelas | Fonte de 18 px e padding consistente em vendas e parcelas, com line-height controlado | Implementada e verificada nos dois temas/viewports; zoom nativo 200% permanece pendente | DEC-018/021; PRD 1.13/RF-002/005/RNF-007/CA-028; FON-024 |
+| DEC-023 | Aviso e limpeza de consultas | Sem aviso global ou “Limpar critérios”; ação Nova venda na faixa, restaurar lista via campo e situação | Implementação do solicitante e regressão ajustada; unitários 363/363, E2E 80/80, fixture 12/12 | DEC-018/022; PRD 1.14/RF-001/003/RN-019/CA-001/005/028; FON-025 |
+
+### DEC-023 — Remoção do aviso global e limpeza conjunta
+
+- **Problema/contexto:** o aviso persistente ocupa espaço compartilhado em todas as rotas,
+  e a ação “Limpar critérios” duplica a limpeza do termo e a seleção explícita de situação.
+- **Escolha:** remover o aviso global persistente, a ação conjunta e o atalho contextual
+  para Quitadas do cabeçalho. Preservar informações
+  de demonstração/descarte em Configurações e nas confirmações de operações. “Limpar
+  pesquisa” mantém a situação atual; para restaurar toda a lista aberta, limpar o termo e
+  selecionar “Todas”. “Nova venda” passa a ocupar a posição da ação removida na faixa.
+- **Consequências:** recalibrar a composição responsiva da faixa e atualizar testes e
+  documentação; Quitadas continua acessível pela navegação lateral e nenhum critério
+  de situação é perdido ao limpar somente o termo.
+- **Origem/situação:** confirmação explícita no Harness em 21/11/2026; implementação
+  recebida do solicitante e verificações registradas em `frontend/README.md`. Build,
+  formatação, unitários e E2E passaram; zoom nativo 200% da Change permanece pendente.
 
 ### DEC-001 — MVP visual no navegador
 
@@ -1388,8 +1414,9 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
   Nas abertas, acrescentar seleção local Todas/Em aberto/Próximos dias/Atrasada.
   Função pura recebe também esse critério e aplica busca E situação, preservando a
   ordem da coleção; Todas não restringe. Quitadas recebe somente o termo. Termo vazio
-  remove apenas a restrição textual; Limpar pesquisa preserva situação e Limpar critérios
-  redefine termo vazio e Todas. Signals locais e computed acompanham ambos os critérios;
+  remove apenas a restrição textual; Limpar pesquisa preserva situação. Não há ação conjunta
+  de limpeza: termo vazio + seleção Todas restaura a coleção completa. Signals locais e
+  computed acompanham ambos os critérios;
   nenhum deles afeta resumo global, fonte financeira, URL ou armazenamento.
 - **Estado e apresentação:** nenhuma chamada a comandos de cadastro/recebimento;
   sem providers da fonte por rota. Quatro cartões em Vendas leem `resumo()` global,

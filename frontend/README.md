@@ -242,6 +242,24 @@ build principal 315,82 kB iniciais/82,92 kB estimados; build da fixture 317,57 k
 83,30 kB; ambos sem avisos de budget. `npm run format:check` e validação estrita
 da Change aprovados. Zoom nativo de 200% permanece pendente conforme tarefa 7.3.
 
+### Revisão de consulta — aviso global e limpeza de critérios — 21/11/2026
+
+Após confirmação explícita do solicitante, o aviso global persistente foi removido
+do shell, a ação conjunta “Limpar critérios” e o atalho de Quitadas saíram do cabeçalho
+da lista; “Nova venda” ocupa a posição da limpeza. Quitadas segue no menu lateral.
+O contexto demonstrativo e o descarte ao recarregar continuam explicados em
+Configurações e nas confirmações de operações. “Limpar pesquisa” ainda
+preserva a situação selecionada; para voltar à lista completa, limpar o termo e
+selecionar “Todas”. PRD 1.14, TDD DEC-023 e o delta OpenSpec foram atualizados antes
+de adequar as asserções.
+
+Verificações desta revisão: `CI=true npm test` 363/363 em 30 arquivos;
+`npm run test:e2e` por configuração temporária na porta 4202, 80/80 em 2 viewports;
+`npm run test:e2e:paginacao-fixture` 12/12; `npm run build` 299,47 kB iniciais/
+80,42 kB estimados; build da fixture 301,20 kB/80,92 kB; `npm run format:check`
+aprovado. O E2E padrão não pôde usar a porta 4200, já ocupada por servidor
+preexistente; o processo não foi interrompido. A configuração temporária foi removida.
+
 ### Detalhe e parcelas — tarefa 4.2
 
 Blocos de cliente/venda e painel de parcelas usam raio de 12 px, divisórias,

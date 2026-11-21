@@ -155,7 +155,7 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
     const geometria = await page.evaluate(() => {
       const linhas = [...document.querySelectorAll('app-tabela-vendas tbody tr')];
       const rodape = document.querySelector('app-paginacao-vendas nav');
-      const controles = [...document.querySelectorAll('.consulta-controles > div')];
+      const controles = [...document.querySelectorAll('.consulta-controles > *')];
       const basesControles = controles.map((controle) => controle.getBoundingClientRect().bottom);
       const tabela = document.querySelector('app-tabela-vendas table')!;
       const cabecalho = tabela.querySelector('thead th')!;

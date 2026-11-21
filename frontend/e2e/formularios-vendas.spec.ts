@@ -172,7 +172,10 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
       .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
       .fill('Cliente DEMO E2E recebimento');
     await expect(page.locator('tbody tr')).toHaveCount(0);
-    await page.getByRole('main').getByRole('link', { name: 'Quitadas', exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Quitadas', exact: true })
+      .click();
     await page.locator('#busca-vendas-quitadas').fill('Cliente DEMO E2E recebimento');
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await page

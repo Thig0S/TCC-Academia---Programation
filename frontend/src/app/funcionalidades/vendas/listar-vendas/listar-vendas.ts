@@ -73,13 +73,6 @@ export class ListarVendas {
     campo.focus();
   }
 
-  protected limparCriterios(campo: HTMLInputElement): void {
-    this.termo.set('');
-    this.situacao.set('Todas');
-    this.paginaSelecionada.set(1);
-    campo.focus();
-  }
-
   protected selecionarPagina(pagina: number): void {
     this.paginaSelecionada.set(pagina);
   }
