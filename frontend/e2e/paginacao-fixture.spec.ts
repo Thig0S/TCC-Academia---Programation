@@ -18,6 +18,9 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
       const rodape = document.querySelector('app-paginacao-vendas nav');
       const controles = [...document.querySelectorAll('.consulta-controles > div')];
       const basesControles = controles.map((controle) => controle.getBoundingClientRect().bottom);
+      const tabela = document.querySelector('app-tabela-vendas table')!;
+      const cabecalho = tabela.querySelector('thead th')!;
+      const celula = tabela.querySelector('tbody th')!;
       return {
         alturaViewport: window.innerHeight,
         alturaDocumento: document.documentElement.scrollHeight,
@@ -27,8 +30,14 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
         topoPrimeiraLinha: linhas[0]?.getBoundingClientRect().top ?? -1,
         baseDecimaLinha: linhas[9]?.getBoundingClientRect().bottom ?? -1,
         baseRodape: rodape?.getBoundingClientRect().bottom ?? -1,
+        estiloTabela: getComputedStyle(tabela).borderCollapse,
+        bordaCabecalho: getComputedStyle(cabecalho).borderBottomWidth,
+        espacamentoCelula: getComputedStyle(celula).paddingTop,
       };
     });
+    expect(geometria.estiloTabela).toBe('collapse');
+    expect(geometria.bordaCabecalho).toBe('1px');
+    expect(geometria.espacamentoCelula).toBe('4px');
     expect(geometria.larguraDocumento).toBeLessThanOrEqual(geometria.larguraViewport);
     if (page.viewportSize()!.width >= 1200) {
       expect(geometria.topoPrimeiraLinha).toBeGreaterThanOrEqual(0);
