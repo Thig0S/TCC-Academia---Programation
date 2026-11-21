@@ -1,11 +1,11 @@
 # Tasks
 
-> Planejamento conciliado com PRD 1.11 e TDD 1.15/DEC-021. As 14 tarefas permanecem pendentes; nenhuma implementação técnica é comprovada por esta revisão documental.
+> Planejamento conciliado com PRD 1.11 e TDD 1.15/DEC-021. As tarefas 1.1, 1.2, 2.1, 2.2 e 3.1 estão concluídas; nove tarefas permanecem pendentes. Ver evidências de implementação e verificações em `frontend/README.md`.
 
 ## Pré-requisitos bloqueantes do apply
 
 - Pré-requisito documental concluído nesta revisão: PRD 1.11 explicita abrangência visual global sem fixar tecnologia; TDD 1.15/DEC-021 substitui a direção de base visual de DEC-013, preservando seu registro histórico e condicionando migração ampla à prova dos dois builds.
-- Proposal, design e tasks foram alinhados às referências efetivas de PRD/TDD. As tarefas abaixo continuam pendentes e só devem avançar com apply explícito e após revisão desta conciliação; o estado de artefatos completos no CLI não comprova implementação.
+- Proposal, design e tasks foram alinhados às referências efetivas de PRD/TDD. As tarefas ainda pendentes só devem avançar com apply explícito e após revisão desta conciliação; o estado de artefatos completos no CLI não comprova implementação.
 - Trabalhar na mesma feature branch e preservar alterações alheias. Cada entrega coerente inclui seus testes, documentação e commit próprio, sem PRs individuais por tarefa.
 
 ## 1. Validar fundação Tailwind
@@ -20,7 +20,7 @@
 
 ## 3. Migrar componentes compartilhados e consultas
 
-- [ ] 3.1 Migrar cabeçalho de página, selos, paginação e modal existentes, além dos padrões de campos/botões/estados vazios em seus consumidores, sem criar abstrações genéricas desnecessárias. Atualizar seus testes e verificar classes literais de todos os selos, foco visível, movimento reduzido e `dialog` com tema herdado, contenção, Escape, cancelamento e retorno de foco; registrar resultados no README.
+- [x] 3.1 Migrar cabeçalho de página, selos, paginação e modal existentes, além dos padrões de campos/botões/estados vazios em seus consumidores, sem criar abstrações genéricas desnecessárias. Atualizar seus testes e verificar classes literais de todos os selos, foco visível, movimento reduzido e `dialog` com tema herdado, contenção, Escape, cancelamento e retorno de foco; registrar resultados no README.
 - [ ] 3.2 Migrar listagens de Vendas/Quitadas e tabelas, adaptando testes no mesmo passo; verificar busca/filtro, limpezas, coleções vazias versus sem resultados, 0/1/10/11/21 registros e paginação com identidade/foco preservados. Medir dez linhas/cabeçalhos/critérios/faixa e paginação quando necessária em 1366×768/100%, sem rolagem da página; verificar reorganização em 390×844 e registrar capturas/resultados nos dois temas no README.
 - [ ] 3.3 Migrar detalhe e parcelas, atualizando testes de layout/acessibilidade; verificar cliente/venda lado a lado, entrada separada, ações e dez parcelas com descrição curta em 1366×768/100%, além de histórico completo com excedentes e textos extensos em região identificável operável por teclado. Registrar capturas, comparação com `exemploDadosDaVenda.png` e resultados nos dois temas/viewports no README.
 

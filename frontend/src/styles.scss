@@ -13,50 +13,11 @@ a,
 button {
   touch-action: manipulation;
 }
-.botao-consulta {
-  color: var(--bs-body-color);
-  border: 1px solid var(--bs-secondary-color);
-  background-color: transparent;
-}
-.botao-consulta:hover {
-  color: var(--bs-body-bg);
-  border-color: var(--bs-body-color);
-  background-color: var(--bs-body-color);
-}
-.botao-consulta:focus-visible {
-  outline: 3px solid var(--bs-primary-text-emphasis);
-  outline-offset: 4px;
-}
 :focus-visible,
 h1:focus,
 main:focus {
-  outline: 3px solid var(--bs-primary-text-emphasis);
+  outline: 3px solid var(--app-focus);
   outline-offset: 4px;
-}
-
-app-cadastrar-venda,
-app-editar-venda,
-app-registrar-pagamento {
-  .form-control,
-  .form-select,
-  .form-check-input,
-  .form-control:focus,
-  .form-select:focus,
-  .form-check-input:focus,
-  .btn,
-  .btn:hover,
-  .btn:active,
-  .btn:focus-visible {
-    border-color: var(--bs-secondary-color);
-  }
-
-  .form-control:focus-visible,
-  .form-select:focus-visible,
-  .form-check-input:focus-visible,
-  .btn:focus-visible {
-    outline: 3px solid var(--bs-primary-text-emphasis);
-    outline-offset: 4px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

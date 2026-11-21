@@ -1,10 +1,11 @@
 <dialog
   #dialog
+  class="w-[min(40rem,calc(100%-2rem))] max-h-[calc(100dvh-2rem)] overflow-auto overflow-wrap-anywhere rounded-lg border-[1px] border-border bg-surface p-5 text-text shadow-xl"
   aria-labelledby="titulo-modal"
   (cancel)="cancelar($event)"
   (close)="aoFechar()"
   (keydown)="conterFoco($event)"
 >
-  <h2 id="titulo-modal" class="h4">{{ titulo() }}</h2>
-  <div class="conteudo-modal"><ng-content /></div>
+  <h2 id="titulo-modal" class="text-xl font-semibold">{{ titulo() }}</h2>
+  <div class="conteudo-modal min-w-0"><ng-content /></div>
 </dialog>

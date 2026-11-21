@@ -16,14 +16,14 @@ export class SeloSituacao {
     switch (this.situacao()) {
       case 'Quitada':
       case 'Paga':
-        return 'badge text-bg-success';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-success-badge px-2 py-0.5 text-xs leading-3 font-semibold text-white';
       case 'Atrasada':
       case 'Atrasado':
-        return 'badge text-bg-danger';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-danger-badge px-2 py-0.5 text-xs leading-3 font-semibold text-white';
       case 'Próximos dias':
-        return 'badge text-bg-warning';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-warning-badge px-2 py-0.5 text-xs leading-3 font-semibold text-warning-badge-text';
       default:
-        return 'badge text-bg-secondary';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-neutral-badge px-2 py-0.5 text-xs leading-3 font-semibold text-white';
     }
   }
 }

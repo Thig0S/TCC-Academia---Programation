@@ -8,13 +8,13 @@
 <section class="card p-2 mb-2" aria-label="Pesquisa de vendas quitadas">
   <div class="row g-2 align-items-end consulta-controles">
     <div class="col-12 col-lg-10">
-      <label for="busca-vendas-quitadas" class="form-label">
+      <label for="busca-vendas-quitadas" class="mb-1 block text-sm font-medium">
         Buscar por nome, CPF, telefone ou data da venda
       </label>
       <input
         #campoBusca
         id="busca-vendas-quitadas"
-        class="form-control flex-grow-1"
+        class="min-w-0 flex-1 rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         type="search"
         [value]="termo()"
         aria-describedby="orientacao-busca-vendas-quitadas"
@@ -22,12 +22,16 @@
       />
     </div>
     <div class="col-12 col-lg-2 d-grid">
-      <button type="button" class="btn botao-consulta" (click)="limparPesquisa(campoBusca)">
+      <button
+        type="button"
+        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="limparPesquisa(campoBusca)"
+      >
         Limpar pesquisa
       </button>
     </div>
   </div>
-  <p id="orientacao-busca-vendas-quitadas" class="form-text mb-0 mt-1">
+  <p id="orientacao-busca-vendas-quitadas" class="mt-1 mb-0 text-sm text-text-muted">
     Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
   </p>
 </section>
@@ -36,9 +40,13 @@
   {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
 </p>
 @if (vendas().length === 0) {
-  <p>Não há vendas quitadas.</p>
+  <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+    Não há vendas quitadas.
+  </p>
 } @else if (resultados().length === 0) {
-  <p>Nenhuma venda corresponde à pesquisa.</p>
+  <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+    Nenhuma venda corresponde à pesquisa.
+  </p>
 } @else {
   <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
 }

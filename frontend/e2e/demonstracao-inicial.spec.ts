@@ -675,7 +675,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
       });
     });
   const verificarContraste = async (tema: string, area: string) => {
-    const valores = await medirContraste('th, td, caption, .badge, button, label');
+    const valores = await medirContraste('th, td, caption, app-selo-situacao span, button, label');
     for (const valor of valores)
       expect(valor.razao, `${tema}/${area}: ${valor.texto}`).toBeGreaterThanOrEqual(4.5);
     console.log(
@@ -693,6 +693,10 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
 
   for (const tema of ['dark', 'light']) {
     await page.goto('/vendas');
+    await page.mouse.move(
+      await page.evaluate(() => innerWidth - 1),
+      await page.evaluate(() => innerHeight - 1),
+    );
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
@@ -709,7 +713,9 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
       'vendas encontradas',
     );
     for (const estado of ['Em aberto', 'Próximos dias', 'Atrasada'])
-      await expect(tabela.locator('.badge').filter({ hasText: estado }).first()).toBeVisible();
+      await expect(
+        tabela.locator('app-selo-situacao').filter({ hasText: estado }).first(),
+      ).toBeVisible();
     await verificarContraste(tema, 'Vendas');
     await page.getByRole('button', { name: 'Limpar pesquisa' }).hover();
     await verificarContraste(tema, 'Vendas/hover');
@@ -735,7 +741,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(page.getByRole('table').getByRole('caption')).toContainText('Parcelas da venda');
     await verificarContraste(tema, 'Parcelas quitadas');
     await expect(
-      page.getByRole('table').locator('.badge').filter({ hasText: 'Paga' }).first(),
+      page.getByRole('table').locator('app-selo-situacao').filter({ hasText: 'Paga' }).first(),
     ).toBeVisible();
 
     await page.goto('/vendas');
@@ -748,7 +754,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     const parcelasAbertas = page.getByRole('region', { name: 'Parcelas da venda' });
     await expect(parcelasAbertas).toBeVisible();
     await expect(
-      parcelasAbertas.locator('.badge').filter({ hasText: 'Aberto' }).first(),
+      parcelasAbertas.locator('app-selo-situacao').filter({ hasText: 'Aberto' }).first(),
     ).toBeVisible();
     await verificarContraste(tema, 'Parcelas abertas');
   }
@@ -984,7 +990,10 @@ test('links afetados integram-se aos temas sem sublinhado permanente e mantêm c
       expect(normal.decoracao).toBe('none');
       await link.hover();
       expect((await medirContraste(link)).decoracao).toContain('underline');
-      await page.mouse.move(0, 0);
+      await page.mouse.move(
+        await page.evaluate(() => innerWidth - 1),
+        await page.evaluate(() => innerHeight - 1),
+      );
       await link.focus();
       await page.keyboard.press('Tab');
       await page.keyboard.press('Shift+Tab');
@@ -1152,15 +1161,16 @@ test('declara pt-BR e permite ler título e aviso sem corte horizontal', async (
           (retangulo) => retangulo.left >= 0 && retangulo.right <= largura,
         );
       }),
-      bootstrapAplicado:
-        getComputedStyle(document.querySelector('.alert')!).borderRadius !== '0px' &&
+      estilosAplicados:
+        getComputedStyle(document.querySelector('[data-testid="aviso-demonstracao"]')!)
+          .borderRadius !== '0px' &&
         getComputedStyle(document.querySelector('.barra-lateral')!).display === 'flex',
     };
   });
   expect(leitura).toEqual({
     semRolagemHorizontal: true,
     textosDentroDaTela: true,
-    bootstrapAplicado: true,
+    estilosAplicados: true,
   });
 });
 

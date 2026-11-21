@@ -3,13 +3,13 @@
 <section class="mb-4" aria-label="Exportação de relatório">
   <button
     type="button"
-    class="btn botao-consulta"
+    class="rounded-md border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
     aria-describedby="indisponibilidade-exportacao"
     (click)="informarIndisponibilidadeExportacao()"
   >
     Exportar relatório
   </button>
-  <p id="indisponibilidade-exportacao" class="text-body-secondary mt-2 mb-0">
+  <p id="indisponibilidade-exportacao" class="mt-2 mb-0 text-text-muted">
     Exportação não disponível no protótipo.
   </p>
   @if (exportacaoInformada()) {
@@ -68,7 +68,9 @@
       </table>
     </div>
   } @else {
-    <p>Nenhum recebimento neste mês.</p>
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Nenhum recebimento neste mês.
+    </p>
   }
 </section>
 
@@ -114,7 +116,9 @@
       </table>
     </div>
   } @else {
-    <p>Nenhuma venda cadastrada neste mês.</p>
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Nenhuma venda cadastrada neste mês.
+    </p>
   }
 </section>
 
@@ -154,7 +158,9 @@
       </table>
     </div>
   } @else {
-    <p>Nenhum saldo em aberto nesta referência.</p>
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Nenhum saldo em aberto nesta referência.
+    </p>
   }
 </section>
 
@@ -196,6 +202,8 @@
       </table>
     </div>
   } @else {
-    <p>Nenhuma parcela vencida nesta referência.</p>
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Nenhuma parcela vencida nesta referência.
+    </p>
   }
 </section>
