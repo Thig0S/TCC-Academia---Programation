@@ -6,7 +6,7 @@
 
 ## 1. Registrar linha de base e proteger contratos
 
-- [ ] 1.1 Confirmar a disponibilidade dos dois HTMLs nomeados em `proposal.md` e registrar em `frontend/README.md` sua identificação/hash, referências complementares e diferenças funcionais descartadas; verificar leitura dos arquivos e a matriz de escopo de D3. Ausência de referência bloqueia comparação, sem recriar arquivos ou incorporar trabalho alheio.
+- [x] 1.1 Confirmar a disponibilidade dos dois HTMLs nomeados em `proposal.md` e registrar em `frontend/README.md` sua identificação/hash, referências complementares e diferenças funcionais descartadas; verificar leitura dos arquivos e a matriz de escopo de D3. Ausência de referência bloqueia comparação, sem recriar arquivos ou incorporar trabalho alheio.
 - [ ] 1.2 Antes de editar apresentação, registrar linha de base real com build, unitários sem watch, E2E da aplicação e fixture; capturar conteúdo e lateral nos dois temas em 1366×768 e 390×844 e registrar resultados, falhas/avisos e caminhos de evidências no README. Não transportar contagens de execuções anteriores como resultados novos.
 
 ## 2. Refinar fundação visual e componentes compartilhados
