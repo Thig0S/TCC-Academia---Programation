@@ -160,6 +160,8 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
       const tabela = document.querySelector('app-tabela-vendas table')!;
       const cabecalho = tabela.querySelector('thead th')!;
       const celula = tabela.querySelector('tbody th')!;
+      const estilosCabecalho = getComputedStyle(cabecalho);
+      const estilosCelula = getComputedStyle(celula);
       return {
         alturaViewport: window.innerHeight,
         alturaDocumento: document.documentElement.scrollHeight,
@@ -171,14 +173,20 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
         baseRodape: rodape?.getBoundingClientRect().bottom ?? -1,
         estiloTabela: getComputedStyle(tabela).borderCollapse,
         bordaCabecalho: getComputedStyle(cabecalho).borderBottomWidth,
-        espacamentoCelula: getComputedStyle(celula).paddingTop,
+        espacamentoVerticalCelula: estilosCelula.paddingTop,
+        espacamentoHorizontalCelula: estilosCelula.paddingLeft,
+        espacamentoVerticalCabecalho: estilosCabecalho.paddingTop,
+        espacamentoHorizontalCabecalho: estilosCabecalho.paddingLeft,
         tamanhoFonteTabela: getComputedStyle(tabela).fontSize,
       };
     });
     expect(geometria.estiloTabela).toBe('collapse');
     expect(geometria.bordaCabecalho).toBe('1px');
-    expect(geometria.espacamentoCelula).toBe('4px');
-    expect(geometria.tamanhoFonteTabela).toBe('15px');
+    expect(geometria.espacamentoVerticalCelula).toBe('4px');
+    expect(geometria.espacamentoHorizontalCelula).toBe('10px');
+    expect(geometria.espacamentoVerticalCabecalho).toBe('8px');
+    expect(geometria.espacamentoHorizontalCabecalho).toBe('10px');
+    expect(geometria.tamanhoFonteTabela).toBe('18px');
     expect(geometria.larguraDocumento).toBeLessThanOrEqual(geometria.larguraViewport);
     if (page.viewportSize()!.width >= 1200) {
       expect(geometria.topoPrimeiraLinha).toBeGreaterThanOrEqual(0);
@@ -254,6 +262,9 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
       const financeiro = document.querySelector('#dados-financeiros')!.parentElement!;
       const ultimaParcela = document.querySelector('app-detalhes-venda tbody tr:last-child')!;
       const regiao = document.querySelector('[aria-label="Parcelas da venda"]')!;
+      const tabelaParcelas = regiao.querySelector('table')!;
+      const celulaParcela = tabelaParcelas.querySelector('tbody th')!;
+      const cabecalhoParcela = tabelaParcelas.querySelector('thead th')!;
       return {
         alturaDocumento: document.documentElement.scrollHeight,
         alturaViewport: window.innerHeight,
@@ -263,9 +274,19 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
         topoFinanceiro: financeiro.getBoundingClientRect().top,
         baseUltimaParcela: ultimaParcela.getBoundingClientRect().bottom,
         baseTabela: regiao.getBoundingClientRect().bottom,
+        tamanhoFonteParcelas: getComputedStyle(tabelaParcelas).fontSize,
+        paddingVerticalParcela: getComputedStyle(celulaParcela).paddingTop,
+        paddingHorizontalParcela: getComputedStyle(celulaParcela).paddingLeft,
+        paddingVerticalCabecalho: getComputedStyle(cabecalhoParcela).paddingTop,
+        paddingHorizontalCabecalho: getComputedStyle(cabecalhoParcela).paddingLeft,
       };
     });
     expect(geometria.larguraDocumento).toBeLessThanOrEqual(geometria.larguraViewport);
+    expect(geometria.tamanhoFonteParcelas).toBe('18px');
+    expect(geometria.paddingVerticalParcela).toBe('4px');
+    expect(geometria.paddingHorizontalParcela).toBe('10px');
+    expect(geometria.paddingVerticalCabecalho).toBe('8px');
+    expect(geometria.paddingHorizontalCabecalho).toBe('10px');
     await expect(parcelas).toBeVisible();
     if (page.viewportSize()!.width >= 1200) {
       expect(Math.abs(geometria.topoCliente - geometria.topoFinanceiro)).toBeLessThanOrEqual(1);
