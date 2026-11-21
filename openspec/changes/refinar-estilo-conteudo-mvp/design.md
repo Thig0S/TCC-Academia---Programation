@@ -1,0 +1,117 @@
+# Design
+
+## Context
+
+Ver motivação e limites em `proposal.md`. O desenho é necessário por atravessar páginas e componentes compartilhados, com risco de regressão na lateral e na densidade desktop.
+
+Estado observado na exploração e reconfirmado no planejamento:
+
+- `frontend/package.json` já fixa Angular 22.2.6 e Tailwind/PostCSS 4.3.5. `src/styles.css` possui tokens por `data-tema`, `@theme inline`, Preflight e variante escura; não há motivo para repetir a migração técnica.
+- A paleta atual (`#212529`/`#343a40` no escuro), painéis `rounded-md` e selos sólidos diferem dos HTMLs (`#111217`/`#1d1e24`, cantos maiores e selos suaves). Tabelas e Relatórios têm apresentação básica; os fluxos já existem.
+- `app.html` separa `.barra-lateral` e `.area-principal`; `app.css` usa tokens próprios da lateral, mas cores, tipografia e seletores globais também podem afetá-la indiretamente.
+- Cadastro/edição têm templates próprios, identificação compartilhada e prévia; detalhe tem CSS local com composição compacta, overrides e rolagem para excedentes. Preservar comportamento; não transplantar o shell modal dos exemplos.
+- `e2e/demonstracao-inicial.spec.ts`, `e2e/formularios-vendas.spec.ts` e `e2e/paginacao-fixture.spec.ts` já cobrem temas, foco, contrastes, captura, fluxos e geometria. Adaptar seletor visual só quando necessário, sem afrouxar asserções funcionais.
+
+PRD 1.11 e TDD 1.15 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Refinar a apresentação sobre a arquitetura existente, com tokens semânticos e composição consistente, não apenas troca de cores.
+- Separar acabamento visual de fluxo/conteúdo e medir regressões em vez de presumir fidelidade por uso de utilitários.
+- Isolar a lateral das mudanças globais e preservar o tema de sessão, o aviso, as regiões acessíveis e o foco.
+
+**Non-Goals:**
+
+- Alterar serviços, modelos, cálculos, seed, comandos, rascunhos, regras, validadores, rotas ou mecanismo de tema/modal.
+- Atualizar dependências, reconfigurar build, importar scripts dos exemplos, adicionar catálogo de ícones, fonte remota ou componentes genéricos sem necessidade.
+- Copiar dimensões literalmente, refazer a lateral ou criar novos controles e conteúdo para preencher a composição.
+
+## Decisions
+
+### D1 — Referência visual nova, contratos existentes como limite
+
+Usar os HTMLs claro/escuro como referência principal de acabamento, com PNGs complementares para composição compacta. Em conflito, prevalecem funcionalidades, campos, legibilidade e densidade existentes: os HTMLs demonstram outro produto em vários pontos. Registrar adaptações por seção na matriz visual, não transformar desvios funcionais em tarefas.
+
+**Alternativas:** copiar HTML/JavaScript integralmente violaria contratos; usar apenas os PNGs ignoraria a direção recém-solicitada; exigir igualdade pixel a pixel é incompatível com conteúdo, lateral e dimensões distintos.
+
+### D2 — Tokens semânticos no conteúdo, sem redesenho da lateral
+
+Reutilizar `src/styles.css` e seu mapeamento `@theme inline` para superfícies, texto, bordas, ação primária, foco e situações. Conservar valores e consumidores de `--app-sidebar-*`; não aplicar nova família/tamanho/peso global que altere a lateral. Qualquer refinamento tipográfico deve ficar na área principal e respeitar a herança local. Manter fonte de sistema disponível; aproximar pesos, hierarquia e espaçamento sem carregar Inter do Google Fonts.
+
+Pontos de partida extraídos dos HTMLs, sujeitos à medição de contraste:
+
+| Papel | Claro | Escuro |
+| --- | --- | --- |
+| Canvas | `#f5f6f9` | `#111217` |
+| Painel | `#ffffff` | `#1d1e24` |
+| Superfície elevada/campos | `#f8f9fb` | `#25262d` |
+| Bordas decorativas | `#e5e7ec` | `#33343d` |
+| Ação principal | `#d72848` | `#d72848` |
+
+Não equiparar bordas decorativas a indicadores essenciais: campos/foco precisam dos contrastes exigidos. Definir pares fundo/texto semânticos por situação, inclusive neutra, para os selos suaves; não usar a mesma cor para fundo e texto nem depender só de transparência. Cores secundárias dos exemplos não são automaticamente aprovadas. Revisar também `--consulta-link` para evitar links desconectados da nova paleta, preservando contraste e semântica.
+
+Usar painéis com raio próximo de 12 px e sombra discreta, controles próximos de 8 px e escala de espaçamento consistente como referências, não medidas obrigatórias contra a densidade. Manter texto de tabelas legível na escala atual; não copiar fontes auxiliares de 10/11 px indiscriminadamente. Não adicionar animações de deslocamento de botão como requisito.
+
+**Alternativas:** cores arbitrárias espalhadas por página dificultam manutenção; redefinir fonte em `body` ou cores da lateral provoca mudança fora do escopo. `@theme inline` com variáveis existentes foi confirmado na documentação oficial Tailwind via Context7 (`colors`/`theme`), sem comprovar por si só o resultado local do patch instalado.
+
+### D3 — Composição por superfície, com componentes existentes
+
+Manter utilitários literais nos templates e CSS local apenas para composição específica, conforme DEC-021. Refinar cabeçalho, selos, modal, paginação e identificação compartilhados, sem criar um design system genérico. Alteração em template inline do selo é apresentação, não autorização para modificar classificação.
+
+| Superfície | Aplicação planejada | Invariantes principais |
+| --- | --- | --- |
+| Área principal/cabeçalho/aviso | Alinhamento, superfície, espaçamento e hierarquia; sem copiar busca/perfil/notificações superiores dos HTMLs | Aviso permanente, alternância, título focável, navegação e lateral intactos |
+| Visão Geral | Valores destacados, rótulos secundários, painéis e divisórias; SVG local decorativo somente se útil | Quatro indicadores, três resumos de até cinco, referência/período e links |
+| Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, dois tipos de limpeza e busca local |
+| Cadastro/edição | Painéis cliente/venda/prévia, campos de superfície elevada e ações hierarquizadas | Mesmos campos/rótulos, validações, entrada e prévia; edição dos quatro campos |
+| Detalhe | Cliente/venda lado a lado, valores destacados e parcelas com cabeçalho/separadores coerentes | Página, entrada separada, dados completos, até dez parcelas visíveis e excedente interno |
+| Recebimento | Aparência do `dialog`, campos e resumos coerente com formulários | Modal nativo, valor exato, sequência, confirmação/cancelamento/foco |
+| Relatórios | Quatro seções de consultas em painéis, totais e períodos destacados | Mês fixo, posição na referência, todos os registros e exportação indisponível |
+| Configurações/ausências | Divisões, títulos/descrições e mensagens coerentes | Conteúdo explicativo atual, sem controles novos; retornos e estados distintos |
+
+Não substituir links existentes por eventos de clique em linha ou menus de reticências que escondam ações. Não acrescentar dados/indicadores para imitar os exemplos. Decoração não pode alterar nomes acessíveis, árvore de campos ou cálculos.
+
+**Alternativas:** refinar só seis páginas deixaria edição/recebimento inconsistentes; modificar apenas tokens preservaria a estrutura básica que motivou a mudança.
+
+### D4 — Densidade e acessibilidade condicionam medidas
+
+Calibrar espaçamento de listas/detalhe a partir do espaço real após cabeçalho, aviso e critérios. Preservar os cenários CA-027/028: dez vendas ou até dez parcelas no desktop padrão, com paginação quando necessária, sem rolagem vertical da página. Reorganização e rolagem são permitidas em 390×844, textos extensos e zoom nativo 200%; horizontal apenas na região da tabela. Não usar `overflow: hidden`, elipse de dados obrigatórios ou fonte artificialmente menor para cumprir geometria.
+
+Conferir CSS de detalhe e seus overrides ao ajustar medidas, sem remover regras apenas por parecerem antigas. Manter regiões roláveis identificadas, cabeçalhos, foco, erros associados e mensagens anunciáveis. Se a direção visual não couber sem perda de legibilidade, parar o caso afetado e solicitar revisão; não reduzir paginação ou mudar os critérios por conta própria.
+
+**Alternativas:** adotar oito registros ou abrir detalhe em modal facilitaria copiar o HTML, mas alteraria requisitos; impor zero rolagem em todos os cenários cortaria conteúdo.
+
+### D5 — Evidência visual e regressão acompanham cada entrega
+
+Antes das edições de apresentação, capturar a linha de base de conteúdo e lateral nos dois temas/viewports, registrar comandos reais e verificar disponibilidade dos dois HTMLs locais sem modificá-los. Comparar referência, antes/depois e estilo computado por hierarquia, alinhamento, superfície, cor, tipografia, espaçamento, borda/canto, sombra e estados. Screenshots são evidência de inspeção, não aprovação automática.
+
+Registrar a matriz em `frontend/README.md`, com tema, viewport, cenário sintético, referência, caminho da captura, resultado e diferenças justificadas. Cobrir todas as superfícies da tabela D3, os estados vazio/erro/ausente e normal/hover/foco/ativo/desabilitado pertinentes. Verificar o contexto temático do modal e ausência de mudança indireta na lateral. Não incluir dados das demonstrações nas fixtures.
+
+Por entrega coerente: testes de componentes afetados, E2E pertinentes nos dois temas/viewports, build e registro real; commit próprio com testes/documentação. Ao final: regressão integral da aplicação e fixture, dois builds e formatação, sem elevar budgets. Não remover expectativas financeiras, privacidade, rede, densidade ou foco para acomodar o estilo. Testes que localizam valores pelo `<p>` genérico dos indicadores merecem atenção ao adicionar decoração.
+
+Zoom nativo 200% precisa de registro manual de navegador/versão, escala Windows e viewport útil; redução do viewport, CSS zoom ou escala de captura não substituem essa verificação. Ausência de evidência fica pendente e não é declarada aprovada. Não confundir revisão visual técnica com aceite da ótica ou FASE-008.
+
+**Alternativas:** só build/unitários não detecta composição; só snapshots não prova comportamento; uma comparação sem cenários fixos e diferenças registradas repete a lacuna da migração anterior.
+
+## Risks / Trade-offs
+
+- [Tokens compartilhados alterarem a lateral] → manter tokens próprios, escopar tipografia ao conteúdo e comparar baseline/estilos computados nos dois temas e tamanhos.
+- [Visual espaçoso dos HTMLs violar densidade] → priorizar contratos existentes e medir geometria em cada entrega de consultas.
+- [Fundos/selos suaves perderem contraste] → medir pares reais, foco e controles; adaptar a cor da referência em vez de reduzir requisitos.
+- [Refatoração de marcação mudar rótulos, foco ou testes] → preservar bindings/semântica e executar testes junto da superfície alterada.
+- [HTMLs não rastreados indisponíveis em outra máquina] → verificar antes de apply, usar arquivos locais fornecidos sem inclusão silenciosa; bloquear comparação se faltarem.
+- [CDNs dos exemplos impedirem renderização ou introduzirem tráfego] → não importar dependências no MVP; inspeção do exemplo é separada da aplicação, cujo teste continua proibindo rede externa. Registrar eventual limitação de renderização da referência.
+- [Fonte de sistema não ser idêntica à Inter] → diferença deliberada para evitar nova fonte/dependência; preservar hierarquia e registrar a adaptação.
+- [Documentos históricos parecerem evidência atual] → apontar resultados da execução futura no README; não reutilizar contagens antigas como nova regressão.
+
+## Migration Plan
+
+1. Revisar esta proposta e deltas; aguardar autorização separada de apply. Planejamento permanece na `feature/refinar-estilo-conteudo-mvp`, sem PR antecipado.
+2. No apply, registrar referências e linha de base; refinar fundação/compartilhados sem tocar na lateral.
+3. Entregar Visão Geral, consultas, formulários/recebimento e Relatórios/Configurações/estados em unidades coerentes, com verificações e commits individuais.
+4. Consolidar matriz visual, zoom e regressão integral. Em `frontend/`: `npm test -- --watch=false`, `npm run test:e2e`, `npm run test:e2e:paginacao-fixture`, `npm run build`, `npx ng run vendas-em-aberto:build-paginacao-fixture` e `npm run format:check`. Na raiz: validação estrita da Change. A fixture não possui configuração `production`.
+5. Somente após todo o escopo implementado e verificações aplicáveis concluídas, preparar o PR único conforme template; merge depende de autorização explícita. Sync/archive não são parte desta proposta.
+
+Não há migração de dados nem alteração de dependências. Se for necessário rollback, reverter apenas commits próprios de apresentação na feature por operação não destrutiva, preservando trabalho alheio; não restaurar Bootstrap nem descartar arquivos do usuário.
