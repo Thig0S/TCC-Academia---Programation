@@ -5,14 +5,14 @@
       Somente nome, CPF, telefone e descrição desta venda podem ser alterados. Use somente dados
       sintéticos.
     </p>
-    <nav aria-label="Retornos da edição" class="d-flex gap-3 flex-wrap mb-3">
+    <nav aria-label="Retornos da edição" class="mb-3 flex flex-wrap gap-3">
       <a routerLink="/vendas">Voltar para Vendas</a>
       <a [routerLink]="['/vendas', id()]">Voltar ao detalhe</a>
     </nav>
     <form novalidate (submit)="confirmar($event)">
       <app-identificacao-cliente [campos]="campos" />
       <p role="alert">{{ mensagem() }}</p>
-      <div class="d-flex gap-3 flex-wrap mb-3">
+      <div class="mb-3 flex flex-wrap gap-3">
         <button
           type="submit"
           class="rounded-md border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
@@ -32,7 +32,7 @@
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />
     <p>Não existe uma venda com este identificador para editar.</p>
-    <nav aria-label="Retornos de Vendas" class="d-flex gap-3 flex-wrap">
+    <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
       <a routerLink="/vendas">Voltar para Vendas</a>
       <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
     </nav>

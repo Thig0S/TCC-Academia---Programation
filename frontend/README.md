@@ -204,6 +204,27 @@ Verificações reais em Windows e Chromium Playwright, nos viewports 1366×768 e
 Avisos mantidos: Sass `@import` e prebundling desativado com otimização de scripts.
 Capturas locais foram revisadas, mas não versionadas. Não houve medição de zoom nativo.
 
+### Cadastro, edição e prévia — OpenSpec tarefa 4.1 — 21/11/2026
+
+Cadastro, edição e prévia de parcelas agora usam layout responsivo Tailwind nas
+superfícies, campos, agrupamentos e ações; mantidos os componentes compartilhados de
+identificação/erros, validações, confirmação, cancelamento e proteção contra envio
+duplicado. A tabela completa da prévia permanece rolável e não representa criação
+antes da confirmação. Comparada visualmente a composição sintética com
+`exemploCadastrarVenda.png`, sem reproduzir dados ou capacidades indisponíveis.
+
+Verificações em `frontend/`, Windows/Chromium, viewports 1366×768 e 390×844:
+
+- `npm test -- --watch=false`: saída 0, 356/356 em 29 arquivos.
+- `npx playwright test formularios-vendas.spec.ts`: saída 0, 18/18; cadastro,
+  edição, erros/foco, entrada, prévia, cancelamento e envio único nos dois temas.
+- O cenário `registra capturas sintéticas de cadastro e edição nos dois temas`
+  anexou capturas dark/light ao relatório Playwright nos dois viewports.
+- Prettier aplicado aos três templates migrados e ao teste E2E.
+
+Aviso Sass `@import` mantido. Não foram adicionados dados pessoais reais, campos
+financeiros ou dependências.
+
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
 Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
