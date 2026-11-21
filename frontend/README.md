@@ -1,5 +1,66 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
+
+### Referências confirmadas — tarefa 1.1
+
+Leitura local dos dois HTMLs confirmada nesta execução. Arquivos fornecidos pelo
+solicitante, não rastreados: não foram modificados nem incluídos no staging.
+SHA-256 dos arquivos em `public/imgs/exemplos/`:
+
+| Arquivo                                | SHA-256                                                            |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| `mercadao_oculos_dashboard_light.html` | `9D71B2C67695EE1E1072A035ADB4A15126C77B9BBA22D5E70F3451BACA8DCB7E` |
+| `mercadao_oculos_dashboard_dark.html`  | `62A1A8C9FB277584259FA982CA2DB3993893CEA3C5C866968E8738D9548DF60F` |
+
+Os HTMLs definem canvas claro `#f5f6f9`/escuro `#111217`, painel branco/
+`#1d1e24`, superfícies elevadas `#f8f9fb`/`#25262d`, marca `#d72848`, painéis
+arredondados, sombras discretas e selos suaves. Isso é referência de acabamento,
+não comprovação de contraste ou de fidelidade do MVP. A inspeção foi do código;
+a renderização das referências, com suas dependências externas, não foi validada.
+
+Referências complementares presentes: `exemploListagemDeVendas.png`,
+`exemploDadosDaVenda.png` e `exemploCadastrarVenda.png` para composição compacta;
+`exemploDesignDark.png` para linguagem escura e lateral existente.
+
+Matriz de escopo conferida contra D3 de
+`../openspec/changes/refinar-estilo-conteudo-mvp/design.md`:
+
+| Superfície                        | Acabamento autorizado                                 | Contrato preservado / diferenças descartadas                                                                                                       |
+| --------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Área principal, cabeçalho e aviso | Hierarquia, alinhamento e superfícies                 | Aviso, tema e foco; sem busca global, notificações ou perfil superior novos; lateral intacta                                                       |
+| Visão Geral                       | Quatro indicadores e três resumos em painéis          | Dados, referência, limites e links existentes; sem gráficos ou cadastro novo                                                                       |
+| Vendas/Quitadas                   | Critérios, tabela, paginação e selos coerentes        | Dez linhas, ações textuais e limpezas existentes; sem oito linhas, linha clicável, menu de reticências ou indicadores globais                      |
+| Cadastro/edição                   | Painéis, campos e prévia                              | Páginas existentes; mesmos campos e validações; edição só dos quatro campos; sem vencimento editável, limite de 120 parcelas ou cálculo aproximado |
+| Detalhe                           | Blocos compactos, valores e parcelas                  | Página, entrada separada, histórico completo e dez parcelas; sem conversão para modal                                                              |
+| Recebimento                       | Acabamento do diálogo e resumos                       | Modal nativo, sequência, valor exato, confirmação, cancelamento e foco; sem regras dos exemplos                                                    |
+| Relatórios                        | Quatro consultas com totais e períodos hierarquizados | Mês fixo, posição na referência, todos os registros; sem seletor, gráfico, indicadores globais ou CSV                                              |
+| Configurações/ausências           | Divisões e mensagens coerentes                        | Quatro explicações e retornos atuais; sem controles ou mensagens funcionais novos                                                                  |
+
+Não copiar scripts, dados pessoais ou seed dos exemplos, CDNs, Google Fonts/Inter,
+Lucide remoto, busca global, ajuda, notificações, exportação ou comportamento de
+recolher/esconder a lateral. Manter fonte de sistema, dependências e contratos do
+MVP. A comparação visual por superfície e os pares de contraste ainda estão pendentes.
+
+### Linha de base parcial — tarefa 1.2 pendente
+
+Execuções reais antes de qualquer edição de apresentação, em `frontend/`:
+
+- `npm.cmd run build`: saída 0; bundle inicial 477,56 kB, transferência estimada
+  96,49 kB; nenhum aviso de budget ou Sass na saída desta execução.
+- `npm.cmd test -- --watch=false`: saída 0; 356/356 testes em 29 arquivos.
+- `npm.cmd run test:e2e -- --output=test-results/refinar-estilo-baseline/aplicacao --workers=1`:
+  saída 1 antes de executar testes, pois `http://127.0.0.1:4200` já está em uso.
+  A configuração exige `reuseExistingServer: false`; ela não foi alterada e o
+  servidor preexistente não foi encerrado nem reutilizado sem orientação.
+
+Apply pausado nesse bloqueio. E2E da aplicação não aprovado; fixture e capturas
+de conteúdo/lateral nos dois temas em 1366×768 e 390×844 ainda não executados
+nesta linha de base. O diretório de saída acima foi reservado para separar estas
+evidências das de Changes anteriores, mas não contém capturas novas comprovadas.
+Nenhuma edição de apresentação foi iniciada. Resultados históricos abaixo não
+substituem estas verificações pendentes.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
