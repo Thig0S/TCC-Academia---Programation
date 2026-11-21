@@ -116,6 +116,9 @@ describe('Cadastro demonstrativo pela interface', () => {
   it('inclui entrada condicional, descrição opcional e recalcula a prévia', async () => {
     const { harness, pagina, preencher, validos } = await abrir();
     await validos();
+    expect(pagina.textContent).not.toContain(
+      'A entrada será registrada na data da venda e não conta como parcela paga.',
+    );
     pagina.querySelector<HTMLInputElement>('#tem-entrada')!.click();
     await harness.fixture.whenStable();
     expect(pagina.querySelector('tbody')).toBeNull();
