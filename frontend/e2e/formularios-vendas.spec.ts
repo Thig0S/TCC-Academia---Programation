@@ -49,7 +49,10 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await preencherCadastro(page, 'Cliente Sintético Captura');
     await expect(page.getByRole('heading', { name: 'Prévia das parcelas' })).toBeVisible();
-    const cadastro = await page.screenshot({ fullPage: true });
+    const cadastro = await page.screenshot({
+      path: testInfo.outputPath(`cadastro-${tema}.png`),
+      fullPage: true,
+    });
     await testInfo.attach(`cadastro-${tema}`, { body: cadastro, contentType: 'image/png' });
 
     await page.goto('/vendas');
@@ -60,7 +63,10 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
       .first()
       .click();
     await expect(page.getByRole('heading', { name: 'Editar dados do cliente' })).toBeVisible();
-    const edicao = await page.screenshot({ fullPage: true });
+    const edicao = await page.screenshot({
+      path: testInfo.outputPath(`edicao-${tema}.png`),
+      fullPage: true,
+    });
     await testInfo.attach(`edicao-${tema}`, { body: edicao, contentType: 'image/png' });
 
     await page.goto('/vendas');
@@ -73,7 +79,10 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
       .click();
     await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
     await expect(page.getByRole('dialog', { name: 'Receber parcelas' })).toBeVisible();
-    const recebimento = await page.screenshot({ fullPage: true });
+    const recebimento = await page.screenshot({
+      path: testInfo.outputPath(`recebimento-${tema}.png`),
+      fullPage: true,
+    });
     await testInfo.attach(`recebimento-${tema}`, { body: recebimento, contentType: 'image/png' });
   }
 });

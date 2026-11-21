@@ -40,7 +40,8 @@ Matriz de escopo conferida contra D3 de
 Não copiar scripts, dados pessoais ou seed dos exemplos, CDNs, Google Fonts/Inter,
 Lucide remoto, busca global, ajuda, notificações, exportação ou comportamento de
 recolher/esconder a lateral. Manter fonte de sistema, dependências e contratos do
-MVP. A comparação visual por superfície e os pares de contraste ainda estão pendentes.
+MVP. A comparação visual por superfície e os pares de contraste são registrados nas
+entregas abaixo e consolidados na matriz da tarefa 7.2.
 
 ### Linha de base — tarefa 1.2
 
@@ -321,10 +322,10 @@ explícito e superfícies coerentes; sem alegar aceite global ou zoom nativo.
 
 Execuções reais após todas as entregas de apresentação, em `frontend/`:
 
-| Comando | Resultado |
-| --- | --- |
-| `npm.cmd test -- --watch=false` | Saída 0, 363/363 testes em 30 arquivos |
-| `npm.cmd run test:e2e -- --output=test-results/refinar-estilo-regressao/aplicacao --workers=1` | Saída 0, 76/76 Chromium, dois viewports |
+| Comando                                                                                            | Resultado                                                  |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `npm.cmd test -- --watch=false`                                                                    | Saída 0, 363/363 testes em 30 arquivos                     |
+| `npm.cmd run test:e2e -- --output=test-results/refinar-estilo-regressao/aplicacao --workers=1`     | Saída 0, 76/76 Chromium, dois viewports                    |
 | `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-regressao/fixture` | Saída 0, 12/12, dois viewports/temas; aviso de prebundling |
 
 Suítes E2E executadas sequencialmente; nenhuma expectativa financeira, de
@@ -337,6 +338,110 @@ de edição ausente é adicional e não é contada como comparação antes/depoi
 Log da fixture em `test-results/refinar-estilo-regressao/fixture.log`;
 capturas/JSONs da aplicação e fixture nos diretórios acima. Não comprova zoom
 nativo, homologação da ótica ou conclusão integral da Change.
+
+### Matriz visual consolidada — tarefa 7.2 — 21/11/2026
+
+Complementos de captura inicialmente falharam (8/10 aprovados): o seletor
+`textbox` novo não localizou o campo de pesquisa nos dois viewports e atingiu
+30 s. Após autorização para correção, confirmado `type="search"` no template;
+ajustado exclusivamente o teste para `searchbox`, sem alteração da aplicação.
+Reexecutadas as suítes completas: **78/78 E2E** (2,4 min) e **12/12 fixture**
+(30,2 s), incluindo os complementos. Capturas de sem resultados e de resumos
+vazios produzidas e inspecionadas nos dois temas/viewports. Unitários também
+reexecutados: **363/363**, 30 arquivos, saída 0.
+
+Revisão técnica real de capturas locais, separada dos resultados automatizados.
+Abrange `dark` e `light`, em 1366×768 e 390×844. Foram inspecionados os PNGs
+complementares de listagem, detalhe e cadastro e o código de estilos/composição
+dos dois HTMLs identificados na tarefa 1.1. A renderização dos HTMLs com CDN e
+Inter **não** foi validada; a comparação de sua paleta, raios, hierarquia e
+composição deriva do código, não de uma captura renderizada desses HTMLs.
+Não há alegação de igualdade pixel a pixel, certificação ou aceite da ótica.
+
+Localização das evidências, relativa a `frontend/` (arquivos ignorados pelo Git):
+
+- **B** — antes: `test-results/refinar-estilo-baseline/conteudo/refinamento-visual-*/`;
+  formulários com erros/prévia/modal em
+  `test-results/refinar-estilo-baseline/aplicacao/acessibilidade-formularios-*/`;
+  lista/detalhe em `test-results/refinar-estilo-baseline/fixture/paginacao-fixture-*/`.
+- **A** — depois: `test-results/refinar-estilo-consolidacao/aplicacao/`;
+  páginas em `refinamento-visual-registr-*/`, formulários preenchidos em
+  `formularios-vendas-registr-*/`, erros/prévia extensa em
+  `acessibilidade-formularios-*/`.
+- **F** — depois, fixture: `test-results/refinar-estilo-consolidacao/fixture/paginacao-fixture-*/`.
+- **C** — complementos de consulta aprovados na reexecução integral:
+  `test-results/refinar-estilo-consolidacao/aplicacao/refinamento-visual-registr-*/`.
+  A execução parcial anterior em `consolidacao/complementos/` falhou e não serve
+  como evidência de conclusão.
+
+Os diretórios de cenário terminam em `chromium-1366x768` ou `chromium-390x844`;
+`{tema}` nos nomes abaixo significa os arquivos `dark` **e** `light`. Cada linha
+abrange os quatro cruzamentos tema/viewport, não apenas a captura desktop.
+Capturas de página completa podem ultrapassar a altura da janela: não são prova
+isolada de ausência de rolagem. A geometria é conferida pela fixture.
+
+| Superfície/estado de D3                                      | Referência e captura                                                                                                          | Revisão visual e diferença antes → depois                                                                                                                                              | Adaptação preservada                                                                                                                                    |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Área principal, cabeçalho, aviso e lateral                   | HTMLs, `exemploDesignDark.png`; B/A `vendas-{tema}.png`, `*-lateral-{tema}.png` e `*-lateral-{tema}.json`                     | Canvas cinza anterior → quase preto/claro dos HTMLs; cabeçalho de painel, aviso arredondado, títulos alinhados; logo, navegação, perfil e gradiente permanecem equivalentes            | Lateral original em ambos os temas, inclusive empilhada no mobile; sem sidebar branca/recolhível, busca ou perfil superiores dos HTMLs                  |
+| Visão Geral normal, valores e resumos                        | HTMLs como linguagem; B/A `visao-geral-{tema}.png`; F `resumos-vazios-{tema}.png` para próximas/atrasadas vazias              | Valores mais destacados que rótulos; painéis de 12 px, divisórias e cores semânticas; quatro indicadores alinhados no desktop e empilhados no mobile                                   | Três resumos e links existentes; sem gráfico, ícones remotos ou indicadores extras; vendas recentes continuam presentes na fixture quitada              |
+| Vendas/Quitadas, busca e sem resultados                      | HTMLs e `exemploListagemDeVendas.png`; B/A `{vendas,quitadas}-{tema}.png`; C `{vendas,quitadas}-sem-resultados-{tema}.png`    | Critérios antes separados → painel contínuo com tabela/rodapé; Nova venda destacada em vermelho; selos sólidos → suaves; campos elevados, divisórias e estados de consulta legíveis    | Mesmas colunas, duas limpezas distintas e ações textuais; sem cartões globais, avatar, oito linhas ou menus que escondam ações                          |
+| Lista vazia e paginação normal/hover/foco/ativa/indisponível | F `colecao-{0,1,10,11,21}-{tema}.png`, `{tema}-*-{normal,hover,foco}.png`, `paginacao-{tema}.png`; B `lista-{tema}.png`       | Painel vazio mantém faixa e mensagem explícita; atual vermelho e foco contornado distinguem-se de hover; anterior indisponível continua identificável; cantos e alinhamentos coerentes | Dez linhas sem rolagem da página no desktop; tabela horizontal interna no mobile, com ações alcançáveis; indisponibilidade continua por `aria-disabled` |
+| Detalhe, entrada e dez parcelas                              | HTMLs e `exemploDadosDaVenda.png`; B/F `detalhe-dez-{tema}.png`; A `recebimento-{tema}.png` inclui detalhe aberto sob o modal | Blocos antes de fundo uniforme → painéis com rótulos secundários, números destacados, divisórias e cabeçalho suave; cliente/venda lado a lado no desktop, empilhados no mobile         | Página, entrada separada, histórico completo e retornos; sem modal de detalhe, truncamento ou remoção de datas/formas                                   |
+| Cadastro, entrada, prévia e erros                            | HTMLs e `exemploCadastrarVenda.png`; B/A `cadastro-{tema}.png`; B/A `{tema}-cadastro-{erros,previa}.png`                      | Painéis/campos com cantos maiores, superfícies elevadas e ações hierarquizadas; foco e mensagens junto aos campos; prévia extensa permanece rolável                                    | Formulário continua página; fonte de sistema e disposição vertical adaptada, sem cliente mestre, primeiro vencimento editável ou cálculo aproximado     |
+| Edição normal/erro e registro ausente                        | Padrão derivado dos HTMLs; A `edicao-{tema}.png`, B/A `{tema}-edicao-erros.png`; A `edicao-ausente-{tema}.png`                | Mesma identificação refinada do cadastro, quatro campos; erro textual e foco contrastante; ausência usa painel/mensagem próprios e retornos explícitos                                 | Sem campos financeiros; captura de edição ausente é adicional, sem alegar comparação baseline inexistente                                               |
+| Recebimento normal/erro e conteúdo extenso                   | Padrão derivado dos HTMLs/detalhe; A `recebimento-{tema}.png`; B/A `{tema}-recebimento-erros.png`                             | Diálogo centralizado, raio de 12 px, backdrop desfocado, campos elevados e soma destacada; lista longa tem foco visível e rolagem própria                                              | `dialog` nativo, sequência, conferência exata e cancelamento; o título pode ficar fora do trecho capturado após rolagem, mas não foi removido           |
+| Relatórios e exportação indisponível                         | Linguagem dos HTMLs; B/A `relatorios-{tema}.png`                                                                              | Tabelas antes soltas → quatro painéis com títulos/totais/períodos hierarquizados; separadores e cores semânticas; reorganização estreita e tabelas com rolagem local                   | Todos os registros, mês fixo, sem gráfico/seletor/indicadores globais/CSV; botão informa indisponibilidade, não simula download                         |
+| Configurações, página e registro ausentes                    | Linguagem dos HTMLs; B/A `{configuracoes,pagina-ausente,registro-ausente}-{tema}.png`                                         | Painéis arredondados, títulos/descrições separados e quatro explicações com divisórias; retornos sem perda de contraste                                                                | Sem controles ou mensagens novas; ausência de registro distinta de validação de formulário                                                              |
+
+Critérios transversais conferidos: hierarquia de títulos/rótulos/valores,
+alinhamento dos painéis/controles, cores e superfícies temáticas, fonte de sistema,
+espaçamento compacto, bordas, cantos e sombras discretas. O espaçamento dos HTMLs
+não foi copiado literalmente: aviso, rótulos completos e dez linhas prevalecem.
+Textos auxiliares/contornos foram adaptados para contraste, em vez de copiar
+indiscriminadamente fonte de 10/11 px ou bordas fracas das referências.
+
+As edições preexistentes de apresentação/testes foram autorizadas pelo solicitante
+para esta continuação. Incluem o esquema nativo escuro do campo de data do cadastro
+(ícone legível, sem substituição do controle) e a remoção da sombra do cabeçalho,
+evitando projetá-la sobre a lateral mobile. Não se redesenhou a lateral.
+
+Nova comparação dos **32 JSONs** de estilos/geometria da lateral com a baseline:
+todos idênticos; resultado local em
+`test-results/refinar-estilo-consolidacao/comparacao-lateral-estilos.json`.
+Isso comprova os estilos/retângulos coletados, não igualdade de todos os pixels.
+A inspeção também encontrou no relatório anterior
+`test-results/refinar-estilo-final/comparacao-lateral.json` pequenas diferenças
+de rasterização/limite de captura no mobile; não foram tratadas como igualdade
+pixel a pixel nem usadas para dispensar a revisão visual.
+
+Verificação automatizada complementar, nesta continuação:
+
+- Primeira regressão interrompida pelo limite do executor de 120 s após 45 testes
+  aprovados; não contada como suíte concluída. Reexecução autorizada sem esse
+  limite: `npm.cmd run test:e2e -- --output=test-results/refinar-estilo-consolidacao/aplicacao --workers=1`,
+  saída 0, **78/78**, 2,4 min, Chromium, nos dois viewports.
+- `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-consolidacao/fixture`:
+  saída 0, **12/12**, 38,7 s; aviso de prebundling mantido. Desktop: faixa até
+  695 px, paginação até 741 px, última parcela até 727,77 px e documento 768 px.
+  Mobile: largura do documento 390 px e rolagem vertical permitida.
+- Contrastes desta execução: texto mínimo observado **4,899:1**; bordas essenciais
+  mínimo **4,339:1**; paginação com foco por teclado **7,703:1** no escuro e
+  **6,505:1** no claro. Lateral: texto/ícones **5,96:1 / 4,83:1**, foco
+  **10,41:1 / 5,75:1**, escuro/claro. Asserções funcionais e mínimos preservados.
+- Teclado, atalho, hover/foco/ativo, movimento reduzido, Escape, contenção/retorno
+  de foco e privacidade/rede passaram nas suítes; não são inferidos só dos PNGs.
+  Falha/retry e os vazios não alcançáveis com o seed da aplicação continuam sendo
+  verificados em componentes, não são declarados capturas de produção vazia.
+
+### Zoom nativo — tarefa 7.3 pendente
+
+O solicitante informou nesta continuação que fará a conferência manual da interface
+refinada em 200%. Ainda faltam navegador/versão, escala Windows, viewport útil e
+resultados nos dois temas para consultas, formulários, recebimento, resumos,
+Relatórios e estados auxiliares, incluindo alcance de conteúdo/ações/foco.
+O relato da Change `troca-para-tailwind` abaixo é histórico e não fecha esta tarefa.
+Não substituir por CSS zoom ou redução de viewport. PR e conclusão integral da
+Change permanecem bloqueados enquanto essa evidência estiver pendente.
 
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
