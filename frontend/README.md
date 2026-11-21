@@ -225,6 +225,31 @@ Verificações em `frontend/`, Windows/Chromium, viewports 1366×768 e 390×844:
 Aviso Sass `@import` mantido. Não foram adicionados dados pessoais reais, campos
 financeiros ou dependências.
 
+### Visão Geral, Relatórios e Configurações — OpenSpec tarefa 4.2 — 21/11/2026
+
+As três páginas foram migradas para superfícies, grid responsivo, tipografia e listas
+Tailwind; tabelas de relatório usam regiões acessíveis de rolagem e células com bordas
+e espaçamento semântico. Conteúdo e limites foram preservados: quatro indicadores
+somente na Visão Geral, três resumos limitados, quatro tabelas sem limite arbitrário,
+período mensal fixo, posições na referência e exportação indisponível. Configurações
+continua explicativa, sem controles inventados.
+
+Verificações em `frontend/`:
+
+- `npm test -- --watch=false`: saída 0, 356/356 em 29 arquivos.
+- `npx playwright test demonstracao-inicial.spec.ts --workers=1`: saída 0, 46/46
+  em Chromium 1366×768 e 390×844. Cobriu indicadores e resumos, quatro tabelas,
+  estados vazios, exportação sem arquivo/rede/mutação, rotas ausentes, teclado,
+  recarga e Configurações. Contraste textual mínimo observado 5,55:1 em Visão Geral,
+  5,78:1 claro e 7,29:1 escuro em Relatórios.
+- `npx playwright test demonstracao-inicial.spec.ts --grep "anexa capturas sintéticas"
+  --workers=1`: saída 0, 2/2; anexou capturas de cada página nos temas escuro/claro
+  e nos dois viewports ao relatório Playwright.
+- Prettier aplicado aos três templates e ao teste E2E.
+
+Avisos Sass `@import` e prebundling permanecem. As capturas são evidência Chromium,
+não aprovação de produto nem avaliação com a ótica; zoom nativo não foi medido.
+
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
 Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
