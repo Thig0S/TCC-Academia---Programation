@@ -199,6 +199,24 @@ legibilidade. Adaptações dos HTMLs: dez linhas compactas com fonte atual de 14
 sem indicadores globais, avatar/dados extras, linha clicável, oito registros ou
 menu que esconda Visualizar/Editar; lateral e aviso originais preservados.
 
+#### Ajuste pontual de respiro e tipografia — tarefa 4.3 — 21/11/2026
+
+Na tabela compartilhada de Vendas/Quitadas, o tamanho da fonte passou de 14 px
+para 15 px, mantendo `leading-5`; células de dados passaram de 8 px para 10 px
+de padding horizontal, sem ampliar a altura vertical das linhas. Assim os dados
+ficam menos próximos às bordas sem perder a densidade de dez vendas.
+
+Verificações reais: `CI=true npm test` aprovou 363/363 testes em 30 arquivos;
+`npm run test:e2e:paginacao-fixture -- -g "mede dez linhas, critérios e rodapé"`
+aprovou 2/2 cenários nos temas claro/escuro e viewports 1366×768/390×844; a
+geometria desktop ficou em documento de 768 px, décima linha até 669,5 px e
+paginação até 737 px. A fixture confirmou fonte computada de 15 px e padding
+vertical de 4 px. `npm run build` concluiu sem avisos de budget; bundle inicial
+315,90 kB (82,94 kB estimados). `npm run format:check` aprovado.
+O E2E `confere semântica e contraste de tabelas, situações e controles de consulta`
+aprovou 2/2 projetos Chromium (1366×768/390×844), percorreu Vendas/Quitadas nos
+dois temas e mediu contraste mínimo de 7,32:1 nas tabelas abertas e 8,07:1 nas quitadas.
+
 ### Detalhe e parcelas — tarefa 4.2
 
 Blocos de cliente/venda e painel de parcelas usam raio de 12 px, divisórias,

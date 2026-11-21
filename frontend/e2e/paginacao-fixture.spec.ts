@@ -172,11 +172,13 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
         estiloTabela: getComputedStyle(tabela).borderCollapse,
         bordaCabecalho: getComputedStyle(cabecalho).borderBottomWidth,
         espacamentoCelula: getComputedStyle(celula).paddingTop,
+        tamanhoFonteTabela: getComputedStyle(tabela).fontSize,
       };
     });
     expect(geometria.estiloTabela).toBe('collapse');
     expect(geometria.bordaCabecalho).toBe('1px');
     expect(geometria.espacamentoCelula).toBe('4px');
+    expect(geometria.tamanhoFonteTabela).toBe('15px');
     expect(geometria.larguraDocumento).toBeLessThanOrEqual(geometria.larguraViewport);
     if (page.viewportSize()!.width >= 1200) {
       expect(geometria.topoPrimeiraLinha).toBeGreaterThanOrEqual(0);
