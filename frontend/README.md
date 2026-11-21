@@ -260,6 +260,31 @@ Verificações desta revisão: `CI=true npm test` 363/363 em 30 arquivos;
 aprovado. O E2E padrão não pôde usar a porta 4200, já ocupada por servidor
 preexistente; o processo não foi interrompido. A configuração temporária foi removida.
 
+### Tipografia das tabelas de Relatórios — tarefa 6.3 — 21/11/2026
+
+As tabelas Recebimentos do mês, Vendas do mês, Posição em aberto e Parcelas
+vencidas agora compartilham o padrão de Vendas/Quitadas e parcelas: dados a 18 px,
+line-height 20 px, padding de 10×4 px em células de dados e 10×8 px em cabeçalhos
+(horizontal×vertical). Conteúdo, ordem, totais, links e captions não mudaram; as
+quatro regiões continuam com rolagem horizontal identificável e Relatórios mantém
+rolagem vertical normal entre seções.
+
+O teste E2E `Relatórios mantém quatro tabelas completas nos dois temas e viewports`
+mediu os estilos computados em todas as quatro tabelas (18 px/20 px e os paddings
+esperados) e confirmou `overflow-x: auto` nos dois temas e em 1366×768/390×844:
+2/2 projetos aprovados; mínimo de contraste observado na página Relatórios foi
+5,64:1 no tema claro e 7,74:1 no escuro. Unitários: 363/363; fixture de paginação:
+12/12. Build principal: 299,48 kB iniciais/80,49 kB estimados; build da fixture:
+301,21 kB/80,94 kB. `npm run format:check` e validação estrita OpenSpec aprovados.
+
+A regressão E2E completa passou 79/80: houve uma falha no viewport 1366×768 do
+cenário de reconciliação de indicadores da Visão Geral, não relacionado às tabelas
+de Relatórios; a repetição isolada desse cenário passou 2/2 viewports. A suíte foi
+executada pela configuração temporária na porta 4202; o arquivo temporário foi
+removido. A evidência de estilos computados e cobertura está em
+`e2e/demonstracao-inicial.spec.ts`; a captura de relatórios existente é gerada pelo
+teste `anexa capturas sintéticas da Visão Geral, Relatórios e Configurações`.
+
 ### Detalhe e parcelas — tarefa 4.2
 
 Blocos de cliente/venda e painel de parcelas usam raio de 12 px, divisórias,
