@@ -1,6 +1,6 @@
 # Tasks
 
-> Planejamento conciliado com PRD 1.11 e TDD 1.15/DEC-021. Tarefas 1.1–4.4 e 5.1–5.3, exceto a pendência manual explicitada em 5.2, estão concluídas. Ver evidências de implementação e verificações em `frontend/README.md`.
+> Planejamento conciliado com PRD 1.11 e TDD 1.15/DEC-021. Todas as tarefas 1.1–5.3 estão concluídas. Ver evidências de implementação e verificações em `frontend/README.md`.
 
 ## Pré-requisitos bloqueantes do apply
 
@@ -34,10 +34,10 @@
 ## 5. Verificação integrada visual e funcional
 
 - [x] 5.1 Consolidar regressão integral com os testes já adaptados em cada entrega: executar em `frontend/` `npm test -- --watch=false`, `npm run test:e2e` e `npm run test:e2e:paginacao-fixture`, incluindo cadastro → recebimento → quitação → edição → consultas/resumos → recarga, sem armazenamento ou rede externos. Registrar resultados e falhas, sem atribuir à revisão documental execução de aplicação.
-- [ ] 5.2 Consolidar a matriz visual de todas as rotas/modal e estados nos dois temas em 1366×768/100% e 390×844, relacionando referência, captura, critérios, resultado e diferenças justificadas; verificar geometria, teclado, foco, movimento reduzido e contrastes 4,5:1/3:1 inclusive estados ativos/hover/erro. Complementar com zoom nativo 200% documentando navegador/versão, escala Windows e viewport útil; sem medição manual disponível, manter pendência, não substituir por CSS zoom nem alegar aceite global.
+- [x] 5.2 Consolidar a matriz visual de todas as rotas/modal e estados nos dois temas em 1366×768/100% e 390×844, relacionando referência, captura, critérios, resultado e diferenças justificadas; verificar geometria, teclado, foco, movimento reduzido e contrastes 4,5:1/3:1 inclusive estados ativos/hover/erro. Complementar com zoom nativo 200% documentando navegador/versão, escala Windows e viewport útil; sem medição manual disponível, manter pendência, não substituir por CSS zoom nem alegar aceite global.
 - [x] 5.3 Executar `npm ci`, `npm run build`, `npx ng run vendas-em-aberto:build-paginacao-fixture` e `npm run format:check` em `frontend/`, sem alterar budgets; validar a Change com `openspec validate troca-para-tailwind --strict` na raiz. Consolidar no README versões, comandos, resultados, evidências visuais, avisos e verificações não executadas; confirmar ausência final de Bootstrap visual sem remover inicialização Angular nem referências históricas.
 
 ## Workflow follow-up
 
-- Não abrir PR enquanto a evidência manual de 5.2 estiver pendente. Usar o PR único da mesma feature branch somente depois de todo o escopo autorizado concluído, com o template do repositório e referências PRD/TDD/SDD.
+- Preparar o PR único da mesma feature branch após todo o escopo autorizado concluído, com o template do repositório e referências PRD/TDD/SDD.
 - Sync/archive seguem fluxo próprio quando aplicável; não encerrar FASE-008, pendências de avaliação ou aceite da ótica por regressão técnica. Merge exige autorização explícita.
