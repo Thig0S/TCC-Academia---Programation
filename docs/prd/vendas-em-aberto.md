@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.10 — planejamento da FASE-007, em 20/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.11 — conciliação do escopo visual global, em 20/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -484,6 +484,11 @@ seguir as referências FON-010 em proporções, densidade, tipografia, superfíc
 bordas suaves, cantos arredondados, ícones e selos. Claro com fundo claro e tabelas
 brancas; escuro com fundo quase preto, superfícies grafite e texto claro; vermelho
 de identidade nas ações/links, verde para pagas e vermelho para atraso, sempre com texto.
+Esse contrato visual aplica-se a todos os módulos e estados existentes, inclusive
+Visão Geral, Vendas, Quitadas, detalhe, cadastro, edição, recebimento, Relatórios,
+Configurações, modais, avisos e páginas ausentes; páginas sem referência própria
+derivam a mesma linguagem visual. A escolha de framework ou pipeline de estilos é
+decisão técnica do TDD e não altera este requisito de produto.
 Não copiar cartões para Vendas, dados pessoais, controles de janela/notificação,
 busca global ou ações não implementadas. Manter aviso e alternância acessível.
 Âncoras de navegação, cliente, Visualizar e retorno/breadcrumb não usam aparência

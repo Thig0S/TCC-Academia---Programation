@@ -4,7 +4,7 @@
 
 O frontend é uma aplicação Angular 22 standalone, zoneless e baseada em Signals. Hoje importa Bootstrap 5.3.9 globalmente pelo Sass; templates usam suas classes para layout e controles, estilos consultam tokens `--bs-*`, e o tema é exposto como `data-bs-theme`. Há SCSS global e por componente. As referências visuais estão em `frontend/public/imgs/exemplos/`; as especificações existentes também impõem contraste, foco, dois temas, densidade e fluxos que não podem regredir. Motivação e escopo estão em `proposal.md`; os contratos visuais estão nas deltas de `temas-visuais` e `consulta-vendas`.
 
-**Bloqueio documental:** este desenho propõe substituir DEC-013, mas `docs/tdd/tdd.md` ainda determina Bootstrap e proíbe Tailwind. Antes de qualquer implementação, conciliar o PRD e depois o TDD, preservando seus IDs/histórico; revisar então esta Change com referências às revisões efetivas. Esses documentos não são alterados nesta revisão. Artefatos completos no CLI não significam autorização ou ausência desse bloqueio.
+**Rastreabilidade documental:** PRD 1.11 (`docs/prd/vendas-em-aberto.md`) confirma o escopo visual global sem impor tecnologia; TDD 1.15 (`docs/tdd/tdd.md`) registra DEC-021, que substitui a escolha técnica da DEC-013 e exige prova local de Tailwind v4/PostCSS nos dois alvos antes da migração ampla. Esta Change foi atualizada para essas decisões. A revisão documental não comprova compatibilidade nem implementação.
 
 **Alvos observados:** `frontend/angular.json` referencia `src/styles.scss`, `inlineStyleLanguage: scss` em aplicação e fixture, e geração de componentes em SCSS. Só o alvo principal possui configuração `production`; a fixture usa `build-paginacao-fixture` sem essa configuração. Há templates inline em TypeScript, como o selo de situação, além dos HTML externos.
 
@@ -24,7 +24,7 @@ O frontend é uma aplicação Angular 22 standalone, zoneless e baseada em Signa
 
 ## Decisions
 
-### Tailwind CSS v4 com integração de build Angular, sem Sass
+### Tailwind CSS v4 com integração de build Angular, sem Sass — DEC-021
 
 Adotar Tailwind v4 e seu plugin de build PostCSS, importando Tailwind a partir de uma folha de entrada CSS. A documentação oficial consultada indica que v4 é um pipeline CSS próprio e não foi desenhado para ser executado por Sass/SCSS. Portanto, substituir as entradas SCSS por CSS e remover Sass quando não houver uso residual necessário; não encadear Tailwind dentro do Sass.
 
@@ -84,7 +84,7 @@ Em cada grupo, executar unitários/componentes sem watch, E2E pertinentes nos do
 
 ## Migration Plan
 
-1. Resolver a conciliação PRD → TDD → SDD, revisar os artefatos e obter autorização explícita de apply antes de executar as tarefas.
+1. Usar PRD 1.11, TDD 1.15/DEC-021 e esta Change revisada como base; conferir que a decisão continua coerente antes de iniciar cada tarefa.
 2. Registrar a linha de base real e provar a integração Tailwind v4/PostCSS nos alvos de aplicação e fixture, sem retirar a base das telas ainda não migradas.
 3. Migrar tokens/tema, estrutura, componentes e páginas com testes, capturas, documentação e commits próprios de cada entrega.
 4. Remover Bootstrap e Sass direto, concluir conversão CSS e ativar Preflight; confirmar ausência de acoplamentos e repetir verificações afetadas.
@@ -96,4 +96,4 @@ Como a migração é de frontend e não muda dados persistidos nem contratos ext
 
 ## Open Questions
 
-Não há nova decisão de produto pendente nesta revisão. Isso não resolve o bloqueio de conciliação PRD/TDD indicado no início. Os patches e a compatibilidade local serão verificados na primeira etapa autorizada; falha de integração ou incompatibilidade com o ambiente requerido interrompe o trabalho para revisão, sem adotar outra major ou mudar requisitos silenciosamente. Nenhum teste de aplicação ou integração Tailwind foi executado nesta revisão documental.
+Não há decisão de produto pendente nesta revisão. Os patches e a compatibilidade local serão verificados na tarefa 1.1; falha de integração ou incompatibilidade com o ambiente requerido interrompe o trabalho para revisão, sem adotar outra major ou mudar requisitos silenciosamente. A revisão documental não executou testes de aplicação nem integração Tailwind.
