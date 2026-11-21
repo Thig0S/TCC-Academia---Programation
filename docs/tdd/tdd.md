@@ -7,6 +7,13 @@
 
 ## 1. Identificação e situação
 
+**Cadastro com prévia lateral — revisão 1.20, 21/11/2026:** PRD 1.16/FON-014,
+RF-004 e CA-032 sustentam a DEC-025. Planejar duas colunas a partir de `md`
+(48rem/768 px na configuração padrão), formulário à esquerda e prévia à direita;
+abaixo disso, empilhar. O solicitante aprovou a documentação e autorizou o apply em
+21/11/2026; a implementação e suas verificações ainda não estão comprovadas. Não
+reutilizar resultados anteriores como prova do novo layout.
+
 **Conciliação da migração visual — revisão 1.15, 20/11/2026:** PRD 1.11
 explicita a aplicação da linguagem visual das referências em todos os módulos e
 estados existentes, sem impor tecnologia. DEC-021 substitui a escolha de base
@@ -199,7 +206,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 21/11/2026, revisão 1.17.
+- **Data e revisão:** 21/11/2026, revisão 1.20.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** FASE-006 implementada e verificada na feature, com specs sincronizadas
   e Change arquivada; revisão e merge pendentes. FASE-007/008, avaliação e aceite
@@ -735,6 +742,9 @@ mantém padding vertical de 8 px. Manter rolagem horizontal dentro do contêiner
 
 ### Formulários — DEC-010
 
+Para o layout de Nova venda, complementar com DEC-025: composição responsiva e
+compactação local, preservando o contrato funcional de Signal Forms abaixo.
+
 - Usar `form` e `FormField` de `@angular/forms/signals`, sem duplicar estado com Reactive Forms.
   A API `form` é estável desde Angular 22.0; confirmar a estabilidade das demais APIs utilizadas
   na versão exata antes da implementação, sem ativar recursos experimentais por padrão.
@@ -1031,6 +1041,56 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 - **Origem/situação:** confirmação explícita no Harness em 21/11/2026; implementação
   recebida do solicitante e verificações registradas em `frontend/README.md`. Build,
   formatação, unitários e E2E passaram; zoom nativo 200% da Change permanece pendente.
+
+### DEC-025 — Nova venda com formulário e prévia lateral
+
+- **Origem/escopo:** PRD 1.16/FON-014, RF-004 e CA-032; mesma Change e branch
+  `refinar-estilo-conteudo-mvp`. Planejamento aprovado e apply autorizado pelo
+  solicitante em 21/11/2026; implementação/verificações pendentes de evidência.
+- **Estado observado:** `cadastrar-venda.html` apresenta identificação, dados da
+  venda e prévia sequencialmente dentro de um único `form`. A identificação é
+  compartilhada com edição; a prévia já é derivada do rascunho sem publicação.
+- **Escolha:** usar grade responsiva com utilitários literais Tailwind existentes,
+  uma coluna na base e duas em `md` (48rem/768 px), alinhadas ao topo. Agrupar os
+  fieldsets de identificação e venda à esquerda; manter a seção de prévia à direita.
+  Preservar um único formulário, bindings, IDs e ordem lógica de teclado, sem
+  duplicar controles nem adicionar formulário aninhado. Manter ações existentes
+  após os grupos de preenchimento e a prévia em ordem lógica, sem duplicação.
+- **Dimensionamento:** colunas encolhíveis (`minmax(0, …)`/`min-w-0`), campos
+  contidos na largura disponível e grade interna adaptável. Nome e descrição usam
+  maior extensão; valor total, quantidade e entrada recebem compactação prioritária
+  de espaço/padding, sem igualar todos os campos a uma largura curta. Não adicionar
+  `maxlength`, limites comerciais ou reduzir fonte para fazer o layout caber.
+  Proporções exatas e paddings serão calibrados no apply por geometria e legibilidade,
+  respeitando o breakpoint confirmado; não mudar o limiar silenciosamente.
+- **Isolamento:** priorizar marcação/estilos locais do cadastro. Não alterar a edição
+  por efeito do componente de identificação compartilhado; se precisar de variante
+  visual, torná-la opt-in no cadastro, preservando a aparência padrão da edição.
+  Sem mudança em domínio, serviços, cálculos, rascunhos, rotas ou dependências.
+- **Prévia/acessibilidade:** manter conteúdo e estado inválido, recálculo imediato,
+  caption, cabeçalhos e região rolável identificada, inclusive acesso a parcelas
+  excedentes por teclado. Não adicionar sticky como requisito nem forçar a página
+  inteira a caber sem rolagem vertical; não cortar erros/ações ou gerar overflow
+  horizontal global. A tabela pode rolar dentro de sua região.
+- **Alternativas:** manter os blocos verticais não atende à conferência simultânea;
+  duas colunas fixas no celular comprometem leitura; compactar o componente
+  compartilhado globalmente amplia o escopo para edição sem necessidade.
+- **Roadmap deste ajuste:** (1) PRD/TDD/SDD revisados e apply autorizado; (2)
+  implementar composição e compactação como entrega coerente; (3) verificar e
+  registrar evidências reais, com commit próprio da funcionalidade; (4) aguardar
+  conclusão integral da Change, inclusive zoom manual, antes do PR único.
+- **Verificação planejada:** unitários de cadastro/identificação/edição; E2E nos dois
+  temas em 1366×768 e 390×844, mais fronteiras 767/768 px e largura intermediária
+  com a lateral existente. Medir posição dos blocos, proporção dos campos e ausência
+  de overflow global; cobrir dados válidos/inválidos, entrada, parcelas excedentes,
+  teclado/foco, contraste, confirmação, cancelamento e falha/retry. Executar regressão
+  aplicável, builds principal/fixture e formatação, registrar capturas/limitações em
+  `frontend/README.md`. Zoom nativo 200% permanece a tarefa manual 7.3; resultados
+  antigos não comprovam esse layout. Nenhuma dessas verificações foi executada
+  nesta revisão documental.
+- **Referência técnica:** documentação Tailwind consultada via Context7 em 21/11/2026
+  (`responsive-design`, `styling-with-utility-classes`): variantes mobile-first,
+  `md` padrão em 48rem e grade com `minmax`; não comprova o resultado no aplicativo.
 
 ### DEC-024 — Tipografia compartilhada nas tabelas de Relatórios
 

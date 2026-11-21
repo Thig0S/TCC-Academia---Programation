@@ -66,6 +66,15 @@ As seções existentes SHALL usar painéis com bordas suaves, cantos arredondado
 - **AND** cadastro e edição SHALL continuar páginas com os campos, rótulos, obrigatoriedades, validações e cancelamento existentes; edição SHALL continuar restrita aos quatro campos do cliente
 - **AND** entrada e prévia completa SHALL permanecer no cadastro; primeiro vencimento editável, limite de 120 parcelas e prévia aproximada dos HTMLs SHALL não ser incorporados
 
+#### Scenario: Cadastrar com formulário e prévia lado a lado
+
+- **WHEN** acessar Nova venda nos dois temas em viewport CSS a partir de 768 px
+- **THEN** os grupos de identificação e dados financeiros SHALL compor a coluna esquerda e a prévia das parcelas SHALL ocupar a coluna direita, alinhados ao topo
+- **AND** nome e descrição SHALL dispor de maior espaço horizontal que valor total e quantidade de parcelas; compactação de largura/espaçamento SHALL não reduzir legibilidade, alterar dados aceitos ou ocultar rótulos, erros e controles
+- **AND** abaixo de 768 px os blocos SHALL ficar empilhados, formulário antes da prévia; rolagem vertical SHALL ser permitida e eventual rolagem horizontal da tabela SHALL ficar contida em sua região identificada, sem overflow horizontal da página
+- **AND** o cadastro SHALL manter campos, bindings, ordem lógica de teclado, foco visível, entrada condicional, prévia completa recalculada e seu estado inválido, confirmação única, cancelamento e recuperação de falha, sem duplicar controles ou submissões
+- **AND** a composição e compactação SHALL ficar restritas a Nova venda, sem redesenhar edição, recebimento ou lateral por efeito indireto; em zoom nativo de 200% conteúdo e ações SHALL permanecer alcançáveis, admitindo reorganização e rolagem
+
 #### Scenario: Conferir Relatórios e Configurações
 
 - **WHEN** acessar Relatórios e Configurações nos dois temas

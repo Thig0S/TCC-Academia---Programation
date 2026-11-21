@@ -4,6 +4,10 @@
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
+> Extensão PRD 1.16/TDD 1.20 (DEC-025/CA-032): documentação aprovada e tarefa 5.4
+> autorizada pelo solicitante em 21/11/2026. Resultados já registrados são históricos
+> e não comprovam o novo layout; manter 7.3 pendente até verificação manual.
+
 ## 1. Registrar linha de base e proteger contratos
 
 - [x] 1.1 Confirmar a disponibilidade dos dois HTMLs nomeados em `proposal.md` e registrar em `frontend/README.md` sua identificação/hash, referências complementares e diferenças funcionais descartadas; verificar leitura dos arquivos e a matriz de escopo de D3. Ausência de referência bloqueia comparação, sem recriar arquivos ou incorporar trabalho alheio.
@@ -31,6 +35,8 @@
 - [x] 5.1 Refinar identificação compartilhada, cadastro, entrada e prévia em painéis coerentes com os HTMLs; verificar testes de cadastro/componentes e E2E nos dois temas/viewports para campos/rótulos atuais, erros associados, foco, prévia completa, cancelamento, falha/retry e confirmação única. Executar build e registrar capturas comparativas e contraste no README, sem converter página em modal ou copiar primeiro vencimento editável, limite de parcelas ou cálculo aproximado.
 - [x] 5.2 Refinar edição com a mesma linguagem, preservando somente os quatro campos editáveis; verificar testes de edição e E2E nos dois temas/viewports, incluindo quitada, cancelamento, erro e atualização isolada da identificação sem mudança financeira. Executar build e registrar capturas, foco e contrastes no README; manter ausência de registro distinta de erro de validação.
 - [x] 5.3 Refinar apresentação do recebimento no modal existente; verificar testes do modal/recebimento e E2E nos dois temas/viewports para sequência de parcelas, valor exato, datas/formas atuais, falha/retry, confirmação única, cancelamento/Escape, contenção e retorno de foco após quitação. Executar build e registrar capturas/contrastes no README, sem alterar mecanismo nativo, comandos ou regras.
+
+- [ ] 5.4 Reorganizar Nova venda em formulário à esquerda e prévia à direita alinhados ao topo a partir de md/768 px; empilhar abaixo disso. Compactar prioritariamente valor/quantidade e entrada sem reduzir fonte ou dados aceitos, mantendo nome/descrição mais amplos e demais proporções relativas. Preservar um único formulário, campos/bindings, ações, validação, foco, prévia dinâmica completa/estado inválido e região rolável. Isolar estilos do cadastro para não redesenhar edição/recebimento/lateral. Verificar unitários de cadastro/identificação/edição e E2E nos dois temas (1366×768, 390×844, fronteiras 767/768 px e largura intermediária): geometria/proporção, ausência de overflow global, entrada, erros, parcelas excedentes, teclado/contraste, confirmação única, cancelamento e falha/retry. Executar regressão aplicável, builds principal/fixture, formatação e validação estrita OpenSpec; registrar capturas/resultados reais e limitações no README, com commit próprio da entrega. Zoom nativo 200% continua em 7.3, sem conclusão por viewport reduzido.
 
 ## 6. Refinar Relatórios, Configurações e estados auxiliares
 

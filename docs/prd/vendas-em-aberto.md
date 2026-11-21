@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.15 — tipografia uniforme também em Relatórios, em 21/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.16 — planejamento do cadastro com prévia lateral, em 21/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,15 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Cadastro e prévia lado a lado — revisão 1.16, 21/11/2026:** o solicitante
+confirmou no Harness o formulário à esquerda e a prévia das parcelas à direita a
+partir de 768 px de viewport CSS; abaixo disso, formulário seguido da prévia.
+Reduzir o espaço excessivo dos campos, priorizando valor e quantidade de parcelas,
+mantendo nome e descrição mais amplos e as proporções relativas dos demais campos.
+Preservar conteúdo, validações e cálculo em tempo real. A documentação foi aprovada
+e a implementação autorizada pelo solicitante em 21/11/2026; verificações ainda
+precisam ser executadas e registradas.
 
 **Padronização das tabelas — revisão 1.15, 21/11/2026:** conforme solicitação
 explícita no Harness, as quatro tabelas de Relatórios adotam o mesmo padrão das
@@ -231,6 +240,12 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
+**FON-014 — layout de Nova venda:** solicitação e respostas explícitas no Harness,
+21/11/2026: formulário e prévia lado a lado no breakpoint médio padrão, empilhados
+em telas menores; compactação prioritária de valor/quantidade, nome/descrição mais
+amplos, na mesma Change/branch visual. Planejamento e implementação autorizados
+pelo solicitante; sem aceite da ótica.
+
 **Conciliação da revisão 1.1:** o solicitante confirmou dois temas, claro e escuro, com escuro inicial, alternância acessível e preferência somente em memória. PEN-006 foi resolvida documentalmente e possui evidências técnicas na FASE-003; isso não é aprovação da ótica. O `AGENTS.md` atual não contém a antiga restrição de tema claro. Mantêm-se quatro módulos, sem cadastros independentes de clientes ou parcelas. Substituição operacional do Excel continua fora do MVP.
 
 ## 3. Visão, objetivos e resultados esperados
@@ -336,7 +351,15 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Exceções:** campos inválidos preservados e identificados junto ao campo; descrição vazia não bloqueia. Calendário, centavos e entrada seguem RN-011/012/013/017; CPF/telefone seguem RN-022/023, sem unicidade. Não permitir venda futura nem entrada que quite todo o valor no cadastro.
 - **Prioridade:** Essencial, principal dor relatada.
 - **Origem/situação:** FON-001 §§5 e 9; FON-002; FON-003 §1; FON-004 §6; FON-008 para finanças e FON-011 para identificação confirmada. UI de cadastro e novas validações não implementadas.
-- **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017.
+- **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017, CA-032.
+
+**Layout de cadastro planejado — PRD 1.16/FON-014:** em Nova venda, reunir os
+grupos de identificação e dados financeiros na coluna esquerda, com a prévia
+completa na coluna direita e alinhada ao topo, a partir de 768 px. Abaixo desse
+limiar, empilhar formulário e prévia nessa ordem. Nome/descrição devem ter mais
+largura que valor/quantidade; compactar espaçamento sem reduzir legibilidade ou
+limitar dados aceitos. Manter campos, mensagens, ações e prévia dinâmica atuais;
+não estender o redesenho à edição ou ao recebimento.
 
 ### RF-005 — Consultar detalhes e parcelas da venda
 
@@ -582,6 +605,15 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Dado** um cadastro com campos obrigatórios válidos, sem entrada, divisão exata e dia existente nos meses seguintes,
 - **Quando** revisar a prévia e confirmar, uma vez com descrição vazia e em outro caso com descrição preenchida,
 - **Então** cada caso deve gerar uma única venda com suas parcelas; descrição vazia não deve impedir cadastro e descrição preenchida deve aparecer no detalhe. A data inicial deve ser o dia local do cadastro e aceitar alteração.
+
+### CA-032 — Cadastro com prévia lateral e campos proporcionais
+- **Requisitos:** RF-004; RNF-001/002/003/007/009.
+- **Dado** Nova venda nos dois temas, com e sem entrada e com prévia válida ou inválida,
+- **Quando** preencher e corrigir os campos em viewport CSS a partir de 768 px,
+- **Então** o formulário deve ficar à esquerda e a prévia à direita, com os topos alinhados; nome e descrição devem ter mais espaço horizontal que valor total e quantidade de parcelas.
+- **E** abaixo de 768 px deve haver uma coluna, com formulário antes da prévia; nenhuma largura fixa deve gerar overflow horizontal da página, nem cortar campos, rótulos, erros ou ações. A tabela pode rolar dentro da região identificada existente.
+- **E** a compactação deve preservar fonte legível, foco, navegação por teclado, conteúdos aceitos, validações, recálculo em tempo real, entrada condicional, confirmação única, cancelamento e recuperação de falha. Rolagem vertical da página é permitida; zoom nativo de 200% exige verificação própria, não substituída por viewport reduzido.
+- **Situação:** planejado; implementação e verificação pendentes.
 
 ### CA-007 — Campos inválidos
 - **Requisitos:** RF-004, RF-006, RF-007, RF-011; RN-022/023; RNF-001.
