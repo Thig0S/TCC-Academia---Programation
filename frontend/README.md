@@ -433,6 +433,41 @@ Verificação automatizada complementar, nesta continuação:
   Falha/retry e os vazios não alcançáveis com o seed da aplicação continuam sendo
   verificados em componentes, não são declarados capturas de produção vazia.
 
+### Fechamento automatizado e auditoria — tarefa 7.4
+
+Execuções reais em 21/11/2026, após a matriz e as correções de apresentação:
+
+| Comando                                                         | Resultado                                                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `npm.cmd run build`                                             | Saída 0; 315,79 kB iniciais, 82,90 kB de transferência estimada; sem avisos de budget/Sass |
+| `npx.cmd ng run vendas-em-aberto:build-paginacao-fixture`       | Saída 0; 317,54 kB iniciais, 83,34 kB estimados; sem avisos de budget/Sass                 |
+| `openspec validate refinar-estilo-conteudo-mvp --strict` (raiz) | Saída 0: Change válida                                                                     |
+| `git diff --check` (raiz)                                       | Saída 0; avisos locais de conversão LF/CRLF, sem erro de whitespace                        |
+
+A primeira execução de `npm.cmd run format:check` retornou saída 1 somente pelos
+dois HTMLs de referência locais/não rastreados. O solicitante autorizou excluir
+**apenas esses dois caminhos** em `.prettierignore`; decisão registrada em D5.
+Não foram reformatados, versionados nem ignorados os demais arquivos da pasta.
+Hashes SHA-256 reconferidos e iguais aos da tarefa 1.1. Reexecução de
+`npm.cmd run format:check` após a exceção: **saída 0**, todos os arquivos
+abrangidos no padrão Prettier. Validação estrita OpenSpec repetida após atualizar
+D5 e a tarefa 7.4: **saída 0**, Change válida.
+
+Auditoria do diff da feature contra `main`: mudanças de produção limitadas a
+CSS/templates e classes visuais de selo/erro inline. Nenhum diff em domínio,
+serviço/estado, rotas, modelos, validadores, campos financeiros, dependências,
+lockfile, configuração Angular ou budgets. A alteração em
+`src/testing/paginacao-fixture.ts` é exclusiva do alvo de teste: quita vendas
+por comandos existentes para compor as coleções 0/1/10/11/21; não altera o seed
+nem regras da aplicação. A única exceção de ferramenta nova é a lista explícita
+dos dois HTMLs no Prettier. PRD 1.11/TDD 1.15 continuam suficientes: não houve
+decisão de produto/arquitetura nova.
+
+Preservados fora do staging desta entrega: `../README.md`, `.playwright-mcp/`
+na raiz e os dois HTMLs de referência. Nenhuma asserção financeira, de foco,
+contraste, privacidade, rede ou densidade foi removida. Fechamento automatizado
+não conclui zoom nativo, aceite da ótica ou a Change inteira.
+
 ### Zoom nativo — tarefa 7.3 pendente
 
 O solicitante informou nesta continuação que fará a conferência manual da interface
