@@ -39,7 +39,7 @@ test.afterEach(async ({ page }) => {
   expect(errosPorPagina.get(page), 'Console/pageerror inesperado nos fluxos').toEqual([]);
 });
 
-test('registra capturas sintéticas de cadastro e edição nos dois temas', async ({
+test('registra capturas sintéticas de cadastro, edição e recebimento nos dois temas', async ({
   page,
 }, testInfo) => {
   for (const tema of ['dark', 'light']) {
@@ -62,6 +62,19 @@ test('registra capturas sintéticas de cadastro e edição nos dois temas', asyn
     await expect(page.getByRole('heading', { name: 'Editar dados do cliente' })).toBeVisible();
     const edicao = await page.screenshot({ fullPage: true });
     await testInfo.attach(`edicao-${tema}`, { body: edicao, contentType: 'image/png' });
+
+    await page.goto('/vendas');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await page
+      .getByRole('table', { name: 'Vendas em aberto' })
+      .getByRole('link', { name: /Visualizar venda de/ })
+      .first()
+      .click();
+    await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Receber parcelas' })).toBeVisible();
+    const recebimento = await page.screenshot({ fullPage: true });
+    await testInfo.attach(`recebimento-${tema}`, { body: recebimento, contentType: 'image/png' });
   }
 });
 

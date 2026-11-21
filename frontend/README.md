@@ -243,12 +243,30 @@ Verificações em `frontend/`:
   recarga e Configurações. Contraste textual mínimo observado 5,55:1 em Visão Geral,
   5,78:1 claro e 7,29:1 escuro em Relatórios.
 - `npx playwright test demonstracao-inicial.spec.ts --grep "anexa capturas sintéticas"
-  --workers=1`: saída 0, 2/2; anexou capturas de cada página nos temas escuro/claro
+--workers=1`: saída 0, 2/2; anexou capturas de cada página nos temas escuro/claro
   e nos dois viewports ao relatório Playwright.
 - Prettier aplicado aos três templates e ao teste E2E.
 
 Avisos Sass `@import` e prebundling permanecem. As capturas são evidência Chromium,
 não aprovação de produto nem avaliação com a ótica; zoom nativo não foi medido.
+
+### Recebimento — OpenSpec tarefa 4.4 — 21/11/2026
+
+A lista de parcelas selecionadas no modal usa altura máxima e rolagem em utilitários
+Tailwind; campos, erros e ações seguem os padrões semânticos dos formulários. O
+comportamento de seleção sequencial, valor exato, falha/retry, confirmação única,
+cancelamento e retorno de foco foi preservado. O teste de capturas anexa o modal e os
+estados de cadastro/edição nos dois temas e viewports.
+
+Verificações reais em `frontend/`:
+
+- `npm test -- --watch=false`: saída 0, 356/356 em 29 arquivos.
+- `npx playwright test formularios-vendas.spec.ts --workers=1`: saída 0, 18/18 em
+  Chromium 1366×768/390×844. Inclui quitação, integração com listas e resumos,
+  erros/validações, teclado, cancelamento, Escape, retorno de foco e capturas anexadas.
+- Prettier aplicado ao template do recebimento e ao teste E2E.
+
+Aviso Sass `@import` mantido; não foi alegada medição de zoom nativo.
 
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
