@@ -18,11 +18,10 @@ import { RetornoFormulario } from './nucleo/demonstracao/retorno-formulario';
   selector: 'app-root',
   imports: [RouterLink, RouterOutlet, BarraNavegacao],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
+  styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[attr.data-tema]': 'servicoTema.tema()',
-    '[attr.data-bs-theme]': 'servicoTema.tema()',
   },
 })
 export class App {

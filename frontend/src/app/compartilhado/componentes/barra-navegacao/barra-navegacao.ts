@@ -5,7 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   selector: 'app-barra-navegacao',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './barra-navegacao.html',
-  styleUrl: './barra-navegacao.scss',
+  styleUrl: './barra-navegacao.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BarraNavegacao {

@@ -48,13 +48,11 @@ describe('Estrutura navegável', () => {
     const { fixture, pagina } = await renderizar();
     const botao = pagina.querySelector<HTMLButtonElement>('button')!;
     expect(pagina.getAttribute('data-tema')).toBe('dark');
-    expect(pagina.getAttribute('data-bs-theme')).toBe('dark');
     expect(botao.getAttribute('aria-label')).toBe('Tema escuro');
     expect(botao.getAttribute('aria-pressed')).toBe('true');
     botao.click();
     await fixture.whenStable();
     expect(pagina.getAttribute('data-tema')).toBe('light');
-    expect(pagina.getAttribute('data-bs-theme')).toBe('light');
     expect(botao.getAttribute('aria-pressed')).toBe('false');
     expect(botao.textContent).toContain('Tema ativo: Claro');
   });
