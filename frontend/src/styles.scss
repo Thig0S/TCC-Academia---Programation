@@ -1,5 +1,10 @@
 @use './estilos/temas';
-@import 'bootstrap/scss/bootstrap';
+
+@layer theme, base, bootstrap, components, utilities;
+
+@layer bootstrap {
+  @import 'bootstrap/scss/bootstrap';
+}
 
 body {
   margin: 0;
