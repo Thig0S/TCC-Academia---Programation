@@ -1,12 +1,14 @@
 <app-modal titulo="Receber parcelas" [restaurarFoco]="restaurarFoco()" (fechado)="fechar()">
-  <p>Recebimento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos.</p>
+  <p class="mb-3 text-text-muted">
+    Recebimento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos.
+  </p>
   <form novalidate (submit)="confirmar($event)">
     <label for="quantidade-recebimento" class="mb-1 block text-sm font-medium"
       >Quantidade de parcelas consecutivas</label
     >
     <select
       id="quantidade-recebimento"
-      class="mb-1 w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+      class="mb-1 w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
       data-foco-inicial
       [formField]="campos.quantidade"
       aria-describedby="erro-quantidade-recebimento orientacao-sequencia"
@@ -19,7 +21,10 @@
     <p id="orientacao-sequencia" class="text-sm text-text-muted">
       Sempre desde a primeira pendente. É permitido antecipar sem desconto.
     </p>
-    <section aria-label="Conferência das parcelas selecionadas" class="mb-3">
+    <section
+      aria-label="Conferência das parcelas selecionadas"
+      class="mb-3 rounded-lg border-[1px] border-border bg-surface-muted p-3"
+    >
       <ul
         class="max-h-40 list-disc overflow-auto ps-6"
         tabindex="0"
@@ -32,7 +37,9 @@
           </li>
         }
       </ul>
-      <p class="font-semibold">Soma exigida: {{ formatarDinheiro(soma()) }}</p>
+      <p class="mt-2 border-t border-border pt-2 text-lg font-semibold tabular-nums">
+        Soma exigida: {{ formatarDinheiro(soma()) }}
+      </p>
     </section>
     <div class="mb-3">
       <label for="valor-recebimento" class="mb-1 block text-sm font-medium"
@@ -40,7 +47,7 @@
       >
       <input
         id="valor-recebimento"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         inputmode="decimal"
         [formField]="campos.valor"
         aria-describedby="erro-valor-recebimento"
@@ -53,7 +60,7 @@
       >
       <input
         id="data-recebimento"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
         type="date"
         [formField]="campos.data"
         aria-describedby="erro-data-recebimento"
@@ -66,7 +73,7 @@
       >
       <select
         id="forma-recebimento"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         [formField]="campos.forma"
         aria-describedby="erro-forma-recebimento"
       >
@@ -81,14 +88,14 @@
     <div class="flex flex-wrap gap-3">
       <button
         type="submit"
-        class="rounded-md border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         [disabled]="campos().submitting() || concluido()"
       >
         Confirmar recebimento demonstrativo
       </button>
       <button
         type="button"
-        class="rounded-md border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         (click)="cancelar()"
       >
         Cancelar
