@@ -29,7 +29,7 @@
         @if (resultado.valor.saldoCentavos > 0) {
           <button
             type="button"
-            class="btn btn-sm botao-consulta py-0"
+            class="rounded-md border-[1px] border-control-border bg-surface px-3 py-1 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
             data-acao-receber
             (click)="recebendo.set(true)"
             [attr.aria-label]="

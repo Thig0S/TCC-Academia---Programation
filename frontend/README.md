@@ -152,6 +152,36 @@ Verificação incremental posterior às mudanças do shell, em Chromium:
 O runner ainda emite a depreciação preexistente de Sass `@import`; Bootstrap permanece
 como ponte apenas para telas e componentes ainda não migrados.
 
+### Componentes compartilhados e controles — OpenSpec tarefa 3.1
+
+Migrados cabeçalho de página, selos de situação, paginação e modal, além dos
+controles/estados vazios alcançados nesta etapa. Os selos preservam uma linha em
+tabelas densas (`whitespace-nowrap` e `leading-3`). A migração descobriu que a classe
+Bootstrap `.border` declara `border` com `!important`, sobrepondo a cor semântica Tailwind;
+os contornos migrados usam `border-[1px]` para evitar a colisão e conservar o token de
+contraste. O texto de erro usa token próprio, com cor mais clara no tema escuro.
+
+Verificações reais incrementais em Windows, Chromium Playwright 158.0.8127.18,
+viewports 1366×768 e 390×844:
+
+| Comando em `frontend/`               | Resultado                                                    |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `npm test -- --watch=false`          | Saída 0; 356/356 testes, 29 arquivos                         |
+| `npm run test:e2e -- --workers=1`    | Saída 0; 64/64, execução serial nos dois viewports           |
+| `npm run test:e2e:paginacao-fixture` | Saída 0; 8/8, incluindo densidade e detalhe com dez parcelas |
+| `npm run format:check`               | Saída 0                                                      |
+
+Os E2E verificaram diálogo nativo (tema herdado, contenção, Escape, cancelamento e
+retorno de foco), foco visível, movimento reduzido, contraste de texto/bordas e links
+em hover/foco. As medições de controles mantiveram mínimo 3:1 para bordas/foco e 4,5:1
+para texto; a fixture desktop terminou com documento de 768 px, sem rolagem da página.
+`npm run build` passou com bundle inicial de 521,39 kB (budget de 500 kB excedido em
+21,39 kB, sem alterar limites); permanece o aviso Sass `@import`. Uma execução paralela
+à fixture ocasionou `ENOENT` nos artefatos Playwright compartilhados; não foi contada e
+a suíte principal foi repetida serialmente com 64/64. Capturas e traces ficam em
+`test-results/` e não são versionados. Ainda não é aceite visual global nem avaliação
+de zoom nativo.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de

@@ -264,7 +264,7 @@ describe('Inicialização e integração da sessão', () => {
     expect(resultadoPagamento.tipo).toBe('sucesso');
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain('Quitada');
-    expect(harness.routeNativeElement?.querySelectorAll('.badge')).toHaveLength(
+    expect(harness.routeNativeElement?.querySelectorAll('app-selo-situacao')).toHaveLength(
       criado.valor.parcelas.length + 1,
     );
 

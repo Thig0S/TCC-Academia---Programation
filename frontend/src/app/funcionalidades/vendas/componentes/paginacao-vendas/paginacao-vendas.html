@@ -1,5 +1,5 @@
 <p
-  class="small text-body-secondary mb-1"
+  class="mb-1 text-sm text-text-muted"
   role="status"
   aria-live="polite"
   aria-atomic="true"
@@ -13,11 +13,11 @@
 </p>
 @if (totalPaginas() > 1) {
   <nav aria-label="Paginação de vendas">
-    <ul class="pagination pagination-sm mb-0">
-      <li class="page-item">
+    <ul class="m-0 flex list-none items-center gap-1 p-0">
+      <li>
         <button
           type="button"
-          class="page-link"
+          class="min-w-10 rounded-md border-[1px] border-control-border px-3 py-2 text-sm text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
           aria-label="Página anterior"
           [attr.aria-disabled]="paginaAtual() === 1"
           (click)="mover(-1)"
@@ -26,13 +26,17 @@
         </button>
       </li>
       @for (item of itens(); track $index) {
-        <li class="page-item">
+        <li>
           @if (item === '...') {
-            <span class="page-link" aria-hidden="true">…</span>
+            <span class="px-3 py-2 text-sm text-text-muted" aria-hidden="true">…</span>
           } @else {
             <button
               type="button"
-              class="page-link"
+              class="min-w-10 rounded-md border-[1px] border-control-border px-3 py-2 text-sm text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              [class.bg-action]="item === paginaAtual()"
+              [class.text-white]="item === paginaAtual()"
+              [class.font-semibold]="item === paginaAtual()"
+              [class.border-control-border]="item === paginaAtual()"
               [attr.aria-label]="'Página ' + item"
               [attr.aria-current]="item === paginaAtual() ? 'page' : null"
               (click)="irPara(item)"
@@ -42,10 +46,10 @@
           }
         </li>
       }
-      <li class="page-item">
+      <li>
         <button
           type="button"
-          class="page-link"
+          class="min-w-10 rounded-md border-[1px] border-control-border px-3 py-2 text-sm text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
           aria-label="Próxima página"
           [attr.aria-disabled]="paginaAtual() === totalPaginas()"
           (click)="mover(1)"

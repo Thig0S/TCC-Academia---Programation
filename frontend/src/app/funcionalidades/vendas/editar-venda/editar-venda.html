@@ -15,12 +15,18 @@
       <div class="d-flex gap-3 flex-wrap mb-3">
         <button
           type="submit"
-          class="btn btn-primary"
+          class="rounded-md border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           [disabled]="campos().submitting() || concluido()"
         >
           Confirmar edição demonstrativa
         </button>
-        <button type="button" class="btn botao-consulta" (click)="cancelar()">Cancelar</button>
+        <button
+          type="button"
+          class="rounded-md border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          (click)="cancelar()"
+        >
+          Cancelar
+        </button>
       </div>
     </form>
   } @else {
