@@ -1,21 +1,26 @@
-<nav aria-label="Navegação principal" class="nav flex-column gap-2">
+<nav aria-label="Navegação principal" class="flex flex-col gap-2">
   @for (modulo of modulos; track modulo.rota) {
     <div routerLinkActive="modulo-ativo" #estado="routerLinkActive">
       <a
-        class="nav-link d-flex align-items-center gap-3"
+        class="nav-link flex items-center gap-3 rounded-lg px-4 py-3 text-sidebar-text transition-none hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
         [routerLink]="modulo.rota"
         routerLinkActive="pagina-atual"
         [routerLinkActiveOptions]="{ exact: true }"
         ariaCurrentWhenActive="page"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <svg
+          class="h-6 w-6 shrink-0 fill-none stroke-current [stroke-width:1.8] [stroke-linecap:round] [stroke-linejoin:round]"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
           <path [attr.d]="modulo.icone" />
         </svg>
         {{ modulo.nome }}
       </a>
       @if (modulo.rota === '/vendas' && estado.isActive) {
         <a
-          class="nav-link subdestino"
+          class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
           routerLink="/vendas/quitadas"
           routerLinkActive="pagina-atual"
           [routerLinkActiveOptions]="{ exact: true }"

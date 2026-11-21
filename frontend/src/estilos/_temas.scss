@@ -1,68 +1,21 @@
-// Complementos locais: Bootstrap continua sendo a fonte dos tokens dos dois temas.
-app-root[data-bs-theme] {
+// Links de conteúdo preservam o contrato visual enquanto as telas são migradas.
+app-root[data-tema] {
   --consulta-link: #a40021;
-  .barra-lateral {
-    --lateral-fundo: #ce0026;
-    --lateral-degrade: none;
-    --lateral-texto: #fff;
-    --lateral-secundario: #ffe5e9;
-    --lateral-ativo-fundo: #fff0f2;
-    --lateral-ativo-texto: #90001b;
-    --lateral-hover: #a40021;
-    --lateral-foco: #fff;
-    --bs-body-color: var(--lateral-texto);
-    --bs-secondary-color: var(--lateral-secundario);
-    --bs-border-color: #ef9aa9;
-    --bs-primary-text-emphasis: var(--lateral-foco);
-
-    .perfil a {
-      color: var(--lateral-texto);
-    }
-    a:focus-visible {
-      outline: 3px solid var(--lateral-foco);
-      outline-offset: 4px;
-      box-shadow: none;
-    }
-  }
-  &[data-bs-theme='dark'] .barra-lateral {
-    --lateral-fundo: #850020;
-    --lateral-degrade: linear-gradient(180deg in srgb, #850020 0%, #300010 100%);
-    --lateral-ativo-fundo: #c9002d;
-    --lateral-ativo-texto: #fff;
-    --lateral-hover: #9b0027;
-    --bs-border-color: #b45a70;
-  }
-  &[data-bs-theme='dark'] {
+  &[data-tema='dark'] {
     --consulta-link: #ff9aaa;
   }
-  .perfil a,
   main a {
     color: var(--consulta-link);
     text-decoration: none;
   }
   .area-principal main a:hover,
   .area-principal main a:focus-visible,
-  .perfil a:hover,
-  .perfil a:focus-visible {
+  main a:hover,
+  main a:focus-visible {
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
-  .area-principal main a:focus-visible,
-  .perfil a:focus-visible {
+  .area-principal main a:focus-visible {
     outline-color: var(--consulta-link);
-  }
-  .controle-tema {
-    --bs-btn-color: var(--bs-body-color);
-    --bs-btn-border-color: var(--bs-body-color);
-    --bs-btn-hover-color: var(--bs-body-color);
-    --bs-btn-hover-bg: var(--bs-secondary-bg);
-    --bs-btn-hover-border-color: var(--bs-body-color);
-    --bs-btn-active-color: var(--bs-body-color);
-    --bs-btn-active-bg: var(--bs-secondary-bg);
-    --bs-btn-active-border-color: var(--bs-body-color);
-  }
-  .controle-tema:focus-visible {
-    outline: 3px solid var(--bs-primary-text-emphasis);
-    outline-offset: 4px;
   }
 }

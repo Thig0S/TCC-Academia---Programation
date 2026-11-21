@@ -812,7 +812,7 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
 
 test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto('/vendas/quitadas');
   const lateral = page.locator('.barra-lateral');
   const nav = page.getByRole('navigation', { name: 'Navegação principal' });
@@ -909,6 +909,10 @@ test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
+    await testInfo.attach(`estrutura-${tema}`, {
+      body: await page.screenshot({ fullPage: true }),
+      contentType: 'image/png',
+    });
   }
 });
 

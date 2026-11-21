@@ -16,7 +16,7 @@
 ## 2. Migrar tokens, estrutura e navegação
 
 - [x] 2.1 Criar tokens semânticos, `data-tema="light|dark"` em `app-root` e variante escura explícita para host/descendentes, preservando escuro inicial e preferência em memória; atualizar os testes de tema no mesmo passo e verificar alternância por teclado, foco mantido, navegação, página ausente, recarga, preferência de sistema e ausência de storage. Só remover o atributo antigo quando os consumidores residuais tiverem sido migrados, no máximo em 4.3; registrar evidências no README.
-- [ ] 2.2 Migrar estrutura global, cabeçalho, aviso, barra lateral, perfil e navegação sem alterar logo ou destinos; adaptar testes ligados a seletores Bootstrap e verificar ambos os temas/viewports, contraste da lateral em extremos/meio do degradê, ativo/hover/foco e atalho de conteúdo. Registrar capturas, comparação com referências e exceções justificadas no README junto da entrega.
+- [x] 2.2 Migrar estrutura global, cabeçalho, aviso, barra lateral, perfil e navegação sem alterar logo ou destinos; adaptar testes ligados a seletores Bootstrap e verificar ambos os temas/viewports, contraste da lateral em extremos/meio do degradê, ativo/hover/foco e atalho de conteúdo. Registrar capturas, comparação com referências e exceções justificadas no README junto da entrega.
 
 ## 3. Migrar componentes compartilhados e consultas
 
