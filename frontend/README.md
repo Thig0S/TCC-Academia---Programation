@@ -305,9 +305,8 @@ repetida: `npm run build` passou (297,57 kB inicial),
 `npm run format:check` passou. Na raiz do repositório,
 `openspec validate troca-para-tailwind --strict` retornou “Change 'troca-para-tailwind'
 is valid”. Budgets permaneceram inalterados; a auditoria de source/config confirmou
-ausência de Bootstrap visual, mantendo a inicialização Angular. A pendência manual de
-zoom nativo 200% está descrita na tarefa 5.2 e impede declarar a matriz visual global
-concluída ou abrir o PR.
+ausência de Bootstrap visual, mantendo a inicialização Angular. A tarefa 5.2 foi
+fechada posteriormente com a matriz abaixo e o relato manual de zoom.
 
 ### Regressão integrada final — OpenSpec tarefa 5.1 — 21/11/2026
 
@@ -322,7 +321,34 @@ Após instalação limpa (`npm ci`), a regressão integrada foi repetida serialm
   detalhe com dez parcelas e excedentes nos dois temas/viewports.
 
 As medições e capturas permanecem evidência automatizada Chromium; a inspeção manual
-de zoom nativo 200% requerida pela tarefa 5.2 não é substituída por esses resultados.
+de zoom nativo 200% é registrada separadamente abaixo.
+
+#### Matriz visual consolidada — tarefa 5.2 — 21/11/2026
+
+Capturas citadas são anexos dos relatórios Playwright (`frontend/test-results/`, não
+versionados); os nomes abaixo identificam cenários/anexos reproduzíveis. Os testes
+foram executados em 1366×768 e 390×844, temas escuro/claro, salvo onde indicado.
+
+| Rota/estado                                                            | Referência e evidência                                                                                                                                | Critérios conferidos e resultado                                                                                                                                                       | Diferenças justificadas                                                                               |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Estrutura, navegação, aviso e página ausente                           | `exemploDesignDark.png`; anexos `estrutura-dark/light` em `demonstracao-inicial.spec.ts`; casos de navegação/404                                      | Hierarquia, logo proporcional, destinos, ativo/hover/foco, atalho de conteúdo, contraste e ausência de overflow; testes passaram                                                       | Texto de marca/aviso e SVGs existentes preservados; sem controles decorativos das imagens             |
+| Vendas e Quitadas: normal, busca/filtro, vazio, hover/foco e paginação | `exemploListagemDeVendas.png`; `lista-dark/light`, `consulta-{tema}-links`, cobertura em `paginacao-fixture.spec.ts` e `demonstracao-inicial.spec.ts` | Dez linhas e paginação em desktop sem scroll vertical da página; em 390 px tabela rola dentro da região e não cria overflow horizontal global; teclado, identidade e faixa preservados | Tabela mantém todas as colunas e usa rolagem horizontal interna em telas estreitas                    |
+| Detalhe, parcelas e excedentes                                         | `exemploDadosDaVenda.png`; `detalhe-dez-dark/light` na fixture                                                                                        | Cliente/venda lado a lado no desktop, entrada distinta, dez parcelas; excedentes/texto longo em região nomeada com cabeçalho sticky e teclado; ambos temas/viewports passaram          | Scroll interno apenas para histórico excedente                                                        |
+| Cadastro, prévia, erros, edição e confirmação                          | `exemploCadastrarVenda.png`; anexos `cadastro-dark/light`, `edicao-dark/light` em `formularios-vendas.spec.ts` e `acessibilidade-formularios.spec.ts` | Campos/erros associados, foco, envio único, cancelamento e preservação funcional; fluxo passou nos dois temas/viewports                                                                | Composição responsiva adapta blocos; sem dados reais, cliente mestre ou campos financeiros adicionais |
+| Modal de recebimento e estados                                         | Derivado de `exemploDadosDaVenda.png`; anexos `recebimento-dark/light` em `formularios-vendas.spec.ts`                                                | Tema herdado, contenção, sequência, valor, erro/retry, confirmação, Escape/cancelamento e retorno de foco; fluxo passou nos dois temas/viewports                                       | `dialog` nativo mantido; lista longa tem rolagem limitada                                             |
+| Visão Geral, Relatórios e Configurações                                | `exemploDesignDark.png` como linguagem; anexos `${rota}-${tema}` (`visao-geral`, `relatorios`, `configuracoes`) em `demonstracao-inicial.spec.ts`     | Indicadores/resumos, quatro tabelas, estados vazios/ausentes, exportação indisponível, foco, contraste e sem overflow; 46/46 verificações passaram                                     | Páginas sem referência própria seguem tokens e hierarquia comuns, sem inventar ações                  |
+
+Verificações transversais: E2E serial 68/68 e fixture 8/8; foco por teclado, movimento
+reduzido, normal/hover/ativo/erro e contrastes de texto e controles foram exercitados.
+Capturas automatizadas não são aprovação da ótica nem certificação integral de
+acessibilidade.
+
+**Zoom nativo manual informado pelo solicitante:** Google Chrome **157.0.8103.79
+(Versão oficial), 64 bits**; Windows com escala **125%**, resolução física **1920×1080**;
+viewport útil durante a verificação em zoom **200%: 506×528,65 CSS px**. Resultado
+relatado: elementos sem distorção, sem barra horizontal, empilhados verticalmente como
+esperado. O agente não operou nem reproduziu a medição; não foi usado CSS `zoom` como
+substituto. A evidência é relato manual do solicitante e não constitui aceite da ótica.
 
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
