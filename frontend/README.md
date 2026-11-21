@@ -1,5 +1,84 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `troca-para-tailwind` — linha de base — 20/11/2026
+
+Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
+Antes de alterar dependências ou estilos, a linha de base real foi:
+
+- `npm.cmd run build`: saída 0; bundle inicial 511,34 kB e transferência estimada
+  99,50 kB. Avisos: Sass `@import` depreciado em `src/styles.scss` e budget de
+  aviso de 500 kB excedido em 11,34 kB (limite de erro 1 MB; budgets inalterados).
+- `npm.cmd test -- --watch=false`: saída 0; 356/356 testes em 29 arquivos. O runner
+  também reportou o aviso Sass preexistente.
+- `npm.cmd run test:e2e`: saída 0; 64/64 em Chromium nos viewports 1366×768 e
+  390×844, incluindo formulários, fluxo integrado, tema, contraste, foco e rotas.
+  O servidor Playwright emitiu o mesmo aviso Sass.
+- `npm.cmd run test:e2e:paginacao-fixture`: saída 0; 8/8 em Chromium nos dois
+  viewports e temas. Confirmou densidade e rolagem interna conforme os cenários;
+  avisos: Sass `@import` e prebundling desativado com otimização de scripts.
+
+Nesta linha de base, `@angular/cli` e `@angular/build` estão em 22.2.6; Tailwind
+e `@tailwindcss/postcss` ainda não estão instalados. Resultados são do ambiente
+registrado e não comprovam compatibilidade Tailwind, suporte de outros browsers ou
+aceite global/da ótica.
+
+### Prova mínima Tailwind v4/PostCSS — tarefa 1.1
+
+Instalados `tailwindcss@4.3.5` e `@tailwindcss/postcss@4.3.5` como dependências
+diretas exatas, sem alterar Angular/Node/npm. Os metadados npm não declaram restrição
+de `engines`/peers para esses pacotes; a compatibilidade foi verificada localmente
+com Angular CLI/build 22.2.6. A documentação oficial consultada exige Safari 16.4+,
+Chrome 111+ ou Firefox 128+ para Tailwind v4. O Chromium Headless 157 do Playwright
+está acima do mínimo Chrome documentado; isso não valida Safari, Firefox nem a versão
+operacional Chrome da ótica.
+
+Com ponte Bootstrap ainda intacta e Preflight omitido, o plugin processou a entrada
+CSS nos dois alvos: `npm.cmd run build` passou (saída 0; 513,64 kB iniciais,
+100,09 kB estimados) e `npx.cmd ng run vendas-em-aberto:build-paginacao-fixture`
+passou (saída 0; 515,03 kB iniciais, 100,45 kB estimados). O build principal
+otimizado foi servido com configuração `production` em `127.0.0.1:4215`; no
+Chromium, o utilitário literal de smoke `text-[#123456]` apresentou estilo computado
+`rgb(18, 52, 86)` e permaneceu oculto (`display: none`). Isto comprova extração e
+aplicação do utilitário nesse build; o elemento de smoke é temporário e será removido
+ao fechar a verificação da ponte.
+
+Os avisos preexistentes de Sass permanecem. O build otimizado elevou o aviso de
+budget para 13,64 kB acima de 500 kB durante a prova mínima (sem alterar budgets),
+incluindo o utilitário de smoke; reavaliar após remover o elemento de prova. A
+instalação acrescentou 12 pacotes, auditoria reportou zero vulnerabilidades e o npm
+avisou quatro pacotes com scripts ainda não aprovados; nenhum script foi aprovado.
+No fechamento da prova inicial 1.1, smoke dos controles e instalação limpa ainda
+estavam pendentes; foram realizados e registrados na tarefa 1.2 abaixo.
+
+### Ponte temporária Tailwind/Bootstrap — tarefa 1.2
+
+`npm.cmd ci` passou após adicionar as dependências exatas (303 pacotes instalados,
+zero vulnerabilidades reportadas). O npm manteve quatro avisos de scripts não
+aprovados (`@parcel/watcher`, `esbuild`, `lmdb` e `msgpackr-extract`); nenhum foi
+aprovado. O primeiro `npm ci` foi interrompido por `EPERM` ao tentar remover o
+binário `lightningcss` enquanto o servidor de prova otimizada ainda o mantinha
+aberto; encerrei esse servidor próprio e a reexecução limpa passou.
+
+A ponte compila Bootstrap Sass sob `@layer bootstrap`; a ordem é declarada como
+`theme, base, bootstrap, components, utilities`. A entrada Tailwind importa somente
+tema e utilitários, explicitamente sem Preflight; detecção está registrada em
+`src/app` e `src/testing`, cobrindo HTML/TypeScript, templates inline e fixture.
+Ambos os alvos Angular mantêm CSS e SCSS em paralelo nesta transição. Builds após
+essa configuração: `npm.cmd run build` passou (513,71 kB iniciais, 100,14 kB
+estimados; aviso de budget excedido em 13,71 kB) e `npx.cmd ng run
+vendas-em-aberto:build-paginacao-fixture` passou (515,11 kB iniciais, 100,50 kB
+estimados). O Sass `@import` da ponte continua gerando depreciação; budgets não
+foram alterados.
+
+Smoke em Chromium Headless 157 contra `ng serve --configuration production`:
+utilitário literal gerou `rgb(18, 52, 86)` no estilo computado. Campos, botões e
+tabelas foram inspecionados nos temas escuro e claro; a regressão E2E completa
+passou 64/64 nos viewports 1366×768 e 390×844, incluindo seus testes de estilo,
+foco, contraste e fluxo. Exemplos medidos para campo: escuro com texto
+`rgb(222, 226, 230)` e fundo `rgb(33, 37, 41)`; claro com texto
+`rgb(33, 37, 41)` e fundo branco. O elemento oculto de smoke foi removido após a
+inspeção. O resultado não é aprovação visual global nem validação de outros browsers.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de

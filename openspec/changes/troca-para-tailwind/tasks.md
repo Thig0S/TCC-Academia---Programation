@@ -1,17 +1,17 @@
 # Tasks
 
-> Somente planejamento. As 13 tarefas originais conservam seus IDs; tarefas adicionais detalham dependências e verificações. Nenhuma está executada por esta revisão.
+> Planejamento conciliado com PRD 1.11 e TDD 1.15/DEC-021. As 14 tarefas permanecem pendentes; nenhuma implementação técnica é comprovada por esta revisão documental.
 
 ## Pré-requisitos bloqueantes do apply
 
-- Conciliar primeiro `docs/prd/vendas-em-aberto.md` com o alcance global e a fidelidade confirmados; depois revisar `docs/tdd/tdd.md` para substituir a decisão Bootstrap/SCSS (DEC-013 e trechos relacionados), preservando IDs e histórico. PRD/TDD não foram alterados nem estão implicitamente aprovados por esta revisão.
-- Reconciliar esta Change com as revisões efetivas de PRD/TDD e revisar os artefatos antes de um pedido explícito de apply. A indicação de artefatos completos no CLI não resolve esse bloqueio nem autoriza implementação.
+- Pré-requisito documental concluído nesta revisão: PRD 1.11 explicita abrangência visual global sem fixar tecnologia; TDD 1.15/DEC-021 substitui a direção de base visual de DEC-013, preservando seu registro histórico e condicionando migração ampla à prova dos dois builds.
+- Proposal, design e tasks foram alinhados às referências efetivas de PRD/TDD. As tarefas abaixo continuam pendentes e só devem avançar com apply explícito e após revisão desta conciliação; o estado de artefatos completos no CLI não comprova implementação.
 - Trabalhar na mesma feature branch e preservar alterações alheias. Cada entrega coerente inclui seus testes, documentação e commit próprio, sem PRs individuais por tarefa.
 
 ## 1. Validar fundação Tailwind
 
-- [ ] 1.1 Antes de mudar dependências, registrar a linha de base real de build, unitários sem watch e E2E da aplicação/fixture, incluindo falhas e avisos preexistentes; depois provar Tailwind v4/PostCSS nos alvos com `npm run build` e `npx ng run vendas-em-aberto:build-paginacao-fixture`, verificando utilitários por estilos computados também no build otimizado. Registrar versões/compatibilidade e evidências em `frontend/README.md`; falha bloqueia migração ampla, sem mudar major ou builder silenciosamente.
-- [ ] 1.2 Configurar entrada CSS/PostCSS e detecção de classes em HTML/TypeScript, inclusive templates inline e fixture, com Preflight adiado e ponte Bootstrap temporária explicitamente ordenada por camadas; verificar `npm ci`, os dois builds e um smoke de campos, botões e tabelas ainda existentes nos dois temas. Registrar a transição no README; remover Bootstrap somente na tarefa 4.3.
+- [x] 1.1 Antes de mudar dependências, registrar a linha de base real de build, unitários sem watch e E2E da aplicação/fixture, incluindo falhas e avisos preexistentes; depois provar Tailwind v4/PostCSS nos alvos com `npm run build` e `npx ng run vendas-em-aberto:build-paginacao-fixture`, verificando utilitários por estilos computados também no build otimizado. Registrar versões/compatibilidade e evidências em `frontend/README.md`; falha bloqueia migração ampla, sem mudar major ou builder silenciosamente.
+- [x] 1.2 Configurar entrada CSS/PostCSS e detecção de classes em HTML/TypeScript, inclusive templates inline e fixture, com Preflight adiado e ponte Bootstrap temporária explicitamente ordenada por camadas; verificar `npm ci`, os dois builds e um smoke de campos, botões e tabelas ainda existentes nos dois temas. Registrar a transição no README; remover Bootstrap somente na tarefa 4.3.
 
 ## 2. Migrar tokens, estrutura e navegação
 
