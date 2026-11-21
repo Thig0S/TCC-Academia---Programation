@@ -32,7 +32,7 @@
 ## 6. Refinar Relatórios, Configurações e estados auxiliares
 
 - [x] 6.1 Refinar os quatro blocos de consultas de Relatórios com painéis, totais e períodos hierarquizados; verificar testes próprios e E2E nos dois temas/viewports para mês fixo, posição na referência, reconciliação, todos os registros e vazios. Conferir ausência dos quatro indicadores globais, seletor e gráfico, e exportação indisponível sem download/rede; executar build e registrar capturas/contrastes no README.
-- [ ] 6.2 Refinar apresentação das quatro explicações de Configurações e das páginas/registro ausentes; verificar testes de conteúdo/componentes e E2E nos dois temas/viewports para conteúdo existente, ausência de controles novos, retornos e foco. Conferir também aparência coerente dos erros/vazios já tratados nas entregas anteriores; executar build e registrar capturas e contraste no README, sem criar mensagens ou funcionalidades copiadas dos HTMLs.
+- [x] 6.2 Refinar apresentação das quatro explicações de Configurações e das páginas/registro ausentes; verificar testes de conteúdo/componentes e E2E nos dois temas/viewports para conteúdo existente, ausência de controles novos, retornos e foco. Conferir também aparência coerente dos erros/vazios já tratados nas entregas anteriores; executar build e registrar capturas e contraste no README, sem criar mensagens ou funcionalidades copiadas dos HTMLs.
 
 ## 7. Consolidar verificação integrada
 

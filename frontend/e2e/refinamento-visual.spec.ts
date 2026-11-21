@@ -1,6 +1,53 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+test('mede contraste dos estados auxiliares sem novos controles', async ({ page }) => {
+  for (const rota of [
+    '/configuracoes',
+    '/caminho-ausente',
+    '/vendas/registro-ausente',
+    '/vendas/registro-ausente/editar',
+  ]) {
+    for (const tema of ['dark', 'light']) {
+      await page.goto(rota);
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(page.locator('main input, main select, main button')).toHaveCount(0);
+      const contrastes = await page
+        .locator('main h1, main h2, main p, main dt, main dd, main a')
+        .evaluateAll((elementos) => {
+          const rgb = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+          const fundo = (e: Element): number[] => {
+            const cor = rgb(getComputedStyle(e).backgroundColor);
+            return cor[3] === 0 && e.parentElement ? fundo(e.parentElement) : cor;
+          };
+          const luminancia = (cor: number[]) =>
+            cor
+              .slice(0, 3)
+              .map((v) => {
+                const s = v / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce((soma, v, i) => soma + v * [0.2126, 0.7152, 0.0722][i], 0);
+          return elementos.map((e) => {
+            const [maior, menor] = [
+              luminancia(rgb(getComputedStyle(e).color)),
+              luminancia(fundo(e)),
+            ].sort((a, b) => b - a);
+            return { texto: e.textContent, razao: (maior + 0.05) / (menor + 0.05) };
+          });
+        });
+      expect(contrastes.length).toBeGreaterThan(0);
+      for (const contraste of contrastes)
+        expect(contraste.razao, contraste.texto ?? '').toBeGreaterThanOrEqual(4.5);
+      console.log(
+        `Auxiliar ${rota}/${tema}: mínimo ${Math.min(...contrastes.map((c) => c.razao)).toFixed(2)}:1`,
+      );
+    }
+  }
+});
+
 test('destaca valores e preserva quatro indicadores e três resumos', async ({ page }) => {
   await page.goto('/visao-geral');
   for (const tema of ['dark', 'light']) {
@@ -64,6 +111,7 @@ test('registra conteúdo e lateral para comparação visual nos dois temas', asy
     ['/configuracoes', 'configuracoes'],
     ['/caminho-ausente', 'pagina-ausente'],
     ['/vendas/registro-ausente', 'registro-ausente'],
+    ['/vendas/registro-ausente/editar', 'edicao-ausente'],
   ]) {
     for (const tema of ['dark', 'light']) {
       await page.goto(rota);

@@ -234,7 +234,9 @@
     }
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />
-    <p>Não existe uma venda com este identificador.</p>
+    <p class="mb-3 rounded-xl border-[1px] border-border bg-surface p-4 text-text-muted shadow-sm">
+      Não existe uma venda com este identificador.
+    </p>
     <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
       <a routerLink="/vendas">Voltar para Vendas</a>
       <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
@@ -242,7 +244,9 @@
   }
 } @else {
   <app-cabecalho titulo="Venda não encontrada" />
-  <p>Não existe uma venda com este identificador.</p>
+  <p class="mb-3 rounded-xl border-[1px] border-border bg-surface p-4 text-text-muted shadow-sm">
+    Não existe uma venda com este identificador.
+  </p>
   <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
     <a routerLink="/vendas">Voltar para Vendas</a>
     <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>

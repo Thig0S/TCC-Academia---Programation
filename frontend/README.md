@@ -295,6 +295,28 @@ Dos HTMLs são reutilizadas superfícies, bordas, cantos e linguagem cromática,
 não indicadores globais, gráfico, seletor mensal, dados ou CSV. A rolagem
 vertical é deliberada nesta página para manter todos os registros disponíveis.
 
+### Configurações e estados auxiliares — tarefa 6.2
+
+Quatro explicações preservadas, agora com divisórias e descrições secundárias
+em painel de 12 px. Página/registro ausentes usam os mesmos painéis e retornos
+atuais; edição ausente tem captura própria. Erros associados aos campos passam
+a consumir `text-error`/`text-sm`, removendo classes visuais legadas sem utilidade
+no Tailwind, sem alterar mensagens, validação ou associação acessível.
+
+Resultados reais: 363/363 unitários; build 315,82 kB iniciais/82,90 kB estimados,
+saída 0 sem avisos. E2E dirigido a Configurações, ausências, navegação/foco e
+formulários: 12/12 em `test-results/refinar-estilo-estados`; teste novo de
+contraste/ausência de controles: 2/2 em `test-results/refinar-estilo-estados-contraste`.
+Mínimo textual das quatro superfícies auxiliares: 7,74:1 escuro/5,64:1 claro,
+em ambos os viewports. Erros/formulários mantiveram texto ≥4,899:1 e borda
+≥4,339:1 nos cenários medidos.
+
+Capturas de `configuracoes`, `pagina-ausente`, `registro-ausente`, `edicao-ausente`
+nos dois temas em `test-results/refinar-estilo-estados/refinamento-visual-*`.
+Inspeção desktop clara/escura confirmou divisões, hierarquia e retornos, sem
+novos controles/conteúdo dos HTMLs. Vazios e erros existentes mantêm texto
+explícito e superfícies coerentes; sem alegar aceite global ou zoom nativo.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
