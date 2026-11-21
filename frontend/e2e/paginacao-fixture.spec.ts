@@ -1,5 +1,74 @@
 import { expect, test } from '@playwright/test';
 
+test('mede paginação normal, hover, foco, ativa e indisponível nos dois temas', async ({
+  page,
+}, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const navegacao = page.getByRole('navigation', { name: 'Paginação de vendas' });
+    const botoes = navegacao.getByRole('button');
+    const medidas = [];
+    for (const botao of await botoes.all()) {
+      for (const estado of ['normal', 'hover', 'foco']) {
+        if (estado === 'hover') await botao.hover();
+        if (estado === 'foco') {
+          await botao.focus();
+          await page.keyboard.press('Shift+Tab');
+          await page.keyboard.press('Tab');
+          await expect(botao).toBeFocused();
+          expect(await botao.evaluate((elemento) => elemento.matches(':focus-visible'))).toBe(true);
+        }
+        const medida = await botao.evaluate((elemento) => {
+          const rgb = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
+          const fundo = (item: Element): number[] => {
+            const cor = rgb(getComputedStyle(item).backgroundColor);
+            return cor[3] === 0 && item.parentElement ? fundo(item.parentElement) : cor;
+          };
+          const luminancia = (cor: number[]) =>
+            cor
+              .slice(0, 3)
+              .map((v) => {
+                const s = v / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce((soma, v, i) => soma + v * [0.2126, 0.7152, 0.0722][i], 0);
+          const razao = (a: number[], b: number[]) => {
+            const [maior, menor] = [luminancia(a), luminancia(b)].sort((a, b) => b - a);
+            return (maior + 0.05) / (menor + 0.05);
+          };
+          const estilo = getComputedStyle(elemento);
+          return {
+            nome: elemento.getAttribute('aria-label'),
+            ativo: elemento.getAttribute('aria-current'),
+            indisponivel: elemento.getAttribute('aria-disabled'),
+            texto: razao(rgb(estilo.color), fundo(elemento)),
+            borda: razao(rgb(estilo.borderTopColor), fundo(elemento.parentElement!)),
+            foco: razao(rgb(estilo.outlineColor), fundo(elemento.parentElement!)),
+            movimento: estilo.transitionDuration,
+          };
+        });
+        expect(medida.texto).toBeGreaterThanOrEqual(4.5);
+        expect(medida.borda).toBeGreaterThanOrEqual(3);
+        if (estado === 'foco') expect(medida.foco).toBeGreaterThanOrEqual(3);
+        expect(medida.movimento).toBe('0s');
+        medidas.push({ tema, estado, ...medida });
+        await page.mouse.move(0, 0);
+        await botao.evaluate((elemento: HTMLButtonElement) => elemento.blur());
+      }
+    }
+    await expect(navegacao.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(page.getByRole('button', { name: 'Página anterior' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    console.log(`Estados da paginação ${tema}: ${JSON.stringify(medidas)}`);
+    await page.screenshot({ path: info.outputPath(`paginacao-${tema}.png`), fullPage: true });
+  }
+});
+
 test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', async ({
   page,
 }, testInfo) => {
