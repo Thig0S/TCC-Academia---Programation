@@ -171,6 +171,33 @@ quatro indicadores exclusivamente nesta página e três resumos existentes,
 sem indicadores complementares ou ações novas. Os testes do componente incluem
 zero/ausências e ordenação; isso não é aceite global ou zoom nativo.
 
+### Consultas Vendas/Quitadas — tarefa 4.1
+
+Critérios, tabela e paginação integram painel de 12 px com sombra discreta,
+campos elevados, cabeçalho suave e realce de linha em hover/foco interno. Nova
+venda permanece âncora `/vendas/nova`, agora com destaque vermelho. Preservados
+colunas, ações textuais, busca local, limpezas e separação de coleções.
+
+Verificações reais: 363/363 unitários; build saída 0, 315,15 kB iniciais e
+82,81 kB estimados, sem avisos. E2E dirigido
+`consulta listas|semântica e contraste|overflow contido|links afetados|registra conteúdo`
+(filtro efetivo incluiu `contraste` dos testes de consultas): 10/10, evidências
+em `test-results/refinar-estilo-consultas`. Texto mínimo nas consultas
+7,32:1 escuro/6,05:1 claro; links em hover/foco 7,53:1/6,18:1.
+
+Fixture ampliada apenas no alvo de teste com parâmetro `quantidade` restrito a
+0/1/10/11/21, usando comandos existentes de quitação, sem alterar domínio/seed
+da aplicação. `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-consultas-fixture`:
+12/12, dois temas/viewports. Desktop: todas as coleções com documento de 768 px;
+faixa até 695 px, paginação até 741 px; dez linhas, cabeçalhos e critérios visíveis.
+Mobile: largura global 390 px e rolagem vertical permitida. Aviso de prebundling
+mantido. Capturas `colecao-{0,1,10,11,21}-{dark,light}.png` no diretório da fixture.
+
+Inspeção visual desktop escura/mobile clara confirmou conjunto de painel e
+legibilidade. Adaptações dos HTMLs: dez linhas compactas com fonte atual de 14 px,
+sem indicadores globais, avatar/dados extras, linha clicável, oito registros ou
+menu que esconda Visualizar/Editar; lateral e aviso originais preservados.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

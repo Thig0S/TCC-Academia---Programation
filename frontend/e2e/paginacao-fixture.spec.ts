@@ -1,5 +1,49 @@
 import { expect, test } from '@playwright/test';
 
+test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page }, info) => {
+  for (const quantidade of [0, 1, 10, 11, 21]) {
+    for (const tema of ['dark', 'light']) {
+      await page.goto(`/?quantidade=${quantidade}`);
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Vendas', exact: true }),
+      ).toBeVisible();
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      await expect(page.locator('app-tabela-vendas tbody tr')).toHaveCount(
+        Math.min(10, quantidade),
+      );
+      await expect(page.getByRole('navigation', { name: 'Paginação de vendas' })).toHaveCount(
+        quantidade > 10 ? 1 : 0,
+      );
+      await expect(page.getByLabel('Faixa de resultados')).toHaveText(
+        quantidade === 0 ? '0 resultados' : `1–${Math.min(10, quantidade)} de ${quantidade} vendas`,
+      );
+      if (quantidade === 0)
+        await expect(page.getByText('Não há vendas em aberto.', { exact: true })).toBeVisible();
+      const geometria = await page.evaluate(() => ({
+        largura: innerWidth,
+        documento: document.documentElement.scrollWidth,
+        altura: innerHeight,
+        documentoAltura: document.documentElement.scrollHeight,
+        faixa: document.querySelector('[aria-label="Faixa de resultados"]')!.getBoundingClientRect()
+          .bottom,
+        paginacao: document.querySelector('app-paginacao-vendas')!.getBoundingClientRect().bottom,
+      }));
+      expect(geometria.documento).toBeLessThanOrEqual(geometria.largura);
+      if (page.viewportSize()!.width >= 1200) {
+        expect(geometria.documentoAltura).toBeLessThanOrEqual(geometria.altura);
+        expect(geometria.faixa).toBeLessThanOrEqual(geometria.altura);
+        expect(geometria.paginacao).toBeLessThanOrEqual(geometria.altura);
+      }
+      console.log(`Coleção ${quantidade}/${tema}: ${JSON.stringify(geometria)}`);
+      await page.screenshot({
+        path: info.outputPath(`colecao-${quantidade}-${tema}.png`),
+        fullPage: true,
+      });
+    }
+  }
+});
+
 test('mede paginação normal, hover, foco, ativa e indisponível nos dois temas', async ({
   page,
 }, info) => {

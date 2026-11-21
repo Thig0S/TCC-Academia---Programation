@@ -20,7 +20,7 @@
 
 ## 4. Refinar consultas de Vendas e Quitadas
 
-- [ ] 4.1 Refinar o conjunto visual de critérios, tabela, ações e paginação em Vendas/Quitadas, destacando Nova venda sem mudar destino ou papel de âncora; verificar busca/filtro, duas limpezas, estados vazio/sem resultados, nomes acessíveis e coleções separadas com testes de componentes e E2E nos dois temas/viewports. Usar fixture 0/1/10/11/21 para medir dez linhas, cabeçalhos, critérios, faixa/total e paginação sem rolagem vertical em 1366×768; executar build e registrar capturas/medidas e adaptações dos HTMLs no README.
+- [x] 4.1 Refinar o conjunto visual de critérios, tabela, ações e paginação em Vendas/Quitadas, destacando Nova venda sem mudar destino ou papel de âncora; verificar busca/filtro, duas limpezas, estados vazio/sem resultados, nomes acessíveis e coleções separadas com testes de componentes e E2E nos dois temas/viewports. Usar fixture 0/1/10/11/21 para medir dez linhas, cabeçalhos, critérios, faixa/total e paginação sem rolagem vertical em 1366×768; executar build e registrar capturas/medidas e adaptações dos HTMLs no README.
 - [ ] 4.2 Refinar detalhe e tabela de parcelas, mantendo cliente/venda lado a lado e entrada separada; verificar testes de detalhe e fixture/E2E para até dez parcelas com entrada/descrição curta sem rolagem da página em 1366×768, e excedente/textos extensos em região interna identificada por teclado. Conferir página, retornos, ações elegíveis e datas/formas completas nos dois temas e em 390×844; executar build e registrar capturas/medidas/contrastes no README, sem esconder conteúdo ou alterar histórico.
 
 ## 5. Refinar formulários e recebimento
