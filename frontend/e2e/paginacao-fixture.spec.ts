@@ -40,6 +40,28 @@ test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page
         path: info.outputPath(`colecao-${quantidade}-${tema}.png`),
         fullPage: true,
       });
+      if (quantidade === 0) {
+        await page.goto('/visao-geral?quantidade=0');
+        await expect(
+          page.getByRole('heading', { level: 1, name: 'Vendas', exact: true }),
+        ).toBeVisible();
+        await page.getByRole('link', { name: 'Visão Geral', exact: true }).click();
+        if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+        await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+        await expect(
+          page.getByRole('heading', { level: 1, name: 'Visão Geral', exact: true }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole('region', { name: 'Parcelas próximas' }).getByRole('link'),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole('region', { name: 'Parcelas atrasadas' }).getByRole('link'),
+        ).toHaveCount(0);
+        await page.screenshot({
+          path: info.outputPath(`resumos-vazios-${tema}.png`),
+          fullPage: true,
+        });
+      }
     }
   }
 });
@@ -99,6 +121,10 @@ test('mede paginação normal, hover, foco, ativa e indisponível nos dois temas
         if (estado === 'foco') expect(medida.foco).toBeGreaterThanOrEqual(3);
         expect(medida.movimento).toBe('0s');
         medidas.push({ tema, estado, ...medida });
+        await page.screenshot({
+          path: info.outputPath(`${tema}-${medida.nome?.replace(/\W/g, '-')}-${estado}.png`),
+          fullPage: true,
+        });
         await page.mouse.move(0, 0);
         await botao.evaluate((elemento: HTMLButtonElement) => elemento.blur());
       }

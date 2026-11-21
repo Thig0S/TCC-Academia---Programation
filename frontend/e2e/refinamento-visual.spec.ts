@@ -1,6 +1,14 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+test('mantém o indicador nativo de data no esquema do formulário', async ({ page }) => {
+  await page.goto('/vendas/nova');
+  await expect(page.locator('input[type="date"]')).toHaveCSS('color-scheme', 'dark');
+  await page.getByRole('button', { name: 'Tema escuro' }).click();
+  await expect(page.locator('app-root')).toHaveAttribute('data-tema', 'light');
+  await expect(page.locator('input[type="date"]')).not.toHaveCSS('color-scheme', 'dark');
+});
+
 test('mede contraste dos estados auxiliares sem novos controles', async ({ page }) => {
   for (const rota of [
     '/configuracoes',
@@ -155,6 +163,16 @@ test('registra conteúdo e lateral para comparação visual nos dois temas', asy
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         page.viewportSize()!.width,
       );
+      if (nome === 'vendas' || nome === 'quitadas') {
+        await page
+          .getByRole('searchbox', { name: 'Buscar por nome, CPF, telefone ou data da venda' })
+          .fill('Sem correspondência sintética');
+        await expect(page.locator('app-tabela-vendas tbody tr')).toHaveCount(0);
+        await page.screenshot({
+          path: info.outputPath(`${nome}-sem-resultados-${tema}.png`),
+          fullPage: true,
+        });
+      }
     }
   }
 });
