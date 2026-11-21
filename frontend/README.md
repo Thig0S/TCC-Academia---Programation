@@ -317,6 +317,27 @@ Inspeção desktop clara/escura confirmou divisões, hierarquia e retornos, sem
 novos controles/conteúdo dos HTMLs. Vazios e erros existentes mantêm texto
 explícito e superfícies coerentes; sem alegar aceite global ou zoom nativo.
 
+### Regressão integral — tarefa 7.1
+
+Execuções reais após todas as entregas de apresentação, em `frontend/`:
+
+| Comando | Resultado |
+| --- | --- |
+| `npm.cmd test -- --watch=false` | Saída 0, 363/363 testes em 30 arquivos |
+| `npm.cmd run test:e2e -- --output=test-results/refinar-estilo-regressao/aplicacao --workers=1` | Saída 0, 76/76 Chromium, dois viewports |
+| `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-regressao/fixture` | Saída 0, 12/12, dois viewports/temas; aviso de prebundling |
+
+Suítes E2E executadas sequencialmente; nenhuma expectativa financeira, de
+privacidade, rede, densidade ou foco removida. Fluxo integrado confirmou cadastro
+com entrada → recebimento/quitação → edição → listas/indicadores/resumos/relatórios
+→ recarga. Testes de contexto limpo verificaram ausência de persistência e rede
+externa; exportação continuou indisponível. Os 32 registros de estilos/geometria
+da lateral dos oito destinos originais seguem idênticos à baseline. Nova captura
+de edição ausente é adicional e não é contada como comparação antes/depois.
+Log da fixture em `test-results/refinar-estilo-regressao/fixture.log`;
+capturas/JSONs da aplicação e fixture nos diretórios acima. Não comprova zoom
+nativo, homologação da ótica ou conclusão integral da Change.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
