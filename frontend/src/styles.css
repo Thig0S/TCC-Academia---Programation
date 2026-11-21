@@ -1,12 +1,66 @@
-@layer theme, base, bootstrap, components, utilities;
+@layer theme, base, components, utilities;
 
 @import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @source "./app";
 @source "./testing";
 
 @custom-variant dark (&:where([data-tema=dark], [data-tema=dark] *));
+
+@layer base {
+  body {
+    margin: 0;
+  }
+
+  a,
+  button {
+    touch-action: manipulation;
+  }
+
+  :focus-visible,
+  h1:focus,
+  main:focus {
+    outline: 3px solid var(--app-focus);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+app-root[data-tema] {
+  --consulta-link: #a40021;
+}
+
+app-root[data-tema='dark'] {
+  --consulta-link: #ff9aaa;
+}
+
+app-root[data-tema] main a {
+  color: var(--consulta-link);
+  text-decoration: none;
+}
+
+app-root[data-tema] .area-principal main a:hover,
+app-root[data-tema] .area-principal main a:focus-visible,
+app-root[data-tema] main a:hover,
+app-root[data-tema] main a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+app-root[data-tema] .area-principal main a:focus-visible {
+  outline-color: var(--consulta-link);
+}
 
 :root,
 [data-tema='light'] {

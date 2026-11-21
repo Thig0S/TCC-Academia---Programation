@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.html',
-  styleUrl: './modal.scss',
+  styleUrl: './modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Modal {

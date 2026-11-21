@@ -23,7 +23,7 @@ import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar
   selector: 'app-detalhes-venda',
   imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento],
   templateUrl: './detalhes-venda.html',
-  styleUrl: './detalhes-venda.scss',
+  styleUrl: './detalhes-venda.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalhesVenda {

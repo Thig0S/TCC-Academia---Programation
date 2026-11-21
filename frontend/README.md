@@ -268,6 +268,35 @@ Verificações reais em `frontend/`:
 
 Aviso Sass `@import` mantido; não foi alegada medição de zoom nativo.
 
+### Remoção da ponte Bootstrap e ativação do Preflight — OpenSpec tarefa 4.3 — 21/11/2026
+
+Removidos a dependência/import visual Bootstrap, tokens/atributos `--bs-*` e
+`data-bs-theme`, classes exclusivas restantes e dependência direta Sass. Entradas e
+estilos locais SCSS foram convertidos para CSS; ambos os alvos Angular e o schematics
+passaram a usar CSS. Tailwind Preflight foi ativado na camada `base`, mantendo a ordem
+CSS de tema/base/componentes/utilitários e o tema explícito `data-tema`. A inicialização
+`bootstrapApplication` do Angular permanece intencionalmente preservada.
+
+Verificações reais em `frontend/`:
+
+- `npm ci`: saída 0; 301 pacotes instalados, auditoria sem vulnerabilidades. O npm
+  informou quatro scripts de instalação não aprovados; nenhum foi aprovado.
+- `npm run build`: saída 0, bundle inicial 297,57 kB; budgets não foram alterados.
+- `npx ng run vendas-em-aberto:build-paginacao-fixture`: saída 0, bundle inicial
+  298,89 kB.
+- `npm test -- --watch=false`: saída 0, 356/356 testes em 29 arquivos.
+- `npm run test:e2e -- --workers=1`: saída 0, 68/68 em Chromium nos viewports
+  1366×768/390×844; inclui tabelas, densidade, formulários, contraste, foco, estados,
+  navegação, modal e fluxos financeiros.
+- `npm run test:e2e:paginacao-fixture`: saída 0, 8/8; listas e detalhes compactos,
+  rolagem interna e teclado nos dois temas/viewports.
+- `npm run format:check`: saída 0. Auditoria de source/config não encontrou
+  `data-bs-theme`, tokens `--bs-*`, import Bootstrap nem arquivos SCSS.
+
+Os avisos anteriores de Sass e CSS budget desapareceram com a migração; budgets
+mantidos. O zoom nativo continua sendo evidência manual separada e não é inferido
+pelas capturas Chromium.
+
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
 Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
