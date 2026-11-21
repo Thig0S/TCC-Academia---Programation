@@ -39,6 +39,32 @@ test.afterEach(async ({ page }) => {
   expect(errosPorPagina.get(page), 'Console/pageerror inesperado nos fluxos').toEqual([]);
 });
 
+test('registra capturas sintéticas de cadastro e edição nos dois temas', async ({
+  page,
+}, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas/nova');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    await preencherCadastro(page, 'Cliente Sintético Captura');
+    await expect(page.getByRole('heading', { name: 'Prévia das parcelas' })).toBeVisible();
+    const cadastro = await page.screenshot({ fullPage: true });
+    await testInfo.attach(`cadastro-${tema}`, { body: cadastro, contentType: 'image/png' });
+
+    await page.goto('/vendas');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await page
+      .getByRole('link', { name: /Editar dados do cliente da venda de/ })
+      .first()
+      .click();
+    await expect(page.getByRole('heading', { name: 'Editar dados do cliente' })).toBeVisible();
+    const edicao = await page.screenshot({ fullPage: true });
+    await testInfo.attach(`edicao-${tema}`, { body: edicao, contentType: 'image/png' });
+  }
+});
+
 test('recebe parcela e lote antecipado, valida conferência e reconcilia quitação', async ({
   page,
 }) => {
