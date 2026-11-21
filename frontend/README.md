@@ -220,6 +220,24 @@ compacta sem ocultação de datas/formas. Adaptados os painéis dos HTMLs à pá
 existente e ao PNG complementar, sem transformar detalhe em modal nem trocar
 ações por menus. A captura inclui foco no título após navegação, deliberadamente.
 
+### Cadastro, entrada e prévia — tarefa 5.1
+
+Painéis de cliente/venda/prévia com raio de 12 px e sombra discreta, campos
+financeiros de superfície elevada e raio de 8 px, ações hierarquizadas e resumo
+auxiliar secundário. Mesmos campos/rótulos, entrada e prévia completa; continua
+página, sem vencimento editável, limite de 120 parcelas ou cálculo aproximado.
+
+Resultados reais: unitários 363/363; build 315,22 kB iniciais/82,84 kB estimados,
+saída 0 sem avisos; E2E `cadastro|cadastra|mede formulários|revela erros` 12/12,
+incluindo cadastro sem/com entrada, confirmação única, erros/foco, cancelamento,
+prévia extensa, reconciliação e recarga nos dois temas/viewports. Cenários de
+falha/retry permanecem cobertos pelos testes de componentes existentes.
+Contraste mínimo observado 4,899:1 em texto e 4,339:1 em bordas essenciais.
+Capturas persistentes de erros/prévia em `test-results/refinar-estilo-cadastro/acessibilidade-formularios-*`.
+Inspeção da captura desktop clara com texto extenso confirmou painéis, campos,
+ações e prévia rolável por teclado, sem corte global; dados e fonte diferem
+deliberadamente dos exemplos. Mobile permanece empilhado, verificado pelo E2E.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
