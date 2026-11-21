@@ -11,7 +11,7 @@
 
 ## 2. Refinar fundação visual e componentes compartilhados
 
-- [ ] 2.1 Refinar tokens semânticos do conteúdo em `src/styles.css` e hierarquia/superfícies da área principal, cabeçalho e aviso, usando D2; manter fonte de sistema e tokens/aparência da lateral. Verificar estilos computados, alternância/recarga do tema, aviso, foco e equivalência da lateral nos dois temas/viewports com testes pertinentes e build; registrar capturas e contrastes reais no README.
+- [x] 2.1 Refinar tokens semânticos do conteúdo em `src/styles.css` e hierarquia/superfícies da área principal, cabeçalho e aviso, usando D2; manter fonte de sistema e tokens/aparência da lateral. Verificar estilos computados, alternância/recarga do tema, aviso, foco e equivalência da lateral nos dois temas/viewports com testes pertinentes e build; registrar capturas e contrastes reais no README.
 - [ ] 2.2 Refinar apresentação de selos suaves, campos, botões, paginação e modal nos consumidores compartilhados, preservando bindings, nomes acessíveis, semântica e eventos; verificar todas as situações, normal/hover/foco/ativo/desabilitado, movimento reduzido e pares de contraste 4,5:1/3:1 com testes de componentes/E2E pertinentes e build. Registrar comparação com HTMLs, diferenças justificadas e efeitos na lateral no README.
 
 ## 3. Refinar Visão Geral
