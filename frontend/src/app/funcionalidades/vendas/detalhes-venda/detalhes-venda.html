@@ -7,11 +7,11 @@
     @if (mensagemRecebimento()) {
       <p role="status">{{ mensagemRecebimento() }}</p>
     }
-    <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-2">
-      <p class="text-body-secondary mb-0">
+    <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+      <p class="mb-0 text-text-muted">
         Referência da demonstração: {{ formatarDataCivil(referencia) }}
       </p>
-      <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+      <nav aria-label="Retornos de Vendas" class="flex flex-wrap items-center gap-3">
         <a routerLink="/vendas">Voltar para Vendas</a>
         <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
         <a
@@ -46,8 +46,13 @@
     </div>
 
     <div class="detalhe-resumo">
-      <section class="card p-3 detalhe-bloco" aria-labelledby="identificacao-venda">
-        <h2 id="identificacao-venda" class="h5">{{ resultado.valor.cliente.nome }}</h2>
+      <section
+        class="detalhe-bloco rounded-md border-[1px] border-border bg-surface p-2"
+        aria-labelledby="identificacao-venda"
+      >
+        <h2 id="identificacao-venda" class="mb-2 text-lg font-semibold">
+          {{ resultado.valor.cliente.nome }}
+        </h2>
         <dl class="detalhe-campos mb-0">
           <dt>CPF</dt>
           <dd>{{ resultado.valor.cliente.cpf }}</dd>
@@ -60,8 +65,11 @@
         </dl>
       </section>
 
-      <section class="card p-3 detalhe-bloco" aria-labelledby="dados-financeiros">
-        <h2 id="dados-financeiros" class="h5">Dados da venda</h2>
+      <section
+        class="detalhe-bloco rounded-md border-[1px] border-border bg-surface p-2"
+        aria-labelledby="dados-financeiros"
+      >
+        <h2 id="dados-financeiros" class="mb-2 text-lg font-semibold">Dados da venda</h2>
         <dl class="detalhe-campos mb-2">
           <dt>Data da venda</dt>
           <dd>{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
@@ -85,7 +93,7 @@
           <dd>{{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}</dd>
         </dl>
         <section class="entrada-detalhe" aria-labelledby="titulo-entrada">
-          <h3 id="titulo-entrada" class="h6">Entrada</h3>
+          <h3 id="titulo-entrada" class="mb-2 text-base font-semibold">Entrada</h3>
           @if (resultado.valor.entrada; as entrada) {
             <dl class="detalhe-campos mb-0">
               <dt>Valor</dt>
@@ -103,50 +111,95 @@
     </div>
 
     <section class="parcelas-detalhe" aria-labelledby="titulo-parcelas">
-      <h2 id="titulo-parcelas" class="h5" tabindex="-1">Parcelas</h2>
+      <h2 id="titulo-parcelas" class="text-lg font-semibold" tabindex="-1">Parcelas</h2>
       <p id="orientacao-parcelas" class="visually-hidden">
         Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
       </p>
       <div
-        class="table-responsive"
+        class="max-w-full overflow-x-auto"
         [class.parcelas-com-rolagem]="resultado.valor.parcelas.length > 10"
         role="region"
         aria-label="Parcelas da venda"
         aria-describedby="orientacao-parcelas"
         tabindex="0"
       >
-        <table class="table table-striped table-sm align-middle tabela-parcelas-detalhe">
-          <caption>
+        <table
+          class="w-full min-w-max border-collapse text-left text-sm leading-tight tabela-parcelas-detalhe"
+        >
+          <caption class="sr-only">
             Parcelas da venda de
             {{
               resultado.valor.cliente.nome
             }}
           </caption>
-          <thead>
+          <thead class="sticky top-0 z-[2] bg-surface text-text">
             <tr>
-              <th scope="col">Parcela</th>
-              <th scope="col">Valor</th>
-              <th scope="col">Vencimento</th>
-              <th scope="col">Situação</th>
-              <th scope="col">Data do pagamento</th>
-              <th scope="col">Forma de pagamento</th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Parcela
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Valor
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Vencimento
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Situação
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Data do pagamento
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+              >
+                Forma de pagamento
+              </th>
             </tr>
           </thead>
           <tbody>
             @for (parcela of resultado.valor.parcelas; track parcela.id) {
               <tr>
-                <th scope="row">{{ parcela.numero }} de {{ resultado.valor.parcelas.length }}</th>
-                <td>{{ formatarDinheiro(parcela.valorCentavos) }}</td>
-                <td>{{ formatarDataCivil(parcela.vencimento) }}</td>
-                <td><app-selo-situacao [situacao]="parcela.situacao" /></td>
-                <td>
+                <th
+                  scope="row"
+                  class="whitespace-nowrap border-b border-border px-2 py-[0.1rem] font-medium"
+                >
+                  {{ parcela.numero }} de {{ resultado.valor.parcelas.length }}
+                </th>
+                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                  {{ formatarDinheiro(parcela.valorCentavos) }}
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                  {{ formatarDataCivil(parcela.vencimento) }}
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                  <app-selo-situacao [situacao]="parcela.situacao" />
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
                   {{
                     parcela.dataPagamento
                       ? formatarDataCivil(parcela.dataPagamento)
                       : 'Não informada'
                   }}
                 </td>
-                <td>{{ parcela.formaPagamento ?? 'Não informada' }}</td>
+                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                  {{ parcela.formaPagamento ?? 'Não informada' }}
+                </td>
               </tr>
             }
           </tbody>
@@ -163,7 +216,7 @@
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />
     <p>Não existe uma venda com este identificador.</p>
-    <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+    <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
       <a routerLink="/vendas">Voltar para Vendas</a>
       <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
     </nav>
@@ -171,7 +224,7 @@
 } @else {
   <app-cabecalho titulo="Venda não encontrada" />
   <p>Não existe uma venda com este identificador.</p>
-  <nav aria-label="Retornos de Vendas" class="d-flex flex-wrap gap-3">
+  <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
     <a routerLink="/vendas">Voltar para Vendas</a>
     <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
   </nav>
