@@ -297,6 +297,21 @@ Os avisos anteriores de Sass e CSS budget desapareceram com a migração; budget
 mantidos. O zoom nativo continua sendo evidência manual separada e não é inferido
 pelas capturas Chromium.
 
+### Regressão integrada final — OpenSpec tarefa 5.1 — 21/11/2026
+
+Após instalação limpa (`npm ci`), a regressão integrada foi repetida serialmente em
+`frontend/`, Windows, Chromium, viewports 1366×768 e 390×844:
+
+- `npm test -- --watch=false`: saída 0, 356/356 em 29 arquivos.
+- `npm run test:e2e -- --workers=1`: saída 0, 68/68; cobre cadastro, recebimento e
+  quitação, edição, listas, Visão Geral, Relatórios, configuração, recarga, rotas,
+  estados, teclado, foco, contraste e ausência de rede/storage de negócio.
+- `npm run test:e2e:paginacao-fixture`: saída 0, 8/8; densidade/rolagem, paginação,
+  detalhe com dez parcelas e excedentes nos dois temas/viewports.
+
+As medições e capturas permanecem evidência automatizada Chromium; a inspeção manual
+de zoom nativo 200% requerida pela tarefa 5.2 não é substituída por esses resultados.
+
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
 Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
