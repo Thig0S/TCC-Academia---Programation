@@ -4,40 +4,47 @@
   {{ formatarDataCivil(limitesMes[0]) }} a {{ formatarDataCivil(limitesMes[1]) }}
 </p>
 
-<section class="mb-4" aria-label="Indicadores financeiros globais">
+<section class="mb-2" aria-label="Indicadores financeiros globais">
   <h2 class="sr-only">Indicadores financeiros globais</h2>
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
-      <h3 class="mb-2 text-base font-semibold">Total em aberto</h3>
-      <p class="mb-0 text-2xl font-semibold">
+    <article class="h-full rounded-xl border-[1px] border-border bg-surface px-4 py-3 shadow-sm">
+      <h3 class="mb-3 text-sm font-medium text-text-muted">Total em aberto</h3>
+      <p class="mb-0 text-3xl font-bold tracking-tight tabular-nums">
         {{ formatarDinheiro(resumo().totalEmAbertoCentavos) }}
       </p>
     </article>
-    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
-      <h3 class="mb-2 text-base font-semibold">Valores em atraso</h3>
-      <p class="mb-0 text-2xl font-semibold">
+    <article class="h-full rounded-xl border-[1px] border-border bg-surface px-4 py-3 shadow-sm">
+      <h3 class="mb-3 text-sm font-medium text-text-muted">Valores em atraso</h3>
+      <p class="mb-0 text-3xl font-bold tracking-tight tabular-nums text-danger">
         {{ formatarDinheiro(resumo().valoresEmAtrasoCentavos) }}
       </p>
     </article>
-    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
-      <h3 class="mb-2 text-base font-semibold">Recebimentos do mês</h3>
-      <p class="mb-0 text-2xl font-semibold">
+    <article class="h-full rounded-xl border-[1px] border-border bg-surface px-4 py-3 shadow-sm">
+      <h3 class="mb-3 text-sm font-medium text-text-muted">Recebimentos do mês</h3>
+      <p class="mb-0 text-3xl font-bold tracking-tight tabular-nums text-success">
         {{ formatarDinheiro(resumo().recebidoNoMesCentavos) }}
       </p>
     </article>
-    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
-      <h3 class="mb-2 text-base font-semibold">Vendas cadastradas</h3>
-      <p class="mb-0 text-2xl font-semibold">{{ resumo().vendasCadastradas }}</p>
+    <article class="h-full rounded-xl border-[1px] border-border bg-surface px-4 py-3 shadow-sm">
+      <h3 class="mb-3 text-sm font-medium text-text-muted">Vendas cadastradas</h3>
+      <p class="mb-0 text-3xl font-bold tracking-tight tabular-nums">
+        {{ resumo().vendasCadastradas }}
+      </p>
     </article>
   </div>
 </section>
 
 <div class="grid grid-cols-1 gap-3 xl:grid-cols-3">
   <section
-    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    class="h-full rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm"
     aria-labelledby="vendas-recentes"
   >
-    <h2 id="vendas-recentes" class="mb-2 text-lg font-semibold">Vendas recentes</h2>
+    <h2
+      id="vendas-recentes"
+      class="mb-2 border-b border-border pb-3 text-lg font-semibold tracking-tight"
+    >
+      Vendas recentes
+    </h2>
     <p class="text-text-muted">Até 5 vendas, incluindo quitadas, por data mais recente.</p>
     @if (vendasRecentes().length) {
       <ul class="m-0 list-none divide-y divide-border p-0">
@@ -56,10 +63,15 @@
   </section>
 
   <section
-    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    class="h-full rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm"
     aria-labelledby="parcelas-proximas"
   >
-    <h2 id="parcelas-proximas" class="mb-2 text-lg font-semibold">Parcelas próximas</h2>
+    <h2
+      id="parcelas-proximas"
+      class="mb-2 border-b border-border pb-3 text-lg font-semibold tracking-tight"
+    >
+      Parcelas próximas
+    </h2>
     <p class="text-text-muted">
       Até 5 parcelas pendentes com vencimento de hoje a +7 dias, inclusive.
     </p>
@@ -83,10 +95,15 @@
   </section>
 
   <section
-    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    class="h-full rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm"
     aria-labelledby="parcelas-atrasadas"
   >
-    <h2 id="parcelas-atrasadas" class="mb-2 text-lg font-semibold">Parcelas atrasadas</h2>
+    <h2
+      id="parcelas-atrasadas"
+      class="mb-2 border-b border-border pb-3 text-lg font-semibold tracking-tight"
+    >
+      Parcelas atrasadas
+    </h2>
     <p class="text-text-muted">Até 5 parcelas pendentes por vencimento mais antigo.</p>
     @if (parcelasAtrasadas().length) {
       <ul class="m-0 list-none divide-y divide-border p-0">

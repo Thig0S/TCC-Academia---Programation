@@ -16,7 +16,7 @@
 
 ## 3. Refinar Visão Geral
 
-- [ ] 3.1 Refinar quatro indicadores e três resumos com valores destacados, rótulos secundários, painéis e separadores; verificar testes do componente e E2E nos dois temas/viewports para referência/mês, limites/ordenação, zero e ausência de itens, links e ausência de ações/gráficos novos. Executar build e registrar capturas comparativas e contrastes no README, sem alterar projeções ou adicionar conteúdo funcional.
+- [x] 3.1 Refinar quatro indicadores e três resumos com valores destacados, rótulos secundários, painéis e separadores; verificar testes do componente e E2E nos dois temas/viewports para referência/mês, limites/ordenação, zero e ausência de itens, links e ausência de ações/gráficos novos. Executar build e registrar capturas comparativas e contrastes no README, sem alterar projeções ou adicionar conteúdo funcional.
 
 ## 4. Refinar consultas de Vendas e Quitadas
 

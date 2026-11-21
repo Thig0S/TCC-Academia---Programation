@@ -147,6 +147,30 @@ iniciais/82,75 kB estimados, saída 0 sem avisos. Os 32 JSONs da lateral continu
 idênticos à baseline. Campos financeiros e composição das páginas serão tratados
 nas entregas próprias; sem efeito visual observado na lateral, sem aceite global.
 
+### Visão Geral — tarefa 3.1
+
+Quatro indicadores com valores de 30 px, rótulos secundários de 14 px, números
+tabulares e painéis de 12 px; três resumos com títulos/divisórias e sombras
+discretas. Mantidos textos, links, limite de cinco, dados e projeções. Sem ícones,
+gráfico ou conteúdo funcional extra para preencher a composição dos HTMLs.
+Espaçamento vertical adaptado à janela do MVP para não alongar a lateral.
+
+Verificações reais: unitários 363/363 em 30 arquivos; E2E dirigido
+`Visão Geral|destaca valores|registra conteúdo|abre cada resumo` 14/14;
+contraste das páginas novas 2/2, mínimo 6,57:1 escuro/5,64:1 claro em Visão Geral.
+Após calibrar espaçamento, `destaca valores|registra conteúdo` 4/4 e build
+315,05 kB iniciais/82,80 kB estimados, saída 0 sem avisos. Capturas finais em
+`test-results/refinar-estilo-visao-geral-final/refinamento-visual-*`, arquivo
+`visao-geral-{dark,light}.png`, ambos os viewports. Os 32 JSONs da lateral foram
+comparados com baseline e permaneceram idênticos.
+
+Revisão visual das capturas desktop escura/mobile clara confirmou hierarquia de
+valores/rótulos, painéis, separadores e reorganização sem corte global. Diferenças
+intencionais dos HTMLs: fonte de sistema, dados sintéticos próprios, aviso,
+quatro indicadores exclusivamente nesta página e três resumos existentes,
+sem indicadores complementares ou ações novas. Os testes do componente incluem
+zero/ausências e ordenação; isso não é aceite global ou zoom nativo.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

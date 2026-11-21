@@ -1,6 +1,28 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+test('destaca valores e preserva quatro indicadores e três resumos', async ({ page }) => {
+  await page.goto('/visao-geral');
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const indicadores = page.locator('[aria-label="Indicadores financeiros globais"] article');
+    await expect(indicadores).toHaveCount(4);
+    for (const indicador of await indicadores.all()) {
+      await expect(indicador).toHaveCSS('border-radius', '12px');
+      await expect(indicador.locator('p')).toHaveCSS('font-size', '30px');
+      await expect(indicador.locator('h3')).toHaveCSS('font-size', '14px');
+    }
+    for (const nome of ['Vendas recentes', 'Parcelas próximas', 'Parcelas atrasadas']) {
+      const resumo = page.getByRole('region', { name: nome });
+      await expect(resumo).toHaveCSS('border-radius', '12px');
+      await expect(resumo.getByRole('heading')).toHaveCSS('border-bottom-width', '1px');
+      await expect(resumo.getByRole('link')).toHaveCount(5);
+    }
+    await expect(page.locator('main input, main button, main canvas')).toHaveCount(0);
+  }
+});
+
 test('aplica a paleta do conteúdo sem alterar os tokens próprios da lateral', async ({ page }) => {
   await page.goto('/vendas');
   for (const tema of ['dark', 'light']) {
