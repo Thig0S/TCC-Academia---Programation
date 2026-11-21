@@ -275,6 +275,26 @@ conferência/soma hierarquizadas e ações alcançáveis por rolagem/foco. O tí
 fica acima do trecho capturado após rolar a lista: não foi ocultado ou removido.
 Adaptada a estética dos HTMLs sem copiar mecanismo modal ou regras de pagamento.
 
+### Relatórios — tarefa 6.1
+
+Quatro consultas em painéis com raio de 12 px, divisórias e sombra discreta;
+totais semânticos/tabulares e períodos auxiliares. Preservados mês fixo, posição
+na referência, todos os registros, mensagens vazias e exportação indisponível.
+Espaçamento redistribuído sem alterar a altura total da página/lateral.
+
+Resultados reais: 363/363 unitários, incluindo reconciliação e vazios; build
+315,78 kB iniciais/82,98 kB estimados, saída 0 sem avisos. E2E dirigido
+`Relatórios|relatório|contraste de textos|registra conteúdo`: 14/14, exportação
+sem download/rede/mutação e tabelas completas nos dois temas/viewports.
+Contraste textual mínimo 7,74:1 escuro/5,64:1 claro. Capturas em
+`test-results/refinar-estilo-relatorios/refinamento-visual-*/relatorios-{dark,light}.png`.
+Comparação dos 32 JSONs da lateral com baseline: nenhuma diferença.
+
+Inspeção desktop clara confirmou hierarquia dos quatro blocos e tabelas completas.
+Dos HTMLs são reutilizadas superfícies, bordas, cantos e linguagem cromática,
+não indicadores globais, gráfico, seletor mensal, dados ou CSV. A rolagem
+vertical é deliberada nesta página para manter todos os registros disponíveis.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

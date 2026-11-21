@@ -3,7 +3,7 @@
 <section class="mb-4" aria-label="Exportação de relatório">
   <button
     type="button"
-    class="rounded-md border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+    class="rounded-lg border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
     aria-describedby="indisponibilidade-exportacao"
     (click)="informarIndisponibilidadeExportacao()"
   >
@@ -19,17 +19,30 @@
   }
 </section>
 
-<section class="mb-4" aria-labelledby="periodo-relatorio">
+<section class="mb-5" aria-labelledby="periodo-relatorio">
   <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal</h2>
-  <p class="mb-0">
+  <p class="mb-0 text-text-muted">
     Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
     {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
   </p>
 </section>
 
-<section class="mb-4" aria-labelledby="recebimentos-mensais">
-  <h2 id="recebimentos-mensais" class="mb-2 text-lg font-semibold">Recebimentos do mês</h2>
-  <p>Total recebido: {{ formatarDinheiro(relatorio.totalRecebidoCentavos) }}</p>
+<section
+  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  aria-labelledby="recebimentos-mensais"
+>
+  <h2
+    id="recebimentos-mensais"
+    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+  >
+    Recebimentos do mês
+  </h2>
+  <p class="px-3 text-text-muted">
+    Total recebido:
+    <strong class="font-semibold tabular-nums text-success">{{
+      formatarDinheiro(relatorio.totalRecebidoCentavos)
+    }}</strong>
+  </p>
   @if (relatorio.recebimentos.length) {
     <div
       class="max-w-full overflow-x-auto"
@@ -81,11 +94,21 @@
   }
 </section>
 
-<section class="mb-4" aria-labelledby="vendas-mensais">
-  <h2 id="vendas-mensais" class="mb-2 text-lg font-semibold">Vendas do mês</h2>
-  <p>
+<section
+  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  aria-labelledby="vendas-mensais"
+>
+  <h2
+    id="vendas-mensais"
+    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+  >
+    Vendas do mês
+  </h2>
+  <p class="px-3 text-text-muted">
     {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
-    {{ formatarDinheiro(relatorio.totalVendasMesCentavos) }}
+    <strong class="font-semibold tabular-nums text-text">{{
+      formatarDinheiro(relatorio.totalVendasMesCentavos)
+    }}</strong>
   </p>
   @if (relatorio.vendasDoMes.length) {
     <div class="max-w-full overflow-x-auto" role="region" aria-label="Vendas do mês" tabindex="0">
@@ -131,11 +154,21 @@
   }
 </section>
 
-<section class="mb-4" aria-labelledby="posicao-aberta">
-  <h2 id="posicao-aberta" class="mb-2 text-lg font-semibold">Posição em aberto</h2>
-  <p>
+<section
+  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  aria-labelledby="posicao-aberta"
+>
+  <h2
+    id="posicao-aberta"
+    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+  >
+    Posição em aberto
+  </h2>
+  <p class="px-3 text-text-muted">
     Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
-    {{ formatarDinheiro(relatorio.totalEmAbertoCentavos) }}
+    <strong class="font-semibold tabular-nums text-text">{{
+      formatarDinheiro(relatorio.totalEmAbertoCentavos)
+    }}</strong>
   </p>
   @if (relatorio.saldos.length) {
     <div
@@ -180,11 +213,21 @@
   }
 </section>
 
-<section aria-labelledby="parcelas-vencidas">
-  <h2 id="parcelas-vencidas" class="mb-2 text-lg font-semibold">Parcelas vencidas</h2>
-  <p>
+<section
+  class="rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  aria-labelledby="parcelas-vencidas"
+>
+  <h2
+    id="parcelas-vencidas"
+    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+  >
+    Parcelas vencidas
+  </h2>
+  <p class="px-3 text-text-muted">
     Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
-    {{ formatarDinheiro(relatorio.totalAtrasadoCentavos) }}
+    <strong class="font-semibold tabular-nums text-danger">{{
+      formatarDinheiro(relatorio.totalAtrasadoCentavos)
+    }}</strong>
   </p>
   @if (relatorio.parcelasAtrasadas.length) {
     <div
