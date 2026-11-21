@@ -238,6 +238,22 @@ Inspeção da captura desktop clara com texto extenso confirmou painéis, campos
 ações e prévia rolável por teclado, sem corte global; dados e fonte diferem
 deliberadamente dos exemplos. Mobile permanece empilhado, verificado pelo E2E.
 
+### Edição — tarefa 5.2
+
+Identificação compartilhada mantém seus painéis/campos elevados; texto auxiliar
+secundário e ações com raio de 8 px e primária destacada completam a edição,
+sem campos novos. Ausência de registro continua distinta de erro de validação.
+
+Verificações reais: 363/363 unitários; build 315,22 kB iniciais/82,78 kB estimados,
+saída 0 sem avisos. E2E `edita cliente|mede formulários|registra capturas`: 8/8,
+incluindo aberta/quitada, cancelamento, finanças inalteradas, erros e foco nos
+dois temas/viewports. Componentes preservam cenários de falha e atualização
+isolada. Contraste textual na edição: 6,505:1 escuro/5,643:1 claro, bordas
+8,011:1/4,339:1. Capturas `test-results/refinar-estilo-edicao/acessibilidade-formularios-*/{dark,light}-edicao-erros.png`.
+Inspeção desktop clara confirmou somente quatro campos, mensagens associadas,
+foco perceptível e hierarquia equivalente ao cadastro, derivada dos HTMLs sem
+importar campos financeiros. Reorganização mobile verificada pelo E2E.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
