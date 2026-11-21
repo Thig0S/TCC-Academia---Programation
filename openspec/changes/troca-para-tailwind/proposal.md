@@ -1,6 +1,6 @@
 # Proposal
 
-> Planejamento revisado, sem implementação autorizada. A presença dos artefatos no CLI não libera apply: a conciliação PRD → TDD descrita abaixo continua bloqueante.
+> Planejamento revisado após conciliação documental PRD 1.11 → TDD 1.15. Esta atualização não comprova implementação nem aprovação da ótica; os critérios e tarefas técnicas permanecem sujeitos à revisão antes de prosseguir.
 
 ## Why
 
@@ -35,7 +35,7 @@ Nenhuma. A mudança não introduz capacidades de produto; estabelece requisitos 
 
 ## Rastreabilidade e pré-requisitos
 
-- **PRD:** `docs/prd/vendas-em-aberto.md`, RF-001 a RF-012, RNF-002/003/007/009 e CA-023/027/028/029 sustentam os fluxos e contratos visuais preservados. A abrangência global e a máxima aproximação às referências foram confirmadas na exploração; precisam ser conciliadas no PRD antes de implementar.
-- **TDD:** `docs/tdd/tdd.md`, DEC-006/007/008/013/018 e seção 10. DEC-013 ainda determina Bootstrap e a seção 10 proíbe Tailwind: registrar primeiro a revisão técnica que a substitui no escopo desta migração, preservando histórico e IDs, e só então reconciliar esta Change com o TDD revisado.
-- Esta revisão altera somente os cinco arquivos existentes da Change. Não altera PRD/TDD nem considera resolvido o conflito com esses documentos. A sequência documental anterior não foi cumprida na criação original; este registro não a regulariza retroativamente.
-- Depois da conciliação, revisar os artefatos e aguardar pedido explícito de apply. Não antecipar PR, sync, archive, avaliação global da FASE-008 ou aceite da ótica.
+- **PRD:** `docs/prd/vendas-em-aberto.md` 1.11; RF-001 a RF-012, RNF-002/003/007/009 e CA-023/027/028/029 sustentam os fluxos e contratos visuais preservados. O §10 explicita a linguagem das referências em todos os módulos e estados existentes; o PRD não impõe framework.
+- **TDD:** `docs/tdd/tdd.md` 1.15; DEC-006/007/008/009/021 e seção 10. DEC-021 substitui a escolha técnica de base visual da DEC-013 por Tailwind CSS v4/PostCSS, preservando a decisão histórica e condicionando migração ampla à prova local dos dois builds.
+- A conciliação documental foi registrada antes da implementação. Esta revisão atualiza os artefatos da Change para rastrear PRD/TDD vigentes; não comprova compatibilidade, execução técnica ou aceite da ótica.
+- Revisar os artefatos atualizados antes de prosseguir com apply. Não antecipar PR, sync, archive, avaliação global da FASE-008 ou aceite da ótica.

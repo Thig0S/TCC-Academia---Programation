@@ -7,6 +7,14 @@
 
 ## 1. Identificação e situação
 
+**Conciliação da migração visual — revisão 1.15, 20/11/2026:** PRD 1.11
+explicita a aplicação da linguagem visual das referências em todos os módulos e
+estados existentes, sem impor tecnologia. DEC-021 substitui a escolha de base
+visual da DEC-013 por Tailwind CSS v4 com PostCSS, condicionando a migração ampla
+à comprovação local nos builds da aplicação e da fixture. A Change
+`troca-para-tailwind` permanece planejamento: esta revisão documental não comprova
+compatibilidade, implementação ou autorização das tarefas técnicas.
+
 **Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
 primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
 DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
@@ -298,7 +306,7 @@ continuam pendentes em PRD/PEN-012. Os registros históricos não revogam essas 
 | --- | --- | --- |
 | Framework | Angular 22, standalone, zoneless e Signals | DEC-002 |
 | Execução e diretório | SPA no navegador, em `frontend/`, sem SSR ou Tauri nesta etapa | DEC-001, DEC-003 |
-| Estilos | SCSS e componentes próprios na entrevista inicial; base visual substituída por Bootstrap na revisão 1.2 | DEC-006, DEC-013 |
+| Estilos | SCSS e componentes próprios inicialmente; Tailwind CSS v4/PostCSS como base proposta na revisão 1.15 | DEC-006, DEC-021 |
 | Temas | Claro e escuro; escuro na abertura | DEC-006 |
 | Estado | Serviço demonstrativo com Signals, sem biblioteca adicional | DEC-004 |
 | Qualidade | Testes unitários, de componentes e E2E; plano Vitest + Playwright confirmado | DEC-008 |
@@ -357,8 +365,9 @@ A futura integração exigirá planejamento próprio; os modelos internos não s
 | npm | Dependências e scripts | Versão compatível com Node.js escolhido, a fixar na base | Gerenciador confirmado; patch pendente |
 | RxJS | Dependência do ecossistema Angular quando necessária | Linha 7 compatível com `^7.4.0` | Faixa permitida por FON-006; não biblioteca de estado |
 | Signal Forms | Cadastro, edição e recebimento | `@angular/forms/signals`, mesma linha do Angular | Confirmado; `form` estável em v22.0, FON-008 |
-| Bootstrap | Base visual: layout responsivo, utilitários, tabelas, botões e campos | Linha estável 5.3.x; patch a fixar na base, referência consultada 5.3.8 | Escolha confirmada; somente estilos, sem plugins JavaScript; DEC-013 e FON-013 |
-| SCSS | Personalizações do Bootstrap e estilos específicos da aplicação | Ferramenta compatível com CLI 22 e Sass do Bootstrap, a verificar e fixar | Complementar ao Bootstrap; não base visual independente; DEC-013 |
+| Tailwind CSS | Utilitários de apresentação nos templates e estilos específicos | Linha 4.x; patch compatível a fixar após verificar peers/engines | Escolha técnica proposta; integração PostCSS local precisa ser provada nos dois alvos Angular; DEC-021 |
+| PostCSS | Pipeline CSS do Tailwind | Plugin oficial compatível com Angular CLI 22, a fixar | Sem processamento Tailwind via Sass; integração local ainda não comprovada; DEC-021 |
+| CSS | Entrada global e folhas locais dos componentes | Suporte do builder Angular 22 | Substitui SCSS no pipeline migrado; verificar uso residual de Sass antes de remover dependência; DEC-021 |
 | Vitest e jsdom | Unitários e componentes | Versões compatíveis com CLI 22 e TypeScript escolhido | Ferramentas confirmadas; versões exatas pendentes |
 | Playwright Test | E2E em navegador real | Versão a verificar e fixar na criação da base | Ferramenta confirmada, não instalação validada |
 
@@ -645,7 +654,7 @@ refinar o conteúdo principal ou de exigir sublinhado permanente cedem ao padrã
 referências, sem retirar foco, semântica, contraste ou indicação de página atual.
 Não redesenhar a logo nem introduzir funcionalidades copiadas das imagens.
 
-### Estilos e temas — DEC-006 e DEC-013
+### Estilos e temas — DEC-006, DEC-013 (histórica) e DEC-021
 
 **Registro histórico do refinamento visual 1.5, baseado no PRD 1.2:** a lateral terá superfície vermelha no tema
 claro e degradê vertical estático vermelho → vinho no escuro, seguindo os dois exemplos
@@ -661,28 +670,33 @@ extremos e região intermediária do degradê, texto secundário/perfil, ativo/h
 continuam históricos; repetir a regressão afetada. Zoom nativo 200% segue pendente e não
 será substituído por CSS zoom; nenhuma abertura de PR antes de concluir a Change.
 
-Bootstrap será a base visual no lugar de construir a interface somente com estilos próprios.
-Usar seu layout responsivo, utilitários e estilos de tabelas, botões e campos, preservando os
-componentes Angular por funcionalidade. SCSS continua apenas para personalizações e necessidades
-específicas; não se trata de eliminar CSS, mas de evitar reconstruir os padrões já fornecidos.
+**Direção técnica vigente — DEC-021:** usar Tailwind CSS v4 com a integração PostCSS
+compatível com Angular CLI 22 e expressar layout, espaçamento, tipografia, responsividade
+e estados prioritariamente por utilitários literais nos templates. A decisão não presume
+compatibilidade: antes da migração ampla, um protótipo mínimo deve passar `npm run build`
+e `npx ng run vendas-em-aberto:build-paginacao-fixture`, com utilitários presentes nos
+estilos computados do build otimizado. Falha interrompe o avanço e exige revisão da decisão.
 
-Planejar a dependência `bootstrap` pelo npm e a inclusão global de seus estilos em
-`styles.scss`, sem CDN ou duplicação da folha completa em cada componente. Verificar o pipeline
-Sass na criação da base. Tokens próprios para superfícies, texto, bordas, destaque e situações
-devem se alinhar às variáveis do Bootstrap, evitando dois sistemas visuais concorrentes.
-Preservar classes, atributos e variáveis externas como `btn`, `form-control` e `--bs-*`;
-identificadores próprios continuam em português. Não adicionar Tailwind, ng-bootstrap ou
-ngx-bootstrap por consequência dessa escolha.
+O pipeline Tailwind usa entrada CSS e não é processado por Sass. Converter entradas globais,
+`styleUrl`, os dois alvos Angular e schematics para CSS; manter folhas locais apenas para
+composição específica sustentável. Detectar classes em HTML e TypeScript, inclusive templates
+inline e fixture, usando nomes completos/literais. Usar Preflight somente após migrar todas as
+telas; durante a transição, manter ponte Bootstrap temporária com camadas e precedência
+explicitamente verificadas. A entrega final remove Bootstrap, classes/tokens/atributos visuais
+exclusivos e a dependência direta de Sass apenas se não houver uso residual. Preservar
+`bootstrapApplication`, que é inicialização Angular, não dependência visual.
 
-Utilizar somente a camada de estilos do Bootstrap, sem seus plugins JavaScript, bundle ou
-Popper. Angular continua responsável por estado e interações; o modal permanece o `dialog`
-nativo da DEC-007, sem migrar para o modal JavaScript do Bootstrap. A aparência do modal pode
-reutilizar estilos compatíveis, sem classes que dependam do plugin para funcionar.
+Definir tokens semânticos próprios para fundos, superfícies, texto, bordas, identidade,
+estados, foco e navegação nos dois temas. O tema continua controlado pelo serviço Angular,
+escuro inicial, em memória e sem preferência do sistema ou persistência; usar
+`data-tema="light|dark"` em `app-root` e variante escura explicitamente vinculada a esse
+atributo, incluindo host e descendentes. O `dialog` nativo permanece sob o contexto temático
+da árvore; não adicionar plugin JavaScript ou biblioteca visual.
 
 `ServicoTema` mantém um signal com tema claro ou escuro; o inicial é escuro por decisão do
 solicitante. Aplicar o tema ao contêiner da aplicação e manter todos os modais sob o mesmo
-contexto visual. Vincular o tema ao atributo `data-bs-theme`, mapeando os valores internos para
-`light` e `dark`, conforme FON-013. Não consultar preferência do sistema para contrariar o padrão escolhido nem
+contexto visual. Vincular o tema ao atributo `data-tema`, mapeando os valores internos para
+`light` e `dark`. Não consultar preferência do sistema para contrariar o padrão escolhido nem
 salvar em `localStorage`. Recarregar volta ao escuro. Alternância tem nome acessível e indicação
 do tema ativo, preservando contraste e foco em ambos.
 
@@ -849,9 +863,9 @@ a FASE-001 global permanece parcial enquanto depender de decisões das fases seg
 ### Roadmap de implementação — fases propostas, não autorização
 
 O roadmap detalha a sequência sem autorizar implementação. FASE-002/003/004/005 possuem
-evidências anteriores; FASE-006 está implementada e verificada na feature, aguardando
-revisão e merge; FASE-001 permanece parcial e FASE-007/008 seguem pendentes.
-PRD 1.9 concilia o estado sem mudar as regras. Não há nova execução de aplicação nesta revisão.
+evidências anteriores; FASE-006 e FASE-007 têm acompanhamento técnico nas seções anteriores.
+FASE-001 permanece parcial; a migração visual da FASE-009 está apenas planejada, e FASE-008
+aguarda regressão integrada posterior. Esta revisão não executou a aplicação.
 Prazos, estimativas e responsáveis não foram definidos. As referências
 `PEN-xxx` abaixo pertencem à seção 16, que mantém a correspondência com as pendências do PRD.
 
@@ -864,7 +878,8 @@ Prazos, estimativas e responsáveis não foram definidos. As referências
 | FASE-005 — Consulta de vendas e parcelas | Consultas somente leitura, busca/filtro e detalhe; refinamento sem cartões, paginação de 10 nas duas coleções, barra horizontal, detalhe compacto e links fiéis às referências. | FASE-003/004; DEC-017/018; PRD 1.7/RN-018/019/020/CA-026 a CA-029, sem novos requisitos. | Implementada via PR #9 e refinada via PR #10; 20/20 tarefas da base e 9/9 dos ajustes. Evidências anteriores: 197 testes, 36 E2E reais, 8 E2E de fixtures; geometria/contraste e zoom manual registrados no README. Specs sincronizadas na main em `72ade92`; consolidação documental e arquivamento integrados pelo PR #12 (`c845ce9`), sem aceite da ótica. |
 | FASE-006 — Cadastro, edição e recebimento | Signal Forms com rascunhos, prévia, edição somente dos quatro campos do cliente, validação CPF/telefone e seed compatível; modal de lote sequencial e atualização das consultas. | FASE-005; DEC-004/005/007/010/015/019; PRD/RN-021/022/023 resolve PEN-008/010. Recebimento segue RN-016. | Implementada e verificada na feature em 18/11/2026: 15/15 tarefas, 340 testes, 52 E2E, 8 E2E da fixture, build/formatação; zoom nativo de 200% por relato manual. Specs sincronizadas e Change arquivada em 18/11/2026; revisão, PR único e merge pendentes, sem aceite da ótica. |
 | FASE-007 — Visão Geral, relatórios e configurações | Quatro indicadores exclusivos da Visão Geral e três resumos de cinco; Relatórios do mês fixo e posição de saldos/atrasos na referência; preservar Configurações. | FASE-005/006; DEC-003/004/005/015/018/020; PRD 1.10 RF-009/010/RN-015. Sem seletor, gráfico ou novos filtros. | Implementada na `feature/fase-007`; 13/13 tarefas. Regressão: 356 testes, 64 E2E, 8 fixture, build/format executados; 48 E2E focados em acessibilidade passaram na execução serial. Tarefa 3.2 documenta contraste/foco/teclado nos dois viewports/temas e relato manual de zoom nativo, sem medição independente. Sem aceite da ótica. |
-| FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado/foco/contraste e preparar roteiro demonstrativo com limitações. | FASE-003 a FASE-007 no recorte aprovado; DEC-008/019; máquina de PEN-013 definida, versão Chrome/viewport útil a registrar; papéis/autoridade e metas de PEN-014/HIP-006 pendentes. | Resultados e limitações registrados no ambiente real; não equiparar resolução física a viewport CSS nem evidência Chromium a Chrome. Aceite somente por responsável ainda a definir após avaliação explícita, distinto da conclusão técnica. |
+| FASE-009 — Migração visual Tailwind | Migrar progressivamente a apresentação existente para Tailwind v4/PostCSS, mantendo os dois temas, conteúdo e fluxos; remover Bootstrap/Sass direto somente após a migração e auditoria de uso residual. | PRD 1.11; DEC-006/007/008/009/021; Change `troca-para-tailwind`; comprovar previamente os builds principal e fixture com estilos computados; falha bloqueia migração ampla. | Todas as tarefas da Change e verificações aplicáveis concluídas, com testes/capturas e limitações reais no README; nenhum Bootstrap visual residual. Planejada, não implementada nem autorizada por esta revisão documental. |
+| FASE-008 — Verificação integrada e entrega para validação | Executar regressão da seção 12, revisar teclado/foco/contraste e preparar roteiro demonstrativo com limitações. | FASE-003 a FASE-007 e FASE-009 no recorte aprovado; DEC-008/019/021; máquina de PEN-013 definida, versão Chrome/viewport útil a registrar; papéis/autoridade e metas de PEN-014/HIP-006 pendentes. | Resultados e limitações registrados no ambiente real; não equiparar resolução física a viewport CSS nem evidência Chromium a Chrome. Aceite somente por responsável ainda a definir após avaliação explícita, distinto da conclusão técnica. |
 
 Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026:
 
@@ -877,6 +892,7 @@ Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026
 | FASE-005 | Consultas e ajustes integrados na main pelos PRs #9/#10; base arquivada pelo PR #11; specs dos ajustes sincronizadas em `72ade92` e registro em archive integrado pelo PR #12 (`c845ce9`) |
 | FASE-006 | Implementada e verificada na feature em 18/11/2026 (15/15 tarefas; cadastro, edição e recebimento funcionais); specs principais sincronizadas em `openspec/specs` e Change arquivada em `openspec/changes/archive/2026-11-18-fase-006/`; revisão/merge pendentes |
 | FASE-007 | Implementada e verificada na `feature/fase-007` (13/13 tarefas); zoom nativo 200% registrado por relato manual, sem medição independente; sem aceite/merge |
+| FASE-009 | Planejada na revisão 1.15, com Change `troca-para-tailwind`; sem implementação ou compatibilidade local comprovada |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
 
 **Recorte histórico da FASE-003 — revisão 1.4, entregue posteriormente:** somente estrutura visual, navegação e temas.
@@ -1148,8 +1164,8 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
   Bootstrap, ng-bootstrap ou ngx-bootstrap neste recorte. Popper pode existir somente como
   peer transitivo instalado pelo npm; não importar, executar ou incluir no bundle da aplicação.
 - **Origem/situação:** FON-014 confirma Bootstrap; FON-013 fundamenta os temas e a
-  personalização. Detalhes de integração são planejados, não compatibilidade já comprovada.
-  Não implementada.
+  personalização. Escolha histórica de 12/11/2026; substituída pela DEC-021 em 20/11/2026.
+  Não implementada como direção vigente.
 - **Dependências/validação:** DEC-002/007/009, PEN-015 para versões e pipeline; build estrito,
   testes e cenários visuais da seção 12. Revisar se a combinação Sass/CLI não for compatível,
   sem alterar silenciosamente a versão ou substituir o modal.
@@ -1161,6 +1177,33 @@ o pacote Bootstrap 5.3.9 declara `@popperjs/core` como peer obrigatório. O soli
 autorizou sua presença apenas como dependência transitiva instalada pelo npm, preservando
 a proibição de uso em runtime. Conferir a ausência de Popper e plugins Bootstrap no bundle,
 sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
+
+### DEC-021 — Tailwind CSS v4 com PostCSS como base visual
+
+- **Problema/contexto:** alinhar a implementação visual à abrangência global das referências
+  confirmada no PRD 1.11, substituindo a escolha histórica de Bootstrap da DEC-013.
+- **Escopo/restrições:** frontend Angular 22 existente; preservar fluxos, domínio, rotas,
+  conteúdo, acessibilidade, dois temas e limites funcionais do PRD. Não atualizar Angular,
+  Node ou npm por consequência da migração.
+- **Alternativas:** manter Bootstrap; adotar Tailwind v3; migrar para Tailwind v4/PostCSS;
+  coexistir permanentemente com os dois sistemas. A ponte Bootstrap é apenas transitória.
+- **Escolha/justificativa:** Tailwind CSS v4 com `@tailwindcss/postcss` e integração reconhecida
+  pelo builder Angular, dependências/patches fixados após verificar compatibilidade. Tailwind
+  v4 usa pipeline CSS próprio; não executá-lo por Sass. Utilitários literais nos templates,
+  tokens semânticos para os temas e CSS local apenas para composição específica.
+- **Consequências:** antes de migração ampla, provar em build principal e fixture, com utilitários
+  presentes nos estilos computados também no build otimizado. Falha bloqueia a migração e exige
+  revisão desta decisão, sem trocar major ou builder silenciosamente. Adiar Preflight até todas
+  as telas serem migradas; testar explicitamente a precedência da ponte temporária. Remover
+  Bootstrap e Sass direto apenas após auditoria de uso residual; preservar `bootstrapApplication`.
+- **Origem/situação:** PRD 1.11 e Change `troca-para-tailwind` (proposal, specs, design e tasks),
+  revisados após autorização documental no Harness em 20/11/2026. Decisão técnica planejada;
+  compatibilidade e implementação ainda não comprovadas.
+- **Dependências/validação:** DEC-002/006/007/008/009; build `npm run build`, build
+  `vendas-em-aberto:build-paginacao-fixture`, `npm ci`, testes, estilos computados, temas,
+  contraste, foco, E2E e matriz visual descritos na Change. Reavaliar caso qualquer alvo falhe.
+- **Substitui:** escolha de base visual da DEC-013; preserva decisões de temas/componentes da
+  DEC-006, modal nativo e ícones locais da DEC-007 e demais limites técnicos não afetados.
 
 ### DEC-014 — Automações e limite da base inicial
 
