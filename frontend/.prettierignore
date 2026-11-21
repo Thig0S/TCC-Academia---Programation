@@ -8,3 +8,6 @@ playwright-report/
 blob-report/
 package-lock.json
 .vscode/
+# Referências locais fornecidas: preservar sem reformatação.
+public/imgs/exemplos/mercadao_oculos_dashboard_light.html
+public/imgs/exemplos/mercadao_oculos_dashboard_dark.html
