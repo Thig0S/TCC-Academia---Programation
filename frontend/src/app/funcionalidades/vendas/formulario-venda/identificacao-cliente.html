@@ -1,4 +1,4 @@
-<fieldset class="mb-3 rounded-md border-[1px] border-border bg-surface p-3">
+<fieldset class="mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm">
   <legend class="text-lg font-semibold">Dados sintéticos do cliente</legend>
   <p class="text-sm text-text-muted">
     Use somente dados inventados. Não informe dados de pessoas reais.
@@ -8,7 +8,7 @@
       <label for="nome-cliente" class="mb-1 block text-sm font-medium">Nome</label>
       <input
         id="nome-cliente"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         [formField]="campos().nome"
         aria-describedby="erro-nome"
       />
@@ -18,7 +18,7 @@
       <label for="cpf-cliente" class="mb-1 block text-sm font-medium">CPF</label>
       <input
         id="cpf-cliente"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         inputmode="numeric"
         [formField]="campos().cpf"
         aria-describedby="erro-cpf"
@@ -29,7 +29,7 @@
       <label for="telefone-cliente" class="mb-1 block text-sm font-medium">Telefone com DDD</label>
       <input
         id="telefone-cliente"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         type="tel"
         [formField]="campos().telefone"
         aria-describedby="erro-telefone"
@@ -42,7 +42,7 @@
       >
       <textarea
         id="descricao-cliente"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         rows="3"
         [formField]="campos().descricao"
       ></textarea>

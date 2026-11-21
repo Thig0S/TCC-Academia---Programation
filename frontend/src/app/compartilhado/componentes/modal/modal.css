@@ -4,4 +4,5 @@ dialog {
 
 dialog::backdrop {
   background: rgb(0 0 0 / 65%);
+  backdrop-filter: blur(3px);
 }

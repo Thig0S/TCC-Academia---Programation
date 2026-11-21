@@ -104,6 +104,49 @@ da tabela/selos/painéis: são entregas seguintes. Em relação aos HTMLs, manti
 aviso permanente, fonte de sistema, cabeçalho compacto sem busca global e lateral
 original; não se pretende igualdade pixel a pixel nem aceite global.
 
+### Componentes compartilhados — tarefa 2.2
+
+Acabamento implementado: pares de
+tokens suaves por situação, campos compartilhados elevados, paginação com cantos
+de 8 px e estado ativo preservado no hover, modal com raio de 12 px e backdrop
+desfocado. Não há alteração de eventos, bindings ou regras.
+
+Resultados reais desta etapa:
+
+- `npm.cmd run build`: saída 0, 314,75 kB iniciais, 82,74 kB estimados; sem aviso
+  de budget/Sass. Budgets e dependências inalterados.
+- `npm.cmd test -- --watch=false`: 362/362 testes em 30 arquivos. Depois dessa
+  execução foi acrescentado o caso unitário do rótulo `Aberto`, ainda não reexecutado.
+- E2E com filtro `contraste|dialog nativo|registra capturas|registra conteúdo|mede formulários|recebe parcela`
+  e `--output=test-results/refinar-estilo-compartilhados --workers=1`: 20/20.
+  Texto das consultas mínimo 7,32:1 escuro/6,05:1 claro; formulários/modal
+  mínimo observado 4,899:1; lateral manteve os mínimos anteriores.
+- `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-compartilhados-fixture`:
+  8 aprovados, 2 falhas no teste novo de estados da paginação, ambos os viewports.
+  A medição do foco no tema claro resultou em 1,0807:1, abaixo do mínimo 3:1.
+  O cenário escuro mediu texto mínimo 4,899:1 e foco mínimo 8,667:1.
+  As oito verificações existentes de geometria, teclado e parcelas passaram;
+  isso não aprova os estados novos. Aviso de prebundling permanece.
+
+Após autorização do solicitante para diagnóstico, confirmado problema de medição:
+o foco programático após hover não ativava `:focus-visible`. O teste agora chega
+ao botão com Shift+Tab/Tab e exige foco visível; nenhum mínimo foi reduzido.
+Reexecução em `test-results/refinar-estilo-compartilhados-fixture-verificado`:
+10/10; texto mínimo 4,899:1, borda mínima 4,339:1 e foco mínimo 6,019:1 no claro,
+8,667:1 no escuro, incluindo ativo/indisponível, normal/hover/foco e movimento reduzido.
+Unitários reexecutados com `Aberto`: 363/363 em 30 arquivos.
+
+Revisão visual das capturas de consultas, identificação com erros e modal extenso:
+selos agora suaves em vez de sólidos, texto preservado; campos compartilhados
+elevados e foco legível. Modal ganhou centralização explícita `m-auto`, borda,
+divisória e backdrop coerentes com os HTMLs. Mantém diálogo nativo e conteúdo
+rolável, em vez do mecanismo JavaScript dos exemplos. E2E adicional de
+centralização/limites, contenção/Escape e formulários: 4/4 em
+`test-results/refinar-estilo-modal-centralizado`; build posterior 314,77 kB
+iniciais/82,75 kB estimados, saída 0 sem avisos. Os 32 JSONs da lateral continuam
+idênticos à baseline. Campos financeiros e composição das páginas serão tratados
+nas entregas próprias; sem efeito visual observado na lateral, sem aceite global.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

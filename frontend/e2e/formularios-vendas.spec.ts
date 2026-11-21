@@ -188,6 +188,13 @@ test('dialog nativo contém foco, cancela por botão/Escape e reabre limpo nos d
     const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
     await expect(dialog).toBeVisible();
     expect(await dialog.evaluate((elemento) => elemento.matches(':modal'))).toBe(true);
+    const caixa = await dialog.boundingBox();
+    expect(caixa).not.toBeNull();
+    expect(
+      Math.abs(caixa!.x + caixa!.width / 2 - page.viewportSize()!.width / 2),
+    ).toBeLessThanOrEqual(1);
+    expect(caixa!.y).toBeGreaterThanOrEqual(0);
+    expect(caixa!.y + caixa!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toBeFocused();
     for (const tecla of ['Tab', 'Shift+Tab']) {
       for (let i = 0; i < 12; i++) {
