@@ -20,7 +20,10 @@ import { RetornoFormulario } from './nucleo/demonstracao/retorno-formulario';
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[attr.data-bs-theme]': 'servicoTema.tema()' },
+  host: {
+    '[attr.data-tema]': 'servicoTema.tema()',
+    '[attr.data-bs-theme]': 'servicoTema.tema()',
+  },
 })
 export class App {
   protected readonly servicoTema = inject(ServicoTema);

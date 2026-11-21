@@ -79,6 +79,42 @@ foco, contraste e fluxo. Exemplos medidos para campo: escuro com texto
 `rgb(33, 37, 41)` e fundo branco. O elemento oculto de smoke foi removido após a
 inspeção. O resultado não é aprovação visual global nem validação de outros browsers.
 
+### Tokens e estado de tema — tarefa 2.1
+
+`app-root` agora expõe `data-tema="dark|light"` sincronizado ao signal do tema e
+mantém temporariamente `data-bs-theme` para os consumidores Bootstrap ainda não
+migrados. A variante Tailwind `dark` está vinculada explicitamente a
+`[data-tema='dark']`, incluindo host e descendentes. Tokens semânticos próprios cobrem
+canvas, superfícies, texto, borda, marca, estados e foco; o escuro inicial e a
+preferência apenas em memória permanecem. Os testes verificam a alternância por
+Enter/Espaço com foco e rota preservados, recarga, preferência de sistema, página
+ausente, navegação e ausência de persistência.
+
+Durante a verificação, o cenário da fixture de detalhe apresentou descrição em duas
+linhas e tabela em 784,75 px para viewport de 768 px. A inspeção dinâmica mostrou que
+remover `data-tema` ou `data-bs-theme` não alterava a geometria; a correção autorizada
+foi localizada no layout desktop do detalhe, sem reduzir fonte nem afrouxar o critério:
+coluna de identificação mais útil e espaçamento/entrelinha vertical do bloco financeiro
+compactados somente a partir de 768 px. A descrição passou a caber em uma linha. Após
+a correção, nos dois temas em 1366×768, a última parcela ficou em 726,86 px, a base da
+tabela em 758,75 px e o documento em 768 px; em 390×844 os blocos continuam empilhados
+e o conteúdo permanece rolável.
+
+Verificações reais posteriores, Windows/Node 24.21.0/npm 11.19.0, Chromium:
+
+- `npm test -- --watch=false`: 356/356, 29 arquivos, saída 0.
+- `npm run test:e2e:paginacao-fixture`: 8/8 nos viewports 1366×768 e 390×844,
+  temas escuro/claro; densidade da lista e do detalhe, paginação por teclado e
+  rolagem interna de excedentes aprovadas.
+- `npm run test:e2e -- --workers=1`: 64/64 nos dois viewports, incluindo alternância,
+  foco, navegação, ausência, recarga, preferência de sistema, storage e contraste.
+- `npx prettier --check` nos arquivos alterados: saída 0.
+
+Uma execução anterior da suíte principal em paralelo à fixture teve duas falhas
+`ENOENT` ao gravar artefatos Playwright compartilhados; foi descartada como evidência
+e a reexecução serial acima passou. O aviso preexistente Sass `@import` continua
+visível. Isso não constitui aceite visual global, zoom nativo ou homologação da ótica.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de

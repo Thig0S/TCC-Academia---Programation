@@ -126,7 +126,7 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
   const secoes = ['Recebimentos do mês', 'Vendas do mês', 'Posição em aberto', 'Parcelas vencidas'];
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await expect(page.locator('main table')).toHaveCount(4);
     for (const nome of secoes) {
       const regiao = page.locator(`[role="region"][aria-label="${nome}"]`);
@@ -184,7 +184,7 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
 
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     for (const rota of ['Visão Geral', 'Relatórios']) {
       if (rota === 'Relatórios') {
         await page
@@ -323,7 +323,7 @@ test('Visão Geral preserva os indicadores e os três resumos nos dois temas sem
   await page.goto('/visao-geral');
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await expect(
       page.locator('[aria-label="Indicadores financeiros globais"] article'),
     ).toHaveCount(4);
@@ -497,7 +497,7 @@ test('Configurações explica os quatro limites pelos dois acessos e temas', asy
       await expect(
         page.getByRole('main').locator('form, input, select, textarea, button, a'),
       ).toHaveCount(0);
-      await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
       await page
         .getByRole('navigation', { name: 'Navegação principal' })
         .getByRole('link', { name: 'Visão Geral', exact: true })
@@ -516,7 +516,7 @@ test('alterna tema com Enter e Espaço sem mudar foco ou rota', async ({ page })
     ['Space', 'dark', 'Escuro'],
   ]) {
     await page.keyboard.press(tecla);
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await expect(botao).toHaveText(`Tema ativo: ${texto}`);
     await expect(botao).toHaveAttribute('aria-pressed', tema === 'dark' ? 'true' : 'false');
     await expect(botao).toBeFocused();
@@ -538,17 +538,17 @@ for (const preferencia of ['light', 'dark'] as const) {
       if (mensagem.type() === 'error') erros.push(mensagem.text());
     });
     await novaPagina.goto(`${baseURL}/configuracoes`);
-    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-tema', 'dark');
     await novaPagina.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'light');
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-tema', 'light');
     await novaPagina.reload();
-    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    await expect(novaPagina.locator('app-root')).toHaveAttribute('data-tema', 'dark');
     expect(erros).toEqual([]);
     await contexto.close();
     const outraSessao = await browser.newContext({ colorScheme: preferencia });
     const outraPagina = await outraSessao.newPage();
     await outraPagina.goto(`${baseURL}/`);
-    await expect(outraPagina.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+    await expect(outraPagina.locator('app-root')).toHaveAttribute('data-tema', 'dark');
     await outraSessao.close();
   });
 }
@@ -562,7 +562,7 @@ test('confere contraste efetivo, foco e superfícies com movimento reduzido', as
   for (const tema of ['dark', 'light']) {
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await page.getByRole('button', { name: 'Tema escuro', exact: true }).focus();
     const valores = await page.evaluate(() => {
       const cor = (valor: string): number[] => (valor.match(/[\d.]+/g) ?? []).map(Number);
@@ -695,7 +695,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await page.goto('/vendas');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
     await expect(tabela.getByRole('caption')).toHaveText('Vendas em aberto');
     await expect(tabela.getByRole('columnheader')).toHaveCount(8);
@@ -819,7 +819,7 @@ test('lateral segue a marca e mantém contraste no degradê, hover, ativo e foco
   for (const tema of ['dark', 'light']) {
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await expect(lateral).toHaveCSS(
       'background-color',
       tema === 'dark' ? 'rgb(133, 0, 32)' : 'rgb(206, 0, 38)',
@@ -954,7 +954,7 @@ test('links afetados integram-se aos temas sem sublinhado permanente e mantêm c
     await page.goto('/vendas');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
 
     const nav = page.getByRole('navigation', { name: 'Navegação principal' });
     const links = [
@@ -1203,7 +1203,7 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
         .click();
     }
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', 'light');
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', 'light');
     await expect(page.getByTestId('aviso-demonstracao')).toHaveText(aviso);
     await page.waitForLoadState('networkidle');
 
@@ -1224,7 +1224,7 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
     });
   }
   await page.reload();
-  await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', 'dark');
+  await expect(page.locator('app-root')).toHaveAttribute('data-tema', 'dark');
   expect(await context.cookies()).toEqual([]);
   expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0]);
   expect(redeIndevida, 'Somente recursos locais e canal de desenvolvimento').toEqual([]);

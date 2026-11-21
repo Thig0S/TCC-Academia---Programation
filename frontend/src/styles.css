@@ -5,3 +5,48 @@
 
 @source "./app";
 @source "./testing";
+
+@custom-variant dark (&:where([data-tema=dark], [data-tema=dark] *));
+
+:root,
+[data-tema='light'] {
+  --app-canvas: #f8f9fa;
+  --app-surface: #ffffff;
+  --app-surface-muted: #f1f3f5;
+  --app-text: #212529;
+  --app-text-muted: #5c636a;
+  --app-border: #dee2e6;
+  --app-brand: #a40021;
+  --app-brand-strong: #90001b;
+  --app-success: #146c43;
+  --app-danger: #b02a37;
+  --app-focus: #0a58ca;
+}
+
+[data-tema='dark'] {
+  --app-canvas: #212529;
+  --app-surface: #343a40;
+  --app-surface-muted: #2b3035;
+  --app-text: #f8f9fa;
+  --app-text-muted: #adb5bd;
+  --app-border: #495057;
+  --app-brand: #ff9aaa;
+  --app-brand-strong: #ffb3c0;
+  --app-success: #75b798;
+  --app-danger: #ea868f;
+  --app-focus: #6ea8fe;
+}
+
+@theme inline {
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-surface-muted: var(--app-surface-muted);
+  --color-text: var(--app-text);
+  --color-text-muted: var(--app-text-muted);
+  --color-border: var(--app-border);
+  --color-brand: var(--app-brand);
+  --color-brand-strong: var(--app-brand-strong);
+  --color-success: var(--app-success);
+  --color-danger: var(--app-danger);
+  --color-focus: var(--app-focus);
+}
