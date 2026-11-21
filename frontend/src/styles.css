@@ -45,7 +45,7 @@ app-root[data-tema='dark'] {
   --consulta-link: #ff9aaf;
 }
 
-app-root[data-tema] main a {
+app-root[data-tema] main a:not(.acao-primaria) {
   color: var(--consulta-link);
   text-decoration: none;
 }

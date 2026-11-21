@@ -66,6 +66,19 @@ export class PaginacaoFixture {
       });
       if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
     }
+    const quantidade = new URLSearchParams(location.search).get('quantidade');
+    if (quantidade !== null && ['0', '1', '10', '11', '21'].includes(quantidade)) {
+      for (const venda of this.servico.abertas().slice(Number(quantidade))) {
+        const pagamento = this.servico.registrarPagamento({
+          vendaId: venda.id,
+          parcelaIds: venda.parcelas.map((parcela) => parcela.id),
+          valorCentavos: venda.saldoCentavos,
+          data: this.servico.referencia,
+          forma: 'Pix',
+        });
+        if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
+      }
+    }
     afterNextRender(() => void this.router.navigateByUrl('/vendas'));
   }
 }

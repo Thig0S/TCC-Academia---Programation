@@ -5,59 +5,59 @@
     Referência da demonstração: {{ formatarDataCivil(referencia) }}
   </p>
 </div>
-<section
-  class="mb-2 rounded-md border-[1px] border-border bg-surface p-2"
-  aria-label="Pesquisa de vendas quitadas"
->
-  <div
-    class="grid grid-cols-1 items-end gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,auto)] consulta-controles"
-  >
-    <div class="min-w-0">
-      <label for="busca-vendas-quitadas" class="mb-1 block text-sm font-medium">
-        Buscar por nome, CPF, telefone ou data da venda
-      </label>
-      <input
-        #campoBusca
-        id="busca-vendas-quitadas"
-        class="w-full min-w-0 rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-        type="search"
-        [value]="termo()"
-        aria-describedby="orientacao-busca-vendas-quitadas"
-        (input)="atualizarTermo($event)"
-      />
+<div class="rounded-xl border-[1px] border-border bg-surface shadow-sm">
+  <section class="mb-2 border-b border-border p-2" aria-label="Pesquisa de vendas quitadas">
+    <div
+      class="grid grid-cols-1 items-end gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,auto)] consulta-controles"
+    >
+      <div class="min-w-0">
+        <label for="busca-vendas-quitadas" class="mb-1 block text-sm font-medium">
+          Buscar por nome, CPF, telefone ou data da venda
+        </label>
+        <input
+          #campoBusca
+          id="busca-vendas-quitadas"
+          class="w-full min-w-0 rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          type="search"
+          [value]="termo()"
+          aria-describedby="orientacao-busca-vendas-quitadas"
+          (input)="atualizarTermo($event)"
+        />
+      </div>
+      <div class="min-w-0">
+        <button
+          type="button"
+          class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          (click)="limparPesquisa(campoBusca)"
+        >
+          Limpar pesquisa
+        </button>
+      </div>
     </div>
-    <div class="min-w-0">
-      <button
-        type="button"
-        class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-        (click)="limparPesquisa(campoBusca)"
-      >
-        Limpar pesquisa
-      </button>
-    </div>
-  </div>
-  <p id="orientacao-busca-vendas-quitadas" class="mb-0 mt-1 text-sm text-text-muted">
-    Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
+    <p id="orientacao-busca-vendas-quitadas" class="mb-0 mt-1 text-sm text-text-muted">
+      Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
+    </p>
+  </section>
+  <p class="mb-2" role="status" aria-live="polite" aria-atomic="true">
+    {{ resultados().length }}
+    {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
   </p>
-</section>
-<p class="mb-2" role="status" aria-live="polite" aria-atomic="true">
-  {{ resultados().length }}
-  {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
-</p>
-@if (vendas().length === 0) {
-  <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
-    Não há vendas quitadas.
-  </p>
-} @else if (resultados().length === 0) {
-  <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
-    Nenhuma venda corresponde à pesquisa.
-  </p>
-} @else {
-  <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
-}
-<app-paginacao-vendas
-  [faixa]="faixaResultados()"
-  [paginaAtual]="paginaSelecionada()"
-  [totalPaginas]="totalPaginas()"
-  (paginaAlterada)="selecionarPagina($event)"
-/>
+  @if (vendas().length === 0) {
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Não há vendas quitadas.
+    </p>
+  } @else if (resultados().length === 0) {
+    <p class="rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+      Nenhuma venda corresponde à pesquisa.
+    </p>
+  } @else {
+    <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
+  }
+  <app-paginacao-vendas
+    class="block border-t border-border px-2 py-1"
+    [faixa]="faixaResultados()"
+    [paginaAtual]="paginaSelecionada()"
+    [totalPaginas]="totalPaginas()"
+    (paginaAlterada)="selecionarPagina($event)"
+  />
+</div>
