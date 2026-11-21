@@ -83,6 +83,12 @@ Conferir CSS de detalhe e seus overrides ao ajustar medidas, sem remover regras 
 
 **Alternativas:** adotar oito registros ou abrir detalhe em modal facilitaria copiar o HTML, mas alteraria requisitos; impor zero rolagem em todos os cenários cortaria conteúdo.
 
+### D5a — Foco programático de navegação sem contorno decorativo
+
+Ao trocar de rota, a aplicação continua movendo o foco ao título para anunciar o novo contexto e manter a navegação acessível. Títulos e a área principal não são controles acionáveis; não devem herdar contorno apenas por receber esse foco programático. Manter os indicadores `:focus-visible` nos controles interativos e nos destinos que realmente precisam de indicação de foco por teclado. Verificar a troca por clique nas abas em todos os destinos principais, nos dois temas, e confirmar separadamente que um controle continua com foco visível por teclado.
+
+**Alternativas:** remover todos os indicadores de foco prejudicaria a navegação por teclado; manter `h1:focus`/`main:focus` destaca como controle uma região informativa.
+
 ### D5 — Evidência visual e regressão acompanham cada entrega
 
 Antes das edições de apresentação, capturar a linha de base de conteúdo e lateral nos dois temas/viewports, registrar comandos reais e verificar disponibilidade dos dois HTMLs locais sem modificá-los. Comparar referência, antes/depois e estilo computado por hierarquia, alinhamento, superfície, cor, tipografia, espaçamento, borda/canto, sombra e estados. Screenshots são evidência de inspeção, não aprovação automática.

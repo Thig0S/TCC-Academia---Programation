@@ -317,6 +317,41 @@ test('abre cada resumo por teclado com ID opaco e orienta foco ao título do det
   }
 });
 
+test('navegar pelas abas não contorna títulos, mas preserva foco visível nos controles', async ({
+  page,
+}) => {
+  await page.goto('/configuracoes');
+  const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
+
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+    for (const [rota, rotulo] of [
+      ['/visao-geral', 'Visão Geral'],
+      ['/vendas', 'Vendas'],
+      ['/vendas/quitadas', 'Quitadas'],
+      ['/relatorios', 'Relatórios'],
+      ['/configuracoes', 'Configurações'],
+    ]) {
+      await navegacao.getByRole('link', { name: rotulo, exact: true }).click();
+      const titulo = page.getByRole('heading', { level: 1 });
+      await expect(titulo).toBeFocused();
+      await expect(titulo).toHaveCSS('outline-style', 'none');
+      await expect(page.getByRole('main')).toHaveCSS('outline-style', 'none');
+      expect(new URL(page.url()).pathname).toBe(rota);
+    }
+  }
+
+  const controle = page.getByRole('button', { name: 'Tema escuro' });
+  await controle.focus();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(controle).toBeFocused();
+  await expect(controle).toHaveCSS('outline-style', 'solid');
+  await expect(controle).toHaveCSS('outline-width', '3px');
+});
+
 test('Visão Geral preserva os indicadores e os três resumos nos dois temas sem corte horizontal', async ({
   page,
 }) => {
