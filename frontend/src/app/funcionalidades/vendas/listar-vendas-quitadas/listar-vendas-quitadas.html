@@ -1,27 +1,32 @@
 <app-cabecalho titulo="Vendas quitadas" [compacto]="true" />
-<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-1">
+<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
   <a routerLink="/vendas">Voltar para Vendas</a>
-  <p class="text-body-secondary mb-0">
+  <p class="mb-0 text-text-muted">
     Referência da demonstração: {{ formatarDataCivil(referencia) }}
   </p>
 </div>
-<section class="card p-2 mb-2" aria-label="Pesquisa de vendas quitadas">
-  <div class="row g-2 align-items-end consulta-controles">
-    <div class="col-12 col-lg-10">
+<section
+  class="mb-2 rounded-md border-[1px] border-border bg-surface p-2"
+  aria-label="Pesquisa de vendas quitadas"
+>
+  <div
+    class="grid grid-cols-1 items-end gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,auto)] consulta-controles"
+  >
+    <div class="min-w-0">
       <label for="busca-vendas-quitadas" class="mb-1 block text-sm font-medium">
         Buscar por nome, CPF, telefone ou data da venda
       </label>
       <input
         #campoBusca
         id="busca-vendas-quitadas"
-        class="min-w-0 flex-1 rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        class="w-full min-w-0 rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         type="search"
         [value]="termo()"
         aria-describedby="orientacao-busca-vendas-quitadas"
         (input)="atualizarTermo($event)"
       />
     </div>
-    <div class="col-12 col-lg-2 d-grid">
+    <div class="min-w-0">
       <button
         type="button"
         class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -31,7 +36,7 @@
       </button>
     </div>
   </div>
-  <p id="orientacao-busca-vendas-quitadas" class="mt-1 mb-0 text-sm text-text-muted">
+  <p id="orientacao-busca-vendas-quitadas" class="mb-0 mt-1 text-sm text-text-muted">
     Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
   </p>
 </section>

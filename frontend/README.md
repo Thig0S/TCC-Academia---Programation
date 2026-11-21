@@ -182,6 +182,28 @@ a suíte principal foi repetida serialmente com 64/64. Capturas e traces ficam e
 `test-results/` e não são versionados. Ainda não é aceite visual global nem avaliação
 de zoom nativo.
 
+### Listagens Vendas/Quitadas e tabelas — OpenSpec tarefa 3.2 — 21/11/2026
+
+Listagens, filtros e tabela de Vendas/Quitadas migrados para utilitários Tailwind;
+as tabelas usam superfícies e bordas semânticas, cabeçalhos legíveis, espaçamento
+compacto e rolagem horizontal restrita à região acessível. Busca, filtros, ações,
+coleções vazias, conteúdo financeiro e paginação foram preservados. A fixture E2E
+agora também verifica estilos computados para confirmar o CSS gerado.
+
+Verificações reais em Windows e Chromium Playwright, nos viewports 1366×768 e
+390×844, temas escuro/claro:
+
+- `npm test -- --watch=false`: saída 0, 356/356 testes em 29 arquivos.
+- `npm run test:e2e:paginacao-fixture`: saída 0, 8/8. Em 1366×768, dez linhas,
+  faixa e paginação couberam sem rolagem vertical da página; documento 768 px,
+  última linha 669,5 px, rodapé 732 px e controles alinhados. Em 390×844, documento
+  1614 px, largura 390 px e sem overflow horizontal global.
+- Prettier aplicado aos três templates alterados; verificação global será consolidada
+  no fechamento integrado.
+
+Avisos mantidos: Sass `@import` e prebundling desativado com otimização de scripts.
+Capturas locais foram revisadas, mas não versionadas. Não houve medição de zoom nativo.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de
