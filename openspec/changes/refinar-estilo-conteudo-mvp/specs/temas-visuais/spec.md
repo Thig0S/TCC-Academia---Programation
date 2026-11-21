@@ -30,6 +30,12 @@ Cada tema SHALL abranger navegação, cabeçalho, aviso, Visão Geral, Vendas, d
 - **WHEN** a preferência de movimento reduzido estiver ativa e a pessoa navegar ou alternar o tema
 - **THEN** a compreensão e o acionamento SHALL não depender de animações
 
+#### Scenario: Navegar sem contorno em títulos não interativos
+
+- **WHEN** a pessoa trocar de página por uma aba ou link e o foco programático for movido ao título do conteúdo
+- **THEN** o título e a área principal SHALL permanecer sem contorno decorativo nos dois temas
+- **AND** links, botões, campos e demais controles SHALL manter indicador perceptível ao receber foco de teclado
+
 ## ADDED Requirements
 
 ### Requirement: Preservação visual da lateral no refinamento do conteúdo
