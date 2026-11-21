@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.11 — conciliação do escopo visual global, em 20/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.13 — tipografia/padding das tabelas e composição do detalhe, em 21/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,17 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Planejamento visual — revisão 1.12, 21/11/2026:** conforme solicitação explícita
+no Harness, as tabelas de vendas abertas/quitadas e parcelas usam fonte de 18 px e
+padding uniforme nas células de dados. Manter legibilidade, contraste, conteúdo
+completo e os critérios de densidade desktop de CA-028; a especificação técnica
+deve controlar a altura de linha e restringir rolagem horizontal à região da tabela.
+Após medição, o solicitante confirmou compactar a composição existente dos blocos
+de cliente/venda para recuperar espaço vertical e manter até dez parcelas visíveis
+sem rolagem da página, sem remover campos nem reduzir a fonte solicitada. Este
+registro atualiza requisitos e planejamento. A verificação técnica posterior está
+documentada em `frontend/README.md`; isso não representa aceite da ótica.
 
 **Planejamento da FASE-007 — 20/11/2026:** confirmado pelo solicitante no Harness:
 Relatórios usa somente o mês civil da referência fixa da sessão, sem seletor de
@@ -198,6 +209,7 @@ Os caminhos abaixo são relativos à raiz do repositório. “Confirmado por fon
 | FON-009 | Decisões no planejamento da FASE-005 e revisão nesta conversa | Harness de 16/11/2026; inspeção de `frontend/src/app/` e `frontend/README.md`; registro anterior de PR #7 | Busca única nas duas coleções; filtro de situação somente nas abertas, combinado por E; listas, cartões globais e detalhe somente leitura | Planejamento autorizado; fase 005 não implementada, sem aceite comercial ou nova execução de testes |
 | FON-010 | Refinamento visual solicitado e confirmado no Harness | Conversa de 16/11/2026; `frontend/public/imgs/exemplos/exemploListagemDeVendas.png`, `exemploDadosDaVenda.png`, `exemploDesignDark.png` e `exemploCadastrarVenda.png` na mesma pasta | Cartões somente na Visão Geral; barra horizontal; 10 vendas por página nas duas coleções; detalhe compacto com excedente interno; links integrados ao tema; atraso no dia seguinte | Referências visuais inspecionadas, sem copiar dados pessoais nem ações fora do recorte; ajustes não implementados nesta revisão |
 | FON-011 | Decisões e aprovação documental no Harness | Conversa de revisão do PR #13; confirmação final após corrigir escala Windows para 125%; consulta local `Get-CimInstance Win32_OperatingSystem` | Somente dados do cliente editáveis; CPF com verificadores; telefone BR 10/11 dígitos; seed compatível futuramente; máquina e participação previstas | Hardware/tela informados pelo solicitante; Windows 11 Home build 26200 observado localmente. Sem modelo de GPU inferido, versão de Chrome, medição, papéis de aceite ou aprovação da ótica; metas mantidas para discussão |
+| FON-012 | Refinamento visual explícito no Harness | Conversa de 21/11/2026, solicitação de fonte 18 px/padding comum e confirmação para compactar os blocos do detalhe após medição | Aplicar às tabelas de Vendas/Quitadas e parcelas, mantendo CA-028 sem remover campos ou reduzir a fonte | Verificação técnica registrada em `frontend/README.md`; não implica aceite da ótica |
 
 A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, mas não foi transcrita nem usada para inferir regras ou copiar dados pessoais. As entrevistas e o README oferecem informação suficiente para este rascunho.
 
@@ -280,7 +292,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** exibir somente vendas com saldo restante, botão Nova venda e colunas Cliente, Data da venda, Valor total, Parcelas pagas/total, Saldo devedor, Próximo vencimento, Situação e Ações. Oferecer acesso visível a visualizar e editar.
 - **Necessidade:** conferência e localização; OBJ-001; JOR-001.
 - **Ator, pré-condições e entradas:** atendimento; coleção sintética inicial com 10 a 15 vendas; abertura de Vendas.
-- **Resultado:** tabela compacta sem cartões financeiros em Vendas, paginada em 10 registros por página conforme RN-020; Total em aberto, Valores em atraso, Recebimentos do mês e Vendas cadastradas ficam exclusivos da Visão Geral (RF-009).
+- **Resultado:** tabela compacta sem cartões financeiros em Vendas, paginada em 10 registros por página conforme RN-020; dados tabulares usam fonte de 18 px e padding uniforme com Quitadas e parcelas no detalhe, sem comprometer a legibilidade ou a densidade de CA-028. Total em aberto, Valores em atraso, Recebimentos do mês e Vendas cadastradas ficam exclusivos da Visão Geral (RF-009).
 - **Exceções:** distinguir coleção vazia de filtro sem resultados; nenhuma quitada na lista principal. Situações e cálculos seguem RN-014/015. Na FASE-005, o filtro de situação segue RN-019 e somente Visualizar é ação funcional; Nova venda e Editar aguardam a FASE-006, sem controles inoperantes.
 - **Prioridade:** Essencial, tela prioritária do produto.
 - **Origem/situação:** FON-001 §3 e FON-008/010; consulta entregue nos PRs #9/#10, com situações, paginação e ausência de cartões. Ações de Nova venda/Editar permanecem futuras, sem aceite da ótica.
@@ -313,7 +325,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** ao acionar o cliente da venda, mostrar nome, CPF, telefone, descrição quando preenchida, data da venda, valor total, indicação de entrada, quantidade de parcelas, total pago, saldo e situação geral. Tabela de parcelas: número/total, valor, vencimento, situação, data e forma de pagamento e ações.
 - **Necessidade:** conferência antes de recebimento; OBJ-001 e OBJ-003; JOR-001 e JOR-004.
 - **Ator, pré-condições e entradas:** atendimento; venda existente; seleção da venda.
-- **Resultado:** dados do cliente e da venda condensados lado a lado, seguidos das parcelas, conforme `exemploDadosDaVenda.png`; situações textuais Aberto, Próximos dias, Atrasado e Paga. CA-028 exige até 10 parcelas visíveis sem rolagem da página no cenário padrão; excedentes usam rolagem interna acessível, sem truncar o histórico.
+- **Resultado:** dados do cliente e da venda condensados lado a lado, seguidos das parcelas, conforme `exemploDadosDaVenda.png`; a tabela de parcelas compartilha fonte tabular de 18 px e padding com Vendas/Quitadas; situações textuais Aberto, Próximos dias, Atrasado e Paga. CA-028 exige até 10 parcelas visíveis sem rolagem da página no cenário padrão; excedentes usam rolagem interna acessível, sem truncar o histórico.
 - **Exceções:** não abrir cadastro independente de cliente; datas/formas inexistentes indicadas como não informadas, nunca inventadas; situações seguem RN-014; entrada aparece separadamente e não aumenta a contagem de parcelas pagas.
 - **Prioridade:** Essencial, evita recebimento sem conferência.
 - **Origem/situação:** FON-001 §§4–6 e FON-008/010; detalhe somente leitura implementado no PR #9 e compactado no PR #10, com evidências anteriores no README; sem aceite da ótica.
@@ -686,7 +698,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Requisitos:** RF-002/003/005/008; RNF-007/009; FON-010.
 - **Dado** desktop 1366 × 768, zoom 100%, ambos os temas, 10 vendas ou venda com até 10 parcelas e textos curtos do cenário padrão,
 - **Quando** abrir cada lista e o detalhe no topo da página,
-- **Então** busca, situação e duas limpezas das abertas ficam lado a lado; tabela e paginação ficam visíveis sem rolagem vertical da página. No detalhe, blocos compactos de cliente/venda lado a lado preservam todos os campos e deixam as até 10 parcelas visíveis sem rolagem da página. Comparar capturas com as referências, descontando diferenças funcionais autorizadas. Com mais parcelas, somente o excedente rola internamente com cabeçalho e região identificáveis e teclado. Em viewport menor, zoom 200% ou textos extensos, reorganizar/rolar sem cortar conteúdo, diminuir artificialmente fonte ou ocultar aviso/campos.
+- **Então** busca, situação e duas limpezas das abertas ficam lado a lado; tabelas de vendas abertas/quitadas e parcelas usam fonte de 18 px e padding uniforme nas células de dados, e tabela/paginação ficam visíveis sem rolagem vertical da página. No detalhe, blocos compactos de cliente/venda lado a lado preservam todos os campos e deixam as até 10 parcelas visíveis sem rolagem da página. Comparar capturas com as referências, descontando diferenças funcionais autorizadas. Com mais parcelas, somente o excedente rola internamente com cabeçalho e região identificáveis e teclado. Em viewport menor, zoom 200% ou textos extensos, reorganizar/rolar sem cortar conteúdo, diminuir artificialmente fonte ou ocultar aviso/campos.
 
 ### CA-029 — Links e classificação de atraso
 - **Requisitos:** RF-001/002/005; RN-014; RNF-002/003/009; FON-010.

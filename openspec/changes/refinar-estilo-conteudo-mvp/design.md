@@ -64,9 +64,9 @@ Manter utilitários literais nos templates e CSS local apenas para composição 
 | --- | --- | --- |
 | Área principal/cabeçalho/aviso | Alinhamento, superfície, espaçamento e hierarquia; sem copiar busca/perfil/notificações superiores dos HTMLs | Aviso permanente, alternância, título focável, navegação e lateral intactos |
 | Visão Geral | Valores destacados, rótulos secundários, painéis e divisórias; SVG local decorativo somente se útil | Quatro indicadores, três resumos de até cinco, referência/período e links |
-| Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, dois tipos de limpeza e busca local |
+| Vendas/Quitadas | Conjunto visual único para critérios, tabela e paginação; dados a 18 px, line-height 20 px e padding de célula compartilhado com parcelas; Nova venda como âncora estilizada de ação principal; hover e selos suaves | Dez linhas, colunas, ações textuais identificáveis, dois tipos de limpeza e busca local |
 | Cadastro/edição | Painéis cliente/venda/prévia, campos de superfície elevada e ações hierarquizadas | Mesmos campos/rótulos, validações, entrada e prévia; edição dos quatro campos |
-| Detalhe | Cliente/venda lado a lado, valores destacados e parcelas com cabeçalho/separadores coerentes | Página, entrada separada, dados completos, até dez parcelas visíveis e excedente interno |
+| Detalhe | Cliente/venda lado a lado, valores destacados e parcelas a 18 px com mesmo line-height/padding das tabelas de vendas | Página, entrada separada, dados completos, até dez parcelas visíveis e excedente interno |
 | Recebimento | Aparência do `dialog`, campos e resumos coerente com formulários | Modal nativo, valor exato, sequência, confirmação/cancelamento/foco |
 | Relatórios | Quatro seções de consultas em painéis, totais e períodos destacados | Mês fixo, posição na referência, todos os registros e exportação indisponível |
 | Configurações/ausências | Divisões, títulos/descrições e mensagens coerentes | Conteúdo explicativo atual, sem controles novos; retornos e estados distintos |
@@ -77,7 +77,7 @@ Não substituir links existentes por eventos de clique em linha ou menus de reti
 
 ### D4 — Densidade e acessibilidade condicionam medidas
 
-Calibrar espaçamento de listas/detalhe a partir do espaço real após cabeçalho, aviso e critérios. Preservar os cenários CA-027/028: dez vendas ou até dez parcelas no desktop padrão, com paginação quando necessária, sem rolagem vertical da página. Reorganização e rolagem são permitidas em 390×844, textos extensos e zoom nativo 200%; horizontal apenas na região da tabela. Não usar `overflow: hidden`, elipse de dados obrigatórios ou fonte artificialmente menor para cumprir geometria.
+Calibrar espaçamento de listas/detalhe a partir do espaço real após cabeçalho, aviso e critérios. Usar fonte de 18 px, line-height de 20 px e padding uniforme nas células das tabelas de vendas e parcelas: dados com 10 px horizontal/4 px vertical; cabeçalho com 10 px horizontal/8 px vertical. Preservar os cenários CA-027/028: dez vendas ou até dez parcelas no desktop padrão, com paginação quando necessária, sem rolagem vertical da página. Se a tabela de parcelas ultrapassar esse limite, compactar/reorganizar os blocos existentes de cliente/venda, preservando todos os campos e sem reduzir sua fonte, antes de alterar o critério de rolagem. Reorganização e rolagem são permitidas em 390×844, textos extensos e zoom nativo 200%; horizontal apenas na região da tabela. Não usar `overflow: hidden`, elipse de dados obrigatórios ou fonte artificialmente menor para cumprir geometria.
 
 Conferir CSS de detalhe e seus overrides ao ajustar medidas, sem remover regras apenas por parecerem antigas. Manter regiões roláveis identificadas, cabeçalhos, foco, erros associados e mensagens anunciáveis. Se a direção visual não couber sem perda de legibilidade, parar o caso afetado e solicitar revisão; não reduzir paginação ou mudar os critérios por conta própria.
 

@@ -15,6 +15,14 @@ visual da DEC-013 por Tailwind CSS v4 com PostCSS, condicionando a migração am
 `troca-para-tailwind` permanece planejamento: esta revisão documental não comprova
 compatibilidade, implementação ou autorização das tarefas técnicas.
 
+**Refinamento tipográfico — revisão 1.17, 21/11/2026:** PRD 1.13 define fonte
+de 18 px e padding compartilhado nas tabelas de Vendas/Quitadas e parcelas. DEC-022
+determina utilitários comuns e line-height de 20 px para preservar a geometria de
+dez linhas/parcelas e a rolagem horizontal contida. Após medição, o solicitante
+confirmou compactar os blocos existentes do detalhe para recuperar espaço sem
+remover dados. A implementação passou a fixture nos dois temas/viewports; medidas
+e a única limitação pendente constam em `frontend/README.md`.
+
 **Planejamento da FASE-007 — revisão 1.14, 20/11/2026:** PRD 1.10 revisado
 primeiro com respostas no Harness. Reutilizar arquitetura, domínio e dependências;
 DEC-020 detalha os resumos de cinco e Relatórios do mês fixo, sem gráfico/seletor.
@@ -178,7 +186,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 20/11/2026, revisão 1.14.
+- **Data e revisão:** 21/11/2026, revisão 1.17.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** FASE-006 implementada e verificada na feature, com specs sincronizadas
   e Change arquivada; revisão e merge pendentes. FASE-007/008, avaliação e aceite
@@ -270,6 +278,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-021 | Context7 `/websites/angular_dev`, `https://angular.dev/api/router/Router`, `https://angular.dev/guide/signals` | 16/11/2026 | Router constrói URLs por segmentos; signals/computed derivam filtros. Consulta geral, não comprova comportamento do patch 22.2.6; round-trip de ID e navegação precisam de teste local no apply |
 | FON-022 | PRD 1.6/FON-010; imagens de `frontend/public/imgs/exemplos/`; respostas no Harness | 16/11/2026 | Desktop 1366×768/100%, paginação de 10 nas duas coleções, detalhe compacto com excedente interno, links integrados, atraso civil mantido; autorização exclusivamente documental |
 | FON-023 | PRD 1.8/FON-011 e aprovação no Harness; inspeção de `venda.validacoes.ts`, `servico-demonstracao.ts`, seed e specs principais; consulta local do Windows | 17/11/2026 | Edição só de nome/CPF/telefone/descrição, CPF com verificadores, telefone 10/11, adequação futura do seed e ambiente do solicitante com escala 125%; sem implementação ou novas APIs de biblioteca |
+| FON-024 | PRD 1.13 e confirmações explícitas no Harness | 21/11/2026 | Tabelas de Vendas/Quitadas e parcelas com tipografia de 18 px e padding consistente; compactar o resumo sem perda de dados e manter densidade em ambos os temas |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -704,6 +713,11 @@ Layout otimizado para desktop e adaptável, com tabela sem perda de informação
 horizontal quando necessária. Tamanhos mínimos e máquina de validação ainda não estão
 aprovados. Gráficos são opcionais: não adicionar biblioteca antes de justificar a necessidade.
 
+Para tabelas de vendas abertas/quitadas e parcelas, aplicar a escala tipográfica e
+padding de célula uniformes definidos pela DEC-022: fonte de 18 px, line-height de
+20 px e padding horizontal de 10 px, vertical de 4 px nas células de dados; cabeçalho
+mantém padding vertical de 8 px. Manter rolagem horizontal dentro do contêiner da tabela.
+
 ### Formulários — DEC-010
 
 - Usar `form` e `FormField` de `@angular/forms/signals`, sem duplicar estado com Reactive Forms.
@@ -983,6 +997,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-018 | Refinamento compacto da consulta | Paginação local de 10, sem cartões em Vendas, detalhe compacto, links e temas fiéis às referências | Implementada no PR #10; evidências anteriores no README, sem aceite da ótica | DEC-017; PRD 1.7/RN-014/020/CA-027/028/029 |
 | DEC-019 | Edição, identificação e avaliação | Comando restrito aos dados do cliente, validação compartilhada, seed compatível futuro e avaliação separada de homologação | Regras confirmadas pelo solicitante; desenho proposto, não implementado; metas/aceite pendentes | DEC-004/010/015/016; PRD 1.8/RN-021/022/023/CA-030 e PEN-013/014 |
 | DEC-020 | Visão Geral e Relatórios | Resumos de cinco, mês fixo e posição atual derivados da fonte raiz | Recorte confirmado; desenho proposto, não implementado | DEC-003/004/005/008/015/018; PRD 1.10 RF-009/010, CA-014/015/020/025 |
+| DEC-022 | Tipografia das tabelas | Fonte de 18 px e padding consistente em vendas e parcelas, com line-height controlado | Implementada e verificada nos dois temas/viewports; zoom nativo 200% permanece pendente | DEC-018/021; PRD 1.13/RF-002/005/RNF-007/CA-028; FON-024 |
 
 ### DEC-001 — MVP visual no navegador
 
@@ -1204,6 +1219,27 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
   contraste, foco, E2E e matriz visual descritos na Change. Reavaliar caso qualquer alvo falhe.
 - **Substitui:** escolha de base visual da DEC-013; preserva decisões de temas/componentes da
   DEC-006, modal nativo e ícones locais da DEC-007 e demais limites técnicos não afetados.
+
+### DEC-022 — Tipografia e espaçamento consistentes nas tabelas
+
+- **Problema/contexto:** as tabelas de Vendas/Quitadas e de parcelas do detalhe precisam
+  apresentar dados com leitura confortável e espaçamento consistente, sem parecerem listas
+  visuais diferentes nem perder a densidade desktop acordada.
+- **Escolha:** usar fonte de 18 px e o mesmo padding de célula nas três tabelas. Células de
+  dados: 10 px horizontal e 4 px vertical; cabeçalhos: 10 px horizontal e 8 px vertical.
+  Fixar line-height em 20 px para não expandir cada linha; conteúdo largo pode rolar somente
+  dentro da região da tabela.
+- **Justificativa/limites:** a hierarquia visual fica previsível entre consultas e parcelas,
+  preservando CA-028 sem reduzir fonte ou ocultar dados. Se o detalhe exceder o viewport,
+  compactar/reorganizar os blocos existentes de cliente/venda antes de rever a rolagem;
+  não se permite scroll horizontal no documento.
+- **Verificação:** aferir estilos computados, contraste, altura/alcance de dez linhas de vendas
+  e até dez parcelas, excedentes, foco/teclado e rolagem contida em ambos os temas e viewports
+  configurados; executar testes, build e formatação conforme a Change.
+- **Origem/situação:** solicitação explícita do usuário em 21/11/2026, registrada no
+  PRD 1.13/FON-012, incluindo confirmação para compactar o resumo; implementação e
+  verificações descritas em `frontend/README.md`. O zoom nativo 200% continua pendente;
+  não implica aceite da ótica.
 
 ### DEC-014 — Automações e limite da base inicial
 

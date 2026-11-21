@@ -1,6 +1,6 @@
 # Tasks
 
-> Somente planejamento autorizado. Todas as tarefas abaixo são futuras e dependem de novo pedido explícito de apply após revisão dos artefatos. Reutilizar PRD 1.11 e TDD 1.15 conforme `proposal.md`; não alterar código nesta etapa.
+> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.13 e TDD 1.17 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
@@ -22,6 +22,7 @@
 
 - [x] 4.1 Refinar o conjunto visual de critérios, tabela, ações e paginação em Vendas/Quitadas, destacando Nova venda sem mudar destino ou papel de âncora; verificar busca/filtro, duas limpezas, estados vazio/sem resultados, nomes acessíveis e coleções separadas com testes de componentes e E2E nos dois temas/viewports. Usar fixture 0/1/10/11/21 para medir dez linhas, cabeçalhos, critérios, faixa/total e paginação sem rolagem vertical em 1366×768; executar build e registrar capturas/medidas e adaptações dos HTMLs no README.
 - [x] 4.3 Ajustar sutilmente o padding das células e aumentar um pouco a tipografia dos dados da listagem de clientes em Vendas, preservando legibilidade, contraste, ações, busca e paginação. Verificar Vendas/Quitadas nos dois temas, desktop e viewport estreito, incluindo que a densidade aprovada de dez linhas no desktop não se perca; registrar resultado no README sem alterar dados ou comportamento.
+- [x] 4.4 Atualizar Vendas/Quitadas e parcelas do detalhe para fonte de 18 px, line-height de 20 px e o padding compartilhado definido em DEC-022. Se necessário, compactar/reorganizar os blocos existentes de cliente/venda sem remover dados ou reduzir fontes para manter até dez parcelas no desktop 1366×768 sem rolagem vertical. Verificar estilos computados, contraste, dez vendas com paginação, overflow horizontal contido, excedentes internos, teclado e 390×844 nos dois temas; registrar medições/capturas no README e não alterar conteúdo ou regras.
 - [x] 4.2 Refinar detalhe e tabela de parcelas, mantendo cliente/venda lado a lado e entrada separada; verificar testes de detalhe e fixture/E2E para até dez parcelas com entrada/descrição curta sem rolagem da página em 1366×768, e excedente/textos extensos em região interna identificada por teclado. Conferir página, retornos, ações elegíveis e datas/formas completas nos dois temas e em 390×844; executar build e registrar capturas/medidas/contrastes no README, sem esconder conteúdo ou alterar histórico.
 
 ## 5. Refinar formulários e recebimento

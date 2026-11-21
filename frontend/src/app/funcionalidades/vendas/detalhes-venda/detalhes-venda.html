@@ -143,7 +143,7 @@
         tabindex="0"
       >
         <table
-          class="w-full min-w-max border-collapse text-left text-sm leading-tight tabela-parcelas-detalhe"
+          class="w-full min-w-max border-collapse text-left text-lg leading-5 tabela-parcelas-detalhe"
         >
           <caption class="sr-only">
             Parcelas da venda de
@@ -155,37 +155,37 @@
             <tr>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Parcela
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Valor
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Vencimento
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Situação
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Data do pagamento
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-1 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
               >
                 Forma de pagamento
               </th>
@@ -196,27 +196,27 @@
               <tr class="hover:bg-surface-muted">
                 <th
                   scope="row"
-                  class="whitespace-nowrap border-b border-border px-2 py-[0.1rem] font-medium"
+                  class="whitespace-nowrap border-b border-border px-2.5 py-1 font-medium"
                 >
                   {{ parcela.numero }} de {{ resultado.valor.parcelas.length }}
                 </th>
-                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   {{ formatarDinheiro(parcela.valorCentavos) }}
                 </td>
-                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   {{ formatarDataCivil(parcela.vencimento) }}
                 </td>
-                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   <app-selo-situacao [situacao]="parcela.situacao" />
                 </td>
-                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   {{
                     parcela.dataPagamento
                       ? formatarDataCivil(parcela.dataPagamento)
                       : 'Não informada'
                   }}
                 </td>
-                <td class="whitespace-nowrap border-b border-border px-2 py-[0.1rem]">
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   {{ parcela.formaPagamento ?? 'Não informada' }}
                 </td>
               </tr>

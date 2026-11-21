@@ -217,6 +217,31 @@ O E2E `confere semântica e contraste de tabelas, situações e controles de con
 aprovou 2/2 projetos Chromium (1366×768/390×844), percorreu Vendas/Quitadas nos
 dois temas e mediu contraste mínimo de 7,32:1 nas tabelas abertas e 8,07:1 nas quitadas.
 
+#### Padronização das tabelas em 18 px — tarefa 4.4 — 21/11/2026
+
+Atualizada a tipografia das tabelas de Vendas/Quitadas e parcelas para 18 px,
+line-height 20 px e padding uniforme: dados 10×4 px (horizontal×vertical),
+cabeçalhos 10×8 px. Para manter dez parcelas visíveis sem rolagem vertical no
+desktop, os blocos existentes de cliente/venda foram compactados e reorganizados;
+nenhum campo foi removido ou reduzido. A barra horizontal continua restrita à
+região da tabela.
+
+`npm run test:e2e:paginacao-fixture`: 12/12 cenários aprovados nos dois temas e
+viewports. Em 1366×768, a lista mantém dez linhas (base da décima em 679,5 px,
+paginação até 747 px); o detalhe mantém dez parcelas (última linha até 760,5 px,
+região até 761 px). Largura do documento permaneceu em 1366 px; em 390×844,
+rolagem vertical é permitida e a largura global permaneceu 390 px. Estilos
+computados confirmaram 18 px e o mesmo padding nas duas tabelas.
+
+`npm run test:e2e`: 79/80 na execução completa; a falha foi uma asserção de
+atualização da Visão Geral no fluxo de reconciliação, fora das tabelas. Repetição
+isolada do cenário passou 2/2 viewports. E2E direcionado de semântica/contraste
+passou nos dois temas e viewports; mínimo medido: 7,32:1 em Vendas, 8,07:1 em
+Quitadas e 8,71:1 em parcelas abertas. `CI=true npm test`: 363/363 em 30 arquivos;
+build principal 315,82 kB iniciais/82,92 kB estimados; build da fixture 317,57 kB/
+83,30 kB; ambos sem avisos de budget. `npm run format:check` e validação estrita
+da Change aprovados. Zoom nativo de 200% permanece pendente conforme tarefa 7.3.
+
 ### Detalhe e parcelas — tarefa 4.2
 
 Blocos de cliente/venda e painel de parcelas usam raio de 12 px, divisórias,
