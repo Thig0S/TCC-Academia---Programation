@@ -7,7 +7,7 @@ test('mede dez linhas, critérios e rodapé nos temas e viewports suportados', a
     await page.goto('/vendas');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
     await expect(tabela.locator('tbody tr')).toHaveCount(10);
     await expect(page.locator('[aria-label="Faixa de resultados"]')).toHaveText(
@@ -81,7 +81,7 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
     await page.goto('/vendas');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
     const busca = page.locator('#busca-vendas-quitadas');
     await busca.fill('Cliente Fixture Detalhe Dez');
@@ -144,7 +144,7 @@ test('mantém parcelas excedentes em região rolável interna e operável por te
     await page.goto('/vendas');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
-    await expect(page.locator('app-root')).toHaveAttribute('data-bs-theme', tema);
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
     await page.locator('#busca-vendas-quitadas').fill('Cliente Fixture Detalhe Onze');
     await expect(page.getByRole('status').first()).toContainText('1 venda encontrada');
