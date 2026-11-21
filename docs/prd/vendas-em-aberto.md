@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.13 — tipografia/padding das tabelas e composição do detalhe, em 21/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.14 — remoção do aviso global e da ação Limpar critérios, em 21/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,15 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Revisão de consulta — 1.14, 21/11/2026:** conforme confirmação explícita no
+Harness, remover o aviso global persistente e a ação “Limpar critérios” de Vendas.
+O contexto de demonstração e descarte permanece documentado em Configurações e
+nas confirmações de operações. A pesquisa pode ser limpa sem alterar situação; para
+restaurar toda a lista, limpar o termo e selecionar “Todas”. “Nova venda” passa a
+ocupar a posição da ação removida na faixa de critérios. O atalho contextual para
+Quitadas no cabeçalho da lista também foi removido; a rota permanece na navegação
+lateral. Requisitos, TDD, OpenSpec e testes correspondentes devem refletir essa decisão.
 
 **Planejamento visual — revisão 1.12, 21/11/2026:** conforme solicitação explícita
 no Harness, as tabelas de vendas abertas/quitadas e parcelas usam fonte de 18 px e
@@ -243,7 +252,7 @@ Não se pressupõem contas, permissões ou autenticação por perfil. O perfil �
 
 ### Incluído no MVP
 
-- **Essencial:** estrutura com Visão Geral, Vendas, Relatórios e Configurações; aviso de demonstração; temas claro e escuro, escuro inicial e alternância acessível sem persistência; listagem de vendas em aberto com busca local; cadastro com dados do cliente; detalhes com parcelas; simulação controlada de pagamento; consulta de quitadas; consistência de saldos e estados; acessibilidade e validações. Sem esses elementos não é possível validar o fluxo principal com segurança demonstrativa.
+- **Essencial:** estrutura com Visão Geral, Vendas, Relatórios e Configurações; divulgação do caráter demonstrativo e do descarte ao recarregar em Configurações e nas confirmações de operações; temas claro e escuro, escuro inicial e alternância acessível sem persistência; listagem de vendas em aberto com busca local; cadastro com dados do cliente; detalhes com parcelas; simulação controlada de pagamento; consulta de quitadas; consistência de saldos e estados; acessibilidade e validações. Não há aviso global persistente.
 - **Importante:** edição de venda em situações permitidas, indicadores detalhados da Visão Geral e resumo financeiro de Relatórios. Completam a avaliação do processo, mas dependem de delimitar edição e regras de contabilização. Relatórios e Configurações continuam navegáveis mesmo antes do refinamento desses conteúdos.
 - **Essencial no refinamento da consulta:** paginação de 10 vendas nas abertas e quitadas e layout compacto conforme CA-027/028, para manter os registros visíveis no desktop.
 - **Desejável:** gráfico de recebimentos dos últimos meses e decoração discreta de avatar/ícones. Não devem atrasar a validação de cadastro e recebimento.
@@ -272,7 +281,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 | JOR-003 | Atendimento; OBJ-002; correção de venda fictícia | Abrir edição, revisar nome, CPF, telefone ou descrição e confirmar | Listas e detalhes refletem alteração única apenas na venda selecionada; cancelar mantém original; dados financeiros e data da venda não são editáveis (RN-021) | RF-006, RF-011 |
 | JOR-004 | Atendimento; OBJ-003; recebimento fictício de parcelas | Conferir venda, selecionar uma ou mais parcelas consecutivas desde a primeira pendente, conferir soma, informar data/forma e confirmar uma vez | Lote integral e atômico; falha não muda valores; quitação inclui a venda na projeção de Quitadas | RF-005, RF-007, RF-008, RF-011 |
 | JOR-005 | Gestão; OBJ-004; revisão dos valores | Navegar por Visão Geral e Relatórios, ler indicadores e relacionar com vendas/parcelas | Compreensão de saldos, atrasos e recebimentos; exportação não gera arquivo; sem dados, totais zerados | RF-009, RF-010 |
-| JOR-006 | Participante; OBJ-005; início e encerramento da avaliação | Ler aviso, percorrer os quatro módulos e Configurações, utilizar teclado e recarregar | Reconhecer navegação e descarte das alterações; apresentação sem login ou promessa de persistência | RF-001, RF-011, RF-012 |
+| JOR-006 | Participante; OBJ-005; início e encerramento da avaliação | Percorrer os quatro módulos e Configurações, consultar o contexto demonstrativo, utilizar teclado e recarregar | Reconhecer navegação, caráter fictício e descarte das alterações; apresentação sem login ou promessa de persistência | RF-001, RF-011, RF-012 |
 
 ## 7. Requisitos funcionais
 
@@ -303,7 +312,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Comportamento:** fornecer uma única área de pesquisa destacada em Vendas e em Quitadas, contemplando nome, CPF, telefone e data da venda, além de ação de limpar; orientação “Buscar por nome, CPF, telefone ou data da venda...”. Aplicar RN-018/019.
 - **Necessidade:** identificar a venda certa sem duplicar busca; OBJ-001; JOR-001.
 - **Ator, pré-condições e entradas:** atendimento; vendas sintéticas disponíveis; critério informado e limpeza.
-- **Resultado:** apresentar correspondências locais preservando a separação entre abertas e quitadas e permitir conferir a identidade antes de abrir. Nas abertas, campo único, situação, Limpar pesquisa e Limpar critérios ficam lado a lado em uma única faixa no desktop de referência (CA-028), sem busca duplicada no cabeçalho.
+- **Resultado:** apresentar correspondências locais preservando a separação entre abertas e quitadas e permitir conferir a identidade antes de abrir. Nas abertas, campo único, situação, Limpar pesquisa e Nova venda ficam lado a lado em uma única faixa no desktop de referência (CA-028), sem busca duplicada no cabeçalho ou ação “Limpar critérios”. Limpar a pesquisa preserva a situação; para restaurar a coleção inteira, limpar o termo e selecionar Todas.
 - **Exceções:** informar ausência de resultados sem apagar vendas; busca vazia remove somente a restrição do termo, preservando a situação selecionada nas abertas. Data completa inválida não corresponde a registros, não muda de dia e não é reinterpretada como telefone. Sem busca global ou intervalo. Nas abertas, busca e situação são combinadas por E; Quitadas não possui filtro adicional.
 - **Prioridade:** Essencial, requisito central de consulta.
 - **Origem/situação:** FON-001 §§2, 3 e 13; FON-003 §1; FON-004 §§4 e 6; FON-009 confirma a semântica para FASE-005. Busca implementada no PR #9, com refinamento visual e paginação no PR #10; sem aceite da ótica.
@@ -460,7 +469,7 @@ válidos. Exportar relatório informa sua indisponibilidade sem arquivo ou falso
 | RN-016 | Receber integralmente uma ou mais parcelas consecutivas desde a primeira pendente, em uma confirmação atômica | Antecipação permitida, salto proibido; valor exato da soma; data entre venda e referência; forma única: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos | FON-008; PEN-011 resolvida para MVP |
 | RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; quantidade inteira positiva não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis; sem teto comercial arbitrário; entrada integral sem parcelas excluída | FON-008; finanças de PEN-010 resolvidas; identificação definida em RN-022/023 |
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida e busca implementada no PR #9 |
-| RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; Limpar critérios restaura termo vazio e Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009; PEN-012 resolvida no recorte do MVP; consulta implementada nos PRs #9/#10 |
+| RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; não há ação conjunta “Limpar critérios”: para restaurar a lista, limpar o termo e selecionar Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009 e confirmação no Harness em 21/11/2026; consulta implementada nos PRs #9/#10 |
 | RN-020 | Abertas e Quitadas exibem 10 vendas por página, após aplicar busca e situação pertinente, preservando ordem e IDs | Paginação numerada abaixo da tabela, anterior/próxima, página atual e faixa/total de resultados; reticências não são páginas. Alterar/limpar critérios volta à página 1; se a coleção diminuir, ajustar à última página válida. Zero resultados não cria página fictícia nem ações habilitadas; uma página dispensa controles de troca. Sem persistência ou nova ordenação | FON-010; confirmada no Harness e implementada no PR #10; evidências anteriores no README |
 | RN-021 | Após cadastro, editar somente nome, CPF, telefone e descrição de qualquer venda, inclusive quitada | Não alterar data da venda, total, entrada, parcelamento ou pagamentos; não propagar entre vendas; cancelamento/falha preservam original. Novos recebimentos continuam por RN-016, sem edição do histórico | FON-011; PEN-008 resolvida; núcleo testado na feature em 18/11/2026, UI futura |
 | RN-022 | CPF obrigatório em cadastro e edição: aceitar com/sem pontuação, exigir 11 dígitos e verificadores válidos, rejeitar sequências repetidas | Sem unicidade, consulta externa ou uso de dados reais. Validade matemática não comprova titularidade ou inexistência de pessoa real | FON-011; PEN-010 resolvida; validação testada na feature em 18/11/2026, UI futura |
@@ -531,7 +540,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 
 ### CA-001 — Navegação principal
 - **Requisitos:** RF-001, RF-012; RNF-002, RNF-009.
-- **Dado** o protótipo aberto com aviso demonstrativo,
+- **Dado** o protótipo aberto,
 - **Quando** o participante percorrer por teclado Visão Geral, Vendas, Relatórios, Configurações e Quitadas,
 - **Então** cada destino deve ser acessível, indicar sua localização e manter Quitadas dentro de Vendas, sem módulos independentes de clientes ou parcelas.
 
@@ -557,7 +566,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Requisito:** RF-003.
 - **Dado** vendas existentes e uma busca sem correspondência,
 - **Quando** consultar e depois limpar a pesquisa,
-- **Então** deve aparecer inicialmente “nenhum resultado” e depois a coleção correspondente à situação ainda selecionada, sem perder registros nem incluir quitadas nas abertas; Limpar critérios restaura toda a coleção atual.
+- **Então** deve aparecer inicialmente “nenhum resultado” e depois a coleção correspondente à situação ainda selecionada, sem perder registros nem incluir quitadas nas abertas; limpar o termo e selecionar “Todas” restaura toda a coleção atual.
 
 ### CA-006 — Cadastro inequívoco e descrição opcional
 - **Requisitos:** RF-004; RN-001, RN-003.
@@ -652,7 +661,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 
 ### CA-021 — Isolamento da sessão
 - **Requisito:** RF-011; RN-009; RNF-004, RNF-010.
-- **Dado** aviso demonstrativo visível e uma alteração sintética aceita,
+- **Dado** Configurações ou uma confirmação de operação que informa o caráter demonstrativo e uma alteração sintética aceita,
 - **Quando** navegar entre módulos e depois recarregar a página,
 - **Então** a navegação deve preservar a alteração apenas na sessão em memória e a recarga deve restaurar os dados iniciais, sem salvar registros no navegador/arquivo, transmitir dados pessoais ou exigir login.
 
@@ -698,7 +707,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Requisitos:** RF-002/003/005/008; RNF-007/009; FON-010.
 - **Dado** desktop 1366 × 768, zoom 100%, ambos os temas, 10 vendas ou venda com até 10 parcelas e textos curtos do cenário padrão,
 - **Quando** abrir cada lista e o detalhe no topo da página,
-- **Então** busca, situação e duas limpezas das abertas ficam lado a lado; tabelas de vendas abertas/quitadas e parcelas usam fonte de 18 px e padding uniforme nas células de dados, e tabela/paginação ficam visíveis sem rolagem vertical da página. No detalhe, blocos compactos de cliente/venda lado a lado preservam todos os campos e deixam as até 10 parcelas visíveis sem rolagem da página. Comparar capturas com as referências, descontando diferenças funcionais autorizadas. Com mais parcelas, somente o excedente rola internamente com cabeçalho e região identificáveis e teclado. Em viewport menor, zoom 200% ou textos extensos, reorganizar/rolar sem cortar conteúdo, diminuir artificialmente fonte ou ocultar aviso/campos.
+- **Então** pesquisa, situação, Limpar pesquisa e Nova venda ficam lado a lado nas abertas; não há aviso global persistente nem ação “Limpar critérios”. O contexto demonstrativo e o descarte ao recarregar são informados em Configurações e nas confirmações de operações. Tabelas de vendas abertas/quitadas e parcelas usam fonte de 18 px e padding uniforme nas células, e tabela/paginação ficam visíveis sem rolagem vertical da página. No detalhe, blocos compactos de cliente/venda lado a lado preservam todos os campos e deixam as até 10 parcelas visíveis sem rolagem da página. Comparar capturas com as referências, descontando diferenças funcionais autorizadas. Com mais parcelas, somente o excedente rola internamente com cabeçalho e região identificáveis e teclado. Em viewport menor, zoom 200% ou textos extensos, reorganizar/rolar sem cortar conteúdo ou diminuir artificialmente fonte.
 
 ### CA-029 — Links e classificação de atraso
 - **Requisitos:** RF-001/002/005; RN-014; RNF-002/003/009; FON-010.

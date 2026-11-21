@@ -1,12 +1,5 @@
 <app-cabecalho titulo="Vendas" [compacto]="true" />
 <div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-  <a routerLink="/vendas/quitadas">Quitadas</a>
-  <a
-    class="acao-primaria rounded-lg bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-    routerLink="/vendas/nova"
-    data-foco-formulario="nova-venda"
-    >Nova venda</a
-  >
   <p class="mb-0 text-text-muted">
     Referência da demonstração: {{ formatarDataCivil(referencia) }}
   </p>
@@ -49,27 +42,24 @@
       <div class="min-w-0">
         <button
           type="button"
-          class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          class="w-full rounded-lg border-[1px] border-control-border px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
           (click)="limparPesquisa(campoBusca)"
         >
           Limpar pesquisa
         </button>
       </div>
-      <div class="min-w-0">
-        <button
-          type="button"
-          class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-          (click)="limparCriterios(campoBusca)"
-        >
-          Limpar critérios
-        </button>
-      </div>
+      <a
+        class="acao-primaria bg-action font-semibold text-white shadow-sm w-full rounded-lg border-[1px] border-control-border px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        routerLink="/vendas/nova"
+        data-foco-formulario="nova-venda"
+        >Nova venda</a
+      >
     </div>
     <p id="orientacao-busca-vendas" class="mb-0 mt-1 text-sm text-text-muted">
       Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
     </p>
   </section>
-  <p class="mb-2" role="status" aria-live="polite" aria-atomic="true">
+  <p class="mb-2 ms-2" role="status" aria-live="polite" aria-atomic="true">
     {{ resultados().length }}
     {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
   </p>

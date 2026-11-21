@@ -1,6 +1,6 @@
 # Tasks
 
-> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.13 e TDD 1.17 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
+> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.14 e TDD 1.18 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
@@ -24,6 +24,7 @@
 - [x] 4.3 Ajustar sutilmente o padding das células e aumentar um pouco a tipografia dos dados da listagem de clientes em Vendas, preservando legibilidade, contraste, ações, busca e paginação. Verificar Vendas/Quitadas nos dois temas, desktop e viewport estreito, incluindo que a densidade aprovada de dez linhas no desktop não se perca; registrar resultado no README sem alterar dados ou comportamento.
 - [x] 4.4 Atualizar Vendas/Quitadas e parcelas do detalhe para fonte de 18 px, line-height de 20 px e o padding compartilhado definido em DEC-022. Se necessário, compactar/reorganizar os blocos existentes de cliente/venda sem remover dados ou reduzir fontes para manter até dez parcelas no desktop 1366×768 sem rolagem vertical. Verificar estilos computados, contraste, dez vendas com paginação, overflow horizontal contido, excedentes internos, teclado e 390×844 nos dois temas; registrar medições/capturas no README e não alterar conteúdo ou regras.
 - [x] 4.2 Refinar detalhe e tabela de parcelas, mantendo cliente/venda lado a lado e entrada separada; verificar testes de detalhe e fixture/E2E para até dez parcelas com entrada/descrição curta sem rolagem da página em 1366×768, e excedente/textos extensos em região interna identificada por teclado. Conferir página, retornos, ações elegíveis e datas/formas completas nos dois temas e em 390×844; executar build e registrar capturas/medidas/contrastes no README, sem esconder conteúdo ou alterar histórico.
+- [x] 4.5 Aplicar a revisão DEC-023 nas especificações e testes: ausência do aviso global, da limpeza conjunta e do atalho Quitadas no cabeçalho; “Nova venda” na faixa, acesso a Quitadas pelo menu lateral e restauração por limpeza do termo + situação “Todas”; preservar divulgação demonstrativa em Configurações/confirmações. Executar unitários, E2E, build e formatação; registrar resultados e limitações no README.
 
 ## 5. Refinar formulários e recebimento
 
@@ -46,6 +47,6 @@
 
 ## Workflow follow-up
 
-- Não abrir PR com apenas este planejamento concluído. Após novo pedido de apply e conclusão integral da Change, abrir um único PR da mesma feature para `main` usando `.github/pull_request_template.md`, referências PRD/TDD/SDD, verificações reais e limitações.
+- Não abrir PR até concluir toda a Change, incluindo zoom nativo 200% pendente. Depois, abrir um único PR da mesma feature para `main` usando `.github/pull_request_template.md`, referências PRD/TDD/SDD, verificações reais e limitações.
 - Sync/archive seguem autorização e fluxo próprios; não executar nesta proposta. Não declarar FASE-008, aprovação global ou aceite comercial por conclusão técnica.
 - Merge exige autorização explícita do usuário e verificações/revisão aplicáveis; após integração, confirmar estado do PR e presença da mudança na `main`.

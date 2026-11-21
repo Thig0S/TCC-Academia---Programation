@@ -29,7 +29,8 @@ As consultas e links afetados SHALL seguir as referências de `frontend/public/i
 - **THEN** critérios, tabela e rodapé SHALL compor um conjunto visual coerente com painéis arredondados, cabeçalho de superfície suave, separadores e realce perceptível de hover/foco
 - **AND** Vendas e Quitadas SHALL compartilhar fonte de 18 px, line-height de 20 px e padding de célula consistente, preservando as dez linhas no desktop e contendo eventual rolagem horizontal na região da tabela
 - **AND** Nova venda em Vendas SHALL ter destaque de ação principal, preservando seu destino; nome do cliente, Visualizar e Editar SHALL continuar identificáveis e operáveis sem depender de hover ou de linha clicável
-- **AND** busca local, opções atuais de situação, limpezas distintas, ausência de filtro extra em Quitadas, colunas e estados vazios SHALL permanecer inalterados
+- **AND** busca local, opções atuais de situação, ausência de filtro extra em Quitadas, colunas e estados vazios SHALL permanecer inalterados; não SHALL existir aviso global persistente, ação conjunta “Limpar critérios” ou atalho contextual para Quitadas no cabeçalho; o acesso pelo menu lateral SHALL permanecer
+- **AND** nas abertas, “Limpar pesquisa” SHALL preservar a situação, “Nova venda” SHALL ocupar a posição da ação removida na faixa e limpar o termo junto de selecionar “Todas” SHALL restaurar a lista completa
 - **AND** selos SHALL usar fundo suave e texto contrastante de situação nos dois temas, sem trocar classificações por Em dia, Vencida ou Pendente dos HTMLs
 
 #### Scenario: Refinar detalhe sem substituir sua página ou histórico

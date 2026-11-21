@@ -238,9 +238,12 @@ describe('Inicialização e integração da sessão', () => {
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain('Nenhuma venda corresponde');
     expect(fonte.vendas()).toBe(snapshot);
-    [...harness.routeNativeElement!.querySelectorAll('button')]
-      .find((botao) => botao.textContent?.includes('Limpar critérios'))!
-      .click();
+    const situacao =
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#situacao-vendas')!;
+    situacao.value = 'Todas';
+    situacao.dispatchEvent(new Event('change', { bubbles: true }));
+    campo.value = '';
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain(
       cadastro.cliente.nome,
