@@ -21,8 +21,8 @@ partir de 768 px de viewport CSS; abaixo disso, formulário seguido da prévia.
 Reduzir o espaço excessivo dos campos, priorizando valor e quantidade de parcelas,
 mantendo nome e descrição mais amplos e as proporções relativas dos demais campos.
 Preservar conteúdo, validações e cálculo em tempo real. A documentação foi aprovada
-e a implementação autorizada pelo solicitante em 21/11/2026; verificações ainda
-precisam ser executadas e registradas.
+e a implementação autorizada em 21/11/2026; geometria, acessibilidade, testes e
+limitações desta entrega estão registrados em `frontend/README.md`, sem aceite da ótica.
 
 **Padronização das tabelas — revisão 1.15, 21/11/2026:** conforme solicitação
 explícita no Harness, as quatro tabelas de Relatórios adotam o mesmo padrão das
@@ -244,7 +244,7 @@ A imagem referida pelo README existe em `exemplo/exemplo-planilha-vendas.jpeg`, 
 21/11/2026: formulário e prévia lado a lado no breakpoint médio padrão, empilhados
 em telas menores; compactação prioritária de valor/quantidade, nome/descrição mais
 amplos, na mesma Change/branch visual. Planejamento e implementação autorizados
-pelo solicitante; sem aceite da ótica.
+pelo solicitante; evidências técnicas em `frontend/README.md`, sem aceite da ótica.
 
 **Conciliação da revisão 1.1:** o solicitante confirmou dois temas, claro e escuro, com escuro inicial, alternância acessível e preferência somente em memória. PEN-006 foi resolvida documentalmente e possui evidências técnicas na FASE-003; isso não é aprovação da ótica. O `AGENTS.md` atual não contém a antiga restrição de tema claro. Mantêm-se quatro módulos, sem cadastros independentes de clientes ou parcelas. Substituição operacional do Excel continua fora do MVP.
 
@@ -353,7 +353,7 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 - **Origem/situação:** FON-001 §§5 e 9; FON-002; FON-003 §1; FON-004 §6; FON-008 para finanças e FON-011 para identificação confirmada. UI de cadastro e novas validações não implementadas.
 - **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017, CA-032.
 
-**Layout de cadastro planejado — PRD 1.16/FON-014:** em Nova venda, reunir os
+**Layout de cadastro — PRD 1.16/FON-014:** em Nova venda, reunir os
 grupos de identificação e dados financeiros na coluna esquerda, com a prévia
 completa na coluna direita e alinhada ao topo, a partir de 768 px. Abaixo desse
 limiar, empilhar formulário e prévia nessa ordem. Nome/descrição devem ter mais

@@ -3,92 +3,106 @@
   Referência da sessão: {{ formatarDataCivil(referencia) }}. Cadastro exclusivamente demonstrativo.
 </p>
 <a routerLink="/vendas">Voltar para Vendas</a>
-<form novalidate (submit)="confirmar($event)" class="mt-3">
-  <app-identificacao-cliente [campos]="campos" />
-  <fieldset class="mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm">
-    <legend class="text-lg font-semibold">Dados da venda</legend>
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
-      <div class="min-w-0 md:col-span-4">
-        <label for="data-venda" class="mb-1 block text-sm font-medium">Data da venda</label>
-        <input
-          id="data-venda"
-          type="date"
-          class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
-          [formField]="campos.dataVenda"
-          aria-describedby="erro-data-venda"
-        />
-        <app-erro-campo id="erro-data-venda" [campo]="campos.dataVenda" />
-      </div>
-      <div class="min-w-0 md:col-span-4">
-        <label for="valor-total" class="mb-1 block text-sm font-medium">Valor total (R$)</label>
-        <input
-          id="valor-total"
-          inputmode="decimal"
-          class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-          [formField]="campos.valorTotal"
-          aria-describedby="erro-total"
-        />
-        <app-erro-campo id="erro-total" [campo]="campos.valorTotal" />
-      </div>
-      <div class="min-w-0 md:col-span-4">
-        <label for="quantidade-parcelas" class="mb-1 block text-sm font-medium"
-          >Quantidade de parcelas</label
-        >
-        <input
-          id="quantidade-parcelas"
-          inputmode="numeric"
-          class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-          [formField]="campos.quantidadeParcelas"
-          aria-describedby="erro-quantidade"
-        />
-        <app-erro-campo id="erro-quantidade" [campo]="campos.quantidadeParcelas" />
-      </div>
-      <div class="col-span-full flex items-center gap-2">
-        <input
-          id="tem-entrada"
-          type="checkbox"
-          class="h-4 w-4 rounded border-control-border accent-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-          [formField]="campos.temEntrada"
-        />
-        <label for="tem-entrada" class="text-sm font-medium">Há entrada</label>
-      </div>
-      @if (rascunho().temEntrada) {
-        <div class="min-w-0 md:col-span-6">
-          <label for="valor-entrada" class="mb-1 block text-sm font-medium"
-            >Valor da entrada (R$)</label
+<form
+  novalidate
+  (submit)="confirmar($event)"
+  class="mt-3 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
+>
+  <div class="grid min-w-0 content-start gap-3">
+    <app-identificacao-cliente
+      class="block min-w-0 @container"
+      [campos]="campos"
+      [gradeAdaptativa]="true"
+    />
+    <fieldset
+      class="@container min-w-0 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+    >
+      <legend class="text-lg font-semibold">Dados da venda</legend>
+      <div class="grid min-w-0 grid-cols-1 gap-3 @min-[22rem]:grid-cols-12">
+        <div class="min-w-0 @min-[22rem]:col-span-6">
+          <label for="data-venda" class="mb-1 block text-sm font-medium">Data da venda</label>
+          <input
+            id="data-venda"
+            type="date"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
+            [formField]="campos.dataVenda"
+            aria-describedby="erro-data-venda"
+          />
+          <app-erro-campo id="erro-data-venda" [campo]="campos.dataVenda" />
+        </div>
+        <div class="min-w-0 @min-[22rem]:col-span-3">
+          <label for="valor-total" class="mb-1 block text-sm font-medium">Valor total (R$)</label>
+          <input
+            id="valor-total"
+            inputmode="decimal"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            [formField]="campos.valorTotal"
+            aria-describedby="erro-total"
+          />
+          <app-erro-campo id="erro-total" [campo]="campos.valorTotal" />
+        </div>
+        <div class="min-w-0 @min-[22rem]:col-span-3">
+          <label for="quantidade-parcelas" class="mb-1 block text-sm font-medium"
+            >Quantidade de parcelas</label
           >
           <input
-            id="valor-entrada"
-            inputmode="decimal"
-            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            [formField]="campos.valorEntrada"
-            aria-describedby="erro-entrada"
+            id="quantidade-parcelas"
+            inputmode="numeric"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            [formField]="campos.quantidadeParcelas"
+            aria-describedby="erro-quantidade"
           />
-          <app-erro-campo id="erro-entrada" [campo]="campos.valorEntrada" />
+          <app-erro-campo id="erro-quantidade" [campo]="campos.quantidadeParcelas" />
         </div>
-        <div class="min-w-0 md:col-span-6">
-          <label for="forma-entrada" class="mb-1 block text-sm font-medium">Forma da entrada</label>
-          <select
-            id="forma-entrada"
-            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            [formField]="campos.formaEntrada"
-            aria-describedby="erro-forma-entrada"
-          >
-            <option value="">Selecione</option>
-            @for (forma of formas; track forma) {
-              <option [value]="forma">{{ forma }}</option>
-            }
-          </select>
-          <app-erro-campo id="erro-forma-entrada" [campo]="campos.formaEntrada" />
+        <div class="col-span-full flex items-center gap-2">
+          <input
+            id="tem-entrada"
+            type="checkbox"
+            class="h-4 w-4 rounded border-control-border accent-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            [formField]="campos.temEntrada"
+          />
+          <label for="tem-entrada" class="text-sm font-medium">Há entrada</label>
         </div>
-        <p class="text-sm text-text-muted">
-          A entrada será registrada na data da venda e não conta como parcela paga.
-        </p>
-      }
-    </div>
-  </fieldset>
+        @if (rascunho().temEntrada) {
+          <div class="min-w-0 @min-[22rem]:col-span-6">
+            <label for="valor-entrada" class="mb-1 block text-sm font-medium"
+              >Valor da entrada (R$)</label
+            >
+            <input
+              id="valor-entrada"
+              inputmode="decimal"
+              class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              [formField]="campos.valorEntrada"
+              aria-describedby="erro-entrada"
+            />
+            <app-erro-campo id="erro-entrada" [campo]="campos.valorEntrada" />
+          </div>
+          <div class="min-w-0 @min-[22rem]:col-span-6">
+            <label for="forma-entrada" class="mb-1 block text-sm font-medium"
+              >Forma da entrada</label
+            >
+            <select
+              id="forma-entrada"
+              class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              [formField]="campos.formaEntrada"
+              aria-describedby="erro-forma-entrada"
+            >
+              <option value="">Selecione</option>
+              @for (forma of formas; track forma) {
+                <option [value]="forma">{{ forma }}</option>
+              }
+            </select>
+            <app-erro-campo id="erro-forma-entrada" [campo]="campos.formaEntrada" />
+          </div>
+          <p class="text-sm text-text-muted">
+            A entrada será registrada na data da venda e não conta como parcela paga.
+          </p>
+        }
+      </div>
+    </fieldset>
+  </div>
   <section
-    class="mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+    class="min-w-0 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
     aria-labelledby="titulo-previa"
   >
     <h2 id="titulo-previa" class="mb-2 text-lg font-semibold tracking-tight">
@@ -161,8 +175,8 @@
       </p>
     }
   </section>
-  <p class="text-error text-sm" role="alert">{{ mensagem() }}</p>
-  <div class="mb-3 flex flex-wrap gap-3">
+  <p class="text-error text-sm md:col-span-2" role="alert">{{ mensagem() }}</p>
+  <div class="mb-3 flex flex-wrap gap-3 md:col-span-2">
     <button
       type="submit"
       class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"

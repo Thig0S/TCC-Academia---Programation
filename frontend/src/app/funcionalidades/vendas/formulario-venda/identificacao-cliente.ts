@@ -11,4 +11,5 @@ import { ErroCampo } from './erro-campo';
 })
 export class IdentificacaoCliente {
   readonly campos = input.required<Pick<FieldTree<RascunhoCliente>, keyof RascunhoCliente>>();
+  readonly gradeAdaptativa = input(false);
 }
