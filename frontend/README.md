@@ -198,6 +198,28 @@ legibilidade. Adaptações dos HTMLs: dez linhas compactas com fonte atual de 14
 sem indicadores globais, avatar/dados extras, linha clicável, oito registros ou
 menu que esconda Visualizar/Editar; lateral e aviso originais preservados.
 
+### Detalhe e parcelas — tarefa 4.2
+
+Blocos de cliente/venda e painel de parcelas usam raio de 12 px, divisórias,
+sombras discretas e cabeçalho suave. Rótulos secundários, números tabulares e
+valores destacados conservam todos os dados, entrada separada e histórico.
+Não foram removidos os ajustes compactos nem a região interna de excedentes.
+
+Execuções reais: 363/363 unitários; build saída 0, 315,22 kB iniciais/82,80 kB
+estimados, sem avisos. Fixture com filtro `dez parcelas|excedentes`: 4/4 nos
+dois temas/viewports, capturas `detalhe-dez-{dark,light}.png` em
+`test-results/refinar-estilo-detalhe-fixture`. Desktop: blocos iniciam em 182 px,
+documento 768 px, última parcela até 727,77 px e tabela até 728,27 px; mobile
+largura global 390 px, conteúdo rolável. E2E da aplicação dirigido a consultas,
+contraste e overflow: 6/6 em `test-results/refinar-estilo-detalhe`;
+mínimos de textos em parcelas quitadas/abertas 8,07:1/8,71:1.
+
+Inspeção visual desktop escura/mobile clara confirmou cliente/venda lado a lado
+no desktop, empilhamento no mobile, entrada destacada separadamente e tabela
+compacta sem ocultação de datas/formas. Adaptados os painéis dos HTMLs à página
+existente e ao PNG complementar, sem transformar detalhe em modal nem trocar
+ações por menus. A captura inclui foco no título após navegação, deliberadamente.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

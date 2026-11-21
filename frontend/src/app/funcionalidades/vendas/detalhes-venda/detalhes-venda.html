@@ -47,10 +47,13 @@
 
     <div class="detalhe-resumo">
       <section
-        class="detalhe-bloco rounded-md border-[1px] border-border bg-surface p-2"
+        class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
         aria-labelledby="identificacao-venda"
       >
-        <h2 id="identificacao-venda" class="mb-2 text-lg font-semibold">
+        <h2
+          id="identificacao-venda"
+          class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
+        >
           {{ resultado.valor.cliente.nome }}
         </h2>
         <dl class="detalhe-campos mb-0">
@@ -66,19 +69,26 @@
       </section>
 
       <section
-        class="detalhe-bloco rounded-md border-[1px] border-border bg-surface p-2"
+        class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
         aria-labelledby="dados-financeiros"
       >
-        <h2 id="dados-financeiros" class="mb-2 text-lg font-semibold">Dados da venda</h2>
+        <h2
+          id="dados-financeiros"
+          class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
+        >
+          Dados da venda
+        </h2>
         <dl class="detalhe-campos mb-2">
           <dt>Data da venda</dt>
           <dd>{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
           <dt>Valor total</dt>
-          <dd>{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
+          <dd class="font-semibold">{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
           <dt>Total pago</dt>
           <dd>{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
           <dt>Saldo devedor</dt>
-          <dd>{{ formatarDinheiro(resultado.valor.saldoCentavos) }}</dd>
+          <dd class="font-semibold text-brand">
+            {{ formatarDinheiro(resultado.valor.saldoCentavos) }}
+          </dd>
           <dt>Próximo vencimento</dt>
           <dd>
             {{
@@ -110,8 +120,17 @@
       </section>
     </div>
 
-    <section class="parcelas-detalhe" aria-labelledby="titulo-parcelas">
-      <h2 id="titulo-parcelas" class="text-lg font-semibold" tabindex="-1">Parcelas</h2>
+    <section
+      class="parcelas-detalhe rounded-xl border-[1px] border-border bg-surface shadow-sm"
+      aria-labelledby="titulo-parcelas"
+    >
+      <h2
+        id="titulo-parcelas"
+        class="border-b border-border px-2 py-1 text-lg font-semibold tracking-tight"
+        tabindex="-1"
+      >
+        Parcelas
+      </h2>
       <p id="orientacao-parcelas" class="sr-only">
         Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
       </p>
@@ -132,7 +151,7 @@
               resultado.valor.cliente.nome
             }}
           </caption>
-          <thead class="sticky top-0 z-[2] bg-surface text-text">
+          <thead class="sticky top-0 z-[2] bg-surface-muted text-text">
             <tr>
               <th
                 scope="col"
@@ -174,7 +193,7 @@
           </thead>
           <tbody>
             @for (parcela of resultado.valor.parcelas; track parcela.id) {
-              <tr>
+              <tr class="hover:bg-surface-muted">
                 <th
                   scope="row"
                   class="whitespace-nowrap border-b border-border px-2 py-[0.1rem] font-medium"
