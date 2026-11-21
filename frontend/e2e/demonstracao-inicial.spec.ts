@@ -338,6 +338,24 @@ test('Visão Geral preserva os indicadores e os três resumos nos dois temas sem
   }
 });
 
+test('anexa capturas sintéticas da Visão Geral, Relatórios e Configurações', async ({
+  page,
+}, testInfo) => {
+  for (const [rota, nome] of [
+    ['/visao-geral', 'visao-geral'],
+    ['/relatorios', 'relatorios'],
+    ['/configuracoes', 'configuracoes'],
+  ]) {
+    for (const tema of ['dark', 'light']) {
+      await page.goto(rota);
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      const captura = await page.screenshot({ fullPage: true });
+      await testInfo.attach(`${nome}-${tema}`, { body: captura, contentType: 'image/png' });
+    }
+  }
+});
+
 test('consulta listas, combina critérios e abre a venda correta pelos dois acessos', async ({
   page,
 }) => {

@@ -1,114 +1,109 @@
 <app-cabecalho titulo="Visão Geral" />
-<p class="text-body-secondary mb-3">
+<p class="mb-3 text-text-muted">
   Referência da demonstração: {{ formatarDataCivil(referencia) }} · Mês dos recebimentos:
   {{ formatarDataCivil(limitesMes[0]) }} a {{ formatarDataCivil(limitesMes[1]) }}
 </p>
 
 <section class="mb-4" aria-label="Indicadores financeiros globais">
-  <h2 class="visually-hidden">Indicadores financeiros globais</h2>
-  <div class="row g-3">
-    <div class="col-12 col-sm-6 col-xl-3">
-      <article class="card h-100 p-3">
-        <h3 class="h6">Total em aberto</h3>
-        <p class="fs-4 fw-semibold mb-0">{{ formatarDinheiro(resumo().totalEmAbertoCentavos) }}</p>
-      </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <article class="card h-100 p-3">
-        <h3 class="h6">Valores em atraso</h3>
-        <p class="fs-4 fw-semibold mb-0">
-          {{ formatarDinheiro(resumo().valoresEmAtrasoCentavos) }}
-        </p>
-      </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <article class="card h-100 p-3">
-        <h3 class="h6">Recebimentos do mês</h3>
-        <p class="fs-4 fw-semibold mb-0">
-          {{ formatarDinheiro(resumo().recebidoNoMesCentavos) }}
-        </p>
-      </article>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-      <article class="card h-100 p-3">
-        <h3 class="h6">Vendas cadastradas</h3>
-        <p class="fs-4 fw-semibold mb-0">{{ resumo().vendasCadastradas }}</p>
-      </article>
-    </div>
+  <h2 class="sr-only">Indicadores financeiros globais</h2>
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
+      <h3 class="mb-2 text-base font-semibold">Total em aberto</h3>
+      <p class="mb-0 text-2xl font-semibold">
+        {{ formatarDinheiro(resumo().totalEmAbertoCentavos) }}
+      </p>
+    </article>
+    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
+      <h3 class="mb-2 text-base font-semibold">Valores em atraso</h3>
+      <p class="mb-0 text-2xl font-semibold">
+        {{ formatarDinheiro(resumo().valoresEmAtrasoCentavos) }}
+      </p>
+    </article>
+    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
+      <h3 class="mb-2 text-base font-semibold">Recebimentos do mês</h3>
+      <p class="mb-0 text-2xl font-semibold">
+        {{ formatarDinheiro(resumo().recebidoNoMesCentavos) }}
+      </p>
+    </article>
+    <article class="h-full rounded-md border-[1px] border-border bg-surface p-3">
+      <h3 class="mb-2 text-base font-semibold">Vendas cadastradas</h3>
+      <p class="mb-0 text-2xl font-semibold">{{ resumo().vendasCadastradas }}</p>
+    </article>
   </div>
 </section>
 
-<div class="row g-3">
-  <div class="col-12 col-xl-4">
-    <section class="card h-100 p-3" aria-labelledby="vendas-recentes">
-      <h2 id="vendas-recentes" class="h5">Vendas recentes</h2>
-      <p class="text-body-secondary">Até 5 vendas, incluindo quitadas, por data mais recente.</p>
-      @if (vendasRecentes().length) {
-        <ul class="list-group list-group-flush">
-          @for (venda of vendasRecentes(); track venda.id) {
-            <li class="list-group-item px-0">
-              <a [routerLink]="['/vendas', venda.id]">{{ venda.cliente.nome }}</a>
-              <div>{{ formatarDataCivil(venda.dataVenda) }} · {{ venda.situacao }}</div>
-            </li>
-          }
-        </ul>
-      } @else {
-        <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
-          Nenhuma venda cadastrada nesta sessão.
-        </p>
-      }
-    </section>
-  </div>
-
-  <div class="col-12 col-xl-4">
-    <section class="card h-100 p-3" aria-labelledby="parcelas-proximas">
-      <h2 id="parcelas-proximas" class="h5">Parcelas próximas</h2>
-      <p class="text-body-secondary">
-        Até 5 parcelas pendentes com vencimento de hoje a +7 dias, inclusive.
+<div class="grid grid-cols-1 gap-3 xl:grid-cols-3">
+  <section
+    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    aria-labelledby="vendas-recentes"
+  >
+    <h2 id="vendas-recentes" class="mb-2 text-lg font-semibold">Vendas recentes</h2>
+    <p class="text-text-muted">Até 5 vendas, incluindo quitadas, por data mais recente.</p>
+    @if (vendasRecentes().length) {
+      <ul class="m-0 list-none divide-y divide-border p-0">
+        @for (venda of vendasRecentes(); track venda.id) {
+          <li class="py-2 first:pt-0">
+            <a [routerLink]="['/vendas', venda.id]">{{ venda.cliente.nome }}</a>
+            <div>{{ formatarDataCivil(venda.dataVenda) }} · {{ venda.situacao }}</div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+        Nenhuma venda cadastrada nesta sessão.
       </p>
-      @if (parcelasProximas().length) {
-        <ul class="list-group list-group-flush">
-          @for (item of parcelasProximas(); track item.parcela.id) {
-            <li class="list-group-item px-0">
-              <a [routerLink]="['/vendas', item.venda.id]">{{ item.venda.cliente.nome }}</a>
-              <div>
-                Parcela {{ item.parcela.numero }} ·
-                {{ formatarDataCivil(item.parcela.vencimento) }} ·
-                {{ formatarDinheiro(item.parcela.valorCentavos) }}
-              </div>
-            </li>
-          }
-        </ul>
-      } @else {
-        <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
-          Nenhuma parcela pendente vence de hoje a +7 dias.
-        </p>
-      }
-    </section>
-  </div>
+    }
+  </section>
 
-  <div class="col-12 col-xl-4">
-    <section class="card h-100 p-3" aria-labelledby="parcelas-atrasadas">
-      <h2 id="parcelas-atrasadas" class="h5">Parcelas atrasadas</h2>
-      <p class="text-body-secondary">Até 5 parcelas pendentes por vencimento mais antigo.</p>
-      @if (parcelasAtrasadas().length) {
-        <ul class="list-group list-group-flush">
-          @for (item of parcelasAtrasadas(); track item.parcela.id) {
-            <li class="list-group-item px-0">
-              <a [routerLink]="['/vendas', item.venda.id]">{{ item.venda.cliente.nome }}</a>
-              <div>
-                Parcela {{ item.parcela.numero }} ·
-                {{ formatarDataCivil(item.parcela.vencimento) }} ·
-                {{ formatarDinheiro(item.parcela.valorCentavos) }}
-              </div>
-            </li>
-          }
-        </ul>
-      } @else {
-        <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
-          Nenhuma parcela pendente está atrasada.
-        </p>
-      }
-    </section>
-  </div>
+  <section
+    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    aria-labelledby="parcelas-proximas"
+  >
+    <h2 id="parcelas-proximas" class="mb-2 text-lg font-semibold">Parcelas próximas</h2>
+    <p class="text-text-muted">
+      Até 5 parcelas pendentes com vencimento de hoje a +7 dias, inclusive.
+    </p>
+    @if (parcelasProximas().length) {
+      <ul class="m-0 list-none divide-y divide-border p-0">
+        @for (item of parcelasProximas(); track item.parcela.id) {
+          <li class="py-2 first:pt-0">
+            <a [routerLink]="['/vendas', item.venda.id]">{{ item.venda.cliente.nome }}</a>
+            <div>
+              Parcela {{ item.parcela.numero }} · {{ formatarDataCivil(item.parcela.vencimento) }} ·
+              {{ formatarDinheiro(item.parcela.valorCentavos) }}
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+        Nenhuma parcela pendente vence de hoje a +7 dias.
+      </p>
+    }
+  </section>
+
+  <section
+    class="h-full rounded-md border-[1px] border-border bg-surface p-3"
+    aria-labelledby="parcelas-atrasadas"
+  >
+    <h2 id="parcelas-atrasadas" class="mb-2 text-lg font-semibold">Parcelas atrasadas</h2>
+    <p class="text-text-muted">Até 5 parcelas pendentes por vencimento mais antigo.</p>
+    @if (parcelasAtrasadas().length) {
+      <ul class="m-0 list-none divide-y divide-border p-0">
+        @for (item of parcelasAtrasadas(); track item.parcela.id) {
+          <li class="py-2 first:pt-0">
+            <a [routerLink]="['/vendas', item.venda.id]">{{ item.venda.cliente.nome }}</a>
+            <div>
+              Parcela {{ item.parcela.numero }} · {{ formatarDataCivil(item.parcela.vencimento) }} ·
+              {{ formatarDinheiro(item.parcela.valorCentavos) }}
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="mb-0 rounded-md border-[1px] border-border bg-surface-muted p-4 text-text-muted">
+        Nenhuma parcela pendente está atrasada.
+      </p>
+    }
+  </section>
 </div>

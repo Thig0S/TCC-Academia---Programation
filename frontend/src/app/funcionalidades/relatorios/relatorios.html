@@ -20,7 +20,7 @@
 </section>
 
 <section class="mb-4" aria-labelledby="periodo-relatorio">
-  <h2 id="periodo-relatorio" class="h5">Análise mensal</h2>
+  <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal</h2>
   <p class="mb-0">
     Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
     {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
@@ -28,11 +28,18 @@
 </section>
 
 <section class="mb-4" aria-labelledby="recebimentos-mensais">
-  <h2 id="recebimentos-mensais" class="h5">Recebimentos do mês</h2>
+  <h2 id="recebimentos-mensais" class="mb-2 text-lg font-semibold">Recebimentos do mês</h2>
   <p>Total recebido: {{ formatarDinheiro(relatorio.totalRecebidoCentavos) }}</p>
   @if (relatorio.recebimentos.length) {
-    <div class="table-responsive" role="region" aria-label="Recebimentos do mês" tabindex="0">
-      <table class="table table-striped table-sm align-middle">
+    <div
+      class="max-w-full overflow-x-auto"
+      role="region"
+      aria-label="Recebimentos do mês"
+      tabindex="0"
+    >
+      <table
+        class="w-full min-w-max border-collapse text-left text-sm [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1"
+      >
         <caption>
           Entradas e lotes recebidos entre
           {{
@@ -75,14 +82,16 @@
 </section>
 
 <section class="mb-4" aria-labelledby="vendas-mensais">
-  <h2 id="vendas-mensais" class="h5">Vendas do mês</h2>
+  <h2 id="vendas-mensais" class="mb-2 text-lg font-semibold">Vendas do mês</h2>
   <p>
     {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
     {{ formatarDinheiro(relatorio.totalVendasMesCentavos) }}
   </p>
   @if (relatorio.vendasDoMes.length) {
-    <div class="table-responsive" role="region" aria-label="Vendas do mês" tabindex="0">
-      <table class="table table-striped table-sm align-middle">
+    <div class="max-w-full overflow-x-auto" role="region" aria-label="Vendas do mês" tabindex="0">
+      <table
+        class="w-full min-w-max border-collapse text-left text-sm [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1"
+      >
         <caption>
           Vendas cadastradas entre
           {{
@@ -123,14 +132,21 @@
 </section>
 
 <section class="mb-4" aria-labelledby="posicao-aberta">
-  <h2 id="posicao-aberta" class="h5">Posição em aberto</h2>
+  <h2 id="posicao-aberta" class="mb-2 text-lg font-semibold">Posição em aberto</h2>
   <p>
     Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
     {{ formatarDinheiro(relatorio.totalEmAbertoCentavos) }}
   </p>
   @if (relatorio.saldos.length) {
-    <div class="table-responsive" role="region" aria-label="Posição em aberto" tabindex="0">
-      <table class="table table-striped table-sm align-middle">
+    <div
+      class="max-w-full overflow-x-auto"
+      role="region"
+      aria-label="Posição em aberto"
+      tabindex="0"
+    >
+      <table
+        class="w-full min-w-max border-collapse text-left text-sm [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1"
+      >
         <caption>
           Saldos positivos por venda na referência
           {{
@@ -165,14 +181,21 @@
 </section>
 
 <section aria-labelledby="parcelas-vencidas">
-  <h2 id="parcelas-vencidas" class="h5">Parcelas vencidas</h2>
+  <h2 id="parcelas-vencidas" class="mb-2 text-lg font-semibold">Parcelas vencidas</h2>
   <p>
     Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
     {{ formatarDinheiro(relatorio.totalAtrasadoCentavos) }}
   </p>
   @if (relatorio.parcelasAtrasadas.length) {
-    <div class="table-responsive" role="region" aria-label="Parcelas vencidas" tabindex="0">
-      <table class="table table-striped table-sm align-middle">
+    <div
+      class="max-w-full overflow-x-auto"
+      role="region"
+      aria-label="Parcelas vencidas"
+      tabindex="0"
+    >
+      <table
+        class="w-full min-w-max border-collapse text-left text-sm [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1"
+      >
         <caption>
           Parcelas pendentes vencidas na referência
           {{
