@@ -115,6 +115,43 @@ Uma execução anterior da suíte principal em paralelo à fixture teve duas fal
 e a reexecução serial acima passou. O aviso preexistente Sass `@import` continua
 visível. Isso não constitui aceite visual global, zoom nativo ou homologação da ótica.
 
+### Estrutura global e navegação — tarefa 2.2
+
+Shell, cabeçalho, aviso, perfil, atalho de conteúdo e navegação principal agora usam
+utilitários Tailwind; o SCSS local restante limita-se ao gradiente/superfícies do shell,
+logo e estados dinâmicos de navegação/foco. Rotas, logo, nomes e aviso permanecem. Os
+tokens da lateral cobrem os dois temas. A comparação com `exemploDesignDark.png`
+preserva a identidade vermelha e o contraste sidebar/grafite; não reproduz a busca
+global, notificações, controles de janela nem perfil pessoal da referência, pois não
+existem como capacidades aprovadas. O perfil continua explicitamente estático.
+
+O teste `lateral segue a marca e mantém contraste no degradê, hover, ativo e foco`
+anexa capturas `estrutura-dark` e `estrutura-light` ao relatório Playwright para cada
+viewport; as capturas mostram a estrutura em foco por teclado. As medições nos extremos
+e no meio do degradê, incluindo normal/hover/ativo/foco, obtiveram texto/ícones mínimos
+de 5,96:1 no escuro e 4,83:1 no claro; foco mínimo de 10,41:1 e 5,75:1, respectivamente.
+O estado atual (`aria-current`), o hover, o foco, o atalho de conteúdo e ausência de
+overflow horizontal passaram em 1366×768 e 390×844, nos dois temas.
+
+Verificação incremental posterior às mudanças do shell, em Chromium:
+
+- `npm run test:e2e -- --grep "lateral segue" --workers=1`: 2/2, cobrindo os dois
+  viewports e os temas escuro/claro, saída 0; capturas anexadas ao relatório.
+- `npm run test:e2e -- --grep "lateral segue|orienta foco|abre a estrutura"
+--workers=1`: estrutura e navegação passaram; o primeiro ensaio revelou outline de
+  foco com 2,35:1 devido à regra global Bootstrap sem camada. Após restaurar outline
+  local branco de 3 px e remover sua sombra, a execução dirigida `lateral segue`
+  passou com os contrastes acima. O ensaio inicial não é contado como aprovação.
+- `npm test -- --watch=false`: 356/356, 29 arquivos, saída 0, após as alterações de
+  markup/estilo da estrutura.
+- `npm run build`: saída 0, bundle inicial 517,93 kB; aviso de budget de 500 kB
+  excedido em 17,93 kB, limite de erro de 1 MB intacto; o Sass `@import` também
+  permanece como aviso.
+- `npx prettier --check` nos arquivos da entrega: saída 0.
+
+O runner ainda emite a depreciação preexistente de Sass `@import`; Bootstrap permanece
+como ponte apenas para telas e componentes ainda não migrados.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de

@@ -1,29 +1,9 @@
 :host {
   display: block;
 }
-svg {
-  width: 1.4rem;
-  height: 1.4rem;
-  flex-shrink: 0;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.nav-link {
-  color: var(--lateral-texto);
-  border-radius: 0.5rem;
-  padding: 0.8rem 1rem;
-  // Evita cores intermediárias sem contraste ao alternar os temas da lateral.
-  transition: none;
-}
-.nav-link:hover {
-  background: var(--lateral-hover);
-}
 .modulo-ativo > .nav-link:first-child {
-  background: var(--lateral-ativo-fundo);
-  color: var(--lateral-ativo-texto);
+  background: var(--app-sidebar-active-bg);
+  color: var(--app-sidebar-active-text);
   font-weight: 700;
 }
 .nav-link[aria-current='page'] {
@@ -32,17 +12,13 @@ svg {
 .nav-link.pagina-atual {
   text-decoration: none;
 }
-.subdestino[aria-current='page'] {
-  background: var(--lateral-hover);
-  border-radius: 0 0.5rem 0.5rem 0;
-  color: var(--lateral-texto);
-}
-.nav-link:hover,
 .nav-link:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
+  outline: 3px solid var(--app-sidebar-focus);
+  outline-offset: 4px;
+  box-shadow: none;
 }
-.subdestino {
-  margin: 0.25rem 0 0 1.5rem;
-  border-inline-start: 3px solid var(--lateral-foco);
+.subdestino[aria-current='page'] {
+  background: var(--app-sidebar-hover);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--app-sidebar-text);
 }
