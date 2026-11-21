@@ -54,7 +54,7 @@
 }
 
 .entrada-detalhe {
-  border-top: 1px solid var(--bs-border-color);
+  border-top: 1px solid var(--app-border);
   padding-top: 0.5rem;
 }
 
@@ -81,10 +81,6 @@
   margin-bottom: 0;
 }
 
-.tabela-parcelas-detalhe.table-sm > :not(caption) > * > * {
-  padding-block: 0.1rem;
-}
-
 .tabela-parcelas-detalhe {
   font-size: 0.875rem;
   line-height: 1.1;
@@ -94,7 +90,7 @@
   position: sticky;
   z-index: 2;
   top: 0;
-  background: var(--bs-body-bg);
+  background: var(--app-surface);
 }
 
 @media (max-width: 767.98px) {

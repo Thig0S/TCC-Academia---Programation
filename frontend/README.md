@@ -204,6 +204,24 @@ Verificações reais em Windows e Chromium Playwright, nos viewports 1366×768 e
 Avisos mantidos: Sass `@import` e prebundling desativado com otimização de scripts.
 Capturas locais foram revisadas, mas não versionadas. Não houve medição de zoom nativo.
 
+### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
+
+Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
+e tabela com utilitários Tailwind, mantendo CSS local apenas para o grid denso, os
+limites de rolagem e a precedência do cabeçalho fixo sobre a ponte Bootstrap. Entrada
+permanece separada e a região de excedentes continua identificada e operável por
+teclado. A captura `detalhe-dez-dark.png` foi revisada contra `exemploDadosDaVenda.png`;
+foram mantidos dados sintéticos e os controles funcionais existentes.
+
+`npm test -- --watch=false`: saída 0, 356/356 testes em 29 arquivos. Após detectar
+que a regra Bootstrap prevalecia sobre `position: sticky`, `npm run
+test:e2e:paginacao-fixture`: saída 0, 8/8 em Chromium, dark/light e 1366×768/390×844.
+No desktop, cliente e venda alinham no topo; dez parcelas e a região terminam antes
+do limite de 768 px, sem rolagem vertical da página. O teste com 11 parcelas confirmou
+rolagem interna, cabeçalho fixo e navegação por teclado. Em mobile, documento 1706 px,
+largura 390 px, sem overflow horizontal global. Avisos de Sass e prebundling
+permanecem; zoom nativo não foi medido.
+
 ## Apply FASE-007 — Visão Geral — 20/11/2026
 
 Entregue a página de Visão Geral com os quatro indicadores derivados de
