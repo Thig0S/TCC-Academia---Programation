@@ -27,7 +27,7 @@
 
 - [x] 5.1 Refinar identificação compartilhada, cadastro, entrada e prévia em painéis coerentes com os HTMLs; verificar testes de cadastro/componentes e E2E nos dois temas/viewports para campos/rótulos atuais, erros associados, foco, prévia completa, cancelamento, falha/retry e confirmação única. Executar build e registrar capturas comparativas e contraste no README, sem converter página em modal ou copiar primeiro vencimento editável, limite de parcelas ou cálculo aproximado.
 - [x] 5.2 Refinar edição com a mesma linguagem, preservando somente os quatro campos editáveis; verificar testes de edição e E2E nos dois temas/viewports, incluindo quitada, cancelamento, erro e atualização isolada da identificação sem mudança financeira. Executar build e registrar capturas, foco e contrastes no README; manter ausência de registro distinta de erro de validação.
-- [ ] 5.3 Refinar apresentação do recebimento no modal existente; verificar testes do modal/recebimento e E2E nos dois temas/viewports para sequência de parcelas, valor exato, datas/formas atuais, falha/retry, confirmação única, cancelamento/Escape, contenção e retorno de foco após quitação. Executar build e registrar capturas/contrastes no README, sem alterar mecanismo nativo, comandos ou regras.
+- [x] 5.3 Refinar apresentação do recebimento no modal existente; verificar testes do modal/recebimento e E2E nos dois temas/viewports para sequência de parcelas, valor exato, datas/formas atuais, falha/retry, confirmação única, cancelamento/Escape, contenção e retorno de foco após quitação. Executar build e registrar capturas/contrastes no README, sem alterar mecanismo nativo, comandos ou regras.
 
 ## 6. Refinar Relatórios, Configurações e estados auxiliares
 

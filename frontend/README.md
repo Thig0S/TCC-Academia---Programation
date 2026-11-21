@@ -254,6 +254,27 @@ Inspeção desktop clara confirmou somente quatro campos, mensagens associadas,
 foco perceptível e hierarquia equivalente ao cadastro, derivada dos HTMLs sem
 importar campos financeiros. Reorganização mobile verificada pelo E2E.
 
+### Recebimento — tarefa 5.3
+
+Campos elevados com raio de 8 px, conferência em painel suave, soma destacada,
+ações coerentes e orientação secundária. Mantidos diálogo nativo, comandos,
+sequência, valor exato, datas/formas e comportamento de foco. Campo de data
+usa esquema nativo escuro no tema escuro para legibilidade do controle.
+
+Verificações reais: 363/363 unitários, incluindo falha/retry, envio único e
+cancelamento; 8/8 E2E com filtro
+`recebe parcela|dialog nativo|mede formulários|registra capturas`, ambos os
+temas/viewports. Após ajuste do esquema nativo, diálogo revalidado 2/2;
+build final 315,36 kB iniciais/82,84 kB estimados, saída 0 sem avisos.
+Capturas em `test-results/refinar-estilo-recebimento/acessibilidade-formularios-*`;
+execução final em `test-results/refinar-estilo-recebimento-final`.
+Texto mínimo 4,899:1, bordas essenciais mínimo 4,339:1 nos cenários medidos.
+
+Inspeção desktop escura com texto extenso confirmou modal centralizado,
+conferência/soma hierarquizadas e ações alcançáveis por rolagem/foco. O título
+fica acima do trecho capturado após rolar a lista: não foi ocultado ou removido.
+Adaptada a estética dos HTMLs sem copiar mecanismo modal ou regras de pagamento.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.
