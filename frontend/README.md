@@ -297,6 +297,18 @@ Os avisos anteriores de Sass e CSS budget desapareceram com a migração; budget
 mantidos. O zoom nativo continua sendo evidência manual separada e não é inferido
 pelas capturas Chromium.
 
+#### Fechamento técnico — tarefa 5.3
+
+Em 21/11/2026, após a instalação limpa já registrada acima, a verificação final foi
+repetida: `npm run build` passou (297,57 kB inicial),
+`npx ng run vendas-em-aberto:build-paginacao-fixture` passou (298,89 kB inicial) e
+`npm run format:check` passou. Na raiz do repositório,
+`openspec validate troca-para-tailwind --strict` retornou “Change 'troca-para-tailwind'
+is valid”. Budgets permaneceram inalterados; a auditoria de source/config confirmou
+ausência de Bootstrap visual, mantendo a inicialização Angular. A pendência manual de
+zoom nativo 200% está descrita na tarefa 5.2 e impede declarar a matriz visual global
+concluída ou abrir o PR.
+
 ### Regressão integrada final — OpenSpec tarefa 5.1 — 21/11/2026
 
 Após instalação limpa (`npm ci`), a regressão integrada foi repetida serialmente em
