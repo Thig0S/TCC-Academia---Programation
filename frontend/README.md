@@ -76,6 +76,34 @@ Contraste baseline da lateral: texto/ícones mínimo 5,96:1 escuro e 4,83:1 clar
 foco 10,41:1 e 5,75:1. As suítes não substituem a comparação visual posterior
 nem zoom nativo. Nenhum estilo alterado na linha de base.
 
+### Fundação do conteúdo — tarefa 2.1
+
+Canvas/painéis agora seguem a paleta dos HTMLs; texto secundário e foco têm cores
+adaptadas para contraste. Cabeçalho superior usa painel e sombra discreta, título
+tem entreletras compactas, aviso e alternância têm raio de 8 px. A fonte de sistema,
+as medidas existentes e todos os tokens `--app-sidebar-*` foram preservados.
+
+Verificações reais: `npm.cmd run build` passou (314,16 kB iniciais, 82,63 kB
+estimados; sem aviso de budget/Sass); `npm.cmd test -- --watch=false` passou
+356/356, 29 arquivos. E2E dirigido com filtro
+`paleta do conteúdo|registra conteúdo|alterna tema|inicia escuro|aviso completo|lateral segue|contraste efetivo|orienta foco`
+e `--output=test-results/refinar-estilo-fundacao --workers=1`: primeira execução
+19/20, por leitura imediata de estilo no teste novo após alternar tema; repetição
+20/20 com espera explícita pelo atributo temático nesse teste.
+
+Contrastes medidos pelo E2E: textos mínimos 5,96:1 escuro/4,83:1 claro;
+borda de controle 8,01:1/4,69:1; foco 7,70:1/6,51:1. Lateral manteve os mesmos
+mínimos da baseline. Comparação dos 32 JSONs da lateral entre baseline e fundação
+não encontrou diferenças de estilos ou geometria nos oito destinos, dois temas
+e dois viewports. Capturas em `test-results/refinar-estilo-fundacao/refinamento-visual-*`.
+
+Inspeção visual real das quatro capturas de Vendas confirmou canvas quase preto/
+claro, contraste painel/cabeçalho, aviso legível e lateral preservada; no mobile,
+mantidos empilhamento e overflow da tabela local. Ainda não há o acabamento final
+da tabela/selos/painéis: são entregas seguintes. Em relação aos HTMLs, mantidos
+aviso permanente, fonte de sistema, cabeçalho compacto sem busca global e lateral
+original; não se pretende igualdade pixel a pixel nem aceite global.
+
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
 Ambiente Windows, Node 24.21.0, npm 11.19.0, Angular CLI/build 22.2.6.

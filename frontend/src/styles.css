@@ -38,11 +38,11 @@
 }
 
 app-root[data-tema] {
-  --consulta-link: #a40021;
+  --consulta-link: #b51f3d;
 }
 
 app-root[data-tema='dark'] {
-  --consulta-link: #ff9aaa;
+  --consulta-link: #ff9aaf;
 }
 
 app-root[data-tema] main a {
@@ -64,20 +64,20 @@ app-root[data-tema] .area-principal main a:focus-visible {
 
 :root,
 [data-tema='light'] {
-  --app-canvas: #f8f9fa;
+  --app-canvas: #f5f6f9;
   --app-surface: #ffffff;
-  --app-surface-muted: #f1f3f5;
-  --app-text: #212529;
-  --app-text-muted: #5c636a;
-  --app-border: #dee2e6;
-  --app-brand: #a40021;
-  --app-brand-strong: #90001b;
+  --app-surface-muted: #f8f9fb;
+  --app-text: #272a33;
+  --app-text-muted: #5e626d;
+  --app-border: #e5e7ec;
+  --app-brand: #b51f3d;
+  --app-brand-strong: #941831;
   --app-success: #146c43;
   --app-danger: #b02a37;
-  --app-focus: #0a58ca;
-  --app-warning-bg: #fff3cd;
-  --app-warning-text: #664d03;
-  --app-warning-border: #ffecb5;
+  --app-focus: #b51f3d;
+  --app-warning-bg: #fff5e2;
+  --app-warning-text: #76500f;
+  --app-warning-border: #e7d4ab;
   --app-sidebar-bg: #ce0026;
   --app-sidebar-gradient: none;
   --app-sidebar-text: #ffffff;
@@ -99,20 +99,20 @@ app-root[data-tema] .area-principal main a:focus-visible {
 }
 
 [data-tema='dark'] {
-  --app-canvas: #212529;
-  --app-surface: #343a40;
-  --app-surface-muted: #2b3035;
-  --app-text: #f8f9fa;
-  --app-text-muted: #adb5bd;
-  --app-border: #495057;
-  --app-brand: #ff9aaa;
-  --app-brand-strong: #ffb3c0;
+  --app-canvas: #111217;
+  --app-surface: #1d1e24;
+  --app-surface-muted: #25262d;
+  --app-text: #f4f4f5;
+  --app-text-muted: #b0b0bc;
+  --app-border: #33343d;
+  --app-brand: #ff9aaf;
+  --app-brand-strong: #ffc1cf;
   --app-success: #75b798;
   --app-danger: #ea868f;
-  --app-focus: #6ea8fe;
-  --app-warning-bg: #332701;
-  --app-warning-text: #ffda6a;
-  --app-warning-border: #997404;
+  --app-focus: #ff8fa6;
+  --app-warning-bg: #30291b;
+  --app-warning-text: #f1ce86;
+  --app-warning-border: #6b5631;
   --app-sidebar-bg: #850020;
   --app-sidebar-gradient: linear-gradient(180deg in srgb, #850020 0%, #300010 100%);
   --app-sidebar-text: #ffffff;

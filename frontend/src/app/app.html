@@ -28,7 +28,7 @@
       <span class="text-sm font-semibold">Protótipo navegável</span>
       <button
         type="button"
-        class="controle-tema rounded-md border-[1px] border-control-border px-3 py-2 text-sm font-semibold transition-none hover:bg-surface hover:text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-4"
+        class="controle-tema rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold transition-none hover:bg-surface hover:text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-4"
         aria-label="Tema escuro"
         [attr.aria-pressed]="servicoTema.tema() === 'dark'"
         (click)="servicoTema.alternar()"
@@ -38,7 +38,7 @@
     </header>
     <div class="p-3">
       <p
-        class="mb-1 rounded-md border-[1px] border-warning-border bg-warning-bg px-3 py-1 text-sm text-warning-text"
+        class="mb-1 rounded-lg border-[1px] border-warning-border bg-warning-bg px-3 py-1 text-sm text-warning-text"
         data-testid="aviso-demonstracao"
       >
         Demonstração com dados fictícios. As alterações são perdidas ao recarregar.
