@@ -1,2 +1,9 @@
 *.key
 exemplo
+
+# Logs e snapshots gerados pelo Playwright MCP
+/.playwright-mcp/
+
+# Referências visuais locais fornecidas; preservar, mas não rastrear
+/frontend/public/imgs/exemplos/mercadao_oculos_dashboard_dark.html
+/frontend/public/imgs/exemplos/mercadao_oculos_dashboard_light.html
