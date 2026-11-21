@@ -42,7 +42,7 @@ Lucide remoto, busca global, ajuda, notificações, exportação ou comportament
 recolher/esconder a lateral. Manter fonte de sistema, dependências e contratos do
 MVP. A comparação visual por superfície e os pares de contraste ainda estão pendentes.
 
-### Linha de base parcial — tarefa 1.2 pendente
+### Linha de base — tarefa 1.2
 
 Execuções reais antes de qualquer edição de apresentação, em `frontend/`:
 
@@ -54,12 +54,27 @@ Execuções reais antes de qualquer edição de apresentação, em `frontend/`:
   A configuração exige `reuseExistingServer: false`; ela não foi alterada e o
   servidor preexistente não foi encerrado nem reutilizado sem orientação.
 
-Apply pausado nesse bloqueio. E2E da aplicação não aprovado; fixture e capturas
-de conteúdo/lateral nos dois temas em 1366×768 e 390×844 ainda não executados
-nesta linha de base. O diretório de saída acima foi reservado para separar estas
-evidências das de Changes anteriores, mas não contém capturas novas comprovadas.
-Nenhuma edição de apresentação foi iniciada. Resultados históricos abaixo não
-substituem estas verificações pendentes.
+O solicitante autorizou no Harness encerrar especificamente o PID 7300; processo
+encerrado e E2E repetido com o mesmo comando: saída 0, 68/68 testes.
+
+- `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-estilo-baseline/fixture`:
+  saída 0, 8/8. Aviso: prebundling desativado com otimização de scripts.
+  Desktop: documento 768 px, décima linha até 665,5 px, rodapé até 728 px;
+  detalhe com dez parcelas, tabela até 713,27 px. Mobile: largura global 390 px,
+  documentos de lista 1530 px e detalhe 1624 px; rolagem permitida.
+- `npm.cmd run test:e2e -- refinamento-visual.spec.ts --output=test-results/refinar-estilo-baseline/conteudo --workers=1`:
+  saída 0, 2/2. Novo teste registra capturas persistentes do conteúdo/lateral
+  e estilos/geometria JSON da lateral, antes de qualquer edição de apresentação.
+
+Evidências locais (ignoradas pelo Git), nos dois temas e viewports 1366×768 e
+390×844: `test-results/refinar-estilo-baseline/conteudo/refinamento-visual-*/*.png`
+e `*.json`; `test-results/refinar-estilo-baseline/fixture/paginacao-fixture-*/lista-{dark,light}.png`
+e `detalhe-dez-{dark,light}.png`;
+`test-results/refinar-estilo-baseline/aplicacao/acessibilidade-formularios-*/*.png`
+para erros, prévia extensa e recebimento.
+Contraste baseline da lateral: texto/ícones mínimo 5,96:1 escuro e 4,83:1 claro;
+foco 10,41:1 e 5,75:1. As suítes não substituem a comparação visual posterior
+nem zoom nativo. Nenhum estilo alterado na linha de base.
 
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
