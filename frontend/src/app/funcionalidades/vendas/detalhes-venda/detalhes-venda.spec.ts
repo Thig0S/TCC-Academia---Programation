@@ -71,7 +71,8 @@ describe('DetalhesVenda', () => {
     expect(pagina.querySelector('a[routerLink="/vendas"]')).not.toBeNull();
     expect(pagina.querySelector('a[routerLink="/vendas/quitadas"]')).not.toBeNull();
     expect(pagina.querySelectorAll('form, input').length).toBe(0);
-    expect(pagina.querySelector('[data-acao-receber]')).not.toBeNull();
+    expect(pagina.querySelector('[data-acao-pagar]')).not.toBeNull();
+    expect(pagina.querySelector('[data-acao-receber]')).toBeNull();
     expect(servico.consultarVenda(venda.id)).toEqual({
       tipo: 'sucesso',
       valor: venda,
@@ -124,7 +125,58 @@ describe('DetalhesVenda', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
   });
 
-  it('reconcilia detalhe e recebimentos de 1/10 para 3/10 e 10/10', async () => {
+  it('oferece ação acessível só para a primeira pendente e descarta o modal ao trocar de venda', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastrar = (nome: string) => {
+      const resultado = servico.cadastrarVenda({
+        cliente: { nome, cpf: '90000000175', telefone: '00900000001' },
+        dataVenda: servico.referencia,
+        valorTotalCentavos: 40000,
+        quantidadeParcelas: 4,
+        entrada: { valorCentavos: 10000, data: servico.referencia, forma: 'Pix' },
+      });
+      if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+      return resultado.valor;
+    };
+    const alvo = cadastrar('Cliente sequência acessível');
+    const outra = cadastrar('Cliente destino');
+    const harness = await RouterTestingHarness.create(urlPara(alvo.id));
+    const pagina = () => harness.routeNativeElement!;
+    const linhas = () => [...pagina().querySelectorAll('tbody tr')];
+    const botaoDaParcela = (numero: number) =>
+      linhas()
+        .find((linha) => linha.textContent?.includes(`${numero} de ${alvo.parcelas.length}`))
+        ?.querySelector<HTMLButtonElement>('[data-acao-pagar]');
+
+    expect(botaoDaParcela(1)).toBeNull();
+    expect(botaoDaParcela(2)?.getAttribute('aria-label')).toContain('parcela 2');
+    expect(botaoDaParcela(2)?.getAttribute('aria-label')).toContain(alvo.cliente.nome);
+    expect(linhas()[2].textContent).toContain('Aguardando parcela anterior');
+    expect(linhas()[3].textContent).toContain('Aguardando parcela anterior');
+    expect(pagina().querySelectorAll('[data-acao-pagar]')).toHaveLength(1);
+
+    expect(
+      servico.registrarPagamento({
+        vendaId: alvo.id,
+        parcelaId: alvo.parcelas[1].id,
+        data: servico.referencia,
+        forma: 'Pix',
+      }).tipo,
+    ).toBe('sucesso');
+    await harness.fixture.whenStable();
+    expect(botaoDaParcela(1)).toBeNull();
+    expect(botaoDaParcela(2)).toBeNull();
+    expect(botaoDaParcela(3)?.getAttribute('aria-label')).toContain('parcela 3');
+
+    botaoDaParcela(3)!.click();
+    await harness.fixture.whenStable();
+    expect(pagina().querySelector('dialog')?.open).toBe(true);
+    await harness.navigateByUrl(urlPara(outra.id));
+    expect(pagina().querySelector('dialog')).toBeNull();
+    expect(pagina().textContent).toContain(outra.cliente.nome);
+  });
+
+  it('reconcilia ações individuais do detalhe de 1/10 para 3/10 e 10/10', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const cadastro = servico.cadastrarVenda({
       cliente: {
@@ -145,24 +197,17 @@ describe('DetalhesVenda', () => {
     expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas1de10');
     expect(pagina().querySelector('tbody tr')?.textContent).toContain('Entrada');
     expect(pagina().querySelector('tbody tr')?.textContent).toContain('Paga');
+    expect(pagina().querySelectorAll('[data-acao-pagar]')).toHaveLength(1);
+    expect(pagina().textContent).toContain('Aguardando parcela anterior');
 
-    const receber = async (quantidade: string, valor: string, primeiraPendente: number) => {
-      pagina().querySelector<HTMLButtonElement>('[data-acao-receber]')!.click();
+    const pagar = async (numero: number) => {
+      const acao = pagina().querySelector<HTMLButtonElement>('[data-acao-pagar]')!;
+      expect(acao.getAttribute('aria-label')).toContain(`parcela ${numero}`);
+      acao.click();
       await harness.fixture.whenStable();
-      expect(
-        pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent,
-      ).toContain(`Parcela ${primeiraPendente}`);
-      expect(
-        pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent,
-      ).not.toContain('Parcela 1');
-      const campoQuantidade = pagina().querySelector<HTMLSelectElement>('#quantidade-recebimento')!;
-      campoQuantidade.value = quantidade;
-      campoQuantidade.dispatchEvent(new Event('input', { bubbles: true }));
-      campoQuantidade.dispatchEvent(new Event('change', { bubbles: true }));
-      await harness.fixture.whenStable();
-      const campoValor = pagina().querySelector<HTMLInputElement>('#valor-recebimento')!;
-      campoValor.value = valor;
-      campoValor.dispatchEvent(new Event('input', { bubbles: true }));
+      expect(pagina().querySelector('dialog')?.textContent).toContain(`Parcela${numero}`);
+      expect(pagina().querySelector('#valor-recebimento')).toBeNull();
+      expect(pagina().querySelector('#quantidade-recebimento')).toBeNull();
       const data = pagina().querySelector<HTMLInputElement>('#data-recebimento')!;
       data.value = servico.referencia;
       data.dispatchEvent(new Event('input', { bubbles: true }));
@@ -177,7 +222,8 @@ describe('DetalhesVenda', () => {
       await harness.fixture.whenStable();
     };
 
-    await receber('2', '200', 2);
+    await pagar(2);
+    await pagar(3);
     expect(pagina().textContent).toContain('3 de 10');
     expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas3de10');
     expect(servico.consultarVenda(venda.id)).toMatchObject({
@@ -185,11 +231,11 @@ describe('DetalhesVenda', () => {
       valor: { totalPagoCentavos: 30000, saldoCentavos: 70000, quantidadePaga: 3 },
     });
 
-    await receber('7', '700', 4);
+    for (let numero = 4; numero <= 10; numero++) await pagar(numero);
     expect(pagina().textContent).toContain('10 de 10');
     expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas10de10');
     expect(pagina().textContent).toContain('Quitada');
-    expect(pagina().querySelector('[data-acao-receber]')).toBeNull();
+    expect(pagina().querySelector('[data-acao-pagar]')).toBeNull();
     expect(servico.consultarVenda(venda.id)).toMatchObject({
       tipo: 'sucesso',
       valor: { totalPagoCentavos: 100000, saldoCentavos: 0, quantidadePaga: 10 },

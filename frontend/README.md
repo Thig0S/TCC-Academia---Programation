@@ -677,11 +677,48 @@ saída 0 sem avisos; E2E `cadastro|cadastra|mede formulários|revela erros` 12/1
 incluindo cadastro sem/com entrada, confirmação única, erros/foco, cancelamento,
 prévia extensa, reconciliação e recarga nos dois temas/viewports. Cenários de
 falha/retry permanecem cobertos pelos testes de componentes existentes.
-Contraste mínimo observado 4,899:1 em texto e 4,339:1 em bordas essenciais.
-Capturas persistentes de erros/prévia em `test-results/refinar-estilo-cadastro/acessibilidade-formularios-*`.
-Inspeção da captura desktop clara com texto extenso confirmou painéis, campos,
-ações e prévia rolável por teclado, sem corte global; dados e fonte diferem
-deliberadamente dos exemplos. Mobile permanece empilhado, verificado pelo E2E.
+
+## Apply `simplificar-pagamento-parcelas` — FASE-014/015 (em andamento)
+
+O comando de pagamento da sessão agora contém somente `vendaId`, `parcelaId`,
+`data` e `forma`. O núcleo revalida a primeira parcela pendente por número, deriva
+seu valor canônico em centavos e cria um recebimento com uma alocação; lista de IDs
+e valor externo são rejeitados. A preparação sintética de lotes históricos foi
+separada em `preparar-pagamento-historico.ts` e permanece restrita ao seed, sem
+alterar os recebimentos já existentes. O rascunho de pagamento e o modal agora
+solicitam somente data e forma; o detalhe oferece ação acessível na primeira
+pendente e informa “Aguardando parcela anterior” nas seguintes.
+
+Verificações integradas executadas em 22/11/2026: `npm test -- --watch=false`
+passou **372/372**; `npx playwright test --config=playwright.refinar-baseline.config.ts`
+passou **108/108** em Chromium, viewports 1366×768 e 390×844; `npm run
+test:e2e:paginacao-fixture -- --output=test-results/simplificar-pagamento-paginacao`
+passou **14/14**; `npm run build` e `npx ng run
+vendas-em-aberto:build-paginacao-fixture` passaram; `npm run format:check` passou.
+A fixture informa que prebundling não é usado com otimização de scripts.
+O teste de captura `--grep "registra capturas sintéticas"` passou **2/2** projetos;
+as imagens finais foram copiadas para o diretório versionado de evidências abaixo.
+
+Limite de execução: `npm run test:e2e` não inicia porque `127.0.0.1:4200` já estava
+ocupada por um servidor preexistente; não foi encerrado. A mesma suíte completa foi
+executada com a configuração isolada `playwright.refinar-baseline.config.ts` na
+porta 4303, sem reutilizar esse servidor. Testes de componente e E2E do fluxo novo
+verificam foco na data/primeiro campo inválido/mensagem focalizável, ciclo
+Tab/Shift+Tab e inércia nativa do diálogo, retorno do foco ao acionador ou próxima
+ação, quitação para o título das parcelas, ausência de abertura automática, entrada
+sem botão próprio, valores fracionados, datas/formas por confirmação, conciliação
+em abertas/quitadas/painel/relatórios, histórico em lote e descarte ao recarregar.
+
+Verificação visual automatizada: a fixture mediu dez parcelas em desktop com fonte
+18 px, células 4×10 px, cabeçalho 8×10 px e rodapé em 709 px dentro do viewport de
+768 px, sem rolagem global; excedentes permanecem em região rolável e operável por
+teclado. A matriz verificou coluna Ações, modal e contenção horizontal nos dois
+temas/viewports. Contrastes mínimos observados nas páginas/controles incluem
+4,899:1 para texto e 4,339:1 para borda em estados claros; os limiares visuais dos
+cenários passaram. Capturas versionadas do detalhe/modal e metadados de rota, tema e
+viewport estão em `evidencias/simplificar-pagamento-parcelas/` (`detalhe-*` e
+`modal-*`). Isso não representa teste de navegador manual nem de zoom nativo.
+O zoom de 200% permanece pendente e não foi simulado por CSS ou escala do viewport.
 
 ### Cadastro com prévia lateral — tarefa 5.4 — 21/11/2026
 

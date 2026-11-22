@@ -60,27 +60,29 @@ export class PaginacaoFixture {
         ),
       );
       const pendentes = venda.valor.parcelas.filter((parcela) => !pagas.has(parcela.id));
-      const pagamento = this.servico.registrarPagamento({
-        vendaId: venda.valor.id,
-        parcelaIds: pendentes.map((parcela) => parcela.id),
-        valorCentavos: pendentes.reduce((total, parcela) => total + parcela.valorCentavos, 0),
-        data: this.servico.referencia,
-        forma: 'Pix',
-      });
-      if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
+      for (const parcela of pendentes) {
+        const pagamento = this.servico.registrarPagamento({
+          vendaId: venda.valor.id,
+          parcelaId: parcela.id,
+          data: this.servico.referencia,
+          forma: 'Pix',
+        });
+        if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
+      }
     }
     const quantidade = new URLSearchParams(location.search).get('quantidade');
     if (quantidade !== null && ['0', '1', '10', '11', '21'].includes(quantidade)) {
       for (const venda of this.servico.abertas().slice(Number(quantidade))) {
         const pendentes = venda.parcelas.filter((parcela) => parcela.situacao !== 'Paga');
-        const pagamento = this.servico.registrarPagamento({
-          vendaId: venda.id,
-          parcelaIds: pendentes.map((parcela) => parcela.id),
-          valorCentavos: pendentes.reduce((total, parcela) => total + parcela.valorCentavos, 0),
-          data: this.servico.referencia,
-          forma: 'Pix',
-        });
-        if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
+        for (const parcela of pendentes) {
+          const pagamento = this.servico.registrarPagamento({
+            vendaId: venda.id,
+            parcelaId: parcela.id,
+            data: this.servico.referencia,
+            forma: 'Pix',
+          });
+          if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
+        }
       }
     }
     afterNextRender(() => void this.router.navigateByUrl('/vendas'));

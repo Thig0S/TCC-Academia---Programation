@@ -61,7 +61,7 @@ describe('Inicialização e integração da sessão', () => {
     await novaApp.whenStable();
   });
 
-  it('preserva cadastro, lote e mesma fonte ao navegar por todos os destinos', async () => {
+  it('preserva cadastro, pagamentos individuais e mesma fonte ao navegar por todos os destinos', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
@@ -73,15 +73,15 @@ describe('Inicialização e integração da sessão', () => {
     const r = fonte.cadastrarVenda(cadastro);
     expect(r.tipo).toBe('sucesso');
     if (r.tipo !== 'sucesso') throw new Error(r.mensagem);
-    expect(
-      fonte.registrarPagamento({
-        vendaId: r.valor.id,
-        parcelaIds: r.valor.parcelas.map((p) => p.id),
-        valorCentavos: 60000,
-        data: '2027-01-31',
-        forma: 'Pix',
-      }).tipo,
-    ).toBe('sucesso');
+    for (const parcela of r.valor.parcelas)
+      expect(
+        fonte.registrarPagamento({
+          vendaId: r.valor.id,
+          parcelaId: parcela.id,
+          data: '2027-01-31',
+          forma: 'Pix',
+        }).tipo,
+      ).toBe('sucesso');
     const snapshot = fonte.vendas();
     for (const rota of [
       '/vendas',
@@ -117,14 +117,13 @@ describe('Inicialização e integração da sessão', () => {
     expect(host.observar).toHaveBeenCalledTimes(2);
     const comando = {
       vendaId: r.valor.id,
-      parcelaIds: r.valor.parcelas.map((p) => p.id),
-      valorCentavos: 60000,
+      parcelaId: r.valor.parcelas[0].id,
       data: '2027-01-31',
       forma: 'Pix',
     };
     expect(host.fonte.registrarPagamento(comando).tipo).toBe('sucesso');
     await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toBe(`13/${base}/${quitadas + 1}`);
+    expect(fixture.nativeElement.textContent).toBe(`13/${base + 40000}/${quitadas}`);
     expect(host.observar).toHaveBeenCalledTimes(3);
     expect(host.fonte.registrarPagamento(comando).tipo).toBe('inelegibilidade');
     await fixture.whenStable();
@@ -257,14 +256,15 @@ describe('Inicialização e integração da sessão', () => {
     expect(harness.routeNativeElement?.textContent).toContain(cadastro.cliente.nome);
     expect(fonte.vendas()).toBe(snapshot);
 
-    const resultadoPagamento = fonte.registrarPagamento({
-      vendaId: criado.valor.id,
-      parcelaIds: criado.valor.parcelas.map((parcela) => parcela.id),
-      valorCentavos: cadastro.valorTotalCentavos,
-      data: '2027-01-31',
-      forma: 'Pix',
-    });
-    expect(resultadoPagamento.tipo).toBe('sucesso');
+    for (const parcela of criado.valor.parcelas)
+      expect(
+        fonte.registrarPagamento({
+          vendaId: criado.valor.id,
+          parcelaId: parcela.id,
+          data: '2027-01-31',
+          forma: 'Pix',
+        }).tipo,
+      ).toBe('sucesso');
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain('Quitada');
     expect(harness.routeNativeElement?.querySelectorAll('app-selo-situacao')).toHaveLength(

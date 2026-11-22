@@ -122,8 +122,7 @@ describe('Listas de vendas', () => {
     expect(
       servico.registrarPagamento({
         vendaId: criadas[0].id,
-        parcelaIds: [parcela.id],
-        valorCentavos: parcela.valorCentavos,
+        parcelaId: parcela.id,
         data: servico.referencia,
         forma: 'Pix',
       }).tipo,

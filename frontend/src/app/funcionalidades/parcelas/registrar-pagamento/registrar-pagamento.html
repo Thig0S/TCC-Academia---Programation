@@ -1,67 +1,28 @@
-<app-modal titulo="Receber parcelas" [restaurarFoco]="restaurarFoco()" (fechado)="fechar()">
+<app-modal titulo="Pagar parcela" [restaurarFoco]="restaurarFoco()" (fechado)="fechar()">
   <p class="mb-3 text-text-muted">
-    Recebimento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos.
+    Pagamento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos; as
+    alterações são descartadas ao recarregar a aplicação.
   </p>
+  <dl
+    class="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg border border-border bg-surface-muted p-3"
+  >
+    <dt>Cliente</dt>
+    <dd>{{ venda().cliente.nome }}</dd>
+    <dt>Parcela</dt>
+    <dd>{{ parcela().numero }} de {{ venda().parcelas.length }}</dd>
+    <dt>Vencimento</dt>
+    <dd>{{ formatarDataCivil(parcela().vencimento) }}</dd>
+    <dt>Valor</dt>
+    <dd class="font-semibold tabular-nums">{{ formatarDinheiro(parcela().valorCentavos) }}</dd>
+  </dl>
   <form novalidate (submit)="confirmar($event)">
-    <label for="quantidade-recebimento" class="mb-1 block text-sm font-medium"
-      >Quantidade de parcelas consecutivas</label
-    >
-    <select
-      id="quantidade-recebimento"
-      class="mb-1 w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-      data-foco-inicial
-      [formField]="campos.quantidade"
-      aria-describedby="erro-quantidade-recebimento orientacao-sequencia"
-    >
-      @for (parcela of pendentes(); track parcela.id; let indice = $index) {
-        <option [value]="'' + (indice + 1)">{{ indice + 1 }}</option>
-      }
-    </select>
-    <app-erro-campo id="erro-quantidade-recebimento" [campo]="campos.quantidade" />
-    <p id="orientacao-sequencia" class="text-sm text-text-muted">
-      Sempre desde a primeira pendente. É permitido antecipar sem desconto.
-    </p>
-    <section
-      aria-label="Conferência das parcelas selecionadas"
-      class="mb-3 rounded-lg border-[1px] border-border bg-surface-muted p-3"
-    >
-      <ul
-        class="max-h-40 list-disc overflow-auto ps-6"
-        tabindex="0"
-        aria-label="Parcelas selecionadas"
-      >
-        @for (parcela of selecionadas(); track parcela.id) {
-          <li>
-            Parcela {{ parcela.numero }}: {{ formatarDinheiro(parcela.valorCentavos) }}, vencimento
-            {{ formatarDataCivil(parcela.vencimento) }}
-          </li>
-        }
-      </ul>
-      <p class="mt-2 border-t border-border pt-2 text-lg font-semibold tabular-nums">
-        Soma exigida: {{ formatarDinheiro(soma()) }}
-      </p>
-    </section>
     <div class="mb-3">
-      <label for="valor-recebimento" class="mb-1 block text-sm font-medium"
-        >Valor recebido (R$)</label
-      >
-      <input
-        id="valor-recebimento"
-        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-        inputmode="decimal"
-        [formField]="campos.valor"
-        aria-describedby="erro-valor-recebimento"
-      />
-      <app-erro-campo id="erro-valor-recebimento" [campo]="campos.valor" />
-    </div>
-    <div class="mb-3">
-      <label for="data-recebimento" class="mb-1 block text-sm font-medium"
-        >Data do recebimento</label
-      >
+      <label for="data-recebimento" class="mb-1 block text-sm font-medium">Data do pagamento</label>
       <input
         id="data-recebimento"
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
         type="date"
+        data-foco-inicial
         [formField]="campos.data"
         aria-describedby="erro-data-recebimento"
       />
@@ -69,7 +30,7 @@
     </div>
     <div class="mb-3">
       <label for="forma-recebimento" class="mb-1 block text-sm font-medium"
-        >Forma do recebimento</label
+        >Forma do pagamento</label
       >
       <select
         id="forma-recebimento"
@@ -86,8 +47,10 @@
     </div>
     @if (mensagem()) {
       <p
+        #alerta
         class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
         role="alert"
+        tabindex="-1"
       >
         {{ mensagem() }}
       </p>
@@ -98,7 +61,7 @@
         class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         [disabled]="campos().submitting() || concluido()"
       >
-        Confirmar recebimento demonstrativo
+        Confirmar pagamento
       </button>
       <button
         type="button"

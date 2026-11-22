@@ -190,8 +190,16 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
       .getByRole('link', { name: /Visualizar venda de/ })
       .first()
       .click();
-    await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
-    await expect(page.getByRole('dialog', { name: 'Receber parcelas' })).toBeVisible();
+    const detalhe = await page.screenshot({
+      path: testInfo.outputPath(`detalhe-pagamento-${tema}.png`),
+      fullPage: true,
+    });
+    await testInfo.attach(`detalhe-pagamento-${tema}`, {
+      body: detalhe,
+      contentType: 'image/png',
+    });
+    await page.locator('[data-acao-pagar]').first().click();
+    await expect(page.getByRole('dialog', { name: 'Pagar parcela' })).toBeVisible();
     const recebimento = await page.screenshot({
       path: testInfo.outputPath(`recebimento-${tema}.png`),
       fullPage: true,
@@ -204,7 +212,7 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
           rota: new URL(page.url()).pathname,
           tema,
           viewport: page.viewportSize(),
-          cenário: 'modal de recebimento com conferência e campos iniciais',
+          cenário: 'modal de pagamento individual com conferência e campos iniciais',
         },
         null,
         2,
@@ -213,37 +221,40 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
   }
 });
 
-test('recebe parcela e lote antecipado, valida conferência e reconcilia quitação', async ({
-  page,
-}) => {
+test('paga parcelas individualmente e reconcilia quitação', async ({ page }) => {
   for (const tema of ['dark', 'light']) {
     await page.goto('/vendas/nova');
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await preencherCadastro(page, 'Cliente DEMO E2E recebimento');
-    const referencia = await page.getByLabel('Data da venda', { exact: true }).inputValue();
+    await page.getByLabel('Data da venda', { exact: true }).fill('0001-01-01');
     await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
-    await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-    const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+    const referenciaTexto = await page
+      .getByRole('main')
+      .locator('p')
+      .filter({ hasText: 'Referência da demonstração:' })
+      .innerText();
+    const [, dia, mes, ano] = referenciaTexto.match(/(\d{2})\/(\d{2})\/(\d{4})/)!;
+    const referencia = `${ano}-${mes}-${dia}`;
+    await page.locator('[data-acao-pagar]').first().click();
+    const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('alert')).toHaveCount(0);
-    await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toBeFocused();
-    await expect(page.getByLabel('Valor recebido (R$)')).toHaveValue('');
-    await expect(page.getByLabel('Forma do recebimento')).toHaveValue('');
-    await expect(page.getByLabel('Data do recebimento')).toHaveValue(referencia);
-    await page.getByLabel('Valor recebido (R$)').fill('33,35');
-    await page.getByLabel('Data do recebimento').fill('0001-01-01');
-    await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
-    await expect(page.locator('#erro-valor-recebimento')).toContainText('exatamente');
-    await expect(page.locator('#erro-data-recebimento')).toContainText('anterior');
+    await expect(page.getByLabel('Data do pagamento')).toBeFocused();
+    await expect(page.getByLabel('Forma do pagamento')).toHaveValue('');
+    await expect(page.getByLabel('Data do pagamento')).toHaveValue(referencia);
+    await expect(dialog).toContainText('33,34');
+    await expect(page.locator('#valor-recebimento')).toHaveCount(0);
+    await expect(page.locator('#quantidade-recebimento')).toHaveCount(0);
+    await page.getByLabel('Data do pagamento').fill('9999-12-31');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+    await expect(page.locator('#erro-data-recebimento')).toContainText('futura');
     await expect(page.locator('#erro-forma-recebimento')).toContainText('Selecione');
-    await expect(dialog.getByRole('alert')).toHaveCount(0);
     await expect(dialog).toBeVisible();
-    await page.getByLabel('Valor recebido (R$)').fill('33,34');
-    await page.getByLabel('Data do recebimento').fill(referencia);
-    await page.getByLabel('Forma do recebimento').selectOption('Pix');
+    await page.getByLabel('Data do pagamento').fill('0001-01-01');
+    await page.getByLabel('Forma do pagamento').selectOption('Pix');
     await page
-      .getByRole('button', { name: 'Confirmar recebimento demonstrativo' })
+      .getByRole('button', { name: 'Confirmar pagamento' })
       .evaluate((botao: HTMLButtonElement) => {
         botao.click();
         botao.click();
@@ -254,7 +265,7 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
       .filter({ hasText: /recebimento/i });
     await expect(sucessoRecebimento).toHaveClass(/bg-success-badge/);
     await expect(sucessoRecebimento).toHaveCSS('border-top-width', '1px');
-    await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toBeFocused();
+    await expect(page.locator('[data-acao-pagar]').first()).toBeFocused();
     await expect(
       page
         .locator('dt')
@@ -269,23 +280,17 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
     ).toContainText('66,66');
     await expect(page.locator('tbody tr').first()).toContainText('Paga');
     await expect(page.locator('tbody tr').first()).toContainText('Pix');
-    await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-    await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('2');
-    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).toContainText(
-      'Parcela 2',
-    );
-    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).toContainText(
-      'Parcela 3',
-    );
-    await expect(dialog).toContainText('Soma exigida: R$ 66,66');
-    await expect(page.getByLabel('Valor recebido (R$)')).toHaveValue('');
-    await page.getByLabel('Valor recebido (R$)').fill('66,66');
-    await page.getByLabel('Forma do recebimento').selectOption('Dinheiro');
-    await page.getByLabel('Valor recebido (R$)').press('Enter');
-    await page.keyboard.press('Enter');
+    await page.locator('[data-acao-pagar]').first().click();
+    await page.getByLabel('Data do pagamento').fill(referencia);
+    await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+    await expect(dialog).toHaveCount(0);
+    await page.locator('[data-acao-pagar]').first().click();
+    await page.getByLabel('Forma do pagamento').selectOption('Pix');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
     await expect(dialog).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Parcelas', exact: true })).toBeFocused();
-    await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toHaveCount(0);
+    await expect(page.locator('[data-acao-pagar]')).toHaveCount(0);
     await expect(
       page
         .locator('dt')
@@ -326,11 +331,12 @@ test('dialog nativo contém foco, cancela por botão/Escape e reabre limpo nos d
     if (tema === 'light')
       await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
     await preencherCadastro(page, 'Cliente DEMO E2E cancelamento modal');
+    const referencia = await page.getByLabel('Data da venda', { exact: true }).inputValue();
     await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
     const antes = await page.locator('section[aria-labelledby="dados-financeiros"]').innerText();
-    const receber = page.getByRole('button', { name: /Receber parcelas da venda/ });
-    await receber.click();
-    const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+    const pagar = page.locator('[data-acao-pagar]').first();
+    await pagar.click();
+    const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
     await expect(dialog).toBeVisible();
     expect(await dialog.evaluate((elemento) => elemento.matches(':modal'))).toBe(true);
     const caixa = await dialog.boundingBox();
@@ -340,7 +346,9 @@ test('dialog nativo contém foco, cancela por botão/Escape e reabre limpo nos d
     ).toBeLessThanOrEqual(1);
     expect(caixa!.y).toBeGreaterThanOrEqual(0);
     expect(caixa!.y + caixa!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-    await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toBeFocused();
+    await expect(page.getByLabel('Data do pagamento')).toBeFocused();
+    await pagar.evaluate((acionador) => (acionador as HTMLElement).focus());
+    await expect(page.getByLabel('Data do pagamento')).toBeFocused();
     for (const tecla of ['Tab', 'Shift+Tab']) {
       for (let i = 0; i < 12; i++) {
         await page.keyboard.press(tecla);
@@ -353,20 +361,19 @@ test('dialog nativo contém foco, cancela por botão/Escape e reabre limpo nos d
         expect(foco.dentro, JSON.stringify({ tecla, indice: i, foco })).toBe(true);
       }
     }
-    await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('2');
-    await page.getByLabel('Valor recebido (R$)').fill('66,67');
+    await page.getByLabel('Forma do pagamento').selectOption('Pix');
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
-    await expect(receber).toBeFocused();
+    await expect(pagar).toBeFocused();
     expect(await page.locator('section[aria-labelledby="dados-financeiros"]').innerText()).toBe(
       antes,
     );
-    await receber.click();
-    await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toHaveValue('1');
-    await expect(page.getByLabel('Valor recebido (R$)')).toHaveValue('');
+    await page.locator('[data-acao-pagar]').first().click();
+    await expect(page.getByLabel('Data do pagamento')).toHaveValue(referencia);
+    await expect(page.getByLabel('Forma do pagamento')).toHaveValue('');
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(receber).toBeFocused();
+    await expect(page.locator('[data-acao-pagar]').first()).toBeFocused();
     expect(await page.locator('section[aria-labelledby="dados-financeiros"]').innerText()).toBe(
       antes,
     );
@@ -547,32 +554,23 @@ test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewpo
       await expect(page.getByRole('main')).toContainText(descricao);
       expect(await dadosFinanceiros.innerText()).toBe(finançasAntes);
 
-      await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
-      const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+      await page.locator('[data-acao-pagar]').first().click();
+      const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
       await expect(dialog).toBeVisible();
       await expect(dialog).toContainText(nome);
-      const quantidade = page.getByLabel('Quantidade de parcelas consecutivas');
-      await quantidade.selectOption('24');
-      const selecionadas = dialog.getByRole('list', { name: 'Parcelas selecionadas' });
-      await expect(selecionadas.locator('li')).toHaveCount(24);
       const medidasAntesErro = await dialog.evaluate((elemento) => {
-        const parcelas = elemento.querySelector('[aria-label="Parcelas selecionadas"]')!;
         return {
           largura: elemento.getBoundingClientRect().width,
           altura: elemento.getBoundingClientRect().height,
           alturaConteudo: elemento.scrollHeight,
           alturaVisivel: elemento.clientHeight,
-          alturaLista: parcelas.scrollHeight,
-          alturaListaVisivel: parcelas.clientHeight,
         };
       });
-      expect(medidasAntesErro.alturaLista).toBeGreaterThan(medidasAntesErro.alturaListaVisivel);
-
-      await page.getByLabel('Valor recebido (R$)').fill('33,33');
-      await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
-      await expect(page.locator('#erro-valor-recebimento')).toContainText('exatamente');
+      await page.getByLabel('Data do pagamento').fill('0000-01-01');
+      await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+      await expect(page.locator('#erro-data-recebimento')).toContainText('existente');
       const contrasteRecebimento = await page
-        .locator('#erro-valor-recebimento p')
+        .locator('#erro-data-recebimento p')
         .evaluate((elemento) => {
           const texto = getComputedStyle(elemento)
             .color.match(/[\d.]+/g)!
@@ -596,20 +594,17 @@ test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewpo
           return (maior + 0.05) / (menor + 0.05);
         });
       expect(contrasteRecebimento).toBeGreaterThanOrEqual(4.5);
-      const campoValor = page.getByLabel('Valor recebido (R$)');
-      await quantidade.focus();
-      let valorAlcançado = false;
-      for (let passo = 0; passo < 12 && !valorAlcançado; passo++) {
+      const campoData = page.getByLabel('Data do pagamento');
+      let dataAlcancada = false;
+      for (let passo = 0; passo < 12 && !dataAlcancada; passo++) {
         await page.keyboard.press('Tab');
-        valorAlcançado = await campoValor.evaluate(
-          (elemento) => document.activeElement === elemento,
-        );
+        dataAlcancada = await campoData.evaluate((elemento) => document.activeElement === elemento);
       }
-      expect(valorAlcançado, `campo de valor alcançável por Tab em ${largura}/${tema}`).toBe(true);
-      await campoValor.scrollIntoViewIfNeeded();
-      await expect(campoValor).toBeVisible();
-      await expect(campoValor).toBeFocused();
-      const confirmar = page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' });
+      expect(dataAlcancada, `campo de data alcançável por Tab em ${largura}/${tema}`).toBe(true);
+      await campoData.scrollIntoViewIfNeeded();
+      await expect(campoData).toBeVisible();
+      await expect(campoData).toBeFocused();
+      const confirmar = page.getByRole('button', { name: 'Confirmar pagamento' });
       await confirmar.evaluate((botao: HTMLButtonElement) => (botao.disabled = true));
       await expect(confirmar).toHaveCSS('cursor', 'not-allowed');
       await expect(confirmar).toHaveCSS('opacity', '0.6');
@@ -625,7 +620,7 @@ test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewpo
             rota: new URL(page.url()).pathname,
             tema,
             viewport: page.viewportSize(),
-            cenário: 'edição com erro e recebimento com 24 parcelas selecionadas',
+            cenário: 'edição com erro e pagamento individual com erro de data',
             medidas: { ...medidasAntesErro, larguraDocumento },
           },
           null,
@@ -805,27 +800,20 @@ test('seleção por teclado, alternância preservada e entrada nas dez parcelas 
       true,
     );
 
-    await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-    const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
-    await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('9');
-    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).toContainText(
-      'Parcela 2',
-    );
-    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).not.toContainText(
-      /Parcela 1:/,
-    );
-    await expect(dialog).toContainText('Soma exigida: R$ 1.500,00');
-    await page.getByLabel('Valor recebido (R$)').fill('1.500,00');
-    await page.getByLabel('Forma do recebimento').selectOption('Pix');
-    await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
-    await expect(dialog).toHaveCount(0);
+    for (let pagamento = 0; pagamento < 9; pagamento++) {
+      await page.locator('[data-acao-pagar]').first().click();
+      const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
+      await page.getByLabel('Forma do pagamento').selectOption('Pix');
+      await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+      await expect(dialog).toHaveCount(0);
+    }
     await expect(
       page
         .locator('dt')
         .filter({ hasText: /^Parcelas pagas$/ })
         .locator('+ dd'),
     ).toHaveText('10 de 10');
-    await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toHaveCount(0);
+    await expect(page.locator('[data-acao-pagar]')).toHaveCount(0);
     await expect(page.getByRole('main')).toContainText('Quitada');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
@@ -888,6 +876,13 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .filter({ hasText: /^Saldo devedor$/ })
       .locator('+ dd'),
   ).toContainText('800,00');
+  await expect(page.locator('tbody tr').first()).toContainText('Entrada');
+  await expect(page.locator('tbody tr').first().locator('[data-acao-pagar]')).toHaveCount(0);
+  await expect(page.locator('[data-acao-pagar]')).toHaveCount(1);
+  await expect(page.locator('[data-acao-pagar]').first()).toHaveAttribute(
+    'aria-label',
+    /parcela 2/,
+  );
 
   await page
     .getByRole('navigation', { name: 'Navegação principal' })
@@ -944,11 +939,13 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
     .click();
   await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
   await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
-  await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-  await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('3');
-  await page.getByLabel('Valor recebido (R$)').fill('800');
-  await page.getByLabel('Forma do recebimento').selectOption('Dinheiro');
-  await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
+  while ((await page.locator('[data-acao-pagar]').count()) > 0) {
+    await page.locator('[data-acao-pagar]').first().click();
+    const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
+    await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+    await expect(dialog).toHaveCount(0);
+  }
   await expect(
     page
       .locator('dt')
@@ -983,7 +980,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
   expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
     recebimentoInicial + 100000,
   );
-  await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(2);
+  await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(4);
   await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
   await expect(posicaoEmAberto.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
   await expect(parcelasVencidas.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);

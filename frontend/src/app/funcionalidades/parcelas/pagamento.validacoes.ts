@@ -1,5 +1,5 @@
 import { compararDatasCivis } from '../vendas/data-civil';
-import { somarCentavos, validarCentavos } from '../vendas/dinheiro';
+import { validarCentavos } from '../vendas/dinheiro';
 import { projetarVendas, validarVenda } from '../vendas/venda.calculos';
 import { Resultado, Venda } from '../vendas/venda.modelos';
 import { AlocacaoPagamento, ComandoPagamento, formaAceita } from './pagamento.modelos';
@@ -62,6 +62,21 @@ export function prepararPagamento(
   operacoes: OperacoesPreparacaoRecebimento = operacoesPadrao,
 ): Resultado<readonly Venda[]> {
   try {
+    const campos = ['vendaId', 'parcelaId', 'data', 'forma'];
+    if (
+      !comando ||
+      typeof comando !== 'object' ||
+      Object.keys(comando).length !== campos.length ||
+      !campos.every((campo) => Object.hasOwn(comando, campo)) ||
+      campos.some(
+        (campo) => typeof (comando as unknown as Record<string, unknown>)[campo] !== 'string',
+      )
+    )
+      return {
+        tipo: 'validacao',
+        codigo: 'comando-pagamento-invalido',
+        mensagem: 'Informe somente a venda, parcela, data e forma do pagamento.',
+      };
     const venda = vendas.find((item) => item.id === comando.vendaId);
     if (!venda)
       return {
@@ -69,14 +84,15 @@ export function prepararPagamento(
         codigo: 'venda-inexistente',
         mensagem: 'Venda demonstrativa não encontrada.',
       };
-    const selecao = selecionarParcelas(venda, comando.parcelaIds, referencia);
-    if (selecao.tipo !== 'sucesso') return selecao;
-    const valor = somarCentavos(selecao.valor.map((parcela) => parcela.valorCentavos));
-    if (validarCentavos(comando.valorCentavos) !== valor) {
+    const elegivel = selecionarParcelas(venda, [comando.parcelaId], referencia);
+    if (elegivel.tipo !== 'sucesso') return elegivel;
+    const parcela = elegivel.valor[0];
+    const valor = validarCentavos(parcela.valorCentavos);
+    if (!Number.isSafeInteger(valor) || valor <= 0) {
       return {
         tipo: 'validacao',
-        codigo: 'valor-nao-integral',
-        mensagem: 'O valor recebido deve ser exatamente a soma integral das parcelas selecionadas.',
+        codigo: 'valor-parcela-invalido',
+        mensagem: 'A parcela não possui um valor integral válido.',
       };
     }
     if (
@@ -95,7 +111,7 @@ export function prepararPagamento(
       data: comando.data,
       forma: comando.forma,
       valorCentavos: valor,
-      alocacoes: selecao.valor.map((parcela) => operacoes.alocar(parcela)),
+      alocacoes: [operacoes.alocar(parcela)],
     };
     const preparadas = vendas.map((item) =>
       item.id === venda.id ? { ...item, recebimentos: [...item.recebimentos, recebimento] } : item,

@@ -4,205 +4,255 @@ import * as calculos from '../vendas/venda.calculos';
 import { Venda } from '../vendas/venda.modelos';
 import { prepararCadastro } from '../vendas/venda.validacoes';
 import { ComandoPagamento, FORMAS_PAGAMENTO } from './pagamento.modelos';
-import { prepararPagamento, selecionarParcelas } from './pagamento.validacoes';
+import {
+  OperacoesPreparacaoRecebimento,
+  prepararPagamento,
+  selecionarParcelas,
+} from './pagamento.validacoes';
+import { prepararPagamentoHistorico } from '../../nucleo/demonstracao/preparar-pagamento-historico';
 
 const referencia = '2027-01-31';
-function venda(id = 'v1'): Venda {
-  const r = prepararCadastro(
+function venda(id = 'v1', dataReferencia = referencia, valorTotalCentavos = 100000): Venda {
+  const resultado = prepararCadastro(
     {
       cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '00900000001' },
-      valorTotalCentavos: 100000,
+      valorTotalCentavos,
       quantidadeParcelas: 5,
-      dataVenda: '2027-01-01',
+      dataVenda: dataReferencia === referencia ? '2027-01-01' : '2027-01-01',
       entrada: { valorCentavos: 20000, data: '2027-01-01', forma: 'Pix' },
     },
-    referencia,
+    dataReferencia,
     id,
   );
-  if (r.tipo !== 'sucesso') throw new Error(r.mensagem);
-  return r.valor;
+  if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+  return resultado.valor;
 }
-function comando(v = venda(), quantidade = 3): ComandoPagamento {
-  return {
-    vendaId: v.id,
-    parcelaIds: v.parcelas.slice(1, quantidade + 1).map((p) => p.id),
-    valorCentavos: quantidade * 20000,
-    data: referencia,
-    forma: 'Pix',
-  };
+function comando(v = venda(), indiceParcela = 1, data = referencia): ComandoPagamento {
+  return { vendaId: v.id, parcelaId: v.parcelas[indiceParcela].id, data, forma: 'Pix' };
 }
 function aceitar(vendas: readonly Venda[], c: ComandoPagamento, id = 'r1'): readonly Venda[] {
-  const r = prepararPagamento(vendas, c, referencia, id);
-  expect(r.tipo).toBe('sucesso');
-  if (r.tipo !== 'sucesso') throw new Error(r.mensagem);
-  return r.valor;
+  const resultado = prepararPagamento(vendas, c, referencia, id);
+  expect(resultado.tipo).toBe('sucesso');
+  if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+  return resultado.valor;
 }
 
-describe('Seleção integral sequencial', () => {
+describe('Pagamento individual sequencial', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('aceita a primeira pendente isolada e várias consecutivas, independentemente da ordem textual', () => {
-    const v = venda();
-    expect(selecionarParcelas(v, [v.parcelas[1].id], referencia)).toMatchObject({
-      tipo: 'sucesso',
-      valor: [v.parcelas[1]],
-    });
-    const preparadas = aceitar([v], {
-      ...comando(v),
-      parcelaIds: [...comando(v).parcelaIds].reverse(),
-    });
-    expect(preparadas[0].recebimentos[1].alocacoes.map((a) => a.parcelaId)).toEqual(
-      comando(v).parcelaIds,
-    );
-    const depois = aceitar([v], comando(v, 1));
-    expect(
-      selecionarParcelas(depois[0], [v.parcelas[2].id, v.parcelas[3].id], referencia).tipo,
-    ).toBe('sucesso');
+  it('aceita somente a primeira pendente e deriva seu valor canônico em uma alocação', () => {
+    const original = venda('v1', referencia, 100003);
+    const preparada = aceitar([original], comando(original));
+    const recebimento = preparada[0].recebimentos[1];
+    expect(recebimento.valorCentavos).toBe(original.parcelas[1].valorCentavos);
+    expect(recebimento.alocacoes).toEqual([
+      { parcelaId: original.parcelas[1].id, valorCentavos: original.parcelas[1].valorCentavos },
+    ]);
+    expect(original.recebimentos).toHaveLength(1);
   });
 
-  it.each([[], [0], [0, 2], [0, 0], [0, 4], [4]].map((indices) => ({ indices })))(
-    'rejeita seleção vazia, salto, repetição ou ausente: $indices',
-    ({ indices }) => {
-      const v = venda();
-      const antes = structuredClone(v);
-      expect(
-        selecionarParcelas(
-          v,
-          indices.map((i) => v.parcelas[i]?.id ?? 'ausente'),
-          referencia,
-        ).tipo,
-      ).toBe('inelegibilidade');
-      expect(v).toEqual(antes);
-    },
-  );
-
-  it('rejeita parcela paga e parcela de outra venda', () => {
-    const v = venda();
-    const depois = aceitar([v], comando(v, 1));
-    expect(selecionarParcelas(depois[0], [v.parcelas[0].id], referencia).tipo).toBe(
-      'inelegibilidade',
-    );
-    expect(selecionarParcelas(v, [venda('v2').parcelas[0].id], referencia).tipo).toBe(
-      'inelegibilidade',
-    );
-  });
-
-  it.each(FORMAS_PAGAMENTO)(
-    'antecipa três parcelas de R$ 200 com %s e metadados comuns',
-    (forma) => {
-      const v = venda();
-      const depois = aceitar([v], { ...comando(v), forma });
-      const r = depois[0].recebimentos[1];
-      expect(r).toMatchObject({ valorCentavos: 60000, data: referencia, forma });
-      expect(r.alocacoes.map((a) => a.valorCentavos)).toEqual([20000, 20000, 20000]);
-      const p = calculos.projetarVenda(depois[0], referencia);
-      expect(p).toMatchObject({
-        totalPagoCentavos: 80000,
-        saldoCentavos: 20000,
-        quantidadePaga: 4,
-      });
-      expect(
-        p.parcelas
-          .slice(1, 4)
-          .every((p) => p.dataPagamento === referencia && p.formaPagamento === forma),
-      ).toBe(true);
-      expect(calculos.resumirVendas(depois, referencia).recebidoNoMesCentavos).toBe(80000);
-      expect(v.recebimentos).toHaveLength(1);
-      expect(v.recebimentos[0].id).toBe(`${v.id}/recebimento/entrada`);
-    },
-  );
-
-  it.each([
-    { valorCentavos: 59999 },
-    { valorCentavos: 60001 },
-    { valorCentavos: -1 },
-    { valorCentavos: 0.5 },
-    { forma: '' },
-    { forma: 'Transferência' },
-    { data: '2027-02-29' },
-    { data: '2026-12-31' },
-    { data: '2027-02-01' },
-  ])('rejeita valor, forma ou data: %j sem mutação', (alteracao) => {
-    const vendas = [venda()];
-    const c = { ...comando(), ...alteracao };
-    const antes = structuredClone({ vendas, c });
-    expect(prepararPagamento(vendas, c, referencia, 'r1').tipo).toBe('validacao');
-    expect({ vendas, c }).toEqual(antes);
-  });
-
-  it.each(['2027-01-01', referencia])('aceita a borda de data %s', (data) => {
-    expect(prepararPagamento([venda()], { ...comando(), data }, referencia, 'r1').tipo).toBe(
-      'sucesso',
-    );
-  });
-
-  it('preparação descartada, repetição e seleção obsoleta não mudam o conjunto atual', () => {
-    const inicial = [venda(), venda('v2')];
-    const antes = structuredClone(inicial);
-    const c = comando();
-    const antiga = selecionarParcelas(inicial[0], c.parcelaIds, referencia);
-    expect(antiga.tipo).toBe('sucesso');
-    expect(inicial).toEqual(antes);
-    const depois = aceitar(inicial, comando(inicial[0], 1));
-    const snapshot = structuredClone(depois);
-    expect(prepararPagamento(depois, comando(inicial[0], 1), referencia, 'r2').tipo).toBe(
-      'inelegibilidade',
-    );
-    expect(prepararPagamento(depois, c, referencia, 'r3').tipo).toBe('inelegibilidade');
-    expect(depois).toEqual(snapshot);
-    expect(prepararPagamento(depois, { ...c, vendaId: 'ausente' }, referencia, 'r4').tipo).toBe(
-      'inexistencia',
-    );
-    expect(depois).toEqual(snapshot);
-  });
-
-  it('falha na segunda preparação ou na validação final preserva o snapshot completo e permite tentar de novo', () => {
-    const inicial = [venda(), venda('v2')];
-    const snapshot = structuredClone(inicial);
-    const preparador = TestBed.inject(PreparadorRecebimento);
-    const original = preparador.alocar.bind(preparador);
-    const alocar = vi
-      .spyOn(preparador, 'alocar')
-      .mockImplementationOnce(original)
-      .mockImplementationOnce(() => {
-        throw new Error('Falha controlada em teste');
-      });
-    expect(preparador.preparar(inicial, comando(), referencia, 'r1').tipo).toBe('falha');
-    expect(alocar).toHaveBeenCalledTimes(2);
-    expect(inicial).toEqual(snapshot);
-    vi.restoreAllMocks();
-    const validar = vi.spyOn(preparador, 'validarConjunto').mockImplementationOnce(() => {
-      throw new Error('Falha final controlada em teste');
-    });
-    expect(preparador.preparar(inicial, comando(), referencia, 'r1').tipo).toBe('falha');
-    expect(validar).toHaveBeenCalledTimes(1);
-    expect(inicial).toEqual(snapshot);
-    vi.restoreAllMocks();
-    const resultado = preparador.preparar(inicial, comando(), referencia, 'r1');
-    expect(resultado.tipo).toBe('sucesso');
-    if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
-    const depois = resultado.valor;
-    expect(depois[0].recebimentos).toHaveLength(2);
-    expect(depois[0].recebimentos[1].alocacoes).toHaveLength(3);
-    expect(inicial).toEqual(snapshot);
-  });
-
-  it('quita as restantes e não aceita identificador de recebimento repetido', () => {
-    const v = venda();
-    const depois = aceitar([v], comando(v, 4));
-    expect(calculos.projetarVenda(depois[0], referencia)).toMatchObject({
-      saldoCentavos: 0,
-      situacao: 'Quitada',
-      proximoVencimento: null,
-    });
-    expect(calculos.resumirVendas(depois, referencia).recebidoNoMesCentavos).toBe(100000);
-    const parcial = aceitar([v], comando(v, 1));
-    const r = prepararPagamento(
-      parcial,
-      { ...comando(v, 1), parcelaIds: [v.parcelas[2].id] },
+  it.each(FORMAS_PAGAMENTO)('aceita a primeira parcela pendente com %s', (forma) => {
+    const original = venda();
+    const resultado = prepararPagamento(
+      [original],
+      { ...comando(original), forma },
       referencia,
       'r1',
     );
-    expect(r.tipo).toBe('validacao');
+    expect(resultado).toMatchObject({ tipo: 'sucesso' });
+    if (resultado.tipo === 'sucesso')
+      expect(calculos.projetarVenda(resultado.valor[0], referencia).totalPagoCentavos).toBe(40000);
+  });
+
+  it('permite pagamento da primeira pendente futura ou atrasada, inclusive em parcelas de centavos distintos', () => {
+    const futuro = venda('futuro', referencia, 100003);
+    expect(futuro.parcelas[1].vencimento > referencia).toBe(true);
+    const pagoFuturo = aceitar([futuro], comando(futuro));
+    expect(pagoFuturo[0].recebimentos[1].valorCentavos).toBe(futuro.parcelas[1].valorCentavos);
+
+    const refAtrasada = '2027-06-01';
+    const atrasada = venda('atrasada', refAtrasada, 100003);
+    expect(atrasada.parcelas[1].vencimento < refAtrasada).toBe(true);
+    const resultado = prepararPagamento(
+      [atrasada],
+      comando(atrasada, 1, refAtrasada),
+      refAtrasada,
+      'r2',
+    );
+    expect(resultado.tipo).toBe('sucesso');
+  });
+
+  it.each([
+    { parcelaId: 'ausente', tipo: 'inelegibilidade' },
+    { parcelaId: 'v2/parcela/2', tipo: 'inelegibilidade' },
+  ])('rejeita parcela desconhecida ou de outra venda: $parcelaId', ({ parcelaId, tipo }) => {
+    const original = venda();
+    const snapshot = structuredClone([original]);
+    expect(
+      prepararPagamento([original], { ...comando(original), parcelaId }, referencia, 'r1').tipo,
+    ).toBe(tipo);
+    expect([original]).toEqual(snapshot);
+  });
+
+  it('rejeita parcela paga, entrada e saltos sem mutação', () => {
+    const original = venda();
+    const snapshot = structuredClone([original]);
+    for (const parcelaId of [original.parcelas[0].id, original.parcelas[2].id])
+      expect(
+        prepararPagamento([original], { ...comando(original), parcelaId }, referencia, 'r1').tipo,
+      ).toBe('inelegibilidade');
+    expect([original]).toEqual(snapshot);
+  });
+
+  it('retorna inexistência para venda ausente sem publicar recebimento', () => {
+    expect(prepararPagamento([], comando(venda('ausente')), referencia, 'r1')).toMatchObject({
+      tipo: 'inexistencia',
+      codigo: 'venda-inexistente',
+    });
+  });
+
+  it.each([
+    { data: '2027-02-29', forma: 'Pix' },
+    { data: '2026-12-31', forma: 'Pix' },
+    { data: '2027-02-01', forma: 'Pix' },
+    { data: referencia, forma: '' },
+    { data: referencia, forma: 'Transferência' },
+  ])('rejeita data ou forma inválida: %j sem mutação', (alteracao) => {
+    const original = venda();
+    const snapshot = structuredClone([original]);
+    expect(
+      prepararPagamento([original], { ...comando(original), ...alteracao }, referencia, 'r1').tipo,
+    ).toBe('validacao');
+    expect([original]).toEqual(snapshot);
+  });
+
+  it.each([
+    { vendaId: 'v1', parcelaIds: ['p1'], valorCentavos: 20000, data: referencia, forma: 'Pix' },
+    {
+      vendaId: 'v1',
+      parcelaIds: ['p1', 'p2'],
+      valorCentavos: 40000,
+      data: referencia,
+      forma: 'Pix',
+    },
+    { vendaId: 'v1', parcelaId: 'p1', valorCentavos: 20000, data: referencia, forma: 'Pix' },
+    { vendaId: 'v1', parcelaId: 'p1', data: referencia, forma: 'Pix', legado: true },
+    { vendaId: 'v1', data: referencia, forma: 'Pix' },
+  ])('rejeita comando legado, múltiplo ou malformado sem mutação: %j', (legado) => {
+    const original = venda();
+    const snapshot = structuredClone([original]);
+    expect(
+      prepararPagamento([original], legado as unknown as ComandoPagamento, referencia, 'r1').tipo,
+    ).toBe('validacao');
+    expect([original]).toEqual(snapshot);
+  });
+
+  it('não desloca comando repetido nem alvo obsoleto para a próxima parcela', () => {
+    const original = venda();
+    const c = comando(original);
+    const depois = aceitar([original], c);
+    const snapshot = structuredClone(depois);
+    expect(prepararPagamento(depois, c, referencia, 'r2').tipo).toBe('inelegibilidade');
+    expect(depois).toEqual(snapshot);
+  });
+
+  it.each(['2027-01-01', referencia])(
+    'aceita as bordas do intervalo de datas no núcleo: %s',
+    (data) => {
+      const original = venda();
+      const resultado = prepararPagamento([original], comando(original, 1, data), referencia, 'r1');
+      expect(resultado.tipo).toBe('sucesso');
+    },
+  );
+
+  it('mantém publicação atômica com falha de alocação/validação e permite nova tentativa', () => {
+    const original = venda();
+    const vendas = [original];
+    const snapshot = structuredClone(vendas);
+    const alocarFalha: OperacoesPreparacaoRecebimento = {
+      alocar: vi.fn(() => {
+        throw new Error('falha de alocação controlada');
+      }),
+      validarConjunto: vi.fn(() => undefined),
+    };
+    expect(prepararPagamento(vendas, comando(original), referencia, 'r1', alocarFalha).tipo).toBe(
+      'falha',
+    );
+    expect(alocarFalha.alocar).toHaveBeenCalledTimes(1);
+    expect(alocarFalha.validarConjunto).not.toHaveBeenCalled();
+    expect(vendas).toEqual(snapshot);
+
+    const validacaoFinalFalha: OperacoesPreparacaoRecebimento = {
+      alocar: (parcela) => ({ parcelaId: parcela.id, valorCentavos: parcela.valorCentavos }),
+      validarConjunto: vi.fn(() => {
+        throw new Error('falha de validação final controlada');
+      }),
+    };
+    expect(
+      prepararPagamento(vendas, comando(original), referencia, 'r1', validacaoFinalFalha).tipo,
+    ).toBe('falha');
+    expect(validacaoFinalFalha.validarConjunto).toHaveBeenCalledTimes(1);
+    expect(vendas).toEqual(snapshot);
+    expect(aceitar(vendas, comando(original))[0].recebimentos).toHaveLength(2);
+    expect(vendas).toEqual(snapshot);
+  });
+
+  it('preserva um lote histórico ao pagar individualmente a próxima parcela e reconcilia projeções', () => {
+    const original = venda('hist', referencia, 100003);
+    const parcelasHistoricas = original.parcelas.slice(1, 4);
+    const historico = prepararPagamentoHistorico(
+      [original],
+      {
+        vendaId: original.id,
+        parcelaIds: parcelasHistoricas.map((parcela) => parcela.id),
+        valorCentavos: parcelasHistoricas.reduce(
+          (total, parcela) => total + parcela.valorCentavos,
+          0,
+        ),
+        data: referencia,
+        forma: 'Dinheiro',
+      },
+      referencia,
+      'historico/lote',
+    );
+    expect(historico.tipo).toBe('sucesso');
+    if (historico.tipo !== 'sucesso') throw new Error(historico.mensagem);
+    const antes = structuredClone(historico.valor);
+    const registroHistorico = structuredClone(historico.valor[0].recebimentos.at(-1));
+    const proxima = original.parcelas[4];
+    const resultado = prepararPagamento(
+      historico.valor,
+      comando(original, 4),
+      referencia,
+      'individual/seguinte',
+    );
+    expect(resultado.tipo).toBe('sucesso');
+    if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+    expect(resultado.valor[0].recebimentos.at(-2)).toEqual(registroHistorico);
+    expect(resultado.valor[0].recebimentos.at(-1)?.alocacoes).toEqual([
+      { parcelaId: proxima.id, valorCentavos: proxima.valorCentavos },
+    ]);
+    expect(historico.valor).toEqual(antes);
+    expect(calculos.projetarVenda(resultado.valor[0], referencia)).toMatchObject({
+      totalPagoCentavos: 100003,
+      saldoCentavos: 0,
+      quantidadePaga: original.parcelas.length,
+    });
+  });
+
+  it('mantém seleção consultiva restrita à primeira pendente', () => {
+    const original = venda();
+    expect(selecionarParcelas(original, [original.parcelas[1].id], referencia)).toMatchObject({
+      tipo: 'sucesso',
+      valor: [original.parcelas[1]],
+    });
+    expect(selecionarParcelas(original, [original.parcelas[2].id], referencia).tipo).toBe(
+      'inelegibilidade',
+    );
+  });
+
+  it('mantém as operações injetáveis do preparador para a próxima tarefa de atomicidade', () => {
+    const preparador = TestBed.inject(PreparadorRecebimento);
+    expect(preparador.preparar([venda()], comando(), referencia, 'r1').tipo).toBe('sucesso');
   });
 });

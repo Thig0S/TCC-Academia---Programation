@@ -82,8 +82,7 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
         expect(
           fonte.registrarPagamento({
             vendaId: alvo.id,
-            parcelaIds: [primeira.id],
-            valorCentavos: primeira.valorCentavos,
+            parcelaId: primeira.id,
             data: fonte.referencia,
             forma: 'Pix',
           }).tipo,

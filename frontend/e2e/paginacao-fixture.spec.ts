@@ -379,7 +379,7 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
       'font-variant-numeric',
       /tabular-nums/,
     );
-    await expect(page.getByRole('button', { name: /Receber parcelas da venda de/ })).toHaveCount(0);
+    await expect(page.locator('[data-acao-pagar]')).toHaveCount(0);
     await expect(page.getByRole('main')).toContainText(
       'Descrição curta para o cenário de dez parcelas.',
     );

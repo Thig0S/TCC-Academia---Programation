@@ -551,7 +551,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
   await expect(page.getByRole('main').getByRole('table')).toBeVisible();
   await expect(page.getByRole('main').locator('form')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toBeVisible();
+  await expect(page.locator('[data-acao-pagar]')).toHaveCount(1);
   const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
   await expect(navegacao.locator('div.modulo-ativo')).toContainText('Vendas');
   await expect(navegacao.getByRole('link', { name: 'Vendas', exact: true })).not.toHaveAttribute(
