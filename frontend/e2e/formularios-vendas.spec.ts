@@ -4,6 +4,7 @@ async function preencherCadastro(page: Page, nome: string) {
   await page.getByLabel('Nome', { exact: true }).fill(nome);
   await page.getByLabel('CPF', { exact: true }).fill('900.000.001-75');
   await page.getByLabel('Telefone com DDD').fill('(00) 1234-5678');
+  await page.getByLabel('Possui Entrada').selectOption('nao');
   await page.getByLabel('Valor total (R$)', { exact: true }).fill('100');
   await page.getByLabel('Quantidade de parcelas').fill('3');
 }
@@ -410,7 +411,7 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
   await page.getByLabel('Descrição (opcional)').fill('Descrição sintética de conferência.');
   await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
   await page.getByLabel('Quantidade de parcelas').fill('4');
-  await page.getByLabel('Há entrada').check();
+    await page.getByLabel('Possui Entrada').selectOption('sim');
   await page.getByLabel('Valor da entrada (R$)').fill('200');
   await page.getByLabel('Forma da entrada').selectOption('Pix');
   const previa = page.getByRole('region', { name: 'Prévia completa das parcelas' });
@@ -441,13 +442,109 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
       .locator('dt')
       .filter({ hasText: /^Parcelas pagas$/ })
       .locator('+ dd'),
-  ).toContainText('0 de 4');
+    ).toContainText('1 de 4');
   await expect(page.locator('tbody tr')).toHaveCount(4);
   await page.getByRole('link', { name: 'Voltar para Vendas', exact: true }).click();
   await page
     .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
     .fill('Cliente DEMO E2E entrada');
   await expect(page.locator('tbody tr')).toHaveCount(1);
+});
+
+test('seleção por teclado, alternância preservada e entrada nas dez parcelas nos dois temas', async ({
+  page,
+}, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas/nova');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const escolha = page.getByLabel('Possui Entrada');
+    await expect(escolha).toHaveValue('');
+
+    for (const [label, valor] of [
+      ['Nome', `Cliente DEMO teclado ${tema}`],
+      ['CPF', '900.000.001-75'],
+      ['Telefone com DDD', '(00) 1234-5678'],
+      ['Valor total (R$)', '2.000,00'],
+      ['Quantidade de parcelas', '10'],
+    ]) await page.getByLabel(label, { exact: label !== 'Telefone com DDD' }).fill(valor);
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+    await expect(escolha).toBeFocused();
+    await expect(page.locator('#erro-tem-entrada')).toContainText(
+      'Informe se a venda possui entrada ou não.',
+    );
+    await expect(page.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCount(
+      0,
+    );
+
+    await page.keyboard.press('ArrowDown');
+    await expect(escolha).toHaveValue('sim');
+    await page.getByLabel('Valor da entrada (R$)').fill('500');
+    await page.getByLabel('Forma da entrada').selectOption('Pix');
+    const previa = page.getByRole('region', { name: 'Prévia completa das parcelas' });
+    await expect(previa.locator('tbody tr')).toHaveCount(10);
+    await expect(previa.locator('tbody tr').first()).toContainText('Entrada');
+    await expect(previa.locator('tbody tr').first()).toContainText('Paga');
+    await expect(previa.locator('tbody tr').first()).toContainText('500,00');
+    await expect(page.locator('section[aria-labelledby="titulo-previa"]')).toContainText(
+      '1.500,00',
+    );
+    await expect(escolha).toHaveAttribute('aria-describedby', 'erro-tem-entrada');
+
+    await escolha.selectOption('nao');
+    await expect(page.getByLabel('Valor da entrada (R$)')).toHaveCount(0);
+    await expect(previa.locator('tbody tr')).toHaveCount(10);
+    await expect(previa.locator('tbody tr').first()).not.toContainText('Entrada');
+    await escolha.selectOption('sim');
+    await expect(page.getByLabel('Valor da entrada (R$)')).toHaveValue('500');
+    await expect(page.getByLabel('Forma da entrada')).toHaveValue('Pix');
+    await expect(previa.locator('tbody tr')).toHaveCount(10);
+    const captura = await page.screenshot({ fullPage: true });
+    await testInfo.attach(`cadastro-entrada-10-${tema}`, {
+      body: captura,
+      contentType: 'image/png',
+    });
+
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).evaluate((botao) => {
+      (botao as HTMLButtonElement).click();
+      (botao as HTMLButtonElement).click();
+    });
+    await expect(page.getByRole('main')).toContainText('1 de 10');
+    await expect(page.getByRole('main')).toContainText('Entrada');
+    await expect(page.getByRole('main')).toContainText('Paga');
+    await expect(
+      page.locator('dt').filter({ hasText: /^Parcelas pagas$/ }).locator('+ dd'),
+    ).toHaveText('1 de 10');
+    await expect(
+      page.locator('dt').filter({ hasText: /^Total pago$/ }).locator('+ dd'),
+    ).toContainText('500,00');
+    await expect(
+      page.locator('dt').filter({ hasText: /^Saldo devedor$/ }).locator('+ dd'),
+    ).toContainText('1.500,00');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+    await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
+    const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+    await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('9');
+    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).toContainText(
+      'Parcela 2',
+    );
+    await expect(dialog.getByRole('list', { name: 'Parcelas selecionadas' })).not.toContainText(
+      /Parcela 1:/,
+    );
+    await expect(dialog).toContainText('Soma exigida: R$ 1.500,00');
+    await page.getByLabel('Valor recebido (R$)').fill('1.500,00');
+    await page.getByLabel('Forma do recebimento').selectOption('Pix');
+    await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(
+      page.locator('dt').filter({ hasText: /^Parcelas pagas$/ }).locator('+ dd'),
+    ).toHaveText('10 de 10');
+    await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toHaveCount(0);
+    await expect(page.getByRole('main')).toContainText('Quitada');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
 });
 
 test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão Geral e Relatórios', async ({
@@ -488,7 +585,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
   expect(referencia).toContain(dataVenda.split('-').reverse().join('/'));
   await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
   await page.getByLabel('Quantidade de parcelas').fill('4');
-  await page.getByLabel('Há entrada').check();
+  await page.getByLabel('Possui Entrada').selectOption('sim');
   await page.getByLabel('Valor da entrada (R$)').fill('200');
   await page.getByLabel('Forma da entrada').selectOption('Pix');
   await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
@@ -562,7 +659,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
   await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
   await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
   await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-  await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('4');
+  await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('3');
   await page.getByLabel('Valor recebido (R$)').fill('800');
   await page.getByLabel('Forma do recebimento').selectOption('Dinheiro');
   await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
