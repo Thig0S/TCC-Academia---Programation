@@ -749,6 +749,25 @@ ordem DOM, escolha sem resposta com demais obrigatórios válidos, mensagem/foco
 ausência de publicação/consumo de ID, exigência condicional e alternância com
 restauração do rascunho. Build do template foi concluído pelo target de testes.
 
+### Apply `entrada-como-primeira-parcela` — prévia do cadastro — 22/11/2026
+
+Na tarefa 3.3, `prepararPrevia` prepara o agregado com ID exclusivamente local e
+passa pela mesma projeção financeira usada no domínio. A tabela mostra número,
+valor, vencimento e situação textual; a parcela 1 recebe a identificação
+“Entrada” e situação “Paga”. O resumo mantém entrada e saldo futuro, o caption
+explica que nenhuma venda foi criada e a tabela continua em região rolável.
+Dados inválidos removem a prévia anterior; cancelamento, falha/retry e envio
+único continuam nas verificações de componente já existentes.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts
+--include=src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts`
+aprovou 57/57 testes em 2 arquivos. Verificou 10 parcelas no exemplo de
+R$ 2.000,00/10 com entrada de R$ 500,00, divisão exata dos R$ 1.500,00 futuros,
+entrada/Paga/data na prévia, recálculo/ocultação/restauração, finanças sem
+publicação e descarte da prévia inválida. Os testes Angular compilaram o
+template; ainda não é a regressão integral da Change.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,

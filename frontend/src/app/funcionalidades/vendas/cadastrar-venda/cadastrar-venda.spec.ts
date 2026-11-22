@@ -115,7 +115,8 @@ describe('Cadastro demonstrativo pela interface', () => {
   });
 
   it('inclui entrada condicional, descrição opcional e recalcula a prévia', async () => {
-    const { harness, pagina, preencher, validos } = await abrir();
+    const { harness, fonte, pagina, preencher, validos } = await abrir();
+    const antes = structuredClone(fonte.vendas());
     await validos();
     expect(pagina.textContent).not.toContain(
       'A entrada será registrada na data da venda e não conta como parcela paga.',
@@ -128,6 +129,10 @@ describe('Cadastro demonstrativo pela interface', () => {
     await preencher('forma-entrada', 'Pix');
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(4);
     expect(pagina.textContent).toContain('800,00');
+    expect(pagina.querySelector('tbody tr')?.textContent).toContain('Entrada');
+    expect(pagina.querySelector('tbody tr')?.textContent).toContain('Paga');
+    expect(pagina.querySelector('tbody tr')?.textContent).toContain('31/01/2027');
+    expect(fonte.vendas()).toEqual(antes);
     await preencher('tem-entrada', 'nao');
     expect(pagina.querySelector('#valor-entrada')).toBeNull();
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(4);

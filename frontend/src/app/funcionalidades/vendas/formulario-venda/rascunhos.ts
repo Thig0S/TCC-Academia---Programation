@@ -5,6 +5,7 @@ import { interpretarDinheiro, somarCentavos } from '../dinheiro';
 import { cpfValido, telefoneValido } from '../identificacao.validacoes';
 import { ComandoCadastro, ComandoEdicaoCliente, Venda } from '../venda.modelos';
 import { prepararCadastro } from '../venda.validacoes';
+import { projetarVenda } from '../venda.calculos';
 
 export interface RascunhoCliente {
   nome: string;
@@ -160,7 +161,7 @@ export function prepararPrevia(rascunho: RascunhoCadastro, referencia: string) {
   const conversao = converterCadastro(rascunho, referencia);
   if (conversao.tipo !== 'sucesso') return null;
   const resultado = prepararCadastro(conversao.comando, referencia, 'previa/local');
-  return resultado.tipo === 'sucesso' ? resultado.valor : null;
+  return resultado.tipo === 'sucesso' ? projetarVenda(resultado.valor, referencia) : null;
 }
 
 export function converterEdicao(
