@@ -1576,6 +1576,16 @@ relatado: elementos sem distorção, sem barra horizontal, empilhados verticalme
 esperado. O agente não operou nem reproduziu a medição; não foi usado CSS `zoom` como
 substituto. A evidência é relato manual do solicitante e não constitui aceite da ótica.
 
+**Atualização da tarefa 8.3 — zoom nativo 200% — 22/11/2026:** o solicitante confirmou
+que a verificação atende aos requisitos da matriz da Change, mantendo exatamente as
+configurações acima. Confirmação registrada para os destinos e modal nos temas claro e
+escuro, com conteúdo e controles alcançáveis e reorganização/rolagem sem perda de
+conteúdo. Trata-se de relato manual do solicitante, não inspeção reproduzida pelo agente;
+não foram anexadas capturas nem medições por rota/controle. Não foi usado CSS `zoom`.
+Isso conclui a tarefa técnica 8.3 com a evidência autorizada, sem homologar outros
+navegadores, declarar conformidade integral de acessibilidade ou representar aceite da
+ótica.
+
 ### Detalhe e parcelas — OpenSpec tarefa 3.3 — 21/11/2026
 
 Detalhe da venda e histórico de parcelas migrados para superfícies, bordas, tipografia
