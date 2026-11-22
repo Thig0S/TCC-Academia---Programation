@@ -9,7 +9,31 @@ import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 
 describe('DetalhesVenda', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
+  const showOriginal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
+  const closeOriginal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'close');
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value: vi.fn(function (this: HTMLDialogElement) {
+        this.open = true;
+      }),
+    });
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value: vi.fn(function (this: HTMLDialogElement) {
+        this.open = false;
+        this.dispatchEvent(new Event('close'));
+      }),
+    });
+  });
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    if (showOriginal) Object.defineProperty(HTMLDialogElement.prototype, 'showModal', showOriginal);
+    else Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+    if (closeOriginal) Object.defineProperty(HTMLDialogElement.prototype, 'close', closeOriginal);
+    else Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
+  });
 
   function urlPara(id: string): string {
     const router = TestBed.inject(Router);
@@ -98,6 +122,78 @@ describe('DetalhesVenda', () => {
     expect(harness.routeNativeElement?.querySelector('.parcelas-com-rolagem')).not.toBeNull();
     expect(harness.routeNativeElement?.textContent).toContain('Descrição extensa');
     expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
+  });
+
+  it('reconcilia detalhe e recebimentos de 1/10 para 3/10 e 10/10', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastro = servico.cadastrarVenda({
+      cliente: {
+        nome: 'Cliente progressão parcelas',
+        cpf: '90000000175',
+        telefone: '00900000001',
+      },
+      dataVenda: servico.referencia,
+      valorTotalCentavos: 100000,
+      quantidadeParcelas: 10,
+      entrada: { valorCentavos: 10000, data: servico.referencia, forma: 'Pix' },
+    });
+    if (cadastro.tipo !== 'sucesso') throw new Error(cadastro.mensagem);
+    const venda = cadastro.valor;
+    const harness = await RouterTestingHarness.create(urlPara(venda.id));
+    const pagina = () => harness.routeNativeElement!;
+    expect(pagina().textContent).toContain('1 de 10');
+    expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas1de10');
+    expect(pagina().querySelector('tbody tr')?.textContent).toContain('Entrada');
+    expect(pagina().querySelector('tbody tr')?.textContent).toContain('Paga');
+
+    const receber = async (quantidade: string, valor: string, primeiraPendente: number) => {
+      pagina().querySelector<HTMLButtonElement>('[data-acao-receber]')!.click();
+      await harness.fixture.whenStable();
+      expect(pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent).toContain(
+        `Parcela ${primeiraPendente}`,
+      );
+      expect(pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent).not.toContain(
+        'Parcela 1',
+      );
+      const campoQuantidade = pagina().querySelector<HTMLSelectElement>('#quantidade-recebimento')!;
+      campoQuantidade.value = quantidade;
+      campoQuantidade.dispatchEvent(new Event('input', { bubbles: true }));
+      campoQuantidade.dispatchEvent(new Event('change', { bubbles: true }));
+      await harness.fixture.whenStable();
+      const campoValor = pagina().querySelector<HTMLInputElement>('#valor-recebimento')!;
+      campoValor.value = valor;
+      campoValor.dispatchEvent(new Event('input', { bubbles: true }));
+      const data = pagina().querySelector<HTMLInputElement>('#data-recebimento')!;
+      data.value = servico.referencia;
+      data.dispatchEvent(new Event('input', { bubbles: true }));
+      const forma = pagina().querySelector<HTMLSelectElement>('#forma-recebimento')!;
+      forma.value = 'Pix';
+      forma.dispatchEvent(new Event('input', { bubbles: true }));
+      forma.dispatchEvent(new Event('change', { bubbles: true }));
+      await harness.fixture.whenStable();
+      pagina().querySelector('form')!.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      );
+      await harness.fixture.whenStable();
+    };
+
+    await receber('2', '200', 2);
+    expect(pagina().textContent).toContain('3 de 10');
+    expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas3de10');
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { totalPagoCentavos: 30000, saldoCentavos: 70000, quantidadePaga: 3 },
+    });
+
+    await receber('7', '700', 4);
+    expect(pagina().textContent).toContain('10 de 10');
+    expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas10de10');
+    expect(pagina().textContent).toContain('Quitada');
+    expect(pagina().querySelector('[data-acao-receber]')).toBeNull();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { totalPagoCentavos: 100000, saldoCentavos: 0, quantidadePaga: 10 },
+    });
   });
 
   it('faz round-trip de um ID de venda da sessão sem alterar o identificador', async () => {

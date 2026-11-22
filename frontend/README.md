@@ -768,6 +768,25 @@ entrada/Paga/data na prévia, recálculo/ocultação/restauração, finanças se
 publicação e descarte da prévia inválida. Os testes Angular compilaram o
 template; ainda não é a regressão integral da Change.
 
+### Apply `entrada-como-primeira-parcela` — detalhe e edição do cliente — 22/11/2026
+
+Na tarefa 3.4, o detalhe identifica a linha canônica da parcela 1 como “Entrada”
+e “Paga”; o bloco de entrada continua apenas resumo de valor/data/forma e não
+compõe novamente pago, saldo ou contagem. A seleção de recebimento começa pela
+primeira futura pendente e não oferece a parcela de entrada. Listas mantêm
+pagas/total sobre o número real de parcelas; edição segue restrita aos dados do
+cliente e preserva recebimentos, parcelas, projeções e resumos.
+
+Resultado real: `npm test -- --watch=false` com includes para detalhe, listas,
+edição de cliente, modal de recebimento e integração aprovou **56/56 testes em 6
+arquivos**. A nova integração percorre 1/10 → 3/10 → 10/10, verifica entrada
+somente na parcela 1, seleção inicial pela parcela 2 e depois parcela 4, totais
+pagos/saldos, situação Quitada e remoção da ação Receber ao quitar. Os testes
+encontraram fixtures antigos que substituíam o recebimento inicial ao simular
+edição/pagamento parcial; foram ajustados para preservar a entrada canônica e
+operar somente sobre parcelas futuras. A execução final direcionada passou; a
+regressão integral fica para 4.1.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,

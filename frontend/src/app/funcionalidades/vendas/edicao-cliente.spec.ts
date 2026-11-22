@@ -30,15 +30,16 @@ function estados(): readonly Venda[] {
   const parcial: Venda = {
     ...seed[2],
     recebimentos: [
+      ...seed[2].recebimentos,
       {
         id: 'teste/pagamento',
-        valorCentavos: seed[2].parcelas[0].valorCentavos,
+        valorCentavos: seed[2].parcelas[1].valorCentavos,
         data: referencia,
         forma: 'Pix',
         alocacoes: [
           {
-            parcelaId: seed[2].parcelas[0].id,
-            valorCentavos: seed[2].parcelas[0].valorCentavos,
+            parcelaId: seed[2].parcelas[1].id,
+            valorCentavos: seed[2].parcelas[1].valorCentavos,
           },
         ],
       },
