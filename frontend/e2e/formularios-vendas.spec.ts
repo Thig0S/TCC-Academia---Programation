@@ -484,6 +484,151 @@ test('edita nome e descrição extensos, anuncia erro e preserva finanças nos d
   }
 });
 
+test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewports', async ({
+  page,
+}, testInfo) => {
+  for (const largura of [390, 767, 768, 1024, 1366]) {
+    const altura = largura === 1366 ? 768 : 844;
+    await page.setViewportSize({ width: largura, height: altura });
+    for (const tema of ['dark', 'light']) {
+      await page.goto('/vendas/nova');
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      const nome = `Cliente DEMO ${largura} ${tema} ${'nome extenso '.repeat(8)}`;
+      const descricao = `Descrição integral ${largura} ${tema}. `.repeat(30);
+      await preencherCadastro(page, nome);
+      await page.getByLabel('Valor total (R$)', { exact: true }).fill('2400');
+      await page.getByLabel('Quantidade de parcelas').fill('24');
+      await page.getByLabel('Descrição (opcional)').fill(descricao);
+      await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+      await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
+      const dadosFinanceiros = page.locator('section[aria-labelledby="dados-financeiros"]');
+      const finançasAntes = await dadosFinanceiros.innerText();
+      await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
+      const cpfOriginal = await page.getByLabel('CPF', { exact: true }).inputValue();
+      await page.getByLabel('Nome', { exact: true }).fill(nome);
+      await page.getByLabel('Descrição (opcional)').fill(descricao);
+      await page.getByLabel('CPF', { exact: true }).fill('11111111111');
+      await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+      await expect(page.locator('#erro-cpf')).toContainText('verificadores');
+      await expect(page.getByLabel('CPF', { exact: true })).toBeFocused();
+      const contrasteCpf = await page.locator('#erro-cpf').evaluate((elemento) => {
+        const texto = getComputedStyle(elemento.querySelector('p')!)
+          .color.match(/[\d.]+/g)!
+          .map(Number);
+        let plano: Element | null = elemento.querySelector('p');
+        let corFundo = '';
+        while (plano && (corFundo === '' || corFundo.endsWith(', 0)'))) {
+          corFundo = getComputedStyle(plano).backgroundColor;
+          if (corFundo.endsWith(', 0)')) plano = plano.parentElement;
+        }
+        const fundo = corFundo.match(/[\d.]+/g)!.map(Number);
+        const luminancia = (cor: number[]) =>
+          cor
+            .slice(0, 3)
+            .map((valor) => {
+              const s = valor / 255;
+              return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+            })
+            .reduce((soma, valor, indice) => soma + valor * [0.2126, 0.7152, 0.0722][indice], 0);
+        const [maior, menor] = [luminancia(texto), luminancia(fundo)].sort((a, b) => b - a);
+        return (maior + 0.05) / (menor + 0.05);
+      });
+      expect(contrasteCpf).toBeGreaterThanOrEqual(4.5);
+      await page
+        .getByRole('button', { name: 'Confirmar edição demonstrativa' })
+        .scrollIntoViewIfNeeded();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        largura,
+      );
+      await page.getByLabel('CPF', { exact: true }).fill(cpfOriginal);
+      await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+      await expect(page.getByRole('heading', { name: nome, exact: true })).toBeVisible();
+      await expect(page.getByRole('main')).toContainText(descricao);
+      expect(await dadosFinanceiros.innerText()).toBe(finançasAntes);
+
+      await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
+      const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText(nome);
+      const quantidade = page.getByLabel('Quantidade de parcelas consecutivas');
+      await quantidade.selectOption('24');
+      const selecionadas = dialog.getByRole('list', { name: 'Parcelas selecionadas' });
+      await expect(selecionadas.locator('li')).toHaveCount(24);
+      const medidasAntesErro = await dialog.evaluate((elemento) => {
+        const parcelas = elemento.querySelector('[aria-label="Parcelas selecionadas"]')!;
+        return {
+          largura: elemento.getBoundingClientRect().width,
+          altura: elemento.getBoundingClientRect().height,
+          alturaConteudo: elemento.scrollHeight,
+          alturaVisivel: elemento.clientHeight,
+          alturaLista: parcelas.scrollHeight,
+          alturaListaVisivel: parcelas.clientHeight,
+        };
+      });
+      expect(medidasAntesErro.alturaLista).toBeGreaterThan(medidasAntesErro.alturaListaVisivel);
+
+      await page.getByLabel('Valor recebido (R$)').fill('33,33');
+      await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
+      await expect(page.locator('#erro-valor-recebimento')).toContainText('exatamente');
+      const contrasteRecebimento = await page
+        .locator('#erro-valor-recebimento p')
+        .evaluate((elemento) => {
+          const texto = getComputedStyle(elemento)
+            .color.match(/[\d.]+/g)!
+            .map(Number);
+          let plano: Element | null = elemento;
+          let corFundo = '';
+          while (plano && (corFundo === '' || corFundo.endsWith(', 0)'))) {
+            corFundo = getComputedStyle(plano).backgroundColor;
+            if (corFundo.endsWith(', 0)')) plano = plano.parentElement;
+          }
+          const fundo = corFundo.match(/[\d.]+/g)!.map(Number);
+          const luminancia = (cor: number[]) =>
+            cor
+              .slice(0, 3)
+              .map((valor) => {
+                const s = valor / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce((soma, valor, indice) => soma + valor * [0.2126, 0.7152, 0.0722][indice], 0);
+          const [maior, menor] = [luminancia(texto), luminancia(fundo)].sort((a, b) => b - a);
+          return (maior + 0.05) / (menor + 0.05);
+        });
+      expect(contrasteRecebimento).toBeGreaterThanOrEqual(4.5);
+      const campoValor = page.getByLabel('Valor recebido (R$)');
+      await campoValor.scrollIntoViewIfNeeded();
+      await expect(campoValor).toBeVisible();
+      await expect(campoValor).toBeFocused();
+      const confirmar = page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' });
+      await confirmar.evaluate((botao: HTMLButtonElement) => (botao.disabled = true));
+      await expect(confirmar).toHaveCSS('cursor', 'not-allowed');
+      await expect(confirmar).toHaveCSS('opacity', '0.6');
+      await confirmar.evaluate((botao: HTMLButtonElement) => (botao.disabled = false));
+      const larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(larguraDocumento).toBeLessThanOrEqual(largura);
+      const arquivo = `fluxos-edicao-recebimento-${largura}-${tema}`;
+      await page.screenshot({ path: testInfo.outputPath(`${arquivo}.png`), fullPage: true });
+      await writeFile(
+        testInfo.outputPath(`${arquivo}.json`),
+        JSON.stringify(
+          {
+            rota: new URL(page.url()).pathname,
+            tema,
+            viewport: page.viewportSize(),
+            cenário: 'edição com erro e recebimento com 24 parcelas selecionadas',
+            medidas: { ...medidasAntesErro, larguraDocumento },
+          },
+          null,
+          2,
+        ),
+      );
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+    }
+  }
+});
+
 test('cadastra sem entrada/descrição uma única vez com Enter repetido e descarta no reload', async ({
   page,
 }) => {
