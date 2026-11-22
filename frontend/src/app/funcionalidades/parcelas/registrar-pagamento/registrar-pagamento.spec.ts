@@ -98,6 +98,7 @@ describe('Recebimento pela UI e ciclo de vida do dialog (DOM simulado)', () => {
     expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
     expect(pagina.querySelector('dialog')!.getAttribute('aria-labelledby')).toBe('titulo-modal');
     expect(pagina.querySelector('dialog')!.hasAttribute('tabindex')).toBe(false);
+    expect(pagina.querySelector('[role="alert"]')).toBeNull();
     expect(pagina.querySelector<HTMLInputElement>('#data-recebimento')!.value).toBe(
       fonte.referencia,
     );
@@ -189,6 +190,10 @@ describe('Recebimento pela UI e ciclo de vida do dialog (DOM simulado)', () => {
       expect(pagina.querySelector('dialog')!.open).toBe(true);
       expect(pagina.querySelector('[role="alert"]')!.textContent).toMatch(
         /Falha controlada|Não foi possível/,
+      );
+      expect(pagina.querySelector('[role="alert"]')!.classList.contains('rounded-lg')).toBe(true);
+      expect(pagina.querySelector('[role="alert"]')!.classList.contains('bg-surface-muted')).toBe(
+        true,
       );
       expect(pagina.querySelector<HTMLInputElement>('#valor-recebimento')!.value).toBe('33,34');
       expect(pagina.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(

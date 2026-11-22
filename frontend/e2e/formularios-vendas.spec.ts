@@ -197,6 +197,19 @@ test('registra capturas sintéticas de cadastro, edição e recebimento nos dois
       fullPage: true,
     });
     await testInfo.attach(`recebimento-${tema}`, { body: recebimento, contentType: 'image/png' });
+    await writeFile(
+      testInfo.outputPath(`recebimento-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: new URL(page.url()).pathname,
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'modal de recebimento com conferência e campos iniciais',
+        },
+        null,
+        2,
+      ),
+    );
   }
 });
 
@@ -213,6 +226,7 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
     await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
     await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toBeFocused();
     await expect(page.getByLabel('Valor recebido (R$)')).toHaveValue('');
     await expect(page.getByLabel('Forma do recebimento')).toHaveValue('');
@@ -223,6 +237,7 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
     await expect(page.locator('#erro-valor-recebimento')).toContainText('exatamente');
     await expect(page.locator('#erro-data-recebimento')).toContainText('anterior');
     await expect(page.locator('#erro-forma-recebimento')).toContainText('Selecione');
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
     await expect(dialog).toBeVisible();
     await page.getByLabel('Valor recebido (R$)').fill('33,34');
     await page.getByLabel('Data do recebimento').fill(referencia);
