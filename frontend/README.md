@@ -46,6 +46,31 @@ aprovação automática. PRD RF-002/RF-003, CA-027/028/029, TDD DEC-018/022/023 
 `openspec/changes/piloto-fidelidade-visual-vendas/specs/consulta-vendas/spec.md`
 foram conferidos antes da implementação.
 
+### 2.1 — hierarquia e faixa de critérios
+
+Em `src/app/funcionalidades/vendas/listar-vendas/listar-vendas.html`, o título
+“Vendas” passou à escala principal do cabeçalho, enquanto “Vendas cadastradas”
+passou a encabeçar um painel com borda de destaque. A referência da demonstração
+fica alinhada ao título como informação auxiliar. A faixa única de critérios recebeu
+fundo contextual, mais respiro e controles de 48 px com superfície/contorno
+consistentes; busca, situação, Limpar pesquisa e Nova venda continuam no mesmo
+grupo, sem busca duplicada ou KPI. O status de resultados ganhou separação visual.
+Não foi alterado componente compartilhado, shell ou listagem Quitadas.
+
+Capturas sintéticas pós-2.1 (1366×768 e 390×844, claro/escuro) estão em
+`evidencias/piloto-fidelidade-visual-vendas/hierarquia/`; comparação direta com a
+baseline usa os arquivos correspondentes de
+`evidencias/piloto-fidelidade-visual-vendas/baseline/`. O E2E direcionado
+`npm.cmd run test:e2e:paginacao-fixture -- --grep "hierarquia de Vendas apresenta"`
+passou 2/2 projetos; o teste inclui título, faixa única, alinhamento desktop,
+controles, registros sintéticos e capturas. A suíte unitária passou com 31 arquivos
+e 373 testes. A tentativa de executar o E2E `consulta listas, combina critérios`
+com seu servidor próprio não iniciou porque `127.0.0.1:4200` já estava ocupado.
+No navegador já disponível nesse endereço, busca textual, combinação com situação,
+Limpar pesquisa (mantendo o filtro) e CTA Nova venda foram exercitados manualmente;
+o CTA abriu `/vendas/nova`. Reexecutar a automação de consulta quando a porta estiver
+livre.
+
 ## Apply `novo-design` — verificação integrada — 22/11/2026
 
 Conclusão da Change `novo-design` na `feature/redesign`. O escopo ficou restrito
