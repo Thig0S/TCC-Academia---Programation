@@ -250,3 +250,56 @@ test('registra baseline dos fluxos válidos, inválidos e do modal', async ({ pa
     await capturar('cadastro-valido', tema);
   }
 });
+
+test('ação Nova venda mantém hierarquia, contraste e foco nos dois temas', async ({ page }) => {
+  const contraste = (frente: number[], fundo: number[]) => {
+    const luminancia = (cor: number[]) =>
+      cor
+        .map((canal) => {
+          const normalizado = canal / 255;
+          return normalizado <= 0.04045
+            ? normalizado / 12.92
+            : ((normalizado + 0.055) / 1.055) ** 2.4;
+        })
+        .reduce((soma, canal, indice) => soma + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+    const [maior, menor] = [luminancia(frente), luminancia(fundo)].sort((a, b) => b - a);
+    return (maior + 0.05) / (menor + 0.05);
+  };
+
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const acao = page.getByRole('link', { name: 'Nova venda', exact: true });
+    await expect(acao).toHaveCSS('background-color', 'rgb(215, 40, 72)');
+    await expect(acao).toHaveCSS('color', 'rgb(255, 255, 255)');
+    const ratioNormal = contraste([255, 255, 255], [215, 40, 72]);
+    expect(ratioNormal).toBeGreaterThanOrEqual(4.5);
+
+    await acao.hover();
+    await expect(acao).toHaveCSS('background-color', 'rgb(181, 31, 61)');
+    expect(contraste([255, 255, 255], [181, 31, 61])).toBeGreaterThanOrEqual(4.5);
+
+    await page.keyboard.press('Escape');
+    for (let indice = 0; indice < 12; indice += 1) {
+      await page.keyboard.press('Tab');
+      if (await acao.evaluate((elemento) => elemento.matches(':focus-visible'))) break;
+    }
+    await expect(acao).toBeFocused();
+    await expect(acao).toHaveCSS('outline-style', 'solid');
+    await expect(acao).toHaveCSS('outline-width', '3px');
+  }
+});
+
+test('mantém gutter e separação do cabeçalho consistentes entre páginas', async ({ page }) => {
+  for (const rota of ['/visao-geral', '/vendas', '/relatorios', '/configuracoes']) {
+    await page.goto(rota);
+    const medidas = await page.evaluate(() => ({
+      gutter: getComputedStyle(document.querySelector('main')!.parentElement!).padding,
+      separacaoCabecalho: getComputedStyle(document.querySelector('app-cabecalho header')!)
+        .marginBottom,
+    }));
+    expect(medidas.gutter, rota).toBe('12px');
+    expect(medidas.separacaoCabecalho, rota).toBe('8px');
+  }
+});

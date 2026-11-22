@@ -36,6 +36,21 @@ persiste a venda.
   visual nesta etapa. Zoom nativo de 200% e estados de falha/retry permanecem para
   as tarefas de QA correspondentes.
 
+### Ações e espaçamento comum RD-02
+
+A ação “Nova venda” na lista agora usa o mesmo preenchimento, tipografia, borda,
+fundo de hover e foco das ações primárias dos formulários; removida a classe
+concorrente `text-text`, que podia sobrescrever o texto branco. O padding comum
+do conteúdo permanece em 12 px e o componente de cabeçalho compartilhado continua
+uniforme: a tentativa de ampliar o gutter desktop aumentou a altura observada da
+lateral em 8 px, então foi revertida para preservar sua geometria.
+
+Teste adicional percorre Visão Geral, Vendas, Relatórios e Configurações e confirma
+gutter de 12 px e separação comum de 8 px entre cabeçalho e conteúdo (2/2 projetos
+Chromium aprovados).
+
+Verificação real: `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --output=test-results/refinar-design-rd02 --workers=1 -g "ação Nova venda|registra conteúdo"` passou **4/4** em Chromium, nos dois temas/viewports. Os estilos computados confirmaram fundo normal `rgb(215, 40, 72)`, texto branco, hover `rgb(181, 31, 61)` e foco de 3 px; os dois estados de fundo atingem o limiar de contraste testado de 4,5:1. Comparação de 36 pares JSON da lateral (nove superfícies × dois temas × dois viewports): nenhuma diferença de geometria, cores, degradê ou fonte.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
