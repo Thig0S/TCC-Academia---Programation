@@ -58,6 +58,37 @@ e itens e confirma nome integral. Capturas antes/depois foram inspecionadas em
 As evidências selecionadas de ambas correções estão versionadas em
 `evidencias/revisao-refinar-design/`; sem dados reais, zoom nativo ou homologação.
 
+### Regressão isolada final — tarefa 9.4
+
+Verificações finais em `frontend/`, 22/11/2026:
+
+- `npm.cmd test -- --watch=false`: **372/372**, 30 arquivos.
+- `npm.cmd run build`: aprovado, inicial **303,80 kB**, sem aviso de budget.
+- `npx.cmd ng run vendas-em-aberto:build-paginacao-fixture`: aprovado, **305,70 kB**.
+- `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts
+--output=test-results/revisao-refinar-design-isolada`: **112/112**, sem edições
+  ou builds concorrentes durante a execução. Inclui cadastro/entrada, edição,
+  pagamentos/quitação, cancelamento, recarga, foco, contraste, ambos temas e matriz
+  responsiva; nenhum teste de fluxo existente foi alterado.
+- `npm.cmd run test:e2e:paginacao-fixture --
+--output=test-results/revisao-fixture-final`: **16/16**. Único aviso: prebundling
+  não usado com otimização de scripts.
+- `npm.cmd run format:check`, `git diff --check` e `openspec validate refinar-design
+--strict` (os dois últimos na raiz): aprovados.
+
+A tentativa anterior `revisao-refinar-design-final` registrou **111/112** e falha
+de tema em Configurações. Os traces das duas tentativas com falhas mostram uma
+reinicialização Angular/conexão Vite adicional durante o cenário, com descarte
+do estado em memória; elas ocorreram com trabalho/compilações concorrentes e
+permanecem registradas, não são aceitas como regressão limpa. A execução isolada
+completa acima passou sem alterar aplicação, timeouts, assertions ou retries.
+
+Diff de produção restrito a três classes em dois templates; sem alterações de
+domínio, contratos, dependências ou estilos da lateral. PRD/TDD foram reutilizados
+e o acompanhamento SDD registra 25/25 tarefas. Não houve nova inspeção manual de
+zoom nativo 200%, teste com outros navegadores/leitor de tela ou aceite da ótica;
+as evidências anteriores não são reinterpretadas como novas verificações.
+
 ## Apply `refinar-design` — linha de base RD-01 — 22/11/2026
 
 Esta matriz é a baseline de geometria anterior à edição, vinculada aos contratos
