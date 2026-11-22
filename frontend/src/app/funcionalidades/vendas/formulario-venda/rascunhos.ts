@@ -104,11 +104,9 @@ export function converterCadastro(
   const total = dinheiro(rascunho.valorTotal, 'valorTotal', erros);
   const data = erroData(rascunho.dataVenda, null, referencia);
   if (data) erros.dataVenda = data;
-  const temEntrada = rascunho.temEntrada === 'sim' || rascunho.temEntrada === 'nao'
-    ? rascunho.temEntrada
-    : null;
-  if (temEntrada === null)
-    erros.temEntrada = 'Informe se a venda possui entrada ou não.';
+  const temEntrada =
+    rascunho.temEntrada === 'sim' || rascunho.temEntrada === 'nao' ? rascunho.temEntrada : null;
+  if (temEntrada === null) erros.temEntrada = 'Informe se a venda possui entrada ou não.';
   const quantidade = inteiroPositivo(rascunho.quantidadeParcelas);
   if (quantidade === null)
     erros.quantidadeParcelas = 'Informe quantidade inteira positiva e segura.';

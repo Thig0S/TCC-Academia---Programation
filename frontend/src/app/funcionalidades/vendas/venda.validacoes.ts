@@ -93,9 +93,7 @@ export function prepararCadastro(
       valorCentavos: quociente + (indice < resto ? 1 : 0),
       vencimento,
     }));
-    const parcelas = parcelaEntrada
-      ? [parcelaEntrada, ...parcelasFuturas]
-      : parcelasFuturas;
+    const parcelas = parcelaEntrada ? [parcelaEntrada, ...parcelasFuturas] : parcelasFuturas;
     const recebimentos = entrada
       ? [
           {

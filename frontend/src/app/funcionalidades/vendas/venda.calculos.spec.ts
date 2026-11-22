@@ -26,9 +26,11 @@ function venda(id = 'v1', dataVenda = '2027-01-01', entrada = true): Venda {
   return resultado.valor;
 }
 function pagar(v: Venda, quantidade: number, data = '2027-03-31'): Venda {
-  const jaPagas = new Set(v.recebimentos.flatMap((recebimento) =>
-    recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
-  ));
+  const jaPagas = new Set(
+    v.recebimentos.flatMap((recebimento) =>
+      recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
+    ),
+  );
   const alocacoes = v.parcelas
     .filter((parcela) => !jaPagas.has(parcela.id))
     .slice(0, quantidade)
@@ -234,9 +236,7 @@ describe('Projeções financeiras puras', () => {
     const variantes: Venda[] = [
       {
         ...original,
-        recebimentos: [
-          { ...inicial, valorCentavos: inicial.valorCentavos - 1 },
-        ],
+        recebimentos: [{ ...inicial, valorCentavos: inicial.valorCentavos - 1 }],
       },
       {
         ...original,

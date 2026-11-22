@@ -170,7 +170,9 @@ describe('Preparação pura de cadastro', () => {
     expect(bissexto.tipo).toBe('sucesso');
     if (bissexto.tipo === 'sucesso') {
       expect(bissexto.valor.parcelas.map((p) => p.vencimento)).toEqual([
-        '2028-02-29', '2028-03-31', '2028-04-30',
+        '2028-02-29',
+        '2028-03-31',
+        '2028-04-30',
       ]);
     }
     const limite = prepararCadastro(
@@ -186,9 +188,7 @@ describe('Preparação pura de cadastro', () => {
     );
     expect(limite).toMatchObject({ tipo: 'sucesso' });
     if (limite.tipo === 'sucesso') {
-      expect(limite.valor.parcelas.map((p) => p.vencimento)).toEqual([
-        '9999-11-30', '9999-12-30',
-      ]);
+      expect(limite.valor.parcelas.map((p) => p.vencimento)).toEqual(['9999-11-30', '9999-12-30']);
     }
     expect(
       somarCentavos(

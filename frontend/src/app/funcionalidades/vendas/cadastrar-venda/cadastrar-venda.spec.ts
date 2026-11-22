@@ -146,10 +146,12 @@ describe('Cadastro demonstrativo pela interface', () => {
   it('apresenta a escolha antes dos dados financeiros e foca erro sem escolha', async () => {
     const { harness, fonte, pagina, preencher, enviar } = await abrir();
     const antes = structuredClone(fonte.vendas());
-    expect(pagina.querySelector('label[for="tem-entrada"]')?.textContent).toContain('Possui Entrada');
-    expect(
-      pagina.querySelector<HTMLSelectElement>('#tem-entrada')?.options[0].textContent,
-    ).toBe('Selecione uma opção');
+    expect(pagina.querySelector('label[for="tem-entrada"]')?.textContent).toContain(
+      'Possui Entrada',
+    );
+    expect(pagina.querySelector<HTMLSelectElement>('#tem-entrada')?.options[0].textContent).toBe(
+      'Selecione uma opção',
+    );
     expect(
       [...pagina.querySelector<HTMLSelectElement>('#tem-entrada')!.options].map((opcao) => [
         opcao.value,
@@ -170,7 +172,8 @@ describe('Cadastro demonstrativo pela interface', () => {
       'telefone-cliente': '(00) 1234-5678',
       'valor-total': '100',
       'quantidade-parcelas': '3',
-    })) await preencher(id, valor);
+    }))
+      await preencher(id, valor);
     expect(pagina.querySelector('tbody')).toBeNull();
     enviar();
     await harness.fixture.whenStable();

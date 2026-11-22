@@ -164,7 +164,8 @@
                   scope="row"
                   class="whitespace-nowrap border-b border-border px-2 py-1 font-medium"
                 >
-                  {{ parcela.numero }}@if (venda.entrada && parcela.numero === 1) {
+                  {{ parcela.numero }}
+                  @if (venda.entrada && parcela.numero === 1) {
                     · Entrada
                   }
                 </th>

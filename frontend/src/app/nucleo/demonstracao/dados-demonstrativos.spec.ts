@@ -128,9 +128,7 @@ describe('Dados sintéticos', () => {
           data: v.dataVenda,
           forma: 'Pix',
           valorCentavos: 20000,
-          alocacoes: [
-            { parcelaId: `seed/venda/${i + 1}/parcela/entrada`, valorCentavos: 20000 },
-          ],
+          alocacoes: [{ parcelaId: `seed/venda/${i + 1}/parcela/entrada`, valorCentavos: 20000 }],
         });
       }
       if (i % 4 === 3)

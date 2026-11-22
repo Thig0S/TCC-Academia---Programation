@@ -411,7 +411,7 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
   await page.getByLabel('Descrição (opcional)').fill('Descrição sintética de conferência.');
   await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
   await page.getByLabel('Quantidade de parcelas').fill('4');
-    await page.getByLabel('Possui Entrada').selectOption('sim');
+  await page.getByLabel('Possui Entrada').selectOption('sim');
   await page.getByLabel('Valor da entrada (R$)').fill('200');
   await page.getByLabel('Forma da entrada').selectOption('Pix');
   const previa = page.getByRole('region', { name: 'Prévia completa das parcelas' });
@@ -442,7 +442,7 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
       .locator('dt')
       .filter({ hasText: /^Parcelas pagas$/ })
       .locator('+ dd'),
-    ).toContainText('1 de 4');
+  ).toContainText('1 de 4');
   await expect(page.locator('tbody tr')).toHaveCount(4);
   await page.getByRole('link', { name: 'Voltar para Vendas', exact: true }).click();
   await page
@@ -468,15 +468,14 @@ test('seleção por teclado, alternância preservada e entrada nas dez parcelas 
       ['Telefone com DDD', '(00) 1234-5678'],
       ['Valor total (R$)', '2.000,00'],
       ['Quantidade de parcelas', '10'],
-    ]) await page.getByLabel(label, { exact: label !== 'Telefone com DDD' }).fill(valor);
+    ])
+      await page.getByLabel(label, { exact: label !== 'Telefone com DDD' }).fill(valor);
     await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
     await expect(escolha).toBeFocused();
     await expect(page.locator('#erro-tem-entrada')).toContainText(
       'Informe se a venda possui entrada ou não.',
     );
-    await expect(page.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCount(
-      0,
-    );
+    await expect(page.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCount(0);
 
     await page.keyboard.press('ArrowDown');
     await expect(escolha).toHaveValue('sim');
@@ -506,23 +505,36 @@ test('seleção por teclado, alternância preservada e entrada nas dez parcelas 
       contentType: 'image/png',
     });
 
-    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).evaluate((botao) => {
-      (botao as HTMLButtonElement).click();
-      (botao as HTMLButtonElement).click();
-    });
+    await page
+      .getByRole('button', { name: 'Confirmar cadastro demonstrativo' })
+      .evaluate((botao) => {
+        (botao as HTMLButtonElement).click();
+        (botao as HTMLButtonElement).click();
+      });
     await expect(page.getByRole('main')).toContainText('1 de 10');
     await expect(page.getByRole('main')).toContainText('Entrada');
     await expect(page.getByRole('main')).toContainText('Paga');
     await expect(
-      page.locator('dt').filter({ hasText: /^Parcelas pagas$/ }).locator('+ dd'),
+      page
+        .locator('dt')
+        .filter({ hasText: /^Parcelas pagas$/ })
+        .locator('+ dd'),
     ).toHaveText('1 de 10');
     await expect(
-      page.locator('dt').filter({ hasText: /^Total pago$/ }).locator('+ dd'),
+      page
+        .locator('dt')
+        .filter({ hasText: /^Total pago$/ })
+        .locator('+ dd'),
     ).toContainText('500,00');
     await expect(
-      page.locator('dt').filter({ hasText: /^Saldo devedor$/ }).locator('+ dd'),
+      page
+        .locator('dt')
+        .filter({ hasText: /^Saldo devedor$/ })
+        .locator('+ dd'),
     ).toContainText('1.500,00');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
 
     await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
@@ -539,11 +551,16 @@ test('seleção por teclado, alternância preservada e entrada nas dez parcelas 
     await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
     await expect(dialog).toHaveCount(0);
     await expect(
-      page.locator('dt').filter({ hasText: /^Parcelas pagas$/ }).locator('+ dd'),
+      page
+        .locator('dt')
+        .filter({ hasText: /^Parcelas pagas$/ })
+        .locator('+ dd'),
     ).toHaveText('10 de 10');
     await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toHaveCount(0);
     await expect(page.getByRole('main')).toContainText('Quitada');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
   }
 });
 

@@ -149,12 +149,12 @@ describe('DetalhesVenda', () => {
     const receber = async (quantidade: string, valor: string, primeiraPendente: number) => {
       pagina().querySelector<HTMLButtonElement>('[data-acao-receber]')!.click();
       await harness.fixture.whenStable();
-      expect(pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent).toContain(
-        `Parcela ${primeiraPendente}`,
-      );
-      expect(pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent).not.toContain(
-        'Parcela 1',
-      );
+      expect(
+        pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent,
+      ).toContain(`Parcela ${primeiraPendente}`);
+      expect(
+        pagina().querySelector('ul[aria-label="Parcelas selecionadas"]')?.textContent,
+      ).not.toContain('Parcela 1');
       const campoQuantidade = pagina().querySelector<HTMLSelectElement>('#quantidade-recebimento')!;
       campoQuantidade.value = quantidade;
       campoQuantidade.dispatchEvent(new Event('input', { bubbles: true }));
@@ -171,9 +171,9 @@ describe('DetalhesVenda', () => {
       forma.dispatchEvent(new Event('input', { bubbles: true }));
       forma.dispatchEvent(new Event('change', { bubbles: true }));
       await harness.fixture.whenStable();
-      pagina().querySelector('form')!.dispatchEvent(
-        new Event('submit', { bubbles: true, cancelable: true }),
-      );
+      pagina()
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
       await harness.fixture.whenStable();
     };
 
