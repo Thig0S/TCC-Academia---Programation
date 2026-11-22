@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.19 — planejamento de pagamento individual por parcela, em 22/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.20 — atualização do estado de implementação de pagamento individual, em 22/11/2026; requisitos da 1.19 preservados.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -30,14 +30,15 @@ parcela, vencimento e valor não editável e pede somente data e forma. A data i
 é a referência fixa da sessão, alterável entre venda e referência, inclusive. O
 botão geral “Receber” é substituído pela ação na tabela. Preservar integralidade,
 antecipação em ordem, histórico, saldos, cancelamento e proteção contra duplicidade.
-Esta revisão é planejamento para a Change `simplificar-pagamento-parcelas`, não
-implementação, aprovação técnica dos artefatos ou aceite da ótica.
+Esta revisão originou a Change `simplificar-pagamento-parcelas`. A implementação
+técnica está em andamento e tem cobertura unitária/E2E registrada em
+`frontend/README.md`; zoom nativo de 200%, uma execução E2E na porta padrão ocupada
+e aceite da ótica continuam pendentes. A implementação não equivale a homologação.
 
-A inspeção atual encontrou entrada como parcela 1 paga, cadastro com seleção
-obrigatória e seed compatível no código e nas specs principais. As declarações
-anteriores de ausência dessa implementação são históricas; nenhuma suíte foi
-reexecutada para comprovar esse estado nesta revisão. O recebimento em lote ainda
-existe em `registrar-pagamento` e no comando da fonte; é o comportamento a substituir.
+O contrato aplicado restringe novos comandos a uma parcela, com valor derivado;
+o seed mantém a preparação histórica em lote. O detalhe oferece Pagar somente na
+primeira pendente e o modal solicita data/forma. As declarações anteriores de
+ausência da implementação descrevem o estado de planejamento e não o estado atual.
 
 **Entrada como parcela — revisão 1.17, 21/11/2026:** o solicitante confirmou no
 Harness a mudança `entrada-como-primeira-parcela`, exclusivamente documental nesta
@@ -296,12 +297,11 @@ Fonte de decisão para o MVP, não aceite da ótica nem evidência de implementa
 
 **FON-016 — pagamento individual:** pedido e respostas no Harness em 22/11/2026:
 uma parcela por confirmação; antecipação permitida; referência fixa da sessão;
-texto nas bloqueadas. Autorizadas revisões PRD → TDD → SDD na branch
-`feature/simplificar-pagamento-parcelas`, com revisão antes do apply. Inspeção de
-`frontend/src/app/funcionalidades/parcelas/registrar-pagamento/`,
-`frontend/src/app/funcionalidades/parcelas/pagamento.validacoes.ts` e
-`frontend/src/app/nucleo/demonstracao/servico-demonstracao.ts` confirma o fluxo
-anterior em lote, sem nova execução de testes ou aceite comercial.
+texto nas bloqueadas. A Change `simplificar-pagamento-parcelas` está aplicada
+tecnicamente na branch `feature/simplificar-pagamento-parcelas`; testes e limites
+estão registrados em `frontend/README.md`. Zoom nativo 200% e aceite comercial
+continuam pendentes; aplicação técnica não altera as regras confirmadas nem implica
+homologação.
 
 ## 3. Visão, objetivos e resultados esperados
 
@@ -446,7 +446,7 @@ não estender o redesenho à edição ou ao recebimento.
 - **Resultado:** registrar um recebimento integral com uma alocação à parcela acionada e publicar uma única alteração em memória; atualizar parcelas, saldos e resumos sem dupla contagem. Liberar Pagar na próxima pendente somente após sucesso. Para pagar várias, repetir o fluxo individualmente.
 - **Exceções:** rejeitar parcela paga, desconhecida, de outra venda ou fora de ordem; não deslocar confirmação obsoleta para outra parcela. Valor vem da parcela, sem parcial/excedente. Permitir antecipação na ordem correta. Data entre venda e referência fixa, inclusive, sem mudança ao atravessar meia-noite; formas: Dinheiro, Pix, Cartão de débito e Cartão de crédito, sem dados bancários/cartão ou processamento. Falha/cancelamento não alteram estado e duplicidade não duplica lançamento. Sem juros, descontos ou estorno. Preservar recebimentos históricos em lote, sem recriar seus valores, datas, formas ou alocações.
 - **Prioridade:** Essencial, valida uma tarefa central.
-- **Origem/situação:** FON-016 substitui a seleção em lote de FON-008 para novos pagamentos. Produto confirmado pelo solicitante para a demonstração; simplificação não implementada nesta revisão, sem aceite da ótica.
+- **Origem/situação:** FON-016 substitui a seleção em lote de FON-008 para novos pagamentos. Produto confirmado pelo solicitante e implementação técnica da Change em andamento; regressões verificadas conforme `frontend/README.md`, com zoom nativo 200% e aceite da ótica ainda pendentes.
 - **Aceite:** CA-011, CA-013, CA-016, CA-017, CA-024, CA-028.
 
 ### RF-008 — Consultar vendas quitadas
@@ -553,7 +553,7 @@ válidos. Exportar relatório informa sua indisponibilidade sem arquivo ou falso
 | RN-013 | Entrada é a parcela 1, vencida e recebida na data da venda, com forma obrigatória; integra N e a contagem de pagas, total pago e recebimentos uma única vez | R$ 2.000 em 10x com entrada R$ 200 → 1/10 paga, nove pendentes de R$ 200, pago R$ 200, saldo R$ 1.800. Entrada não é recebível novamente. Aplica-se a novas vendas e ao seed; formas de RN-016 | FON-015 substitui o contrato separado de FON-008; planejada, não implementada |
 | RN-014 | Parcela liquidada é Paga; pendente é Atrasado a partir do primeiro dia civil após vencer; hoje até +7 dias é Próximos dias; depois é Aberto | Vence em 10/11: não atrasada em 10/11, atrasada em 11/11. Sem tolerância extra ou relógio de 24 horas. Venda: saldo zero = Quitada; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto | FON-008/010; regra mantida e explicitada, PEN-004/007 resolvidas para MVP |
 | RN-015 | Referência = dia local da abertura, fixa na sessão; total em aberto soma saldos; atraso soma apenas parcelas pendentes vencidas; recebido no mês soma recebimentos por data civil, incluindo a entrada uma única vez; cadastradas inclui quitadas | Mês do primeiro ao último dia inclusive; períodos explícitos inclusivos; vendas por data de venda; busca/filtros de lista não alteram cartões; vazio = zero | FON-008/015; PEN-009 resolvida para o núcleo, controles de relatório na FASE-007 |
-| RN-016 | Receber integralmente somente a primeira parcela pendente por número, uma por confirmação atômica | Antecipação permitida, salto proibido; valor derivado da parcela sem digitação; data inicial igual à referência fixa e editável entre venda e referência; forma obrigatória: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos. Pagas sem ação, posteriores com “Aguardando parcela anterior”; preservar histórico em lote | FON-016 substitui lote de FON-008 para novos pagamentos; planejamento não implementado |
+| RN-016 | Receber integralmente somente a primeira parcela pendente por número, uma por confirmação atômica | Antecipação permitida, salto proibido; valor derivado da parcela sem digitação; data inicial igual à referência fixa e editável entre venda e referência; forma obrigatória: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos. Pagas sem ação, posteriores com “Aguardando parcela anterior”; preservar histórico em lote | FON-016 substitui lote de FON-008 para novos pagamentos; implementação técnica em verificação, zoom nativo e aceite da ótica pendentes; evidências em `frontend/README.md` |
 | RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; N inteiro seguro, mínimo 1 sem entrada e 2 com entrada; número de futuras (N ou N−1) não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis usando a quantidade de futuras; sem teto comercial arbitrário; entrada integral/cadastro quitado excluídos | FON-008/015; identificação definida em RN-022/023 |
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida e busca implementada no PR #9 |
 | RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; não há ação conjunta “Limpar critérios”: para restaurar a lista, limpar o termo e selecionar Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009 e confirmação no Harness em 21/11/2026; consulta implementada nos PRs #9/#10 |
@@ -959,7 +959,7 @@ tentativas, participantes e contexto junto dos percentuais.
 | PEN-008 | Quais campos podem ser editados antes/depois de pagamentos e como tratar repercussões? | Delimita RF-006, sem edição financeira no MVP | RN-021 e CA-012; somente nome/CPF/telefone/descrição inclusive em quitadas; sem propagação | Resolvida por FON-011; núcleo e UI entregues na feature em 18/11/2026, aguardando revisão/merge; sem aceite da ótica |
 | PEN-009 | Referência, períodos, universo dos resumos e efeito de filtros | Indicadores | RN-015 e CA-025; dia da abertura fixo, mês civil, cartões globais e cadastradas incluindo quitadas | Resolvida para o núcleo em 14/11/2026; controles de relatório na FASE-007 |
 | PEN-010 | Validações de CPF/telefone e limites financeiros | Cadastro e envio inválido | RN-017/022/023 e CA-030; seed sintético compatível | Resolvida por FON-011; validações, seed e UI de cadastro/edição entregues na feature em 18/11/2026, aguardando revisão/merge; sem unicidade de CPF |
-| PEN-011 | Pagamento integral, ordem, antecipação, datas e formas | Modelo de recebimento e saldo | RN-016 e CA-024: uma parcela por confirmação, primeira pendente antecipável, data entre venda e referência fixa, forma obrigatória; lote anterior superado para novos pagamentos | Decisão de produto resolvida por FON-016 em 22/11/2026; simplificação planejada, não implementada |
+| PEN-011 | Pagamento integral, ordem, antecipação, datas e formas | Modelo de recebimento e saldo | RN-016 e CA-024: uma parcela por confirmação, primeira pendente antecipável, data entre venda e referência fixa, forma obrigatória; lote anterior superado para novos pagamentos | Decisão de produto resolvida por FON-016; implementação técnica em verificação, com zoom nativo e aceite da ótica pendentes |
 | PEN-012 | Conteúdos em Configurações e filtros em Quitadas | Telas secundárias | HIP-004 entregue na FASE-003; RN-019 confirma apenas busca única em Quitadas, sem filtros extras | Resolvida no recorte do MVP; Configurações entregue na FASE-003 e consulta de Quitadas nos PRs #9/#10; outros controles fora do escopo |
 | PEN-013 | Qual ambiente de avaliação, navegador e dimensões mínimas? | Compatibilidade e desempenho precisam de evidência | Máquina do solicitante, Windows/Chrome, 1920×1080, escala 125%, zoom 100%, seção 12; coletar versão Chrome e viewport CSS e executar roteiro | Parcialmente resolvida: ambiente definido, caracterização da execução e medições pendentes; sem mínimo universal homologado |
 | PEN-014 | Quem participa, aprova e quais metas finais? Quais trechos reconstruídos serão confirmados? | Impede alegar validação ou aprovação formal | Solicitante e equipe previstos; definir papéis/autoridade, metas, quantidade/consentimento e confirmar reconstruções antes do aceite | Aberta; participação prevista confirmada, demais definições e avaliação pendentes |
@@ -1004,6 +1004,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 
 | Versão | Data | Alteração | Motivo |
 | --- | --- | --- | --- |
+| 1.20 | 22/11/2026 | Atualizar o estado de execução técnica da Change de pagamento individual, mantendo requisitos e aceite da ótica separados | Evidências automatizadas registradas em `frontend/README.md`; zoom nativo 200% ainda pendente |
 | 1.19 | 22/11/2026 | Pagamento individual na primeira pendente, valor automático, data fixa/editável e texto nas bloqueadas; revisão de JOR-004, RF-005/007, RN-016, CA-011/024 e PEN-011 | FON-016; autorização exclusivamente documental PRD → TDD → SDD, com revisão antes do apply e sem novos testes de aplicação |
 | 1.17 | 21/11/2026 | Entrada como parcela 1 Paga, N incluindo entrada, saldo em N−1, mínimo 2 com entrada; RN-024 e CA-033/034/035 para seleção obrigatória e uniformização do seed; preservar IDs existentes | FON-015, nova change documental após merge do PR #20; sem implementação ou aceite da ótica |
 | 1.10 | 20/11/2026 | Delimitar RF-009/010 e CA-014 para mês fixo e resumos de cinco, sem gráfico ou seletor; preservar IDs e pendências globais | Respostas explícitas no Harness ao propor fase-007; planejamento somente |

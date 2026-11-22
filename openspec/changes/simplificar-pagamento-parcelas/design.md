@@ -4,8 +4,9 @@
 
 Motivação em `proposal.md` — Why. Base: PRD 1.19/FON-016, RF-005/007,
 RN-016 e CA-011/013/014/016/017/024/028; TDD 1.23, DEC-027 e FASE-014 a FASE-016.
-Produto confirmado na exploração; escolhas técnicas deste desenho são propostas
-para revisão. Autorização atual somente documental, sem implementação.
+Produto confirmado na exploração; escolhas técnicas deste desenho foram aplicadas
+na Change. A implementação técnica está em verificação integrada, sem equivaler a
+aceite da ótica; a inspeção manual de zoom nativo 200% permanece pendente.
 
 Inspeção atual encontrou:
 
@@ -145,8 +146,9 @@ podem precisar do contrato novo sem mudar a configuração ou finalidade da fixt
 
 ## Migration Plan
 
-1. Revisar PRD/TDD e estes artefatos; aguardar novo pedido de apply. Nenhuma tarefa
-   de implementação é concluída apenas por existir documentação.
+1. Revisar PRD/TDD e estes artefatos antes de implementar; o pedido de apply
+   autorizou a execução na feature branch. Nenhuma tarefa de implementação é
+   concluída apenas por existir documentação.
 2. FASE-014: novo comando/preparador/conversor e compatibilidade do histórico, com
    testes coerentes e commit restrito à funcionalidade; consumidores precisam
    permanecer tipados e funcionais, sem publicar contrato transitório quebrado.
