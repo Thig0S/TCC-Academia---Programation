@@ -838,9 +838,19 @@ Ambiente: Windows, Node v24.21.0, npm 11.19.0, Playwright Chromium nos projetos
 A revisão do diff após as funcionalidades encontrou apenas arquivos da Change
 em E2E, formulário/prévia, projeções/validações, seeds/serviço e respectivos
 testes/documentação; sem alteração de dependências, persistência ou edição
-financeira. A formatação final é exclusivamente ajuste de estilo. Estes
-resultados não concluem a conferência manual de zoom nativo 200% requerida em
-4.3.
+financeira. A formatação final é exclusivamente ajuste de estilo.
+
+### Apply `entrada-como-primeira-parcela` — conferência manual 200% — 22/11/2026
+
+Resultado manual informado pelo solicitante e confirmado para registro: zoom
+nativo do navegador em 200%, escala de exibição do Windows em 125% e viewport
+útil de 404×1594,95 px. Navegador Google na mesma versão já registrada no projeto
+(Playwright Chromium Headless 157). O solicitante confirmou a conferência nos
+temas claro e escuro, cobrindo cadastro/select/erro/prévia,
+detalhe/recebimento e análises afetadas, com teclado e foco; relatou que os
+componentes apresentam o comportamento esperado. Evidência é relato manual do
+solicitante, não uma inspeção executada independentemente pelo agente; não foram
+anexadas capturas.
 
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
