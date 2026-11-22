@@ -56,7 +56,7 @@ test('mede contraste dos estados auxiliares sem novos controles', async ({ page 
   }
 });
 
-test('destaca valores e preserva quatro indicadores e três resumos', async ({ page }) => {
+test('destaca valores e preserva quatro indicadores e três resumos', async ({ page }, info) => {
   await page.goto('/visao-geral');
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
@@ -74,7 +74,95 @@ test('destaca valores e preserva quatro indicadores e três resumos', async ({ p
       await expect(resumo.getByRole('heading')).toHaveCSS('border-bottom-width', '1px');
       await expect(resumo.getByRole('link')).toHaveCount(5);
     }
+    await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCSS(
+      'margin-bottom',
+      '12px',
+    );
+    const grades = page.locator('main div.grid').last();
+    await expect(grades).toHaveCSS('row-gap', '16px');
+    const primeiroResumo = page.getByRole('region', { name: 'Vendas recentes' });
+    await expect(primeiroResumo.getByRole('heading')).toHaveCSS('margin-bottom', '12px');
+    await page.screenshot({
+      path: info.outputPath(`visao-geral-refinada-${tema}.png`),
+      fullPage: true,
+    });
+    await writeFile(
+      info.outputPath(`visao-geral-refinada-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: '/visao-geral',
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'quatro indicadores e três resumos preenchidos',
+        },
+        null,
+        2,
+      ),
+    );
     await expect(page.locator('main input, main button, main canvas')).toHaveCount(0);
+  }
+});
+
+test('alinha valores das quatro tabelas de Relatórios sem mudar densidade', async ({
+  page,
+}, info) => {
+  await page.goto('/relatorios');
+  for (const tema of ['dark', 'light']) {
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const regioes = [
+      'Recebimentos do mês',
+      'Vendas do mês',
+      'Posição em aberto',
+      'Parcelas vencidas',
+    ];
+    const colunas: Record<string, string> = {
+      'Recebimentos do mês': 'Valor',
+      'Vendas do mês': 'Valor total',
+      'Posição em aberto': 'Saldo',
+      'Parcelas vencidas': 'Valor',
+    };
+    for (const nome of regioes) {
+      const tabela = page.getByRole('region', { name: nome }).getByRole('table');
+      const cabecalhoMonetario = tabela.getByRole('columnheader', { name: colunas[nome] });
+      const celulaMonetaria = tabela
+        .locator('tbody tr')
+        .first()
+        .locator('td')
+        .nth(
+          await cabecalhoMonetario.evaluate((elemento) =>
+            [...elemento.parentElement!.children].indexOf(elemento),
+          ),
+        );
+      await expect(cabecalhoMonetario).toHaveCSS('text-align', 'right');
+      await expect(celulaMonetaria).toHaveCSS('text-align', 'right');
+      await expect(celulaMonetaria).toHaveCSS('font-variant-numeric', /tabular-nums/);
+      await expect(tabela).toHaveCSS('font-size', '18px');
+      await expect(tabela).toHaveCSS('line-height', '20px');
+      await expect(tabela.locator('thead th').first()).toHaveCSS('padding-top', '8px');
+      await expect(tabela.locator('tbody td').first()).toHaveCSS('padding-top', '4px');
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      page.viewportSize()!.width,
+    );
+    await expect(page.getByRole('button', { name: 'Exportar relatório' })).toBeVisible();
+    await page.screenshot({
+      path: info.outputPath(`relatorios-refinados-${tema}.png`),
+      fullPage: true,
+    });
+    await writeFile(
+      info.outputPath(`relatorios-refinados-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: '/relatorios',
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'quatro tabelas com alinhamento monetário refinado',
+        },
+        null,
+        2,
+      ),
+    );
   }
 });
 

@@ -34,7 +34,7 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 ## 6. Visão Geral e Relatórios — RD-04
 
 - [x] 6.1 Refinar hierarquia/espaçamento entre indicadores e resumos da Visão Geral; verificar quatro indicadores e três resumos com referências, limites de cinco, ordem, links, vazios e valores preservados, nos dois temas, com testes E2E/componentes e documentação no commit da Visão Geral.
-- [ ] 6.2 Harmonizar ritmo entre período, títulos, captions, totais e quatro seções de Relatórios; alinhar colunas monetárias à direita com algarismos tabulares sem alterar fonte/padding; verificar totais, períodos, ordem, links, vazios, rolagem contida e exportação indisponível, com testes de estilo/funcionais, capturas e documentação no commit de Relatórios.
+- [x] 6.2 Harmonizar ritmo entre período, títulos, captions, totais e quatro seções de Relatórios; alinhar colunas monetárias à direita com algarismos tabulares sem alterar fonte/padding; verificar totais, períodos, ordem, links, vazios, rolagem contida e exportação indisponível, com testes de estilo/funcionais, capturas e documentação no commit de Relatórios.
 
 ## 7. Configurações e estados auxiliares — RD-04
 

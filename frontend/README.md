@@ -227,6 +227,25 @@ quatro indicadores, três resumos, links/limite e recorte passou **2/2** em Chro
 fora do escopo desta superfície. Capturas pós-refinamento com rota, tema e viewport
 estão em `test-results/refinar-design-visao-geral/`.
 
+### Relatórios RD-04 — tarefa 6.2
+
+As quatro seções de relatório agora têm separação vertical de 12 px, cabeçalhos com
+respiro interno uniforme e maior distância entre exportação, período e tabelas. Em
+cada tabela, apenas cabeçalho e valor monetário foram alinhados à direita e os
+algarismos receberam `tabular-nums`; data, cliente, situação, origem, forma e ações
+mantêm alinhamento textual. Fonte permanece 18 px/20 px, dados continuam com padding
+10×4 px e cabeçalhos 10×8 px. Totais, períodos, captions, links, ordem e exportação
+indisponível não mudaram.
+
+Verificações reais: unitários e cálculos de Relatórios passaram **11/11**; E2E de
+alinhamento, tabularidade, densidade, quatro tabelas, rolagem contida e ausência de
+overflow global passou **6/6** em Chromium 1366×768 e 390×844, nos dois temas. E2E
+funcional de tabela completa, valores, período e exportação sem download/rede/mutação
+passou **6/6** nos dois temas/viewports. Estados vazios e totais zerados têm cobertura
+unitária. Capturas pós-refinamento com sidecars JSON estão em
+`test-results/refinar-design-visao-relatorios-capturas/`. Nenhuma consulta ou cálculo
+financeiro foi alterado.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

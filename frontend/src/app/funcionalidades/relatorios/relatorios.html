@@ -1,6 +1,6 @@
 <app-cabecalho titulo="Relatórios" />
 @let relatorio = dados();
-<section class="mb-4" aria-label="Exportação de relatório">
+<section class="mb-5" aria-label="Exportação de relatório">
   <button
     type="button"
     class="rounded-lg border-[1px] border-control-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -19,7 +19,7 @@
   }
 </section>
 
-<section class="mb-5" aria-labelledby="periodo-relatorio">
+<section class="mb-6" aria-labelledby="periodo-relatorio">
   <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal</h2>
   <p class="mb-0 text-text-muted">
     Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
@@ -28,12 +28,12 @@
 </section>
 
 <section
-  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  class="mb-3 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
   aria-labelledby="recebimentos-mensais"
 >
   <h2
     id="recebimentos-mensais"
-    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
   >
     Recebimentos do mês
   </h2>
@@ -51,7 +51,7 @@
       tabindex="0"
     >
       <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1"
+        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(5)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(5)]:tabular-nums"
       >
         <caption>
           Entradas e lotes recebidos entre
@@ -95,12 +95,12 @@
 </section>
 
 <section
-  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  class="mb-3 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
   aria-labelledby="vendas-mensais"
 >
   <h2
     id="vendas-mensais"
-    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
   >
     Vendas do mês
   </h2>
@@ -113,7 +113,7 @@
   @if (relatorio.vendasDoMes.length) {
     <div class="max-w-full overflow-x-auto" role="region" aria-label="Vendas do mês" tabindex="0">
       <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1"
+        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
       >
         <caption>
           Vendas cadastradas entre
@@ -155,12 +155,12 @@
 </section>
 
 <section
-  class="mb-1 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
+  class="mb-3 rounded-xl bg-surface shadow-sm ring-1 ring-inset ring-border"
   aria-labelledby="posicao-aberta"
 >
   <h2
     id="posicao-aberta"
-    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
   >
     Posição em aberto
   </h2>
@@ -178,7 +178,7 @@
       tabindex="0"
     >
       <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1"
+        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(3)]:text-right [&_td:nth-child(3)]:text-right [&_td:nth-child(3)]:tabular-nums"
       >
         <caption>
           Saldos positivos por venda na referência
@@ -219,7 +219,7 @@
 >
   <h2
     id="parcelas-vencidas"
-    class="border-b border-border px-3 pt-2 pb-[7px] text-lg font-semibold tracking-tight"
+    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
   >
     Parcelas vencidas
   </h2>
@@ -237,7 +237,7 @@
       tabindex="0"
     >
       <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1"
+        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
       >
         <caption>
           Parcelas pendentes vencidas na referência
