@@ -5,7 +5,7 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.16 — planejamento do cadastro com prévia lateral, em 21/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.17 — planejamento da entrada como primeira parcela e escolha obrigatória de entrada, em 21/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
@@ -14,6 +14,20 @@
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
 
 ## 2. Contexto, problema e evidências
+
+**Entrada como parcela — revisão 1.17, 21/11/2026:** o solicitante confirmou no
+Harness a mudança `entrada-como-primeira-parcela`, exclusivamente documental nesta
+etapa. O PR #20 está mesclado na main, conforme GitHub, e seu refinamento visual
+é a base desta nova change. A entrada passa a ser a parcela 1, paga na data da
+venda, incluída na quantidade informada, na prévia e nas contagens de pagas/total.
+O saldo é dividido entre as N−1 restantes, inclusive quando a entrada tiver valor
+diferente. Com entrada, exigir N ≥ 2 e entrada positiva menor que o total; não
+permitir cadastro já quitado. Sem entrada, manter N parcelas futuras. Uniformizar
+também as 12 vendas do seed, preservando valores financeiros e vencimentos pendentes.
+No cadastro, trocar a checkbox por “Possui Entrada”, antes de data/total/quantidade,
+com “Selecione uma opção”, “Sim” e “Não”, sem resposta padrão válida. A regra
+anterior de entrada separada fica superada como requisito, mas continua sendo o
+comportamento implementado até um apply futuro. Não há autorização de código nesta etapa.
 
 **Cadastro e prévia lado a lado — revisão 1.16, 21/11/2026:** o solicitante
 confirmou no Harness o formulário à esquerda e a prévia das parcelas à direita a
@@ -246,6 +260,14 @@ em telas menores; compactação prioritária de valor/quantidade, nome/descriç�
 amplos, na mesma Change/branch visual. Planejamento e implementação autorizados
 pelo solicitante; evidências técnicas em `frontend/README.md`, sem aceite da ótica.
 
+**FON-015 — entrada como parcela e seleção obrigatória:** pedido explícito e
+respostas no Harness de 21/11/2026: R$ 2.000 em 10x com R$ 200 de entrada deve
+gerar uma parcela paga de R$ 200 e nove pendentes de R$ 200; entrada diferente
+divide o saldo entre N−1; mínimo 2 com entrada; uniformizar seed sem duplicar
+recebimentos. Campo “Possui Entrada” acima de data/total/quantidade exige Sim ou
+Não. Após o merge do PR #20, autorizada somente a documentação PRD → TDD → SDD.
+Fonte de decisão para o MVP, não aceite da ótica nem evidência de implementação.
+
 **Conciliação da revisão 1.1:** o solicitante confirmou dois temas, claro e escuro, com escuro inicial, alternância acessível e preferência somente em memória. PEN-006 foi resolvida documentalmente e possui evidências técnicas na FASE-003; isso não é aprovação da ótica. O `AGENTS.md` atual não contém a antiga restrição de tema claro. Mantêm-se quatro módulos, sem cadastros independentes de clientes ou parcelas. Substituição operacional do Excel continua fora do MVP.
 
 ## 3. Visão, objetivos e resultados esperados
@@ -344,14 +366,14 @@ Construir futuramente a estrutura visual e a navegação dos quatro módulos, co
 
 ### RF-004 — Cadastrar venda com dados do cliente
 
-- **Comportamento:** reunir no mesmo formulário nome, CPF, telefone, valor da venda, existência de entrada, quantidade de parcelas e data da venda como obrigatórios; descrição do cliente opcional; valor e forma da entrada quando houver. A entrada é recebida na data da venda, exibida explicitamente. Iniciar data com a referência local da sessão e permitir alteração para dia não futuro. Mostrar prévia das parcelas antes da confirmação.
+- **Comportamento:** reunir no mesmo formulário nome, CPF, telefone, valor da venda, existência de entrada, quantidade total de parcelas e data da venda como obrigatórios; descrição do cliente opcional; valor e forma da entrada quando houver. Exibir “Possui Entrada” antes de data da venda, valor total e quantidade de parcelas, com opções “Selecione uma opção”, “Sim” e “Não”, inicialmente sem resposta válida. A entrada é a parcela 1 paga na data da venda, incluída na quantidade total informada. Iniciar data com a referência local da sessão e permitir alteração para dia não futuro. Mostrar prévia completa com situação textual e identificação da entrada antes da confirmação.
 - **Necessidade:** reduzir dificuldade de cadastro e conferência; OBJ-002; JOR-002.
 - **Ator, pré-condições e entradas:** atendimento; Nova venda; campos descritos, sem exigir cliente prévio.
-- **Resultado:** uma venda sintética com parcelas e dados próprios de cliente passa a ser consultável; descrição preenchida aparece nos detalhes; prévia aplica desconto da entrada.
+- **Resultado:** uma venda sintética com parcelas e dados próprios de cliente passa a ser consultável; descrição preenchida aparece nos detalhes. Com entrada, a prévia contém uma parcela 1 Paga e N−1 pendentes; sem entrada, contém N pendentes. A prévia não efetiva recebimento nem reserva ID.
 - **Exceções:** campos inválidos preservados e identificados junto ao campo; descrição vazia não bloqueia. Calendário, centavos e entrada seguem RN-011/012/013/017; CPF/telefone seguem RN-022/023, sem unicidade. Não permitir venda futura nem entrada que quite todo o valor no cadastro.
 - **Prioridade:** Essencial, principal dor relatada.
-- **Origem/situação:** FON-001 §§5 e 9; FON-002; FON-003 §1; FON-004 §6; FON-008 para finanças e FON-011 para identificação confirmada. UI de cadastro e novas validações não implementadas.
-- **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017, CA-032.
+- **Origem/situação:** FON-001 §§5 e 9; FON-002/003/004/008/011/015. Cadastro já existe; a seleção obrigatória e entrada como parcela são requisitos confirmados para planejamento, ainda não implementados.
+- **Aceite:** CA-006, CA-007, CA-008, CA-009, CA-016, CA-017, CA-032, CA-033, CA-034, CA-035.
 
 **Layout de cadastro — PRD 1.16/FON-014:** em Nova venda, reunir os
 grupos de identificação e dados financeiros na coluna esquerda, com a prévia
@@ -367,7 +389,7 @@ não estender o redesenho à edição ou ao recebimento.
 - **Necessidade:** conferência antes de recebimento; OBJ-001 e OBJ-003; JOR-001 e JOR-004.
 - **Ator, pré-condições e entradas:** atendimento; venda existente; seleção da venda.
 - **Resultado:** dados do cliente e da venda condensados lado a lado, seguidos das parcelas, conforme `exemploDadosDaVenda.png`; a tabela de parcelas compartilha fonte tabular de 18 px e padding com Vendas/Quitadas; situações textuais Aberto, Próximos dias, Atrasado e Paga. CA-028 exige até 10 parcelas visíveis sem rolagem da página no cenário padrão; excedentes usam rolagem interna acessível, sem truncar o histórico.
-- **Exceções:** não abrir cadastro independente de cliente; datas/formas inexistentes indicadas como não informadas, nunca inventadas; situações seguem RN-014; entrada aparece separadamente e não aumenta a contagem de parcelas pagas.
+- **Exceções:** não abrir cadastro independente de cliente; datas/formas inexistentes indicadas como não informadas, nunca inventadas; situações seguem RN-014. Pela revisão 1.17, entrada aparece como parcela 1 Paga, identificada como entrada, aumentando pagas/total sem duplicar valores; o resumo pode indicar a entrada, mas não como cobrança adicional.
 - **Prioridade:** Essencial, evita recebimento sem conferência.
 - **Origem/situação:** FON-001 §§4–6 e FON-008/010; detalhe somente leitura implementado no PR #9 e compactado no PR #10, com evidências anteriores no README; sem aceite da ótica.
 - **Aceite:** CA-010, CA-011, CA-018, CA-020, CA-028, CA-029.
@@ -489,17 +511,17 @@ válidos. Exportar relatório informa sua indisponibilidade sem arquivo ou falso
 | RN-004 | Venda totalmente paga recebe situação Quitada, sai das abertas e preserva parcelas pagas | Demais situações seguem a prioridade aprovada em RN-014 | FON-001 §§3 e 6 e FON-008 |
 | RN-005 | Parcela admite Aberto, Próximos dias, Atrasado e Paga | Hoje até +7 dias inclusive são Próximos dias; RN-014 | FON-001 §4 e FON-008 |
 | RN-006 | Valores financeiros usam centavos inteiros e datas civis preservam o dia sem deslocamento de fuso | Representação não define arredondamento comercial ou juros | FON-002; restrição técnica confirmada |
-| RN-007 | Pagamento aceito mantém coerência entre parcelas, total pago, saldo, listagens e resumos da sessão | Entrada separada; lotes com alocações integrais sem dupla contagem; RN-013/016 | FON-001 §§4, 8 e 10; FON-002 e FON-008 |
+| RN-007 | Pagamento aceito mantém coerência entre parcelas, total pago, saldo, listagens e resumos da sessão | Entrada como primeira parcela paga; cada recebimento contado uma vez, sem somar entrada novamente; RN-013/016 | FON-001 §§4, 8 e 10; FON-002/008/015 |
 | RN-008 | Cancelamento e falha não modificam registros; repetição de confirmação da mesma operação não duplica alterações | Não implica idempotência de API futura | FON-002; restrição demonstrativa confirmada |
 | RN-009 | Estado é apenas em memória, com dados sintéticos; recarga elimina mudanças da sessão | Sem exceção de persistência nesta etapa | FON-001 e FON-002; confirmada por fonte |
 | RN-010 | Resumos representam os mesmos registros das listas e detalhes, com períodos e universo identificados | Cartões globais independentes da busca; RN-015 | FON-001 §§3, 7 e 8 e FON-008 |
-| RN-011 | Primeira parcela no mês seguinte; dia original preservado; se inexistente, último dia do mês | 31/01/2027 → 28/02, 31/03, 30/04; sem somar 30 dias | FON-008; PEN-001 resolvida para MVP |
-| RN-012 | Dividir saldo em centavos: quociente inteiro em todas e mais um centavo nas primeiras até esgotar o resto | R$ 100/3 → R$ 33,34 + R$ 33,33 + R$ 33,33; soma exata e diferença máxima de um centavo | FON-008; PEN-003 resolvida para MVP |
-| RN-013 | Entrada é recebimento separado das parcelas, na data da venda, com forma obrigatória; compõe total pago e recebimentos | R$ 1.000 − R$ 200 de entrada → pago R$ 200, saldo R$ 800; não conta como parcela paga; formas de RN-016 | FON-008; PEN-002 resolvida para MVP |
+| RN-011 | Primeira parcela pendente no mês seguinte; dia original preservado; se inexistente, último dia do mês | Sem entrada: parcela 1 no mês seguinte. Com entrada: parcela 1 vence e é paga na data da venda; parcela 2 no mês seguinte. 31/01/2027 → 28/02, 31/03, 30/04; sem somar 30 dias | FON-008/015; PEN-001 resolvida para MVP |
+| RN-012 | Dividir saldo em centavos pelo número de parcelas futuras: N sem entrada, N−1 com entrada; quociente inteiro em todas e mais um centavo nas primeiras futuras até esgotar o resto | R$ 100/3 sem entrada → R$ 33,34 + R$ 33,33 + R$ 33,33. A entrada mantém seu valor informado e pode diferir das demais; diferença máxima de um centavo aplica-se apenas às futuras | FON-008/015; PEN-003 resolvida para MVP |
+| RN-013 | Entrada é a parcela 1, vencida e recebida na data da venda, com forma obrigatória; integra N e a contagem de pagas, total pago e recebimentos uma única vez | R$ 2.000 em 10x com entrada R$ 200 → 1/10 paga, nove pendentes de R$ 200, pago R$ 200, saldo R$ 1.800. Entrada não é recebível novamente. Aplica-se a novas vendas e ao seed; formas de RN-016 | FON-015 substitui o contrato separado de FON-008; planejada, não implementada |
 | RN-014 | Parcela liquidada é Paga; pendente é Atrasado a partir do primeiro dia civil após vencer; hoje até +7 dias é Próximos dias; depois é Aberto | Vence em 10/11: não atrasada em 10/11, atrasada em 11/11. Sem tolerância extra ou relógio de 24 horas. Venda: saldo zero = Quitada; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto | FON-008/010; regra mantida e explicitada, PEN-004/007 resolvidas para MVP |
-| RN-015 | Referência = dia local da abertura, fixa na sessão; total em aberto soma saldos; atraso soma apenas parcelas vencidas; recebido no mês soma entradas e pagamentos por data civil; cadastradas inclui quitadas | Mês do primeiro ao último dia inclusive; períodos explícitos inclusivos; vendas por data de venda; busca/filtros de lista não alteram cartões; vazio = zero | FON-008; PEN-009 resolvida para o núcleo, controles de relatório na FASE-007 |
+| RN-015 | Referência = dia local da abertura, fixa na sessão; total em aberto soma saldos; atraso soma apenas parcelas pendentes vencidas; recebido no mês soma recebimentos por data civil, incluindo a entrada uma única vez; cadastradas inclui quitadas | Mês do primeiro ao último dia inclusive; períodos explícitos inclusivos; vendas por data de venda; busca/filtros de lista não alteram cartões; vazio = zero | FON-008/015; PEN-009 resolvida para o núcleo, controles de relatório na FASE-007 |
 | RN-016 | Receber integralmente uma ou mais parcelas consecutivas desde a primeira pendente, em uma confirmação atômica | Antecipação permitida, salto proibido; valor exato da soma; data entre venda e referência; forma única: Dinheiro, Pix, Cartão de débito ou Cartão de crédito; sem parcial/excedente/estorno/juros/descontos | FON-008; PEN-011 resolvida para MVP |
-| RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; quantidade inteira positiva não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis; sem teto comercial arbitrário; entrada integral sem parcelas excluída | FON-008; finanças de PEN-010 resolvidas; identificação definida em RN-022/023 |
+| RN-017 | Total positivo e seguro em centavos; entrada ausente = zero, presente maior que zero e menor que total; N inteiro seguro, mínimo 1 sem entrada e 2 com entrada; número de futuras (N ou N−1) não superior ao saldo em centavos | Cada parcela vale ao menos R$ 0,01; rejeitar overflow e datas irrepresentáveis usando a quantidade de futuras; sem teto comercial arbitrário; entrada integral/cadastro quitado excluídos | FON-008/015; identificação definida em RN-022/023 |
 | RN-018 | Um único termo pesquisa por correspondência parcial em nome sem distinguir acentos/maiúsculas e por sequência de dígitos de CPF/telefone ignorando pontuação; basta corresponder a um campo | Espaços externos ignorados; vazio remove somente a restrição textual, preservando situação nas abertas. Data completa DD/MM/AAAA pesquisa exclusivamente o dia exato da venda; inválida não corresponde, sem fallback numérico. Não há tokenização combinada, data parcial ou intervalo | FON-009; PEN-005 resolvida e busca implementada no PR #9 |
 | RN-019 | A mesma busca atua separadamente nas abertas e nas quitadas; nas abertas há filtro Todas, Em aberto, Próximos dias e Atrasada, combinado com a busca por E | Sem filtro extra em Quitadas. Limpar pesquisa preserva situação; não há ação conjunta “Limpar critérios”: para restaurar a lista, limpar o termo e selecionar Todas. Critérios locais sem obrigação de preservá-los após sair; cartões globais não mudam com busca/situação. FASE-005 não oferece mutações nem ações fictícias | FON-009 e confirmação no Harness em 21/11/2026; consulta implementada nos PRs #9/#10 |
 | RN-020 | Abertas e Quitadas exibem 10 vendas por página, após aplicar busca e situação pertinente, preservando ordem e IDs | Paginação numerada abaixo da tabela, anterior/próxima, página atual e faixa/total de resultados; reticências não são páginas. Alterar/limpar critérios volta à página 1; se a coleção diminuir, ajustar à última página válida. Zero resultados não cria página fictícia nem ações habilitadas; uma página dispensa controles de troca. Sem persistência ou nova ordenação | FON-010; confirmada no Harness e implementada no PR #10; evidências anteriores no README |
@@ -507,7 +529,16 @@ válidos. Exportar relatório informa sua indisponibilidade sem arquivo ou falso
 | RN-022 | CPF obrigatório em cadastro e edição: aceitar com/sem pontuação, exigir 11 dígitos e verificadores válidos, rejeitar sequências repetidas | Sem unicidade, consulta externa ou uso de dados reais. Validade matemática não comprova titularidade ou inexistência de pessoa real | FON-011; PEN-010 resolvida; validação testada na feature em 18/11/2026, UI futura |
 | RN-023 | Telefone obrigatório brasileiro com DDD: após remover espaços, parênteses e hífen, exigir 10 ou 11 dígitos | Sem +55, lista de DDDs ou regras de prefixo; não consultar serviços externos. Não inferir que o número existe ou pertence a pessoa inexistente | FON-011; PEN-010 resolvida; validação testada na feature em 18/11/2026, UI futura |
 
-Exemplo financeiro: venda fictícia de R$ 1.000,00, entrada de R$ 200,00 e quatro parcelas produz saldo inicial de R$ 800,00, pago inicial de R$ 200,00 e quatro parcelas de R$ 200,00. A entrada integra recebimentos na data da venda. Liquidar as duas primeiras parcelas num lote de R$ 400,00 resulta em pago de R$ 600,00, saldo de R$ 400,00 e duas de quatro parcelas pagas. Juros, renegociação e políticas de cobrança continuam excluídos.
+Exemplo financeiro vigente: venda fictícia de R$ 2.000,00 em 10 parcelas, com entrada de R$ 200,00, produz parcela 1 Paga de R$ 200,00 e parcelas 2 a 10 de R$ 200,00: pago inicial R$ 200,00, saldo R$ 1.800,00, 1/10 paga. Liquidar parcelas 2 e 3 em lote de R$ 400,00 resulta em pago R$ 600,00, saldo R$ 1.400,00 e 3/10 pagas. Com entrada de R$ 500,00, as nove futuras dividem R$ 1.500,00: seis de R$ 166,67 e três de R$ 166,66. Entrada não é contada novamente no resumo. Juros, renegociação e políticas de cobrança continuam excluídos.
+
+**RN-024 — escolha explícita de entrada:** no cadastro, “Possui Entrada” é obrigatório,
+antes dos campos de data/total/quantidade. Opções exatas: “Selecione uma opção”,
+“Sim”, “Não”; a primeira não equivale a Não. Sem Sim/Não, não há prévia válida ou
+publicação, e o envio revela erro associado “Informe se a venda possui entrada ou não.”
+Com Sim, exigir valor e forma; com Não, ocultá-los e ignorar eventuais valores do
+rascunho no comando e na prévia; preservar esse rascunho para restaurar ao voltar
+a Sim, sujeito à validação. Alternar a escolha recalcula sem mutar a fonte.
+Origem FON-015; essencial para RF-004, confirmada para planejamento.
 
 ## 9. Requisitos não funcionais e restrições
 
@@ -602,7 +633,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 
 ### CA-006 — Cadastro inequívoco e descrição opcional
 - **Requisitos:** RF-004; RN-001, RN-003.
-- **Dado** um cadastro com campos obrigatórios válidos, sem entrada, divisão exata e dia existente nos meses seguintes,
+- **Dado** um cadastro com campos obrigatórios válidos, “Possui Entrada” em “Não”, divisão exata e dia existente nos meses seguintes,
 - **Quando** revisar a prévia e confirmar, uma vez com descrição vazia e em outro caso com descrição preenchida,
 - **Então** cada caso deve gerar uma única venda com suas parcelas; descrição vazia não deve impedir cadastro e descrição preenchida deve aparecer no detalhe. A data inicial deve ser o dia local do cadastro e aceitar alteração.
 
@@ -622,10 +653,10 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Então** erros em português devem ser revelados junto aos campos, valores preservados e nenhum registro criado ou pagamento efetivado; foco deve facilitar a correção.
 
 ### CA-008 — Fórmula e contabilização da entrada
-- **Requisitos:** RF-004; RN-002, RN-006.
-- **Dado** valor de R$ 1.000,00, entrada de R$ 200,00 e quatro parcelas,
+- **Requisitos:** RF-004/005/007/009/010; RN-002/006/011/012/013/015/017.
+- **Dado** valor de R$ 2.000,00, “Possui Entrada” em “Sim”, entrada de R$ 200,00 com forma válida e quantidade total de 10 parcelas,
 - **Quando** calcular a prévia,
-- **Então** devem ser mostrados R$ 800,00 a parcelar e quatro parcelas de R$ 200,00; após confirmar cadastro válido, total pago de R$ 200,00, saldo de R$ 800,00 e zero parcelas pagas. A entrada é um recebimento separado, na data da venda e com forma obrigatória; participa do mês correspondente uma única vez.
+- **Então** mostrar dez linhas: parcela 1 identificada como entrada, de R$ 200,00 e situação Paga na data da venda, e parcelas 2 a 10 de R$ 200,00 nos nove meses seguintes. Após confirmar uma vez, pago R$ 200,00, saldo R$ 1.800,00 e 1/10 paga em listas/detalhe; o recebimento mensal inclui R$ 200,00 uma vez, sem ação de receber novamente a entrada.
 
 ### CA-009 — Calendário, centavos e limites financeiros
 - **Requisitos:** RF-004, RF-011; RN-002, RN-003.
@@ -763,7 +794,28 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 - **Quando** consultar com referência em 10/11 e 11/11 e percorrer links por teclado,
 - **Então** não indicar atraso no vencimento e indicar Atrasado no dia 11; paga permanece Paga e resumos/situação da venda usam a mesma regra civil. Navegação, cliente, Visualizar e retorno/breadcrumb seguem o design das referências, sem azul/sublinhado padrão permanente, com foco/hover e localização acessíveis e destinos preservados.
 
-### Matriz de rastreabilidade
+### CA-033 — Escolha obrigatória e posição de Possui Entrada
+- **Requisitos:** RF-004/011; RN-024; RNF-001/002/003/005/009.
+- **Dado** Nova venda nos dois temas, com os demais campos válidos,
+- **Quando** abrir o formulário e enviar sem escolher Sim/Não,
+- **Então** “Possui Entrada” deve preceder data da venda, valor total e quantidade visualmente e na tabulação, iniciar em “Selecione uma opção”, impedir cadastro/prévia válida e revelar o erro associado, mantendo dados e foco compreensível, sem consumir ID.
+- **E** selecionar Não deve produzir N pendentes sem entrada; selecionar Sim deve exigir valor/forma e recalcular para 1 paga + N−1 pendentes. Voltar à opção inicial invalida novamente; Não não pode enviar os valores ocultos da entrada. Cancelar, falhar e repetir envio preservam CA-016/017 e confirmação única.
+
+### CA-034 — Entrada desigual, centavos e limites
+- **Requisitos:** RF-004; RN-011/012/013/017/024.
+- **Dado** R$ 2.000,00 em 10x com entrada de R$ 500,00,
+- **Quando** calcular a prévia,
+- **Então** gerar a entrada Paga de R$ 500,00, seis futuras de R$ 166,67 e três de R$ 166,66, total exato. A entrada não recebe o resto do saldo.
+- **E** com entrada e N=1, valor zero/negativo/integral, forma ausente, mais futuras que centavos do saldo ou calendário irrepresentável, rejeitar sem mutação. Sem entrada, N=1 permanece permitido. Em 31/01/2027, entrada vence nessa data e as futuras em 28/02, 31/03 e seguintes, preservando o dia-base.
+
+### CA-035 — Seed e reconciliação da entrada como parcela
+- **Requisitos:** RF-002/005/007/008/009/010/011; RN-007/009/013/015/016.
+- **Dado** as 12 vendas sintéticas, inclusive com entrada e histórico de recebimentos,
+- **Quando** iniciar/recarregar a sessão e comparar listas, detalhe, recebimento, Visão Geral e Relatórios,
+- **Então** entradas devem ser parcelas 1 Pagas, com contagens ajustadas, sem mudar total, pago, saldo, vencimentos pendentes ou valores recebidos por período. Preservar IDs de venda e vínculos de recebimentos; renumerar parcelas posteriores sem duplicá-las. Manter a política de bordas 0001–9999 e as situações possíveis.
+- **E** o próximo recebimento começa na primeira pendente, nunca na entrada; pagar todas as restantes gera N/N pagas e uma única venda em Quitadas. Edição continua restrita ao cliente e não recria o recebimento da entrada.
+
+### Matriz de rastreabilidade vigente
 
 | Objetivo | Jornada | Requisito/regra | Fonte ou hipótese | Critérios de aceite |
 | --- | --- | --- | --- | --- |
@@ -784,6 +836,7 @@ Os cenários abaixo são verificações planejadas, não testes executados. Cen�
 | OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/011; RN-018/019 | FON-009 | CA-002/003/004/005/010/014/018/019/020/023/025/026, somente responsabilidades de consulta na FASE-005 |
 | OBJ-001/004/005 | JOR-001/005/006 | RF-001/002/003/005/008/009; RN-014/020; RNF-007/009 | FON-010 | CA-002/020/026/027/028/029; ajustes planejados, indicadores exclusivos da Visão Geral na FASE-007 |
 | OBJ-002 | JOR-002/003 | RF-004/006; RN-021/022/023 | FON-011 | CA-007/012/016/017/030; regras decididas, validações e seed compatível não implementados |
+| OBJ-001/002/003/004 | JOR-001/002/004/005 | RF-002/004/005/007/008/009/010/011; RN-007/011/012/013/015/017/024 | FON-015 | CA-008/009/011/013/014/016/017/032/033/034/035; nova regra somente planejada |
 
 RNF-001 a RNF-005, RNF-009 e RNF-010 também são transversais aos cenários pertinentes. RNF-006 a RNF-008 têm métodos próprios na seção 9: medições e inspeções futuras, não resultados deste PRD.
 
@@ -841,6 +894,7 @@ tentativas, participantes e contexto junto dos percentuais.
 | RIS-007 | Protótipo mais trabalhoso que a planilha | Baixa aceitação e mais tempo de atendimento | Preocupação expressa em FON-004, sem medição | Observar tarefas reais representadas por dados sintéticos, não apenas preferência estética | Não confirmado |
 | RIS-008 | Ambiente e estrutura incompletos interpretados como implementação | Planejamento baseado em entrega inexistente | Há pastas e saídas sem código verificável | Separar inspeção atual de planejamento; definir ambiente antes de implementar | Não confirmado |
 | RIS-009 | Resumos fixos divergem das mutações locais | Demonstração perde credibilidade | Não medida | Fonte comum e comparação em centavos após cadastro, edição e pagamento | Não confirmado |
+| RIS-010 | Entrada representada como parcela e somada novamente como valor separado | Total pago/recebimento mensal incorreto e baixa duplicada | Risco identificado na revisão 1.17, sem ocorrência alegada | Uma única origem contábil, reconciliação de CA-008/014/035 e rejeição de novo pagamento da entrada | Sem responsável confirmado |
 
 ## 14. Hipóteses, pendências e decisões necessárias
 
@@ -860,7 +914,7 @@ tentativas, participantes e contexto junto dos percentuais.
 | ID | Dúvida ou conflito | Impacto no produto | Como validar ou decidir | Situação |
 | --- | --- | --- | --- | --- |
 | PEN-001 | Vencimento em mês sem o dia original | Calendário de parcelas | RN-011; último dia apenas no mês afetado | Resolvida para o MVP em 14/11/2026; não implementada |
-| PEN-002 | Entrada em total pago, saldo e recebimentos | Cadastro e projeções | RN-013; recebimento separado na data da venda, forma obrigatória | Resolvida para o MVP em 14/11/2026; não implementada |
+| PEN-002 | Entrada em total pago, saldo e recebimentos | Cadastro e projeções | RN-013 revisada por FON-015: parcela 1 Paga, incluída em N, data da venda e forma obrigatória; sem dupla contagem | Redefinida para o MVP na revisão 1.17; implementação futura |
 | PEN-003 | Distribuição de centavos | Soma exata do parcelamento | RN-012; resto nas primeiras parcelas | Resolvida para o MVP em 14/11/2026; não implementada |
 | PEN-004 | Janela de sete dias e vencimento hoje | Classificação de parcelas | RN-014; hoje e +7 inclusivos, atraso somente antes de hoje | Resolvida para o MVP em 14/11/2026; não implementada |
 | PEN-005 | Combinação, data e normalização da busca | Consulta nas duas coleções | RN-018/019 e CA-004/019/026, confirmados no Harness | Resolvida e implementada na FASE-005, PR #9; refinamentos no PR #10, sem aceite da ótica |
@@ -905,8 +959,8 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 | Quitada | Venda totalmente paga, consultada em página interna de Vendas |
 | Parcela Paga | Parcela liquidada que permanece visível no detalhe da venda |
 | Próximos dias | Parcela pendente com vencimento entre a referência e +7 dias, inclusive |
-| Entrada | Recebimento separado na data da venda; reduz saldo parcelado, compõe pago e recebimentos, sem contar como parcela |
-| Saldo devedor | Total da venda menos entrada e recebimentos aceitos, igual à soma das parcelas pendentes |
+| Entrada | Primeira parcela paga na data da venda, incluída na quantidade total; reduz saldo futuro e compõe pago/recebimentos uma vez |
+| Saldo devedor | Total da venda menos recebimentos aceitos (incluindo entrada uma vez), igual à soma das parcelas pendentes |
 | Fonte demonstrativa | Dados sintéticos e operações locais compartilhados pelas telas, fora dos componentes de apresentação |
 | Confirmado por fonte | Conteúdo documentado em referência local; não indica aprovação, teste ou implementação |
 | Hipótese | Proposta necessária à discussão, ainda sem confirmação |
@@ -914,6 +968,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 
 | Versão | Data | Alteração | Motivo |
 | --- | --- | --- | --- |
+| 1.17 | 21/11/2026 | Entrada como parcela 1 Paga, N incluindo entrada, saldo em N−1, mínimo 2 com entrada; RN-024 e CA-033/034/035 para seleção obrigatória e uniformização do seed; preservar IDs existentes | FON-015, nova change documental após merge do PR #20; sem implementação ou aceite da ótica |
 | 1.10 | 20/11/2026 | Delimitar RF-009/010 e CA-014 para mês fixo e resumos de cinco, sem gráfico ou seletor; preservar IDs e pendências globais | Respostas explícitas no Harness ao propor fase-007; planejamento somente |
 | 1.0 | 11/11/2026 | Criação do PRD com IDs iniciais, fontes locais, escopo, jornadas, requisitos, aceite, hipóteses e pendências | Atender à solicitação de transformar o README em documento de produto sem implementar código |
 | 1.1 | 13/11/2026 | Conciliação de PEN-006, aceite delimitado de HIP-004/PEN-012, CA-023 e recorte da FASE-003; atualização do estado da base | Confirmações do solicitante na exploração e no planejamento; sem implementação ou aceite da ótica |
