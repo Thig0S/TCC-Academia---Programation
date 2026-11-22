@@ -103,7 +103,8 @@ export function prepararPagamentoHistorico(
       : {
           tipo: 'falha',
           codigo: 'falha-preparacao-lote-historico',
-          mensagem: 'Não foi possível preparar o recebimento histórico. Nenhuma parcela foi alterada.',
+          mensagem:
+            'Não foi possível preparar o recebimento histórico. Nenhuma parcela foi alterada.',
         };
   }
 }
