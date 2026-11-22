@@ -37,7 +37,7 @@ export class PaginacaoFixture {
       },
       {
         quantidadeParcelas: 11,
-        nome: 'Cliente Fixture Detalhe Onze',
+        nome: `Cliente Fixture Detalhe Onze · ${'Nome de cliente extenso preservado. '.repeat(8)}`,
         descricao: 'Descrição extensa para rolagem interna. '.repeat(40),
         entrada: null,
       },

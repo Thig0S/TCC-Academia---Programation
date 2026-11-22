@@ -2,10 +2,20 @@
   @if (resultado.tipo === 'sucesso') {
     <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
     @if (sucesso) {
-      <p role="status">{{ sucesso }}</p>
+      <p
+        class="mb-2 rounded-md border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+        role="status"
+      >
+        {{ sucesso }}
+      </p>
     }
     @if (mensagemRecebimento()) {
-      <p role="status">{{ mensagemRecebimento() }}</p>
+      <p
+        class="mb-2 rounded-md border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+        role="status"
+      >
+        {{ mensagemRecebimento() }}
+      </p>
     }
     <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
       <p class="mb-0 text-text-muted">
@@ -29,7 +39,7 @@
         @if (resultado.valor.saldoCentavos > 0) {
           <button
             type="button"
-            class="rounded-md border-[1px] border-control-border bg-surface px-3 py-1 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
             data-acao-receber
             (click)="recebendo.set(true)"
             [attr.aria-label]="
@@ -82,11 +92,13 @@
           <dt>Data da venda</dt>
           <dd>{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
           <dt>Valor total</dt>
-          <dd class="font-semibold">{{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}</dd>
+          <dd class="font-semibold tabular-nums">
+            {{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}
+          </dd>
           <dt>Total pago</dt>
-          <dd>{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
+          <dd class="tabular-nums">{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
           <dt>Saldo devedor</dt>
-          <dd class="font-semibold text-brand">
+          <dd class="text-xl font-bold text-brand tabular-nums">
             {{ formatarDinheiro(resultado.valor.saldoCentavos) }}
           </dd>
           <dt>Próximo vencimento</dt>
@@ -161,7 +173,7 @@
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
               >
                 Valor
               </th>
@@ -203,7 +215,9 @@
                     · Entrada
                   }
                 </th>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                <td
+                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
+                >
                   {{ formatarDinheiro(parcela.valorCentavos) }}
                 </td>
                 <td class="whitespace-nowrap border-b border-border px-2.5 py-1">

@@ -363,3 +363,78 @@ test('alinha valores monetários e recuos das consultas abertas e quitadas', asy
     }
   }
 });
+
+test('detalhe destaca saldo, recebimento e valores das parcelas nos dois temas', async ({
+  page,
+}, info) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas/seed%2Fvenda%2F1');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+    const saldo = page
+      .locator('dt')
+      .filter({ hasText: /^Saldo devedor$/ })
+      .locator('+ dd');
+    await expect(saldo).toHaveCSS('font-size', '20px');
+    await expect(saldo).toHaveCSS('font-weight', '700');
+    const receber = page.getByRole('button', { name: /Receber parcelas da venda de/ });
+    await expect(receber).toHaveCSS('background-color', 'rgb(215, 40, 72)');
+    await expect(receber).toHaveCSS('color', 'rgb(255, 255, 255)');
+    for (let tentativa = 0; tentativa < 20; tentativa += 1) {
+      if (await receber.evaluate((elemento) => elemento.matches(':focus-visible'))) break;
+      await page.keyboard.press('Tab');
+    }
+    await expect(receber).toBeFocused();
+    await expect(receber).toHaveCSS('outline-style', 'solid');
+    await expect(receber).toHaveCSS('outline-width', '3px');
+
+    const tabela = page.getByRole('region', { name: 'Parcelas da venda' }).locator('table');
+    await expect(tabela.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
+      'text-align',
+      'right',
+    );
+    const valor = tabela.locator('tbody tr').first().locator('td').first();
+    await expect(valor).toHaveCSS('text-align', 'right');
+    await expect(valor).toHaveCSS('font-size', '18px');
+    await expect(valor).toHaveCSS('line-height', '20px');
+    await expect(valor).toHaveCSS('padding-top', '4px');
+    await expect(valor).toHaveCSS('padding-left', '10px');
+    await expect(valor).toHaveCSS('font-variant-numeric', /tabular-nums/);
+    await page.screenshot({
+      path: info.outputPath(`detalhe-hierarquia-${tema}.png`),
+      fullPage: true,
+    });
+  }
+});
+
+test('estado de venda ausente mantém mensagem e retornos nos dois temas', async ({
+  page,
+}, info) => {
+  for (const tema of ['dark', 'light']) {
+    const rota = '/vendas/registro-ausente';
+    await page.goto(rota);
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    await expect(page.getByRole('heading', { name: 'Venda não encontrada' })).toBeVisible();
+    await expect(page.getByText('Não existe uma venda com este identificador.')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Retornos de Vendas' })).toContainText(
+      'Voltar para Vendas',
+    );
+    await expect(page.getByRole('navigation', { name: 'Retornos de Vendas' })).toContainText(
+      'Ver Vendas quitadas',
+    );
+    await page.screenshot({
+      path: info.outputPath(`detalhe-venda-ausente-${tema}.png`),
+      fullPage: true,
+    });
+    await writeFile(
+      info.outputPath(`detalhe-venda-ausente-${tema}.json`),
+      JSON.stringify(
+        { rota, tema, viewport: page.viewportSize(), cenário: 'venda ausente' },
+        null,
+        2,
+      ),
+    );
+  }
+});

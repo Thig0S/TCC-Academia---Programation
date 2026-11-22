@@ -17,8 +17,8 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 
 ## 3. Detalhe e resultados da operação — RD-02
 
-- [ ] 3.1 Refinar hierarquia de dados/saldo, ação de receber e mensagens existentes do detalhe; alinhar coluna monetária das parcelas sem remover dados ou refatorar amplamente o CSS compacto; verificar foco/contraste, entrada como parcela 1, situações, quitada sem receber e resultados com os testes afetados, documentando a entrega.
-- [ ] 3.2 Verificar a composição com até dez parcelas e excedente, descrição/nome extensos e estado de venda ausente; estender E2E/fixture para comprovar CA-028, rolagem interna acessível e valores preservados nos dois temas, com capturas e medições em `frontend/README.md` antes do commit do detalhe.
+- [x] 3.1 Refinar hierarquia de dados/saldo, ação de receber e mensagens existentes do detalhe; alinhar coluna monetária das parcelas sem remover dados ou refatorar amplamente o CSS compacto; verificar foco/contraste, entrada como parcela 1, situações, quitada sem receber e resultados com os testes afetados, documentando a entrega.
+- [x] 3.2 Verificar a composição com até dez parcelas e excedente, descrição/nome extensos e estado de venda ausente; estender E2E/fixture para comprovar CA-028, rolagem interna acessível e valores preservados nos dois temas, com capturas e medições em `frontend/README.md` antes do commit do detalhe.
 
 ## 4. Cadastro e prévia — RD-03
 

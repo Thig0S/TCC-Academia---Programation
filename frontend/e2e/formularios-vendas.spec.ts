@@ -186,6 +186,11 @@ test('recebe parcela e lote antecipado, valida conferência e reconcilia quitaç
         botao.click();
       });
     await expect(dialog).toHaveCount(0);
+    const sucessoRecebimento = page
+      .locator('main p[role="status"]')
+      .filter({ hasText: /recebimento/i });
+    await expect(sucessoRecebimento).toHaveClass(/bg-success-badge/);
+    await expect(sucessoRecebimento).toHaveCSS('border-top-width', '1px');
     await expect(page.getByRole('button', { name: /Receber parcelas da venda/ })).toBeFocused();
     await expect(
       page
