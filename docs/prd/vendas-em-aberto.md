@@ -2,6 +2,45 @@
 
 > Documento de planejamento. Não comprova implementação nem aprovação. O MVP descrito é uma demonstração com dados sintéticos e estado em memória, inadequada para controlar cobranças reais.
 
+## Piloto visual de Vendas — planejamento em 22/11/2026
+
+**Problema:** mesmo após `refinar-design` e `novo-design`, a listagem ainda não
+transmite com fidelidade a estética de
+`references/a_clean_modern_dashboard_ui_using_the_mercadão_do.png`. Alterações
+incrementais anteriores não produziram uma diferença visual suficientemente clara.
+**Objetivo:** tornar **somente a página de listagem de Vendas** uma demonstração
+convincente dessa linguagem visual, para avaliação explícita do solicitante antes de
+qualquer expansão a Quitadas ou outros módulos. A imagem é a referência visual
+principal, inclusive para proporções, alinhamento, camadas, espaçamento, controles e
+hierarquia; tema escuro recebe tradução coerente com os tokens atuais. Não se exige
+igualdade pixel a pixel com conteúdo fictício ou com elementos excluídos.
+
+**Escopo visual proposto:** redesenhar de forma perceptível o conteúdo da listagem:
+hierarquia de cabeçalho/painel, controle local de pesquisa e filtro, CTA existente,
+tabela de oito colunas, selos, estados vazio/sem resultados e faixa de paginação.
+Preservar a sidebar, barra superior, Visão Geral, Quitadas e demais páginas nesta
+primeira etapa; componentes compartilhados podem receber apresentação específica de
+Vendas sem alterar visualmente outros consumidores. Não adicionar os quatro cards
+de indicadores da imagem à listagem. Não copiar busca global, filtro de datas,
+notificações, controles de janela, avatar com dados fictícios ou reticências que
+ocultem Visualizar/Editar. Pesquisa permanece única e local; “Limpar pesquisa”
+preserva a situação; “Nova venda” permanece na faixa dos critérios, conforme
+RF-003/CA-028/DEC-023. A tabela mantém fonte de 18 px, oito colunas e densidade
+contratada; não reduzir fonte ou esconder informações para imitar as linhas menores
+do mockup.
+
+**Critérios de aceite do piloto (complementam CA-027/028/029):** capturas *antes e
+depois* lado a lado com a imagem principal, em 1366×768/390×844 e temas claro/escuro;
+documentar os elementos de composição efetivamente transformados e diferenças
+intencionais. A versão clara deve mostrar mudança estrutural visível em cabeçalho,
+controles, tabela e rodapé — apenas trocar cores/raios não basta. Verificar 10 linhas
+e paginação sem rolagem vertical em 1366×768 com fixture, rolagem horizontal contida
+na tabela e nenhum overflow horizontal global em 390×844, estados vazio/sem
+resultados, foco/teclado, contraste e contratos de busca/filtro/ações. Publicar
+capturas comparáveis com dados sintéticos para revisão humana, sem declarar aprovação
+visual automaticamente por testes. Sem aprovação explícita do piloto, nenhuma outra
+página adota o novo padrão; isso não é aceite da ótica nem autorização de merge.
+
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
