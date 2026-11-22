@@ -29,6 +29,7 @@ test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
 
       const formulario = page.locator('form');
+      await expect(formulario.getByRole('alert')).toHaveCount(0);
       const grupos = formulario.locator(':scope > div').first();
       const previa = formulario.locator(':scope > section[aria-labelledby="titulo-previa"]');
       const caixaFormulario = await grupos.boundingBox();
@@ -828,6 +829,7 @@ test('revela erros por campo e foco, invalida prévia e cancela sem efeito nos d
     await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
     await expect(page.getByLabel('Nome', { exact: true })).toBeFocused();
     await expect(page.locator('#erro-nome')).toContainText('Informe o nome');
+    await expect(page.locator('#erro-nome')).toHaveCSS('color', /rgb\(/);
     await preencherCadastro(page, 'Cliente DEMO cancelado');
     await page.getByLabel('CPF', { exact: true }).fill('11111111111');
     await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();

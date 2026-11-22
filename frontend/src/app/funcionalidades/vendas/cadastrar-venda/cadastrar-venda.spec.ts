@@ -244,6 +244,10 @@ describe('Cadastro demonstrativo pela interface', () => {
     expect(pagina.querySelector('[role="alert"]')!.textContent).toMatch(
       /Falha controlada|Não foi possível/,
     );
+    expect(pagina.querySelector('[role="alert"]')!.classList.contains('rounded-lg')).toBe(true);
+    expect(pagina.querySelector('[role="alert"]')!.classList.contains('bg-surface-muted')).toBe(
+      true,
+    );
     expect(pagina.querySelector<HTMLInputElement>('#nome-cliente')!.value).toBe(
       'Cliente DEMO cadastro',
     );

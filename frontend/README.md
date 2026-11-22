@@ -128,7 +128,28 @@ que Valor total nas larguras onde o teste exige essa proporção. O E2E de erros
 prévia extensa e acessibilidade passou **2/2** nos dois temas/viewports; o menor
 contraste textual medido nesse percurso foi 4,899:1. Capturas PNG e metadados de
 cadastro válido em 1366×768 e 390×844 estão em
-`test-results/refinar-design-cadastro/`. As mudanças são apenas de apresentação.
+`test-results/refinar-design-cadastro-final/`; capturas adicionais de erro e prévia
+extensa ficam em `test-results/refinar-design-cadastro/`. As mudanças são apenas de
+apresentação.
+
+### Mensagens e ações do cadastro RD-03 — tarefa 4.2
+
+A mensagem geral de erro mantém o texto e `role="alert"`, mas agora só é renderizada
+quando há mensagem; quando aparece, recebe borda/superfície neutra e texto de erro,
+sem reservar um painel vazio na composição. O binding continua `mensagem()` e os
+validadores/campos não foram alterados. Confirmar permanece ação principal vermelha
+com estilo de indisponibilidade existente; Cancelar permanece secundária.
+
+Verificações reais: testes unitários do cadastro passaram **10/10**, incluindo erro
+de escolha obrigatória, Sim/Não com rascunho preservado, prévia inválida/válida,
+entrada registrada na parcela 1, cancelar sem publicar, exceção/retorno de falha com
+retry do rascunho e submissão duplicada executada uma única vez. E2E direcionado
+passou **12/12** em Chromium 1366×768 e 390×844 nos dois temas, cobrindo esses fluxos,
+mensagens de campo, foco, prévia completa e ausência de overflow. A renderização
+condicional elimina o alert geral vazio; a mensagem existente continua anunciada
+quando ocorre falha. Capturas de cadastro e prévia nos dois temas ficam em
+`test-results/refinar-design-cadastro-fluxos-final/`. Nenhuma regra de validação,
+binding ou comportamento de ação foi alterado.
 
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
