@@ -1,0 +1,22 @@
+{
+  "pagina": "vendas",
+  "tema": "light",
+  "viewport": {
+    "largura": 1366,
+    "altura": 768
+  },
+  "documento": {
+    "largura": 1366,
+    "altura": 768
+  },
+  "linhasVisiveis": 10,
+  "baseDecimaLinha": 661.5,
+  "baseRodape": 692,
+  "tabela": {
+    "larguraVisivel": 1070,
+    "larguraConteudo": 1305,
+    "scrollHorizontal": "auto",
+    "fonte": "18px",
+    "lineHeight": "20px"
+  }
+}

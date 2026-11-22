@@ -2,8 +2,8 @@
 
 ## 1. Referência e baseline da listagem
 
-- [ ] 1.1 Capturar antes de editar Vendas e Quitadas em claro/escuro, 1366×768 e 390×844, com seed sintético e caso de dez linhas na fixture; registrar em `frontend/README.md` caminhos, medidas de décima linha/rodapé/largura global e mapa das diferenças contra `references/a_clean_modern_dashboard_ui_using_the_mercadão_do.png`.
-- [ ] 1.2 Registrar quadro de equivalências visual↔contrato (topo, busca, KPI omitidos, filtros, CTA, oito colunas, ações, selos, paginação) e verificar contra PRD RF-002/003, CA-027/028, TDD e delta `consulta-vendas` antes de editar a aplicação.
+- [x] 1.1 Capturar antes de editar Vendas e Quitadas em claro/escuro, 1366×768 e 390×844, com seed sintético e caso de dez linhas na fixture; registrar em `frontend/README.md` caminhos, medidas de décima linha/rodapé/largura global e mapa das diferenças contra `references/a_clean_modern_dashboard_ui_using_the_mercadão_do.png`.
+- [x] 1.2 Registrar quadro de equivalências visual↔contrato (topo, busca, KPI omitidos, filtros, CTA, oito colunas, ações, selos, paginação) e verificar contra PRD RF-002/003, CA-027/028, TDD e delta `consulta-vendas` antes de editar a aplicação.
 
 ## 2. Composição do piloto de Vendas
 

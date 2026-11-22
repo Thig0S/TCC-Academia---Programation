@@ -398,6 +398,59 @@ test('percorre páginas por teclado mantendo o foco e anunciando a faixa', async
   await expect(page.locator('[aria-label="Faixa de resultados"]')).toHaveText('21–21 de 21 vendas');
 });
 
+test('registra baseline visual do piloto em Vendas e Quitadas', async ({ page }, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas?quantidade=10');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+    for (const pagina of ['vendas', 'quitadas']) {
+      if (pagina === 'quitadas') {
+        await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
+      }
+      const tabela = page.locator('app-tabela-vendas table');
+      await expect(tabela).toBeVisible();
+      const medidas = await page.evaluate(() => {
+        const tabela = document.querySelector('app-tabela-vendas table')!;
+        const regiao = tabela.parentElement!;
+        const linhas = [...tabela.querySelectorAll('tbody tr')];
+        const rodape = document.querySelector('app-paginacao-vendas')!;
+        return {
+          viewport: { largura: innerWidth, altura: innerHeight },
+          documento: {
+            largura: document.documentElement.scrollWidth,
+            altura: document.documentElement.scrollHeight,
+          },
+          linhasVisiveis: linhas.length,
+          baseDecimaLinha: linhas[9]?.getBoundingClientRect().bottom ?? null,
+          baseRodape: rodape.getBoundingClientRect().bottom,
+          tabela: {
+            larguraVisivel: regiao.clientWidth,
+            larguraConteudo: regiao.scrollWidth,
+            scrollHorizontal: getComputedStyle(regiao).overflowX,
+            fonte: getComputedStyle(tabela).fontSize,
+            lineHeight: getComputedStyle(tabela).lineHeight,
+          },
+        };
+      });
+      expect(medidas.documento.largura).toBeLessThanOrEqual(medidas.viewport.largura);
+      expect(medidas.linhasVisiveis).toBeGreaterThan(0);
+      await page.screenshot({
+        path: testInfo.outputPath(`baseline-${pagina}-${tema}.png`),
+        fullPage: true,
+      });
+      await writeFile(
+        testInfo.outputPath(`baseline-${pagina}-${tema}.json`),
+        JSON.stringify({ pagina, tema, ...medidas }, null, 2),
+      );
+      if (pagina === 'quitadas') {
+        await page.getByRole('link', { name: 'Vendas', exact: true }).first().click();
+      }
+    }
+  }
+});
+
 test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewports', async ({
   page,
 }, testInfo) => {
