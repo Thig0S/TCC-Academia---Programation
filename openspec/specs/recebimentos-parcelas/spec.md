@@ -8,20 +8,25 @@ Garantir que a simulação de recebimentos liquide parcelas integralmente e na o
 
 ### Requirement: Seleção sequencial desde a primeira parcela pendente
 
-O recebimento SHALL aceitar uma seleção não vazia de parcelas da mesma venda que corresponda exatamente às primeiras parcelas ainda pendentes, consecutivas por número. SHALL rejeitar salto de pendência anterior, identificadores repetidos, ausentes ou pertencentes a outra venda e parcelas já pagas.
+ O recebimento SHALL aceitar seleção não vazia da mesma venda, correspondente às primeiras parcelas pendentes consecutivas por número. SHALL rejeitar saltos, IDs repetidos/ausentes/de outra venda e parcelas pagas, inclusive a parcela 1 de entrada já liquidada no cadastro. A entrada SHALL ser ignorada ao formar o prefixo de pendentes, não representar novo valor a receber nem deslocar uma seleção obsoleta.
 
 #### Scenario: Proibir pagamento fora de ordem
-- **WHEN** janeiro, fevereiro e março estiverem pendentes e for solicitado pagar fevereiro sozinha ou janeiro e março
-- **THEN** SHALL rejeitar toda a operação e manter as três parcelas pendentes
+ - **WHEN** janeiro, fevereiro e março estiverem pendentes e for solicitado fevereiro sozinha ou janeiro e março
+ - **THEN** SHALL rejeitar a operação inteira e manter as três pendentes
 
 #### Scenario: Aceitar uma ou mais parcelas em ordem
-- **WHEN** janeiro estiver paga e for solicitado liquidar fevereiro, ou fevereiro e março, ainda pendentes
+ - **WHEN** janeiro estiver paga e for solicitado fevereiro ou fevereiro e março pendentes
 - **THEN** SHALL aceitar a seleção se os demais dados forem válidos
-- **AND** a ordem textual dos IDs informados SHALL não autorizar saltos nem afetar a ordem canônica das parcelas
+ - **AND** ordem textual dos IDs SHALL não autorizar saltos nem alterar a ordem canônica
 
 #### Scenario: Rejeitar identificadores inválidos
 - **WHEN** houver seleção vazia, ID duplicado, parcela paga, parcela desconhecida ou de outra venda
-- **THEN** SHALL retornar rejeição identificável sem criar recebimento ou liquidar qualquer parcela
+ - **THEN** SHALL rejeitar sem criar recebimento ou liquidar qualquer parcela
+
+#### Scenario: Entrada já paga não integra novo lote
+- **WHEN** abrir recebimento de venda cuja entrada é a parcela 1 Paga e a parcela 2 é a primeira pendente
+- **THEN** o prefixo elegível SHALL começar na parcela 2 e não oferecer a entrada como valor a receber
+- **AND** comando que inclua a entrada SHALL ser rejeitado integralmente, sem novo recebimento
 
 ### Requirement: Valor integral exato do lote
 
@@ -106,10 +111,10 @@ O modal SHALL ter título associado, foco inicial, navegação modal por teclado
 
 ### Requirement: Quitação visível reconciliada
 
-Após receber as últimas parcelas pendentes, o detalhe SHALL mostrar Quitada, saldo zero, todas as parcelas pagas e ausência de próximo vencimento. A venda SHALL sair de abertas e aparecer exatamente uma vez em Quitadas, mantendo seu ID e histórico. SHALL não oferecer novo recebimento de venda sem pendências.
+ Após receber as últimas pendentes, o detalhe SHALL mostrar Quitada, saldo zero, N/N pagas incluindo a entrada e ausência de próximo vencimento. A venda SHALL sair de abertas e aparecer uma vez em Quitadas com mesmo ID/histórico. SHALL não oferecer recebimento sem pendências e SHALL contar cada recebimento, inclusive entrada, uma vez nos resumos.
 
 #### Scenario: Concluir lote final e conferir coleções
-- **WHEN** confirmar o pagamento integral do prefixo que contém todas as parcelas restantes
+ - **WHEN** confirmar o lote integral que contém todas as pendentes restantes de uma venda com entrada já paga
 - **THEN** SHALL atualizar o detalhe, fechar o modal e orientar foco para um destino remanescente do detalhe
-- **AND** ao navegar às listas SHALL haver exclusão de abertas e inclusão única em Quitadas, com a mesma identidade
-- **AND** entrada e lote SHALL compor os resumos internos uma única vez, sem antecipar cartões na interface
+ - **AND** SHALL excluir de abertas e incluir uma vez em Quitadas com a mesma identidade, N/N pagas e saldo zero
+ - **AND** entrada e lote SHALL compor resumos uma vez cada, sem somar alocações ou o valor da entrada novamente
