@@ -303,3 +303,63 @@ test('mantém gutter e separação do cabeçalho consistentes entre páginas', a
     expect(medidas.separacaoCabecalho, rota).toBe('8px');
   }
 });
+
+test('alinha valores monetários e recuos das consultas abertas e quitadas', async ({
+  page,
+}, info) => {
+  for (const largura of [1366, 390]) {
+    await page.setViewportSize({ width: largura, height: largura === 390 ? 844 : 768 });
+    for (const tema of ['dark', 'light']) {
+      for (const [nome, rota] of [
+        ['vendas', '/vendas'],
+        ['quitadas', '/vendas/quitadas'],
+      ]) {
+        await page.goto(rota);
+        if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+        await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+        const contagem = page.locator('main p[role="status"]').first();
+        await expect(contagem).toHaveCSS('margin-inline-start', '8px');
+        const tabela = page.locator('app-tabela-vendas table');
+        await expect(tabela).toBeVisible();
+        for (const nomeColuna of ['Valor total', 'Saldo devedor']) {
+          await expect(tabela.getByRole('columnheader', { name: nomeColuna })).toHaveCSS(
+            'text-align',
+            'right',
+          );
+        }
+        const primeiraLinha = tabela.locator('tbody tr').first();
+        for (const indice of [2, 4]) {
+          const valor = primeiraLinha.locator('td').nth(indice - 1);
+          await expect(valor).toHaveCSS('text-align', 'right');
+          const estilos = await valor.evaluate((elemento) => {
+            const estilo = getComputedStyle(elemento);
+            return {
+              fontSize: estilo.fontSize,
+              lineHeight: estilo.lineHeight,
+              paddingTop: estilo.paddingTop,
+              paddingLeft: estilo.paddingLeft,
+              fontVariantNumeric: estilo.fontVariantNumeric,
+            };
+          });
+          expect(estilos).toMatchObject({
+            fontSize: '18px',
+            lineHeight: '20px',
+            paddingTop: '4px',
+            paddingLeft: '10px',
+          });
+          expect(estilos.fontVariantNumeric).toContain('tabular-nums');
+        }
+        await expect(page.locator('app-paginacao-vendas')).toHaveCSS('padding-top', '4px');
+        await page.screenshot({
+          path: info.outputPath(`${nome}-${largura}-${tema}.png`),
+          fullPage: true,
+        });
+        await writeFile(
+          info.outputPath(`${nome}-${largura}-${tema}.json`),
+          JSON.stringify({ rota, tema, viewport: page.viewportSize(), cenário: nome }, null, 2),
+        );
+      }
+    }
+  }
+});
