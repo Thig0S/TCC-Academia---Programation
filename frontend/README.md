@@ -328,6 +328,36 @@ As medições estão em `test-results/refinar-design-matriz-integrada/` e
 edição e modal permanecem em seus diretórios de captura. Não foi aplicado `overflow-x:hidden`
 para esconder falhas.
 
+### Regressão integrada final RD-05 — tarefas 8.3–8.5
+
+Execuções finais em 22/11/2026: `npm.cmd test -- --watch=false` **372/372**;
+`npm.cmd run build` e `npx.cmd ng run vendas-em-aberto:build-paginacao-fixture`
+aprovados; `npm.cmd run test:e2e -- --config=playwright.refinar-baseline.config.ts
+--output=test-results/refinar-design-regressao-app-final --workers=1` **108/108**;
+`npm.cmd run test:e2e:paginacao-fixture --
+--output=test-results/refinar-design-regressao-fixture-final` **14/14**; e
+`npm.cmd run format:check` aprovado. A fixture emite o aviso Angular esperado de que
+prebundling não é usado com otimização de scripts. O E2E completo inclui o fluxo de
+cadastro com entrada, edição sem mudança financeira, recebimento/quitação, reconciliação
+em listas/Visão Geral/Relatórios e reload; a suíte passou sem alterar regras/budgets.
+
+**Bloqueio explícito — tarefa 8.3:** o Chromium automatizado disponível não permitiu
+verificar zoom nativo de 200%. Tentativas com `Control+Plus` (tecla não aceita pelo
+driver) e `Control+Equal` não alteraram a escala: `devicePixelRatio=1` e
+`visualViewport.scale=1` permaneceram. Viewport de janela não substitui zoom nativo;
+nenhuma emulação CSS/escala foi usada. Falta a inspeção manual em navegador real,
+para todos os destinos e modal nos dois temas, registrando navegador/versão e
+viewport útil. A tarefa 8.3 continua aberta, a Change permanece incompleta e não
+será aberto PR nesta etapa.
+
+Rastreabilidade confirmada: o escopo visual complementa requisitos/CA existentes do
+`docs/prd/vendas-em-aberto.md` (RNF-002/003/007/009; CA-016/017/018/022/023/027/028/
+029/031/032) e decisões técnicas do `docs/tdd/tdd.md` (DEC-006/008/018/020–026),
+materializados em proposal/design/spec delta/tasks de `refinar-design`; nenhum PRD,
+TDD, cálculo financeiro ou dependência foi alterado. `openspec validate refinar-design
+--strict` passou. As evidências verificáveis estão registradas acima; zoom manual e
+aprovação ótica não foram executados/não são alegados.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

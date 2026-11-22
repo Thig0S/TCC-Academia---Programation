@@ -1,6 +1,6 @@
 # Tasks
 
-Estas tarefas são planejamento, não autorização de implementação. Executar somente após revisão dos artefatos e pedido explícito de apply. Referências: `proposal.md`, `design.md` (D1–D5, RD-01–RD-05), delta `specs/temas-visuais/spec.md`, PRD e TDD citados nesses documentos. Nenhuma tarefa foi executada por esta proposta.
+Change aplicada após revisão dos artefatos e autorização explícita de apply. Referências: `proposal.md`, `design.md` (D1–D5, RD-01–RD-05), delta `specs/temas-visuais/spec.md`, `docs/prd/vendas-em-aberto.md` e `docs/tdd/tdd.md`. Tarefas concluídas estão marcadas somente após suas verificações; 8.3 permanece bloqueada e, portanto, a Change não está concluída.
 
 Cada funcionalidade deve incluir testes afetados, evidências e atualização de `frontend/README.md` no mesmo commit, com mensagem de tipo e descrição objetiva em português. Preservar a lateral e os contratos compactos em todos os grupos; não abrir PR entre funcionalidades.
 
@@ -46,8 +46,8 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 - [x] 8.1 Concluir comparação antes/depois de todos os destinos/modal e estados da matriz D5 nos dois temas; verificar que toda superfície recebeu melhoria ou justificativa de preservação, lateral equivalente, foco/contraste e movimento reduzido, sem remover dados, marca ou controles funcionais; documentar diferenças intencionais.
 - [x] 8.2 Executar a matriz responsiva integrada de D5 com textos extensos e valores grandes em fixtures, confirmar limites 767/768, dez linhas/dez parcelas no desktop e regiões roláveis; verificar ausência de corte/sobreposição e overflow horizontal da página em 390, 767, 768, 1024 e 1366 px, registrando medidas reais por cenário/tema.
 - [ ] 8.3 Verificar manualmente zoom nativo de 200% em todos os destinos e modal nos dois temas; registrar navegador/versão, viewport útil, alcance de campos/ações/mensagens e limitações. Se não for possível, manter a tarefa aberta e informar bloqueio, sem substituir por CSS zoom ou concluir o escopo.
-- [ ] 8.4 Executar em `frontend/` os comandos de regressão de D5: unitários sem watch, build da aplicação, build da fixture, E2E da aplicação, E2E da fixture e `format:check`; verificar também consulta → cadastro com entrada → edição → recebimento/quitação → resumos → recarga, registrar resultados/avisos reais e corrigir regressões sem mudar budgets ou enfraquecer contratos.
-- [ ] 8.5 Revisar rastreabilidade PRD → TDD reutilizados → SDD, marcar somente tarefas comprovadas e executar `openspec validate refinar-design --strict`; verificar que documentação final distingue entrega, limitações, verificações não executadas e ausência de aceite da ótica, e que o diff não contém alterações financeiras, dependências ou trabalho alheio.
+- [x] 8.4 Executar em `frontend/` os comandos de regressão de D5: unitários sem watch, build da aplicação, build da fixture, E2E da aplicação, E2E da fixture e `format:check`; verificar também consulta → cadastro com entrada → edição → recebimento/quitação → resumos → recarga, registrar resultados/avisos reais e corrigir regressões sem mudar budgets ou enfraquecer contratos.
+- [x] 8.5 Revisar rastreabilidade PRD → TDD reutilizados → SDD, marcar somente tarefas comprovadas e executar `openspec validate refinar-design --strict`; verificar que documentação final distingue entrega, limitações, verificações não executadas e ausência de aceite da ótica, e que o diff não contém alterações financeiras, dependências ou trabalho alheio.
 
 ## Workflow follow-up
 

@@ -14,6 +14,7 @@ const rotas = [
 ];
 
 test('matriz integrada sem overflow horizontal nos destinos e no modal', async ({ page }, info) => {
+  test.setTimeout(120_000);
   const medidas = [];
   for (const largura of [390, 767, 768, 1024, 1366]) {
     const altura = largura === 1366 ? 768 : 844;

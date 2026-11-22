@@ -597,6 +597,15 @@ test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewpo
         });
       expect(contrasteRecebimento).toBeGreaterThanOrEqual(4.5);
       const campoValor = page.getByLabel('Valor recebido (R$)');
+      await quantidade.focus();
+      let valorAlcançado = false;
+      for (let passo = 0; passo < 12 && !valorAlcançado; passo++) {
+        await page.keyboard.press('Tab');
+        valorAlcançado = await campoValor.evaluate(
+          (elemento) => document.activeElement === elemento,
+        );
+      }
+      expect(valorAlcançado, `campo de valor alcançável por Tab em ${largura}/${tema}`).toBe(true);
       await campoValor.scrollIntoViewIfNeeded();
       await expect(campoValor).toBeVisible();
       await expect(campoValor).toBeFocused();
