@@ -70,10 +70,10 @@ describe('Recebimento pela UI e ciclo de vida do dialog (DOM simulado)', () => {
     return { fonte, alvo, harness, preencher, enviar };
   }
 
-  it('reconcilia entrada e lote sem contabilizar a entrada como parcela', async () => {
+  it('reconcilia entrada e lote sem permitir receber novamente a parcela 1', async () => {
     const { harness, fonte, alvo, preencher, enviar } = await abrir(true);
     const resumo = fonte.resumo();
-    await preencher('quantidade-recebimento', '3');
+    await preencher('quantidade-recebimento', '2');
     await preencher('valor-recebimento', '80');
     await preencher('forma-recebimento', 'Pix');
     enviar();
@@ -85,7 +85,7 @@ describe('Recebimento pela UI e ciclo de vida do dialog (DOM simulado)', () => {
         saldoCentavos: 0,
         quantidadePaga: 3,
         entrada: { valorCentavos: 2000 },
-        recebimentos: [{ valorCentavos: 8000 }],
+        recebimentos: [{ valorCentavos: 2000 }, { valorCentavos: 8000 }],
       },
     });
     expect(fonte.resumo().recebidoNoMesCentavos).toBe(resumo.recebidoNoMesCentavos + 8000);

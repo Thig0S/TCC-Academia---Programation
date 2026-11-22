@@ -73,7 +73,12 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
             ? fonte.quitadas()[0]
             : fonte.abertas().find((v) => v.entrada !== null)!;
       if (situacao === 'parcial') {
-        const primeira = alvo.parcelas[0];
+        const pagas = new Set(
+          alvo.recebimentos.flatMap((recebimento) =>
+            recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
+          ),
+        );
+        const primeira = alvo.parcelas.find((parcela) => !pagas.has(parcela.id))!;
         expect(
           fonte.registrarPagamento({
             vendaId: alvo.id,
