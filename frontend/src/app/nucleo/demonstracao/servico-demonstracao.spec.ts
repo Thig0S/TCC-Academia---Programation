@@ -49,16 +49,11 @@ describe('Fonte demonstrativa de sessão', () => {
     const somar = (valores: readonly number[]) => valores.reduce((a, b) => a + b, 0);
     const conferir = () => {
       const vendas = fonte.vendas();
-      const recebimentos = vendas.flatMap((v) => [
-        ...(v.entrada ? [v.entrada] : []),
-        ...v.recebimentos,
-      ]);
+      const recebimentos = vendas.flatMap((v) => v.recebimentos);
       for (const v of vendas) {
         const pagas = new Set(v.recebimentos.flatMap((r) => r.alocacoes.map((a) => a.parcelaId)));
         const pendentes = v.parcelas.filter((p) => !pagas.has(p.id));
-        expect(v.totalPagoCentavos).toBe(
-          (v.entrada?.valorCentavos ?? 0) + somar(v.recebimentos.map((r) => r.valorCentavos)),
-        );
+        expect(v.totalPagoCentavos).toBe(somar(v.recebimentos.map((r) => r.valorCentavos)));
         expect(v.saldoCentavos).toBe(v.valorTotalCentavos - v.totalPagoCentavos);
         expect(v.saldoCentavos).toBe(somar(pendentes.map((p) => p.valorCentavos)));
         expect(v.quantidadePaga).toBe(pagas.size);
@@ -114,15 +109,15 @@ describe('Fonte demonstrativa de sessão', () => {
       fonte.cadastrarVenda({
         ...cadastro(),
         dataVenda,
-        quantidadeParcelas: 2,
+        quantidadeParcelas: 3,
         entrada: { valorCentavos: 20000, data: dataVenda, forma: 'Pix' },
       }),
     );
     conferir();
     const comando = {
       vendaId: v.id,
-      parcelaIds: [v.parcelas[0].id],
-      valorCentavos: 40000,
+      parcelaIds: [v.parcelas[1].id],
+      valorCentavos: v.parcelas[1].valorCentavos,
       data: referencia,
       forma: 'Dinheiro',
     };
@@ -135,7 +130,13 @@ describe('Fonte demonstrativa de sessão', () => {
     const parcial = fonte.vendas();
     expect(fonte.registrarPagamento(comando).tipo).toBe('inelegibilidade');
     expect(fonte.vendas()).toBe(parcial);
-    sucesso(fonte.registrarPagamento({ ...comando, parcelaIds: [v.parcelas[1].id] }));
+    sucesso(
+      fonte.registrarPagamento({
+        ...comando,
+        parcelaIds: [v.parcelas[2].id],
+        valorCentavos: v.parcelas[2].valorCentavos,
+      }),
+    );
     conferir();
     expect(sucesso(fonte.consultarVenda(v.id))).toMatchObject({
       situacao: 'Quitada',
@@ -177,8 +178,8 @@ describe('Fonte demonstrativa de sessão', () => {
     const v = sucesso(fonte.cadastrarVenda(cadastro()));
     const c = {
       vendaId: v.id,
-      parcelaIds: v.parcelas.slice(0, 2).map((p) => p.id),
-      valorCentavos: 40000,
+      parcelaIds: v.parcelas.slice(1, 3).map((p) => p.id),
+      valorCentavos: v.parcelas.slice(1, 3).reduce((total, parcela) => total + parcela.valorCentavos, 0),
       data: referencia,
       forma: 'Pix',
     };
@@ -188,21 +189,40 @@ describe('Fonte demonstrativa de sessão', () => {
       recebidoNoMesCentavos: base.recebidoNoMesCentavos + 20000,
       vendasCadastradas: 13,
     });
+    const antesDeSelecionar = fonte.vendas();
+    for (const parcelaIds of [[v.parcelas[0].id], [v.parcelas[0].id, v.parcelas[1].id]]) {
+      expect(
+        fonte.registrarPagamento({
+          vendaId: v.id,
+          parcelaIds,
+          valorCentavos: parcelaIds.reduce(
+            (total, id) => total + v.parcelas.find((parcela) => parcela.id === id)!.valorCentavos,
+            0,
+          ),
+          data: referencia,
+          forma: 'Pix',
+        }).tipo,
+      ).toBe('inelegibilidade');
+    }
+    expect(fonte.vendas()).toBe(antesDeSelecionar);
     sucesso(fonte.registrarPagamento(c));
     const snapshot = fonte.vendas();
     expect(sucesso(fonte.consultarVenda(v.id))).toMatchObject({
-      totalPagoCentavos: 60000,
-      saldoCentavos: 40000,
-      quantidadePaga: 2,
+      totalPagoCentavos: 20000 + c.valorCentavos,
+      saldoCentavos: 100000 - 20000 - c.valorCentavos,
+      quantidadePaga: 3,
     });
-    expect(fonte.resumo().recebidoNoMesCentavos).toBe(base.recebidoNoMesCentavos + 60000);
+    expect(fonte.resumo().recebidoNoMesCentavos).toBe(
+      base.recebidoNoMesCentavos + 20000 + c.valorCentavos,
+    );
     expect(fonte.registrarPagamento(c).tipo).toBe('inelegibilidade');
     expect(fonte.registrarPagamento({ ...c, vendaId: 'ausente' }).tipo).toBe('inexistencia');
     expect(fonte.vendas()).toBe(snapshot);
     const final = sucesso(
-      fonte.registrarPagamento({ ...c, parcelaIds: v.parcelas.slice(2).map((p) => p.id) }),
+      fonte.registrarPagamento({ ...c, parcelaIds: [v.parcelas[3].id], valorCentavos: v.parcelas[3].valorCentavos }),
     );
     expect(final.recebimentos.map((r) => r.id)).toEqual([
+      `${v.id}/recebimento/entrada`,
       'sessao/recebimento/2',
       'sessao/recebimento/3',
     ]);
@@ -228,8 +248,8 @@ describe('Fonte demonstrativa de sessão', () => {
       const v = sucesso(fonte.cadastrarVenda(cadastro()));
       const c = {
         vendaId: v.id,
-        parcelaIds: v.parcelas.slice(0, 3).map((p) => p.id),
-        valorCentavos: 60000,
+        parcelaIds: v.parcelas.slice(1, 3).map((p) => p.id),
+        valorCentavos: v.parcelas[1].valorCentavos + v.parcelas[2].valorCentavos,
         data: referencia,
         forma: 'Pix',
       };
@@ -264,9 +284,9 @@ describe('Fonte demonstrativa de sessão', () => {
       }).toEqual(snapshot);
       vi.restoreAllMocks();
       const aceita = sucesso(fonte.registrarPagamento(c));
-      expect(aceita.recebimentos).toHaveLength(1);
-      expect(aceita.recebimentos[0].id).toBe('sessao/recebimento/2');
-      expect(aceita.recebimentos[0].alocacoes).toHaveLength(3);
+      expect(aceita.recebimentos).toHaveLength(2);
+      expect(aceita.recebimentos[1].id).toBe('sessao/recebimento/2');
+      expect(aceita.recebimentos[1].alocacoes).toHaveLength(2);
       expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/3');
     },
   );
@@ -305,15 +325,17 @@ describe('Fonte demonstrativa de sessão', () => {
     sucesso(
       fonte.registrarPagamento({
         vendaId: v.id,
-        parcelaIds: v.parcelas.map((p) => p.id),
-        valorCentavos: 80000,
+        parcelaIds: v.parcelas.slice(1).map((p) => p.id),
+        valorCentavos: v.parcelas.slice(1).reduce((total, parcela) => total + parcela.valorCentavos, 0),
         data: referencia,
         forma: 'Pix',
       }),
     );
     const paga = sucesso(fonte.consultarVenda(v.id));
     expect(Reflect.set(paga.recebimentos[0].alocacoes[0], 'valorCentavos', 1)).toBe(false);
-    expect(consultada.recebimentos).toEqual([]);
+    expect(consultada.recebimentos).toEqual([
+      expect.objectContaining({ id: `${v.id}/recebimento/entrada` }),
+    ]);
     expect(seed).toHaveLength(12);
     expect(seed.map(({ id }) => id)).toEqual(
       criarDadosDemonstrativos(referencia).map(({ id }) => id),

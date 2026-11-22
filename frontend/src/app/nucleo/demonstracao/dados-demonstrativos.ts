@@ -34,9 +34,10 @@ export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
     if (historicoDezembro) dataVenda = '9999-10-31';
     const partesVenda = interpretarDataCivil(dataVenda);
     const mesVenda = (partesVenda.ano - 1) * 12 + partesVenda.mes - 1;
-    const quantidadeParcelas = Math.min(4, ultimoMes - mesVenda);
     const id = `seed/venda/${indice + 1}`;
     const comEntrada = indice % 2 === 0;
+    const quantidadeFuturas = Math.min(4, ultimoMes - mesVenda);
+    const quantidadeParcelas = quantidadeFuturas + (comEntrada ? 1 : 0);
     const venda = exigirSucesso(
       prepararCadastro(
         {
@@ -64,15 +65,20 @@ export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
             ? Math.max(0, indiceReferencia - mesVenda - 1)
             : 0;
     if (quantidadePaga > 0) {
+      const pagas = new Set(
+        venda.recebimentos.flatMap((recebimento) =>
+          recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
+        ),
+      );
+      const futurasPendentes = venda.parcelas.filter((parcela) => !pagas.has(parcela.id));
+      const parcelasPagamento = futurasPendentes.slice(0, quantidadePaga);
       vendas = exigirSucesso(
         prepararPagamento(
           vendas,
           {
             vendaId: id,
-            parcelaIds: venda.parcelas.slice(0, quantidadePaga).map((parcela) => parcela.id),
-            valorCentavos: somarCentavos(
-              venda.parcelas.slice(0, quantidadePaga).map((parcela) => parcela.valorCentavos),
-            ),
+            parcelaIds: parcelasPagamento.map((parcela) => parcela.id),
+            valorCentavos: somarCentavos(parcelasPagamento.map((parcela) => parcela.valorCentavos)),
             data: referencia,
             forma: 'Dinheiro',
           },

@@ -12,7 +12,7 @@ function venda(id = 'v1'): Venda {
     {
       cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '00900000001' },
       valorTotalCentavos: 100000,
-      quantidadeParcelas: 4,
+      quantidadeParcelas: 5,
       dataVenda: '2027-01-01',
       entrada: { valorCentavos: 20000, data: '2027-01-01', forma: 'Pix' },
     },
@@ -25,7 +25,7 @@ function venda(id = 'v1'): Venda {
 function comando(v = venda(), quantidade = 3): ComandoPagamento {
   return {
     vendaId: v.id,
-    parcelaIds: v.parcelas.slice(0, quantidade).map((p) => p.id),
+    parcelaIds: v.parcelas.slice(1, quantidade + 1).map((p) => p.id),
     valorCentavos: quantidade * 20000,
     data: referencia,
     forma: 'Pix',
@@ -43,24 +43,24 @@ describe('Seleção integral sequencial', () => {
 
   it('aceita a primeira pendente isolada e várias consecutivas, independentemente da ordem textual', () => {
     const v = venda();
-    expect(selecionarParcelas(v, [v.parcelas[0].id], referencia)).toMatchObject({
+    expect(selecionarParcelas(v, [v.parcelas[1].id], referencia)).toMatchObject({
       tipo: 'sucesso',
-      valor: [v.parcelas[0]],
+      valor: [v.parcelas[1]],
     });
     const preparadas = aceitar([v], {
       ...comando(v),
       parcelaIds: [...comando(v).parcelaIds].reverse(),
     });
-    expect(preparadas[0].recebimentos[0].alocacoes.map((a) => a.parcelaId)).toEqual(
+    expect(preparadas[0].recebimentos[1].alocacoes.map((a) => a.parcelaId)).toEqual(
       comando(v).parcelaIds,
     );
     const depois = aceitar([v], comando(v, 1));
     expect(
-      selecionarParcelas(depois[0], [v.parcelas[1].id, v.parcelas[2].id], referencia).tipo,
+      selecionarParcelas(depois[0], [v.parcelas[2].id, v.parcelas[3].id], referencia).tipo,
     ).toBe('sucesso');
   });
 
-  it.each([[], [1], [0, 2], [0, 0], [0, 4], [4]].map((indices) => ({ indices })))(
+  it.each([[], [0], [0, 2], [0, 0], [0, 4], [4]].map((indices) => ({ indices })))(
     'rejeita seleção vazia, salto, repetição ou ausente: $indices',
     ({ indices }) => {
       const v = venda();
@@ -92,22 +92,23 @@ describe('Seleção integral sequencial', () => {
     (forma) => {
       const v = venda();
       const depois = aceitar([v], { ...comando(v), forma });
-      const r = depois[0].recebimentos[0];
+      const r = depois[0].recebimentos[1];
       expect(r).toMatchObject({ valorCentavos: 60000, data: referencia, forma });
       expect(r.alocacoes.map((a) => a.valorCentavos)).toEqual([20000, 20000, 20000]);
       const p = calculos.projetarVenda(depois[0], referencia);
       expect(p).toMatchObject({
         totalPagoCentavos: 80000,
         saldoCentavos: 20000,
-        quantidadePaga: 3,
+        quantidadePaga: 4,
       });
       expect(
         p.parcelas
-          .slice(0, 3)
+          .slice(1, 4)
           .every((p) => p.dataPagamento === referencia && p.formaPagamento === forma),
       ).toBe(true);
       expect(calculos.resumirVendas(depois, referencia).recebidoNoMesCentavos).toBe(80000);
-      expect(v.recebimentos).toEqual([]);
+      expect(v.recebimentos).toHaveLength(1);
+      expect(v.recebimentos[0].id).toBe(`${v.id}/recebimento/entrada`);
     },
   );
 
@@ -181,8 +182,8 @@ describe('Seleção integral sequencial', () => {
     expect(resultado.tipo).toBe('sucesso');
     if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
     const depois = resultado.valor;
-    expect(depois[0].recebimentos).toHaveLength(1);
-    expect(depois[0].recebimentos[0].alocacoes).toHaveLength(3);
+    expect(depois[0].recebimentos).toHaveLength(2);
+    expect(depois[0].recebimentos[1].alocacoes).toHaveLength(3);
     expect(inicial).toEqual(snapshot);
   });
 
@@ -198,7 +199,7 @@ describe('Seleção integral sequencial', () => {
     const parcial = aceitar([v], comando(v, 1));
     const r = prepararPagamento(
       parcial,
-      { ...comando(v, 1), parcelaIds: [v.parcelas[1].id] },
+      { ...comando(v, 1), parcelaIds: [v.parcelas[2].id] },
       referencia,
       'r1',
     );

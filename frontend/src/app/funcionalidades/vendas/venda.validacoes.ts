@@ -48,7 +48,7 @@ export function prepararCadastro(
     if (compararDatasCivis(comando.dataVenda, referencia) > 0) {
       throw new RangeError('A data da venda não pode ser futura.');
     }
-    let entrada = null;
+    let entrada: Venda['entrada'] = null;
     if (comando.entrada !== null) {
       const { valorCentavos, data, forma } = comando.entrada;
       validarCentavos(valorCentavos);
@@ -66,14 +66,45 @@ export function prepararCadastro(
     }
     const saldo = subtrairCentavos(total, entrada?.valorCentavos ?? 0);
     const quantidade = comando.quantidadeParcelas;
-    if (!Number.isSafeInteger(quantidade) || quantidade < 1 || quantidade > saldo) {
+    const quantidadeFutura = quantidade - (entrada ? 1 : 0);
+    if (
+      !Number.isSafeInteger(quantidade) ||
+      quantidade < (entrada ? 2 : 1) ||
+      quantidadeFutura > saldo
+    ) {
       throw new RangeError(
-        'Informe quantidade inteira positiva, com ao menos um centavo por parcela.',
+        'Informe quantidade total válida, com ao menos um centavo por parcela futura.',
       );
     }
-    const vencimentos = gerarVencimentos(comando.dataVenda, quantidade);
-    const quociente = Number(BigInt(saldo) / BigInt(quantidade));
-    const resto = Number(BigInt(saldo) % BigInt(quantidade));
+    const vencimentos = gerarVencimentos(comando.dataVenda, quantidadeFutura);
+    const quociente = Number(BigInt(saldo) / BigInt(quantidadeFutura));
+    const resto = Number(BigInt(saldo) % BigInt(quantidadeFutura));
+    const parcelaEntrada = entrada
+      ? {
+          id: `${id}/parcela/entrada`,
+          numero: 1,
+          valorCentavos: entrada.valorCentavos,
+          vencimento: entrada.data,
+        }
+      : null;
+    const parcelasFuturas = vencimentos.map((vencimento, indice) => ({
+      id: `${id}/parcela/${indice + 1}`,
+      numero: indice + 1 + (entrada ? 1 : 0),
+      valorCentavos: quociente + (indice < resto ? 1 : 0),
+      vencimento,
+    }));
+    const parcelas = parcelaEntrada
+      ? [parcelaEntrada, ...parcelasFuturas]
+      : parcelasFuturas;
+    const recebimentos = entrada
+      ? [
+          {
+            ...entrada,
+            id: `${id}/recebimento/entrada`,
+            alocacoes: [{ parcelaId: parcelaEntrada!.id, valorCentavos: entrada.valorCentavos }],
+          },
+        ]
+      : [];
     return {
       tipo: 'sucesso',
       mensagem: 'Venda demonstrativa preparada.',
@@ -83,13 +114,8 @@ export function prepararCadastro(
         dataVenda: comando.dataVenda,
         valorTotalCentavos: total,
         entrada,
-        parcelas: vencimentos.map((vencimento, indice) => ({
-          id: `${id}/parcela/${indice + 1}`,
-          numero: indice + 1,
-          valorCentavos: quociente + (indice < resto ? 1 : 0),
-          vencimento,
-        })),
-        recebimentos: [],
+        parcelas,
+        recebimentos,
       },
     };
   } catch (erro) {

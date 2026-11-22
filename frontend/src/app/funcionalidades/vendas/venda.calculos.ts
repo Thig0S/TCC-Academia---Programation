@@ -47,6 +47,21 @@ export function validarVenda(venda: Venda, referencia: string): void {
       'Parcelamento incompatível com o cadastro.',
     );
   });
+  const recebimentoEntrada = preparada.valor.recebimentos[0];
+  if (venda.entrada) {
+    const recebido = venda.recebimentos[0];
+    exigir(!!recebimentoEntrada && !!recebido, 'A entrada precisa estar liquidada no cadastro.');
+    exigir(
+      recebido.id === recebimentoEntrada.id &&
+        recebido.valorCentavos === venda.entrada.valorCentavos &&
+        recebido.data === venda.entrada.data &&
+        recebido.forma === venda.entrada.forma &&
+        recebido.alocacoes.length === 1 &&
+        recebido.alocacoes[0].parcelaId === preparada.valor.parcelas[0].id &&
+        recebido.alocacoes[0].valorCentavos === venda.entrada.valorCentavos,
+      'O recebimento inicial precisa corresponder integralmente à entrada.',
+    );
+  }
   const recebimentoIds = new Set<string>();
   let proxima = 0;
   for (const recebimento of venda.recebimentos) {
@@ -77,10 +92,7 @@ export function validarVenda(venda: Venda, referencia: string): void {
       'Valor do recebimento diferente das alocações.',
     );
   }
-  const pago = somarCentavos([
-    venda.entrada?.valorCentavos ?? 0,
-    ...venda.recebimentos.map((item) => item.valorCentavos),
-  ]);
+  const pago = somarCentavos(venda.recebimentos.map((item) => item.valorCentavos));
   exigir(
     subtrairCentavos(venda.valorTotalCentavos, pago) ===
       somarCentavos(venda.parcelas.slice(proxima).map((item) => item.valorCentavos)),
@@ -94,10 +106,7 @@ export function projetarVenda(venda: Venda, referencia: string): ProjecaoVenda {
     projetarParcela(parcela, venda.recebimentos, referencia),
   );
   const pendentes = parcelas.filter((parcela) => parcela.situacao !== 'Paga');
-  const totalPagoCentavos = somarCentavos([
-    venda.entrada?.valorCentavos ?? 0,
-    ...venda.recebimentos.map((item) => item.valorCentavos),
-  ]);
+  const totalPagoCentavos = somarCentavos(venda.recebimentos.map((item) => item.valorCentavos));
   const saldoCentavos = subtrairCentavos(venda.valorTotalCentavos, totalPagoCentavos);
   return {
     ...venda,
@@ -161,12 +170,11 @@ export function consultarPeriodo(
       valor: {
         vendas: vendas.filter((venda) => dentro(venda.dataVenda)),
         recebidosCentavos: somarCentavos(
-          vendas.flatMap((venda) => [
-            ...(venda.entrada && dentro(venda.entrada.data) ? [venda.entrada.valorCentavos] : []),
-            ...venda.recebimentos
+          vendas.flatMap((venda) =>
+            venda.recebimentos
               .filter((item) => dentro(item.data))
               .map((item) => item.valorCentavos),
-          ]),
+          ),
         ),
       },
     };

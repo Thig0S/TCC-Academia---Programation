@@ -45,30 +45,23 @@ export function calcularRelatorio(
   const noMes = (data: string) =>
     compararDatasCivis(data, inicioMes) >= 0 && compararDatasCivis(data, fimMes) <= 0;
 
-  const recebimentos = vendas.flatMap((venda) => [
-    ...(venda.entrada && noMes(venda.entrada.data)
-      ? [
-          {
-            id: `${venda.id}/entrada`,
-            venda,
-            origem: 'Entrada' as const,
-            data: venda.entrada.data,
-            forma: venda.entrada.forma,
-            valorCentavos: venda.entrada.valorCentavos,
-          },
-        ]
-      : []),
-    ...venda.recebimentos
+  const recebimentos = vendas.flatMap((venda) => {
+    const parcelaEntradaId = venda.entrada
+      ? venda.parcelas.find((parcela) => parcela.numero === 1)?.id
+      : undefined;
+    return venda.recebimentos
       .filter((item) => noMes(item.data))
       .map((item) => ({
         id: `${venda.id}/recebimento/${item.id}`,
         venda,
-        origem: 'Lote' as const,
+        origem: item.alocacoes.some((alocacao) => alocacao.parcelaId === parcelaEntradaId)
+          ? ('Entrada' as const)
+          : ('Lote' as const),
         data: item.data,
         forma: item.forma,
         valorCentavos: item.valorCentavos,
-      })),
-  ]);
+      }));
+  });
 
   const consulta = consultarPeriodo(vendas, inicioMes, fimMes);
   if (consulta.tipo !== 'sucesso') throw new RangeError(consulta.mensagem);
