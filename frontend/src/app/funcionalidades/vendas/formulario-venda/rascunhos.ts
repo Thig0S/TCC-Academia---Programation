@@ -1,7 +1,7 @@
 import { ComandoPagamento, formaAceita } from '../../parcelas/pagamento.modelos';
 import { selecionarParcelas } from '../../parcelas/pagamento.validacoes';
 import { adicionarMeses, compararDatasCivis } from '../data-civil';
-import { interpretarDinheiro, somarCentavos } from '../dinheiro';
+import { interpretarDinheiro } from '../dinheiro';
 import { cpfValido, telefoneValido } from '../identificacao.validacoes';
 import { ComandoCadastro, ComandoEdicaoCliente, Venda } from '../venda.modelos';
 import { prepararCadastro } from '../venda.validacoes';
@@ -24,8 +24,6 @@ export interface RascunhoCadastro extends RascunhoCliente {
 }
 
 export interface RascunhoRecebimento {
-  quantidade: string;
-  valor: string;
   data: string;
   forma: string;
 }
@@ -82,6 +80,10 @@ function dinheiro<T>(texto: string, campo: keyof T, erros: ErrosCampos<T>): numb
 export function inteiroPositivo(texto: string): number | null {
   const valor = Number(texto);
   return /^\d+$/.test(texto.trim()) && Number.isSafeInteger(valor) && valor > 0 ? valor : null;
+}
+
+export function iniciarRecebimento(referencia: string): RascunhoRecebimento {
+  return { data: referencia, forma: '' };
 }
 
 function erroData(data: string, inicio: string | null, fim: string): string | null {
@@ -176,34 +178,26 @@ export function converterEdicao(
 export function converterRecebimento(
   rascunho: RascunhoRecebimento,
   venda: Venda,
-  ids: readonly string[],
+  parcelaId: string,
   referencia: string,
 ): Conversao<ComandoPagamento, RascunhoRecebimento> {
   const erros: ErrosCampos<RascunhoRecebimento> = {};
-  const quantidade = inteiroPositivo(rascunho.quantidade);
-  if (quantidade === null || quantidade !== ids.length)
-    erros.quantidade = 'Selecione uma quantidade válida de parcelas consecutivas.';
-  const valor = dinheiro(rascunho.valor, 'valor', erros);
   const data = erroData(rascunho.data, venda.dataVenda, referencia);
   if (data) erros.data = data;
   if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione a forma do recebimento.';
   let resumo: string | null = null;
   try {
-    const selecao = selecionarParcelas(venda, ids, referencia);
+    const selecao = selecionarParcelas(venda, [parcelaId], referencia);
     if (selecao.tipo !== 'sucesso') resumo = selecao.mensagem;
-    else if (valor !== null && valor !== somarCentavos(selecao.valor.map((p) => p.valorCentavos)))
-      erros.valor = 'O valor deve ser exatamente a soma integral das parcelas selecionadas.';
   } catch {
-    resumo = 'Não foi possível conferir a seleção. Feche e revise a venda.';
+    resumo = 'Não foi possível conferir a parcela. Feche e revise a venda.';
   }
-  if (Object.keys(erros).length || resumo || valor === null)
-    return { tipo: 'invalido', erros, resumo };
+  if (Object.keys(erros).length || resumo) return { tipo: 'invalido', erros, resumo };
   return {
     tipo: 'sucesso',
     comando: {
       vendaId: venda.id,
-      parcelaIds: [...ids],
-      valorCentavos: valor,
+      parcelaId,
       data: rascunho.data,
       forma: rascunho.forma,
     },

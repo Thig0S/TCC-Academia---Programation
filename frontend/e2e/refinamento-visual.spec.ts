@@ -314,10 +314,10 @@ test('registra baseline dos fluxos válidos, inválidos e do modal', async ({ pa
     await capturar('edicao-valida', tema);
 
     await abrirNoTema(detalheHref!, tema);
-    const receber = page.getByRole('button', { name: /Receber parcelas da venda de/ });
-    await expect(receber).toBeVisible();
-    await receber.click();
-    const dialogo = page.getByRole('dialog', { name: 'Receber parcelas' });
+    const pagar = page.locator('[data-acao-pagar]').first();
+    await expect(pagar).toBeVisible();
+    await pagar.click();
+    const dialogo = page.getByRole('dialog', { name: 'Pagar parcela' });
     await expect(dialogo).toBeVisible();
     await capturar('recebimento-modal', tema);
     await page.keyboard.press('Escape');
@@ -466,16 +466,16 @@ test('detalhe destaca saldo, recebimento e valores das parcelas nos dois temas',
       .locator('+ dd');
     await expect(saldo).toHaveCSS('font-size', '20px');
     await expect(saldo).toHaveCSS('font-weight', '700');
-    const receber = page.getByRole('button', { name: /Receber parcelas da venda de/ });
-    await expect(receber).toHaveCSS('background-color', 'rgb(215, 40, 72)');
-    await expect(receber).toHaveCSS('color', 'rgb(255, 255, 255)');
+    const pagar = page.locator('[data-acao-pagar]').first();
+    await expect(pagar).toHaveCSS('background-color', 'rgb(215, 40, 72)');
+    await expect(pagar).toHaveCSS('color', 'rgb(255, 255, 255)');
     for (let tentativa = 0; tentativa < 20; tentativa += 1) {
-      if (await receber.evaluate((elemento) => elemento.matches(':focus-visible'))) break;
+      if (await pagar.evaluate((elemento) => elemento.matches(':focus-visible'))) break;
       await page.keyboard.press('Tab');
     }
-    await expect(receber).toBeFocused();
-    await expect(receber).toHaveCSS('outline-style', 'solid');
-    await expect(receber).toHaveCSS('outline-width', '3px');
+    await expect(pagar).toBeFocused();
+    await expect(pagar).toHaveCSS('outline-style', 'solid');
+    await expect(pagar).toHaveCSS('outline-width', '3px');
 
     const tabela = page.getByRole('region', { name: 'Parcelas da venda' }).locator('table');
     await expect(tabela.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(

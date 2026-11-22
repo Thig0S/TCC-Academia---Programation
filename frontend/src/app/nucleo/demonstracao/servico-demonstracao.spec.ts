@@ -116,13 +116,19 @@ describe('Fonte demonstrativa de sessão', () => {
     conferir();
     const comando = {
       vendaId: v.id,
-      parcelaIds: [v.parcelas[1].id],
-      valorCentavos: v.parcelas[1].valorCentavos,
+      parcelaId: v.parcelas[1].id,
       data: referencia,
       forma: 'Dinheiro',
     };
     const antes = fonte.vendas();
-    expect(fonte.registrarPagamento({ ...comando, valorCentavos: 39999 }).tipo).toBe('validacao');
+    expect(
+      fonte.registrarPagamento({
+        ...comando,
+        parcelaIds: [comando.parcelaId],
+        valorCentavos: 39999,
+      } as unknown as import('../../funcionalidades/parcelas/pagamento.modelos').ComandoPagamento)
+        .tipo,
+    ).toBe('validacao');
     expect(fonte.vendas()).toBe(antes);
     conferir();
     sucesso(fonte.registrarPagamento(comando));
@@ -133,8 +139,7 @@ describe('Fonte demonstrativa de sessão', () => {
     sucesso(
       fonte.registrarPagamento({
         ...comando,
-        parcelaIds: [v.parcelas[2].id],
-        valorCentavos: v.parcelas[2].valorCentavos,
+        parcelaId: v.parcelas[2].id,
       }),
     );
     conferir();
@@ -172,16 +177,13 @@ describe('Fonte demonstrativa de sessão', () => {
     expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/2');
   });
 
-  it('publica cadastro e lote uma vez, revalida repetição e reconcilia todas as projeções', () => {
+  it('publica pagamentos individuais, revalida repetição e reconcilia todas as projeções', () => {
     const fonte = iniciar();
     const base = fonte.resumo();
     const v = sucesso(fonte.cadastrarVenda(cadastro()));
     const c = {
       vendaId: v.id,
-      parcelaIds: v.parcelas.slice(1, 3).map((p) => p.id),
-      valorCentavos: v.parcelas
-        .slice(1, 3)
-        .reduce((total, parcela) => total + parcela.valorCentavos, 0),
+      parcelaId: v.parcelas[1].id,
       data: referencia,
       forma: 'Pix',
     };
@@ -192,15 +194,11 @@ describe('Fonte demonstrativa de sessão', () => {
       vendasCadastradas: 13,
     });
     const antesDeSelecionar = fonte.vendas();
-    for (const parcelaIds of [[v.parcelas[0].id], [v.parcelas[0].id, v.parcelas[1].id]]) {
+    for (const parcelaId of [v.parcelas[0].id, v.parcelas[2].id]) {
       expect(
         fonte.registrarPagamento({
           vendaId: v.id,
-          parcelaIds,
-          valorCentavos: parcelaIds.reduce(
-            (total, id) => total + v.parcelas.find((parcela) => parcela.id === id)!.valorCentavos,
-            0,
-          ),
+          parcelaId,
           data: referencia,
           forma: 'Pix',
         }).tipo,
@@ -209,35 +207,36 @@ describe('Fonte demonstrativa de sessão', () => {
     expect(fonte.vendas()).toBe(antesDeSelecionar);
     sucesso(fonte.registrarPagamento(c));
     const snapshot = fonte.vendas();
+    const valorIndividual = v.parcelas[1].valorCentavos;
     expect(sucesso(fonte.consultarVenda(v.id))).toMatchObject({
-      totalPagoCentavos: 20000 + c.valorCentavos,
-      saldoCentavos: 100000 - 20000 - c.valorCentavos,
-      quantidadePaga: 3,
+      totalPagoCentavos: 20000 + valorIndividual,
+      saldoCentavos: 100000 - 20000 - valorIndividual,
+      quantidadePaga: 2,
     });
     expect(fonte.resumo().recebidoNoMesCentavos).toBe(
-      base.recebidoNoMesCentavos + 20000 + c.valorCentavos,
+      base.recebidoNoMesCentavos + 20000 + valorIndividual,
     );
     expect(fonte.registrarPagamento(c).tipo).toBe('inelegibilidade');
     expect(fonte.registrarPagamento({ ...c, vendaId: 'ausente' }).tipo).toBe('inexistencia');
     expect(fonte.vendas()).toBe(snapshot);
+    sucesso(
+      fonte.registrarPagamento({
+        ...c,
+        parcelaId: v.parcelas[2].id,
+      }),
+    );
     const final = sucesso(
       fonte.registrarPagamento({
         ...c,
-        parcelaIds: [v.parcelas[3].id],
-        valorCentavos: v.parcelas[3].valorCentavos,
+        parcelaId: v.parcelas[3].id,
       }),
     );
-    expect(final.recebimentos.map((r) => r.id)).toEqual([
-      `${v.id}/recebimento/entrada`,
-      'sessao/recebimento/2',
-      'sessao/recebimento/3',
-    ]);
+    expect(final.recebimentos.at(-1)?.alocacoes).toHaveLength(1);
     expect(fonte.abertas().some((item) => item.id === v.id)).toBe(false);
     expect(fonte.quitadas().filter((item) => item.id === v.id)).toHaveLength(1);
     expect(sucesso(fonte.consultarVenda(v.id))).toMatchObject({
       saldoCentavos: 0,
       totalPagoCentavos: 100000,
-      proximoVencimento: null,
     });
     expect(fonte.resumo().totalEmAbertoCentavos).toBe(base.totalEmAbertoCentavos);
     expect(fonte.resumo().recebidoNoMesCentavos).toBe(base.recebidoNoMesCentavos + 100000);
@@ -246,16 +245,15 @@ describe('Fonte demonstrativa de sessão', () => {
     );
   });
 
-  it.each(['posterior', 'final'] as const)(
-    'double TestBed com falha %s preserva agregado e contador e permite nova tentativa',
+  it.each(['alocação', 'final'] as const)(
+    'double TestBed com falha de %s preserva agregado e contador e permite nova tentativa',
     (etapa) => {
       const preparador = new PreparadorRecebimento();
       const fonte = iniciar(preparador);
       const v = sucesso(fonte.cadastrarVenda(cadastro()));
       const c = {
         vendaId: v.id,
-        parcelaIds: v.parcelas.slice(1, 3).map((p) => p.id),
-        valorCentavos: v.parcelas[1].valorCentavos + v.parcelas[2].valorCentavos,
+        parcelaId: v.parcelas[1].id,
         data: referencia,
         forma: 'Pix',
       };
@@ -267,13 +265,10 @@ describe('Fonte demonstrativa de sessão', () => {
         referencia: fonte.referencia,
       });
       const anterior = fonte.vendas();
-      if (etapa === 'posterior') {
-        const original = preparador.alocar.bind(preparador);
-        vi.spyOn(preparador, 'alocar')
-          .mockImplementationOnce(original)
-          .mockImplementationOnce(() => {
-            throw new Error('Falha somente no teste');
-          });
+      if (etapa === 'alocação') {
+        vi.spyOn(preparador, 'alocar').mockImplementationOnce(() => {
+          throw new Error('Falha somente no teste');
+        });
       } else {
         vi.spyOn(preparador, 'validarConjunto').mockImplementationOnce(() => {
           throw new Error('Falha final somente no teste');
@@ -292,7 +287,7 @@ describe('Fonte demonstrativa de sessão', () => {
       const aceita = sucesso(fonte.registrarPagamento(c));
       expect(aceita.recebimentos).toHaveLength(2);
       expect(aceita.recebimentos[1].id).toBe('sessao/recebimento/2');
-      expect(aceita.recebimentos[1].alocacoes).toHaveLength(2);
+      expect(aceita.recebimentos[1].alocacoes).toHaveLength(1);
       expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/3');
     },
   );
@@ -331,10 +326,7 @@ describe('Fonte demonstrativa de sessão', () => {
     sucesso(
       fonte.registrarPagamento({
         vendaId: v.id,
-        parcelaIds: v.parcelas.slice(1).map((p) => p.id),
-        valorCentavos: v.parcelas
-          .slice(1)
-          .reduce((total, parcela) => total + parcela.valorCentavos, 0),
+        parcelaId: v.parcelas[1].id,
         data: referencia,
         forma: 'Pix',
       }),

@@ -24,8 +24,7 @@ export interface PagamentoDemonstrativo extends EntradaDemonstrativa {
 
 export interface ComandoPagamento {
   readonly vendaId: string;
-  readonly parcelaIds: readonly string[];
-  readonly valorCentavos: number;
+  readonly parcelaId: string;
   readonly data: string;
   readonly forma: string;
 }

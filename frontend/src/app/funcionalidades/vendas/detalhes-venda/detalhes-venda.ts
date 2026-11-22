@@ -18,6 +18,8 @@ import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalh
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
 import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar-pagamento';
+import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
+import { ProjecaoVenda } from '../venda.calculos';
 
 @Component({
   selector: 'app-detalhes-venda',
@@ -33,26 +35,48 @@ export class DetalhesVenda {
   private readonly id = toSignal(this.rota.paramMap, { initialValue: this.rota.snapshot.paramMap });
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
-  protected readonly recebendo = linkedSignal({
+  protected readonly parcelaPagamento = linkedSignal<string | null, string | null>({
     source: () => this.id().get('id'),
-    computation: () => false,
+    computation: () => null,
   });
   protected readonly mensagemRecebimento = signal('');
+  private readonly focoProxima = signal(false);
+  private readonly acionadorPagamento = signal<string | null>(null);
   protected readonly restaurarFoco = () => {
     afterNextRender(
       () => {
         const host = this.elemento.nativeElement;
-        (
-          host.querySelector<HTMLElement>('[data-acao-receber]') ??
-          host.querySelector<HTMLElement>('#titulo-parcelas')
-        )?.focus();
+        const acoes = [...host.querySelectorAll<HTMLElement>('[data-acao-pagar]')];
+        const destino = this.focoProxima()
+          ? acoes[0]
+          : acoes.find((acao) => acao.dataset['acaoPagar'] === this.acionadorPagamento());
+        (destino ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
+        this.focoProxima.set(false);
       },
       { injector: this.injector },
     );
   };
   protected fecharRecebimento(mensagem: string | null): void {
-    this.recebendo.set(false);
-    if (mensagem) this.mensagemRecebimento.set(mensagem);
+    this.parcelaPagamento.set(null);
+    if (mensagem) {
+      this.mensagemRecebimento.set(mensagem);
+      this.focoProxima.set(true);
+    }
+  }
+
+  protected abrirPagamento(parcelaId: string): void {
+    this.mensagemRecebimento.set('');
+    this.acionadorPagamento.set(parcelaId);
+    this.parcelaPagamento.set(parcelaId);
+  }
+
+  protected primeiraPendente(venda: ProjecaoVenda, parcela: ProjecaoParcela): boolean {
+    return venda.parcelas.find((item) => item.situacao !== 'Paga')?.id === parcela.id;
+  }
+
+  protected parcelaAlvo(venda: ProjecaoVenda): ProjecaoParcela | null {
+    const id = this.parcelaPagamento();
+    return id ? (venda.parcelas.find((parcela) => parcela.id === id) ?? null) : null;
   }
 
   protected readonly consulta = computed(() => {

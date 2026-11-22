@@ -4,6 +4,7 @@ import {
   converterRecebimento,
   copiarCliente,
   iniciarCadastro,
+  iniciarRecebimento,
   prepararPrevia,
   RascunhoCadastro,
   RascunhoRecebimento,
@@ -28,7 +29,7 @@ function venda(): Venda {
   return previa;
 }
 function recebimento(): RascunhoRecebimento {
-  return { quantidade: '1', valor: '33,34', data: referencia, forma: 'Pix' };
+  return iniciarRecebimento(referencia);
 }
 
 describe('Adaptadores puros de rascunhos', () => {
@@ -244,56 +245,74 @@ describe('Adaptadores puros de rascunhos', () => {
     if (resultado.tipo === 'invalido') expect(resultado.erros.quantidadeParcelas).toBeTruthy();
   });
 
-  it('converte recebimento copiando IDs e sem alterar venda/rascunho', () => {
+  it('converte pagamento individual com ID capturado sem alterar venda/rascunho', () => {
     const atual = venda();
     const antes = structuredClone(atual);
-    const ids = [atual.parcelas[0].id];
-    const resultado = converterRecebimento(recebimento(), atual, ids, referencia);
+    const parcelaId = atual.parcelas[0].id;
+    const rascunho = { ...recebimento(), forma: 'Pix' };
+    const antesRascunho = structuredClone(rascunho);
+    const resultado = converterRecebimento(rascunho, atual, parcelaId, referencia);
     expect(resultado.tipo).toBe('sucesso');
     if (resultado.tipo === 'sucesso') {
-      ids[0] = 'alterado';
-      expect(resultado.comando.parcelaIds).toEqual([atual.parcelas[0].id]);
-      expect(resultado.comando.valorCentavos).toBe(3334);
+      expect(resultado.comando).toEqual({
+        vendaId: atual.id,
+        parcelaId,
+        data: referencia,
+        forma: 'Pix',
+      });
     }
     expect(atual).toEqual(antes);
+    expect(rascunho).toEqual(antesRascunho);
   });
-
-  it.each(['', '33,33', '33,35', '1,001', '90071992547409,92'])(
-    'associa valor de recebimento inválido %s',
-    (valor) => {
-      const atual = venda();
-      const resultado = converterRecebimento(
-        { ...recebimento(), valor },
-        atual,
-        [atual.parcelas[0].id],
-        referencia,
-      );
-      expect(resultado.tipo).toBe('invalido');
-      if (resultado.tipo === 'invalido') expect(resultado.erros.valor).toBeTruthy();
-    },
-  );
 
   it.each(['2026-12-31', '2027-02-01', '2027-01-32'])('associa data de recebimento %s', (data) => {
     const atual = venda();
     const resultado = converterRecebimento(
       { ...recebimento(), data, forma: '' },
       atual,
-      [atual.parcelas[0].id],
+      atual.parcelas[0].id,
       referencia,
     );
     expect(resultado.tipo).toBe('invalido');
     if (resultado.tipo === 'invalido') {
       expect(resultado.erros.data).toBeTruthy();
       expect(resultado.erros.forma).toBeTruthy();
+      expect(resultado.erros).not.toHaveProperty('quantidade');
+      expect(resultado.erros).not.toHaveProperty('valor');
     }
   });
 
-  it('mantém rejeição de seleção vazia, saltada e obsoleta no resumo', () => {
+  it('mantém inelegibilidade de alvo saltado ou obsoleto no resumo', () => {
     const atual = venda();
-    for (const ids of [[], [atual.parcelas[1].id], ['antiga']]) {
-      const resultado = converterRecebimento(recebimento(), atual, ids, referencia);
+    for (const id of [atual.parcelas[1].id, 'antiga', '']) {
+      const resultado = converterRecebimento(recebimento(), atual, id, referencia);
       expect(resultado.tipo).toBe('invalido');
-      if (resultado.tipo === 'invalido') expect(resultado.resumo).toBeTruthy();
+      if (resultado.tipo === 'invalido') {
+        expect(resultado.resumo).toBeTruthy();
+        expect(resultado.erros).not.toHaveProperty('quantidade');
+        expect(resultado.erros).not.toHaveProperty('valor');
+      }
     }
+  });
+
+  it('usa data fixa de referência como inicial e aceita as bordas do intervalo venda–referência', () => {
+    expect(iniciarRecebimento(referencia)).toEqual({ data: referencia, forma: '' });
+    const atual = prepararPrevia({ ...cadastro(), dataVenda: '2027-01-01' }, referencia)!;
+    for (const data of ['2027-01-01', referencia])
+      expect(
+        converterRecebimento({ data, forma: 'Pix' }, atual, atual.parcelas[0].id, referencia).tipo,
+      ).toBe('sucesso');
+  });
+
+  it.each(['', 'Transferência'])('rejeita forma ausente/desconhecida %s', (forma) => {
+    const atual = prepararPrevia({ ...cadastro(), dataVenda: '2027-01-01' }, referencia)!;
+    const resultado = converterRecebimento(
+      { data: referencia, forma },
+      atual,
+      atual.parcelas[0].id,
+      referencia,
+    );
+    expect(resultado.tipo).toBe('invalido');
+    if (resultado.tipo === 'invalido') expect(resultado.erros.forma).toBeTruthy();
   });
 });

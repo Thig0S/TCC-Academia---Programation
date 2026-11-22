@@ -1,0 +1,9 @@
+{
+  "rota": "/vendas/seed%2Fvenda%2F1",
+  "tema": "dark",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "cenário": "modal de pagamento individual com conferência e campos iniciais"
+}

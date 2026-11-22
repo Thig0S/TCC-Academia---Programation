@@ -40,15 +40,15 @@ test('matriz integrada sem overflow horizontal nos destinos e no modal', async (
       await page.goto('/vendas/seed%2Fvenda%2F1');
       if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
-      await page.getByRole('button', { name: /Receber parcelas da venda de/ }).click();
-      const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+      await page.locator('[data-acao-pagar]').first().click();
+      const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
       await expect(dialog).toBeVisible();
       const larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(larguraDocumento, `modal/${tema}/${largura}px`).toBeLessThanOrEqual(largura);
       const caixa = await dialog.boundingBox();
       expect(caixa).not.toBeNull();
       expect(caixa!.width).toBeLessThanOrEqual(largura);
-      await expect(page.getByLabel('Quantidade de parcelas consecutivas')).toBeFocused();
+      await expect(page.getByLabel('Data do pagamento')).toBeFocused();
       medidas.push({
         rota: '/vendas/seed%2Fvenda%2F1 + modal',
         tema,

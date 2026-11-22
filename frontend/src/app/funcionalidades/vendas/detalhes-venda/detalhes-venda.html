@@ -36,22 +36,6 @@
           "
           >Editar</a
         >
-        @if (resultado.valor.saldoCentavos > 0) {
-          <button
-            type="button"
-            class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            data-acao-receber
-            (click)="recebendo.set(true)"
-            [attr.aria-label]="
-              'Receber parcelas da venda de ' +
-              resultado.valor.cliente.nome +
-              ', ID ' +
-              resultado.valor.id
-            "
-          >
-            Receber
-          </button>
-        }
       </nav>
     </div>
 
@@ -201,6 +185,12 @@
               >
                 Forma de pagamento
               </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+              >
+                Ações
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -236,18 +226,45 @@
                 <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                   {{ parcela.formaPagamento ?? 'Não informada' }}
                 </td>
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                  @if (parcela.situacao !== 'Paga') {
+                    @if (primeiraPendente(resultado.valor, parcela)) {
+                      <button
+                        type="button"
+                        class="rounded-lg border-[1px] border-control-border bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                        [attr.data-acao-pagar]="parcela.id"
+                        [attr.aria-label]="
+                          'Pagar parcela ' +
+                          parcela.numero +
+                          ' da venda de ' +
+                          resultado.valor.cliente.nome
+                        "
+                        (click)="abrirPagamento(parcela.id)"
+                      >
+                        Pagar
+                      </button>
+                    } @else {
+                      <span>Aguardando parcela anterior</span>
+                    }
+                  } @else {
+                    <span aria-hidden="true">—</span>
+                  }
+                </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
     </section>
-    @if (recebendo()) {
-      <app-registrar-pagamento
-        [venda]="resultado.valor"
-        [restaurarFoco]="restaurarFoco"
-        (encerrado)="fecharRecebimento($event)"
-      />
+    @if (parcelaPagamento(); as parcelaId) {
+      @if (parcelaAlvo(resultado.valor); as parcela) {
+        <app-registrar-pagamento
+          [venda]="resultado.valor"
+          [parcela]="parcela"
+          [restaurarFoco]="restaurarFoco"
+          (encerrado)="fecharRecebimento($event)"
+        />
+      }
     }
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />

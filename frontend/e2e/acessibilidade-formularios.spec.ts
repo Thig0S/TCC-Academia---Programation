@@ -122,16 +122,12 @@ test('mede formulários, erros, prévia extensa e modal rolável nos dois temas'
     await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
     await medir(page, `${tema}-edicao-erros`, info);
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    await page.getByRole('button', { name: /Receber parcelas da venda/ }).click();
-    await page.getByLabel('Quantidade de parcelas consecutivas').selectOption('24');
-    await page.getByRole('button', { name: 'Confirmar recebimento demonstrativo' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Receber parcelas' });
+    await page.locator('[data-acao-pagar]').first().click();
+    const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
     await expect(dialog).toBeVisible();
-    const lista = dialog.getByRole('list', { name: 'Parcelas selecionadas' });
-    expect(await lista.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
-    await lista.focus();
-    await page.keyboard.press('End');
-    expect(await lista.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    await expect(page.getByLabel('Data do pagamento')).toBeFocused();
+    await expect(dialog).toContainText('Parcela');
+    await expect(dialog.getByRole('button', { name: 'Confirmar pagamento' })).toBeVisible();
     await medir(page, `${tema}-recebimento-erros`, info, 'dialog');
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
   }

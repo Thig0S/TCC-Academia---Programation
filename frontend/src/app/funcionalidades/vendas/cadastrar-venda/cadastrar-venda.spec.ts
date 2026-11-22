@@ -48,16 +48,15 @@ describe('Cadastro demonstrativo pela interface', () => {
   it('abre cadastro funcional inclusive após quitar toda a coleção aberta', async () => {
     const fonte = TestBed.inject(ServicoDemonstracao);
     for (const venda of fonte.abertas()) {
-      const pendentes = venda.parcelas.filter((p) => p.situacao !== 'Paga');
-      expect(
-        fonte.registrarPagamento({
-          vendaId: venda.id,
-          parcelaIds: pendentes.map((p) => p.id),
-          valorCentavos: venda.saldoCentavos,
-          data: fonte.referencia,
-          forma: 'Pix',
-        }).tipo,
-      ).toBe('sucesso');
+      for (const parcela of venda.parcelas.filter((p) => p.situacao !== 'Paga'))
+        expect(
+          fonte.registrarPagamento({
+            vendaId: venda.id,
+            parcelaId: parcela.id,
+            data: fonte.referencia,
+            forma: 'Pix',
+          }).tipo,
+        ).toBe('sucesso');
     }
     const harness = await RouterTestingHarness.create('/vendas');
     expect(harness.routeNativeElement?.textContent).toContain('Não há vendas em aberto.');

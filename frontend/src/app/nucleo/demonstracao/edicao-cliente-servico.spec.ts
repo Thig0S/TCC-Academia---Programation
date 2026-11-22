@@ -63,15 +63,15 @@ describe('Edição interna atômica na fonte da sessão', () => {
       );
       if (situacao === 'parcial' || situacao === 'quitada') {
         const parcelas = situacao === 'parcial' ? original.parcelas.slice(0, 1) : original.parcelas;
-        sucesso(
-          fonte.registrarPagamento({
-            vendaId: original.id,
-            parcelaIds: parcelas.map((p) => p.id),
-            valorCentavos: parcelas.reduce((total, p) => total + p.valorCentavos, 0),
-            data: referencia,
-            forma: 'Pix',
-          }),
-        );
+        for (const parcela of parcelas)
+          sucesso(
+            fonte.registrarPagamento({
+              vendaId: original.id,
+              parcelaId: parcela.id,
+              data: referencia,
+              forma: 'Pix',
+            }),
+          );
       }
       const duplicada = sucesso(fonte.cadastrarVenda(cadastro()));
       const antes = fonte.vendas();
