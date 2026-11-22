@@ -77,6 +77,37 @@ e alinhamento/tabularidade nos dois temas quando a coleção tem 21 vendas. A ex
 final da fixture passou 12/12. Comparação final da lateral com a baseline: 36/36
 pares de geometria e paleta sem diferenças.
 
+### Detalhe e recebimento RD-02 — tarefas 3.1–3.2
+
+O detalhe agora dá hierarquia ao saldo (20 px, peso 700, tabular), destaca
+“Receber” como ação primária apenas quando há saldo e alinha à direita o cabeçalho
+e os valores das parcelas sem mexer na tipografia ou no CSS compacto de composição.
+As mensagens de sucesso existentes de cadastro/recebimento no detalhe usam a
+superfície semântica de sucesso e conservam `role="status"`. O fluxo de recebimento,
+anúncios, textos e elegibilidade não foi alterado.
+
+Verificações reais: E2E de detalhe/teclado/overflow e estilos passou **8/8** (Chromium
+1366×768 e 390×844); estado de venda ausente e retornos passaram **2/2**; fluxo de
+recebimento (primeira parcela, valor/soma, pagamento sequencial, quitação, proteção
+contra duplo envio, mensagem e retorno de foco) passou **2/2**. A fixture completa
+passou **12/12** nos dois temas/viewports, comprovando entrada como parcela 1, venda
+quitada sem botão “Receber”, preservação do valor total `R$ 1.100,00`, dez parcelas
+e excedente rolável, cabeçalho sticky e uso da região por teclado.
+
+Na venda sintética com 10 parcelas, 1366×768 mantém a página em 768 px de altura e
+a tabela termina em 735 px; em 390×844 o documento tem 1648 px e segue rolável
+verticalmente sem overflow horizontal. O caso excedente combina nome e descrição
+extensos: a região de parcelas tem 173 px de rolagem interna; largura do documento
+fica exatamente 1366 px no desktop e 390 px no mobile; altura total 2380 px e
+2825 px, respectivamente, sem corte dos textos. As capturas das dez parcelas e do
+cenário extenso incluem sidecars JSON com rota, tema, viewport e medições em
+`test-results/refinar-design-detalhe-fixture/`; a venda ausente tem capturas com
+metadados em `test-results/refinar-design-detalhe/`. Saídas locais não são
+versionadas. Um primeiro disparo paralelo encontrou a porta 4302 ocupada e um
+argumento de fixture ausente; corrigi o isolamento para porta 4303 e o teste para
+receber `testInfo`, e as execuções finais acima passaram. Nenhuma alteração de
+regra, cálculo ou dado de produção.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

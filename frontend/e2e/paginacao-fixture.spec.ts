@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
 test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page }, info) => {
@@ -262,10 +263,21 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
       name: /Parcelas da venda de Cliente Fixture Detalhe Dez/,
     });
     await expect(tabela.locator('tbody tr')).toHaveCount(10);
+    await expect(tabela.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
+      'text-align',
+      'right',
+    );
+    await expect(tabela.locator('tbody td').first()).toHaveCSS('text-align', 'right');
+    await expect(tabela.locator('tbody td').first()).toHaveCSS(
+      'font-variant-numeric',
+      /tabular-nums/,
+    );
+    await expect(page.getByRole('button', { name: /Receber parcelas da venda de/ })).toHaveCount(0);
     await expect(page.getByRole('main')).toContainText(
       'Descrição curta para o cenário de dez parcelas.',
     );
     await expect(page.getByRole('main')).toContainText('Entrada');
+    await expect(tabela.locator('tbody th').first()).toContainText('1 de 10 · Entrada');
     const geometria = await page.evaluate(() => {
       const cliente = document.querySelector('#identificacao-venda')!.parentElement!;
       const financeiro = document.querySelector('#dados-financeiros')!.parentElement!;
@@ -310,6 +322,20 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
     console.log(`Detalhe com dez parcelas ${tema}: ${JSON.stringify(geometria)}`);
     const captura = await page.screenshot({ fullPage: true });
     await page.screenshot({ path: testInfo.outputPath(`detalhe-dez-${tema}.png`), fullPage: true });
+    await writeFile(
+      testInfo.outputPath(`detalhe-dez-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: new URL(page.url()).pathname,
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'venda quitada com entrada como parcela 1 e dez parcelas',
+          medidas: geometria,
+        },
+        null,
+        2,
+      ),
+    );
     await test.info().attach(`detalhe-dez-parcelas-${tema}`, {
       body: captura,
       contentType: 'image/png',
@@ -319,7 +345,7 @@ test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewport
 
 test('mantém parcelas excedentes em região rolável interna e operável por teclado', async ({
   page,
-}) => {
+}, testInfo) => {
   for (const tema of ['dark', 'light']) {
     await page.goto('/vendas');
     if (tema === 'light')
@@ -334,7 +360,11 @@ test('mantém parcelas excedentes em região rolável interna e operável por te
       .click();
     const regiao = page.getByRole('region', { name: 'Parcelas da venda' });
     await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(11);
-    await expect(page.getByRole('main')).toContainText('Descrição extensa para rolagem interna.');
+    const nomeExtenso = `Cliente Fixture Detalhe Onze · ${'Nome de cliente extenso preservado. '.repeat(8)}`;
+    const descricaoExtensa = 'Descrição extensa para rolagem interna. '.repeat(40);
+    await expect(page.getByRole('heading', { name: nomeExtenso })).toBeVisible();
+    await expect(page.getByRole('main')).toContainText(descricaoExtensa);
+    await expect(page.getByRole('main')).toContainText('R$ 1.100,00');
     await expect(regiao).toHaveClass(/parcelas-com-rolagem/);
     await regiao.focus();
     await page.keyboard.press('End');
@@ -349,5 +379,38 @@ test('mantém parcelas excedentes em região rolável interna e operável por te
     expect(rolagem.cabecalho).toBe('sticky');
     await expect(regiao).toBeFocused();
     await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(11);
+    const detalhesGeometria = await page.evaluate(() => {
+      const resumo = document.querySelector('.detalhe-resumo')!;
+      const tabela = document.querySelector('[aria-label="Parcelas da venda"]')!;
+      const main = document.querySelector('main')!;
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        larguraDocumento: document.documentElement.scrollWidth,
+        alturaDocumento: document.documentElement.scrollHeight,
+        larguraResumo: resumo.getBoundingClientRect().width,
+        larguraTabela: tabela.getBoundingClientRect().width,
+        rolagemTabela: tabela.scrollHeight - tabela.clientHeight,
+        larguraMain: main.getBoundingClientRect().width,
+      };
+    });
+    expect(detalhesGeometria.larguraDocumento).toBeLessThanOrEqual(
+      detalhesGeometria.viewport.width,
+    );
+    const nomeArquivo = `detalhe-extenso-11-parcelas-${tema}.png`;
+    await page.screenshot({ path: testInfo.outputPath(nomeArquivo), fullPage: true });
+    await writeFile(
+      testInfo.outputPath(`detalhe-extenso-11-parcelas-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: new URL(page.url()).pathname,
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'venda quitada com nome/descrição extensos e onze parcelas roláveis',
+          medidas: detalhesGeometria,
+        },
+        null,
+        2,
+      ),
+    );
   }
 });
