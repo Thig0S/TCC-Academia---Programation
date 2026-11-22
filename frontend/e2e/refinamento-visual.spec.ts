@@ -481,6 +481,32 @@ test('identifica o painel de Vendas com resultados, vazio e pesquisa sem resulta
   await expect(titulo).toBeVisible();
 });
 
+test('cabeçalhos e mensagens de sucesso preservam contraste e acabamento nos dois temas', async ({
+  page,
+}) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const assinatura = page.locator('app-cabecalho header > p');
+    await expect(assinatura).toHaveCSS(
+      'color',
+      tema === 'dark' ? 'rgb(255, 154, 175)' : 'rgb(181, 31, 61)',
+    );
+    await expect(assinatura).toHaveCSS('font-weight', '500');
+
+    await page.goto('/vendas/seed%2Fvenda%2F1');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await page.locator('[data-acao-pagar]').first().click();
+    await page.getByLabel('Data do pagamento').fill('2026-11-22');
+    await page.getByLabel('Forma do pagamento').selectOption('Pix');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+    const sucesso = page.locator('main [role="status"]').first();
+    await expect(sucesso).toBeVisible();
+    await expect(sucesso).toHaveCSS('border-top-left-radius', '8px');
+  }
+});
+
 test('alinha valores monetários e recuos das consultas abertas e quitadas', async ({
   page,
 }, info) => {

@@ -9,7 +9,7 @@
 ## 2. Shell e identidade visual compartilhada
 
 - [x] 2.1 Ajustar só o ritmo da área principal/barra superior e os tokens semânticos estritamente necessários em `app.html`, `app.css` e `styles.css`, sem alterar logo, lateral, rotas ou inserir pesquisa global; verificar E2E do shell, foco de teclado, tema inicial escuro/alternância e comparação da sidebar antes/depois em claro/escuro e dois viewports.
-- [ ] 2.2 Uniformizar acabamentos dos componentes compartilhados usados pelo conteúdo (cabeçalho, selos, estados e modal somente se necessário) sem alterar seletores, contratos ou semântica; verificar testes de componentes e cenários de contraste/foco em `frontend/e2e/refinamento-visual.spec.ts` e `matriz-responsiva.spec.ts`.
+- [x] 2.2 Uniformizar acabamentos dos componentes compartilhados usados pelo conteúdo (cabeçalho, selos, estados e modal somente se necessário) sem alterar seletores, contratos ou semântica; verificar testes de componentes e cenários de contraste/foco em `frontend/e2e/refinamento-visual.spec.ts` e `matriz-responsiva.spec.ts`.
 - [ ] 2.3 Registrar em `frontend/README.md` decisões de tokens, diferenças justificadas dos protótipos `references/mercadao_oculos_dashboard_light.html` e `references/mercadao_oculos_dashboard_dark.html` e evidências reais de regressão/acessibilidade do shell; conferir ausência de nova dependência e de alterações indevidas na sidebar pelo diff.
 
 ## 3. Nova venda, detalhe e recebimento
