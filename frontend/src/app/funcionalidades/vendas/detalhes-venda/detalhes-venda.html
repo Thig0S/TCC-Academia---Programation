@@ -3,7 +3,7 @@
     <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
     @if (sucesso) {
       <p
-        class="mb-2 rounded-md border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
         role="status"
       >
         {{ sucesso }}
@@ -11,7 +11,7 @@
     }
     @if (mensagemRecebimento()) {
       <p
-        class="mb-2 rounded-md border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
         role="status"
       >
         {{ mensagemRecebimento() }}
