@@ -179,7 +179,9 @@ describe('Fonte demonstrativa de sessão', () => {
     const c = {
       vendaId: v.id,
       parcelaIds: v.parcelas.slice(1, 3).map((p) => p.id),
-      valorCentavos: v.parcelas.slice(1, 3).reduce((total, parcela) => total + parcela.valorCentavos, 0),
+      valorCentavos: v.parcelas
+        .slice(1, 3)
+        .reduce((total, parcela) => total + parcela.valorCentavos, 0),
       data: referencia,
       forma: 'Pix',
     };
@@ -219,7 +221,11 @@ describe('Fonte demonstrativa de sessão', () => {
     expect(fonte.registrarPagamento({ ...c, vendaId: 'ausente' }).tipo).toBe('inexistencia');
     expect(fonte.vendas()).toBe(snapshot);
     const final = sucesso(
-      fonte.registrarPagamento({ ...c, parcelaIds: [v.parcelas[3].id], valorCentavos: v.parcelas[3].valorCentavos }),
+      fonte.registrarPagamento({
+        ...c,
+        parcelaIds: [v.parcelas[3].id],
+        valorCentavos: v.parcelas[3].valorCentavos,
+      }),
     );
     expect(final.recebimentos.map((r) => r.id)).toEqual([
       `${v.id}/recebimento/entrada`,
@@ -326,7 +332,9 @@ describe('Fonte demonstrativa de sessão', () => {
       fonte.registrarPagamento({
         vendaId: v.id,
         parcelaIds: v.parcelas.slice(1).map((p) => p.id),
-        valorCentavos: v.parcelas.slice(1).reduce((total, parcela) => total + parcela.valorCentavos, 0),
+        valorCentavos: v.parcelas
+          .slice(1)
+          .reduce((total, parcela) => total + parcela.valorCentavos, 0),
         data: referencia,
         forma: 'Pix',
       }),

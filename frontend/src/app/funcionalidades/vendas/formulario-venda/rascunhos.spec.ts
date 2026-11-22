@@ -167,9 +167,9 @@ describe('Adaptadores puros de rascunhos', () => {
         referencia,
       ).tipo,
     ).toBe('sucesso');
-    expect(
-      converterCadastro({ ...rascunho, temEntrada: 'talvez' as never }, referencia).tipo,
-    ).toBe('invalido');
+    expect(converterCadastro({ ...rascunho, temEntrada: 'talvez' as never }, referencia).tipo).toBe(
+      'invalido',
+    );
   });
 
   it('preserva e revalida valor/forma da entrada ao alternar Sim e Não', () => {
@@ -191,11 +191,14 @@ describe('Adaptadores puros de rascunhos', () => {
     expect(semEntrada.tipo).toBe('sucesso');
     expect(rascunho.valorEntrada).toBe('200');
     expect(rascunho.formaEntrada).toBe('Pix');
-    expect(converterCadastro({ ...rascunho, valorEntrada: '1000', formaEntrada: '' }, referencia).tipo)
-      .toBe('invalido');
     expect(
-      converterCadastro({ ...rascunho, temEntrada: 'nao', valorEntrada: '1000', formaEntrada: '' }, referencia)
-        .tipo,
+      converterCadastro({ ...rascunho, valorEntrada: '1000', formaEntrada: '' }, referencia).tipo,
+    ).toBe('invalido');
+    expect(
+      converterCadastro(
+        { ...rascunho, temEntrada: 'nao', valorEntrada: '1000', formaEntrada: '' },
+        referencia,
+      ).tipo,
     ).toBe('sucesso');
   });
 

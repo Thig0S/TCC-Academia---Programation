@@ -120,7 +120,9 @@ describe('Cálculos puros dos Relatórios', () => {
     });
 
     const resultado = calcularRelatorio([movimento], '2027-03-31');
-    expect(resultado.recebimentos.map(({ origem, valorCentavos }) => [origem, valorCentavos])).toEqual([
+    expect(
+      resultado.recebimentos.map(({ origem, valorCentavos }) => [origem, valorCentavos]),
+    ).toEqual([
       ['Entrada', 20000],
       ['Lote', 40000],
     ]);
@@ -151,7 +153,13 @@ describe('Cálculos puros dos Relatórios', () => {
           ]),
         ],
         parcelas: [
-          parcela(`entrada-${indice}`, 1, `2027-05-${String(indice + 1).padStart(2, '0')}`, 'Paga', 10),
+          parcela(
+            `entrada-${indice}`,
+            1,
+            `2027-05-${String(indice + 1).padStart(2, '0')}`,
+            'Paga',
+            10,
+          ),
           parcela(`p${indice}`, 2, '2027-04-01', 'Atrasado', 10 + indice),
         ],
       }),

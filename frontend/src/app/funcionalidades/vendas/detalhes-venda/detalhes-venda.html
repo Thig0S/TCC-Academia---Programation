@@ -198,9 +198,8 @@
                   scope="row"
                   class="whitespace-nowrap border-b border-border px-2.5 py-1 font-medium"
                 >
-                  {{ parcela.numero }} de {{ resultado.valor.parcelas.length }}@if (
-                    resultado.valor.entrada && parcela.numero === 1
-                  ) {
+                  {{ parcela.numero }} de {{ resultado.valor.parcelas.length }}
+                  @if (resultado.valor.entrada && parcela.numero === 1) {
                     · Entrada
                   }
                 </th>
