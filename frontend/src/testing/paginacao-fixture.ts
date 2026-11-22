@@ -15,7 +15,9 @@ export class PaginacaoFixture {
   private readonly router = inject(Router);
 
   constructor() {
-    for (let indice = 0; this.servico.abertas().length < 21; indice++) {
+    const quantidade = new URLSearchParams(location.search).get('quantidade');
+    const totalAbertas = quantidade === '80' ? 80 : 21;
+    for (let indice = 0; this.servico.abertas().length < totalAbertas; indice++) {
       const resultado = this.servico.cadastrarVenda({
         cliente: {
           nome: `Cliente Fixture ${indice}`,
@@ -70,7 +72,6 @@ export class PaginacaoFixture {
         if (pagamento.tipo !== 'sucesso') throw new Error(pagamento.mensagem);
       }
     }
-    const quantidade = new URLSearchParams(location.search).get('quantidade');
     if (quantidade !== null && ['0', '1', '10', '11', '21'].includes(quantidade)) {
       for (const venda of this.servico.abertas().slice(Number(quantidade))) {
         const pendentes = venda.parcelas.filter((parcela) => parcela.situacao !== 'Paga');
