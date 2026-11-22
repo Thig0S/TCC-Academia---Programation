@@ -429,16 +429,29 @@ test('ação Nova venda mantém hierarquia, contraste e foco nos dois temas', as
   }
 });
 
-test('mantém gutter e separação do cabeçalho consistentes entre páginas', async ({ page }) => {
+test('mantém ritmo do shell e separação do cabeçalho sem alterar a lateral', async ({ page }) => {
   for (const rota of ['/visao-geral', '/vendas', '/relatorios', '/configuracoes']) {
-    await page.goto(rota);
-    const medidas = await page.evaluate(() => ({
-      gutter: getComputedStyle(document.querySelector('main')!.parentElement!).padding,
-      separacaoCabecalho: getComputedStyle(document.querySelector('app-cabecalho header')!)
-        .marginBottom,
-    }));
-    expect(medidas.gutter, rota).toBe('12px');
-    expect(medidas.separacaoCabecalho, rota).toBe('8px');
+    for (const largura of [390, 1366]) {
+      await page.setViewportSize({ width: largura, height: largura === 390 ? 844 : 768 });
+      await page.goto(rota);
+      const medidas = await page.evaluate(() => ({
+        gutter: {
+          vertical: getComputedStyle(document.querySelector('main')!.parentElement!).paddingTop,
+          horizontal: getComputedStyle(document.querySelector('main')!.parentElement!).paddingLeft,
+        },
+        separacaoCabecalho: getComputedStyle(document.querySelector('app-cabecalho header')!)
+          .marginBottom,
+        barraSuperior: document.querySelector('.barra-superior')!.getBoundingClientRect().height,
+        larguraLateral: document.querySelector('.barra-lateral')!.getBoundingClientRect().width,
+      }));
+      expect(medidas.gutter, `${rota}/${largura}`).toEqual({
+        vertical: '12px',
+        horizontal: largura >= 768 ? '16px' : '12px',
+      });
+      expect(medidas.separacaoCabecalho, `${rota}/${largura}`).toBe('8px');
+      expect(medidas.barraSuperior, `${rota}/${largura}`).toBe(56);
+      expect(medidas.larguraLateral, `${rota}/${largura}`).toBe(largura >= 768 ? 260 : 390);
+    }
   }
 });
 
