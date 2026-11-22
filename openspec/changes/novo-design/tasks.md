@@ -2,7 +2,7 @@
 
 ## 1. Listagem de vendas abertas e quitadas
 
-- [ ] 1.1 Acrescentar “Vendas cadastradas” como título textual dentro do painel de Vendas e refinar hierarquia de cabeçalho/critérios/estados com as classes atuais; verificar em teste de componente e E2E que o título persiste com resultados e vazios, não há KPIs nem busca global e “Limpar pesquisa” preserva a situação.
+- [x] 1.1 Acrescentar “Vendas cadastradas” como título textual dentro do painel de Vendas e refinar hierarquia de cabeçalho/critérios/estados com as classes atuais; verificar em teste de componente e E2E que o título persiste com resultados e vazios, não há KPIs nem busca global e “Limpar pesquisa” preserva a situação.
 - [ ] 1.2 Harmonizar as duas listagens e os componentes `tabela-vendas`/`paginacao-vendas` usando os PNGs claro/escuro de `references/` para composição e selos, sem mudar inputs/outputs, oito colunas, 18 px, paginação ou ações; verificar `frontend/e2e/refinamento-visual.spec.ts` e `paginacao-fixture.spec.ts` em ambos os temas, 1366×768 com dez linhas visíveis e 390×844 com rolagem horizontal apenas na tabela.
 - [ ] 1.3 Registrar em `frontend/README.md` as diferenças entre `DESIGN.md`, mockups de listagem em `references/` e Vendas/Quitadas atuais, capturas/medições e resultados reais dos testes deste grupo; explicitar a ausência apenas de `a_clean_modern_desktop_app_dashboard_ui_light_the.png` e verificar que os caminhos citados existem.
 

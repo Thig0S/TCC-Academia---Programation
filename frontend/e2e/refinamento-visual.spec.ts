@@ -442,6 +442,30 @@ test('mantém gutter e separação do cabeçalho consistentes entre páginas', a
   }
 });
 
+test('identifica o painel de Vendas com resultados, vazio e pesquisa sem resultados', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/vendas');
+  const titulo = page.getByRole('heading', { level: 2, name: 'Vendas cadastradas' });
+  await expect(titulo).toBeVisible();
+  await expect(page.locator('main input[type="search"]')).toHaveCount(1);
+  await expect(page.getByText('Total em aberto', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Valores em atraso', { exact: true })).toHaveCount(0);
+
+  const situacao = page.getByLabel('Filtrar por situação');
+  await situacao.selectOption('Atrasada');
+  await page.getByRole('button', { name: 'Limpar pesquisa' }).click();
+  await expect(situacao).toHaveValue('Atrasada');
+  await expect(titulo).toBeVisible();
+
+  await page.getByRole('searchbox', { name: 'Buscar por nome, CPF, telefone ou data da venda' })
+    .fill('termo-sem-correspondencia');
+  await expect(page.getByText('Nenhuma venda corresponde à pesquisa e à situação selecionadas.'))
+    .toBeVisible();
+  await expect(titulo).toBeVisible();
+});
+
 test('alinha valores monetários e recuos das consultas abertas e quitadas', async ({
   page,
 }, info) => {

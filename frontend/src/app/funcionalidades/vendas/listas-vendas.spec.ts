@@ -18,6 +18,7 @@ describe('Listas de vendas', () => {
     const pagina = harness.routeNativeElement!;
     const linhas = [...pagina.querySelectorAll('tbody tr')];
 
+    expect(pagina.querySelector('h2')?.textContent).toContain('Vendas cadastradas');
     expect(linhas).toHaveLength(vendas.length);
     expect(pagina.querySelector('caption')?.textContent).toContain('Vendas em aberto');
     expect(pagina.textContent).toContain(formatarDataCivil(servico.referencia));
@@ -143,7 +144,7 @@ describe('Listas de vendas', () => {
     expect(pagina.textContent).not.toContain('Total em aberto');
     expect(pagina.textContent).not.toContain('Valores em atraso');
     expect(pagina.textContent).not.toContain('Recebido no mês');
-    expect(pagina.textContent).not.toContain('Vendas cadastradas');
+    expect(pagina.querySelector('h2')?.textContent).toContain('Vendas cadastradas');
     expect(servico.resumo()).toEqual(resumoInicial);
 
     const campo = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
@@ -263,6 +264,7 @@ describe('Listas de vendas', () => {
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(pagina.querySelector('tbody')).toBeNull();
+    expect(pagina.querySelector('h2')?.textContent).toContain('Vendas cadastradas');
     expect(pagina.textContent).toContain('Nenhuma venda corresponde');
   });
 
@@ -395,11 +397,11 @@ describe('Listas de vendas', () => {
 
     const harness = await RouterTestingHarness.create('/vendas');
     const pagina = harness.routeNativeElement!;
+    expect(pagina.querySelector('h2')?.textContent).toContain('Vendas cadastradas');
     expect(pagina.textContent).toContain('Não há vendas em aberto.');
     expect(pagina.textContent).not.toContain('Nenhuma venda corresponde');
     expect(pagina.querySelector('[aria-label="Resumo global de vendas"]')).toBeNull();
     expect(pagina.textContent).not.toContain('Total em aberto');
-    expect(pagina.textContent).not.toContain('Vendas cadastradas');
 
     await harness.navigateByUrl('/vendas/quitadas');
     expect(harness.routeNativeElement?.textContent).toContain('Não há vendas quitadas.');
