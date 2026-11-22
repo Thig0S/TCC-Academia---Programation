@@ -1,5 +1,54 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `novo-design` — listagens — 22/11/2026
+
+Reutilizados PRD RF-002/RF-003 e CA-027/028, TDD DEC-018/022/023 e o delta
+OpenSpec `novo-design`; sem alterar dados, rotas, filtros, ações ou contratos dos
+componentes. `DESIGN.md` confirma “Vendas cadastradas” como título do painel, não
+KPI. Os PNGs de listagem e os HTMLs de `references/` mostram composições anteriores
+com busca global, cartões financeiros, ícones/ações ilustrativos e, em alguns casos,
+filtros de datas ou navegação adicional. Esses elementos não foram copiados: prevalecem
+o título e a busca locais, situação, botão “Limpar pesquisa”, CTA existente, oito
+colunas, ações Visualizar/Editar e paginação do Angular atual. O mockup escuro e o
+claro de listagem serviram para orientar superfície da tabela e selos arredondados;
+tokens semânticos e contraste dos dois temas foram mantidos.
+
+O título textual está dentro do painel de Vendas e permanece com linhas, pesquisa
+sem resultados e coleção vazia. A tabela recebeu contorno arredondado; os selos usam
+formato pill e tipografia 14 px sem aumentar sua altura; a faixa de resultados e a
+paginação compartilham uma linha flexível e quebram quando necessário. Foram mantidos
+os inputs/outputs, oito colunas, fonte 18 px, line-height 20 px, paddings 10×4 px nos
+dados e 10×8 px nos cabeçalhos, ações, semântica de foco e rolagem horizontal contida
+na tabela. Não houve alterações no seed nem nova dependência.
+
+Verificações reais:
+
+- `npm.cmd test -- --watch=false --include="src/app/funcionalidades/vendas/listas-vendas.spec.ts"`:
+  **9/9** testes de componente.
+- `npm.cmd test -- --watch=false --include="src/app/compartilhado/componentes/selo-situacao/selo-situacao.spec.ts" --include="src/app/funcionalidades/vendas/componentes/paginacao-vendas/paginacao-vendas.spec.ts"`:
+  **11/11** testes de componente.
+- E2E direcionado de título e alinhamento das listas:
+  **4/4** em Chromium, 1366×768 e 390×844, claro/escuro.
+- `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/novo-design-listagem-1.2-confirmacao`:
+  **16/16**. Inclui paginação extensa, coleção de 21 vendas, temas, teclado,
+  responsividade e medições de dez linhas. Em 1366×768, a décima linha terminou
+  em **660,5 px** e a paginação em **705 px**; em 390×844, a largura do documento
+  permaneceu **390 px**, com conteúdo largo rolável na região da tabela.
+- Prettier direcionado aos arquivos alterados e `git diff --check`: aprovados.
+
+As capturas/metadados gerados pelo Playwright estão localmente em
+`frontend/test-results/novo-design-listagem-1.2-confirmacao/` e
+`frontend/test-results/novo-design-listagem-refinamento-2/`; são saídas de teste,
+não evidência de zoom nativo ou aceite. A primeira execução integrada da fixture
+revelou um deslocamento vertical de 0,5 px nas dez parcelas após ampliar os selos;
+reduzido o padding vertical, a execução completa final passou 16/16.
+
+Foram conferidos `DESIGN.md`, os cinco PNGs presentes, os dois HTMLs e
+`nova_venda_refatorada.component.html`. A única referência ausente entre as seis
+imagens mencionadas no documento é
+`references/a_clean_modern_desktop_app_dashboard_ui_light_the.png`; os demais caminhos
+citados existem. Não se afirma comparação com a imagem ausente nem com zoom nativo.
+
 ## Revisão pós-implementação `refinar-design` — 22/11/2026
 
 Reutilizados PRD RNF-002/007/009, RF-003 e CA-027/028 e TDD DEC-018/021/023,
