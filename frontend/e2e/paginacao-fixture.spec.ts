@@ -105,6 +105,84 @@ test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page
   }
 });
 
+test('mede consultas, relatórios e texto extenso nos cinco limites responsivos', async ({
+  page,
+}, info) => {
+  test.setTimeout(120_000);
+  const medidas = [];
+  for (const largura of [390, 767, 768, 1024, 1366]) {
+    const altura = largura === 1366 ? 768 : 844;
+    await page.setViewportSize({ width: largura, height: altura });
+    for (const tema of ['dark', 'light']) {
+      await page.goto('/vendas?quantidade=21');
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      await expect(
+        page.getByRole('table', { name: 'Vendas em aberto' }).locator('tbody tr'),
+      ).toHaveCount(10);
+      let larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(larguraDocumento, `vendas/${tema}/${largura}`).toBeLessThanOrEqual(largura);
+      medidas.push({
+        rota: '/vendas?quantidade=21',
+        tema,
+        viewport: page.viewportSize(),
+        larguraDocumento,
+      });
+
+      await page
+        .getByRole('navigation', { name: 'Navegação principal' })
+        .getByRole('link', { name: 'Relatórios', exact: true })
+        .click();
+      await expect(page.locator('main table')).toHaveCount(4);
+      larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(larguraDocumento, `relatorios/${tema}/${largura}`).toBeLessThanOrEqual(largura);
+      const regioes = await page
+        .locator('main [role="region"][tabindex="0"]')
+        .evaluateAll((elementos) =>
+          elementos.map((elemento) => ({
+            nome: elemento.getAttribute('aria-label'),
+            largura: elemento.clientWidth,
+            conteudo: elemento.scrollWidth,
+            temRolagemInterna: elemento.scrollWidth > elemento.clientWidth,
+          })),
+        );
+      medidas.push({
+        rota: '/relatorios',
+        tema,
+        viewport: page.viewportSize(),
+        larguraDocumento,
+        regioes,
+      });
+
+      await page
+        .getByRole('navigation', { name: 'Navegação principal' })
+        .getByRole('link', { name: 'Vendas', exact: true })
+        .click();
+      await page.getByRole('link', { name: 'Quitadas', exact: true }).click();
+      const nomeExtenso = `Cliente Fixture Detalhe Onze · ${'Nome de cliente extenso preservado. '.repeat(8)}`;
+      await page.getByLabel('Buscar por nome, CPF, telefone ou data da venda').fill(nomeExtenso);
+      await page.locator('a').filter({ hasText: nomeExtenso }).click();
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Detalhes da venda' }),
+      ).toBeVisible();
+      await expect(page.getByRole('main')).toContainText(nomeExtenso);
+      await expect(page.getByRole('main')).toContainText('Descrição extensa para rolagem interna.');
+      larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(larguraDocumento, `detalhe extenso/${tema}/${largura}`).toBeLessThanOrEqual(largura);
+      medidas.push({
+        rota: '/vendas/quitadas → detalhe de 11 parcelas',
+        tema,
+        viewport: page.viewportSize(),
+        larguraDocumento,
+      });
+    }
+  }
+  await writeFile(
+    info.outputPath('matriz-fixture-responsiva.json'),
+    JSON.stringify(medidas, null, 2),
+  );
+});
+
 test('mede paginação normal, hover, foco, ativa e indisponível nos dois temas', async ({
   page,
 }, info) => {
