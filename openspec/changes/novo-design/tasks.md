@@ -15,7 +15,7 @@
 ## 3. Nova venda, detalhe e recebimento
 
 - [x] 3.1 Refinar apenas composição e superfícies de Nova venda, identificação, prévia e erros tomando `references/a_clean_modern_ui_mockup_portuguese_in_the_same.png` e `references/nova_venda_refatorada.component.html` como orientação visual, sem copiar seletor de cliente, campos extras, ordem antiga ou breakpoint `xl`, nem alterar `[formField]`, validações ou prévia; verificar `formularios-vendas.spec.ts` e `acessibilidade-formularios.spec.ts`, incluindo 767/768 px, claro/escuro e estado inválido.
-- [ ] 3.2 Harmonizar detalhe/parcelas, edição e modal de pagamento individual tomando `references/a_detailed_ui_screenshot_of_a_sales_detail_page_fo.png` como guia de hierarquia, sem copiar o pagamento em lote; manter primeira parcela elegível, tabela de 18 px, campos editáveis e retorno de foco; verificar testes de componente e E2E de pagamento, histórico excedente, cancelamento, erro e quitação.
+- [x] 3.2 Harmonizar detalhe/parcelas, edição e modal de pagamento individual tomando `references/a_detailed_ui_screenshot_of_a_sales_detail_page_fo.png` como guia de hierarquia, sem copiar o pagamento em lote; manter primeira parcela elegível, tabela de 18 px, campos editáveis e retorno de foco; verificar testes de componente e E2E de pagamento, histórico excedente, cancelamento, erro e quitação.
 - [ ] 3.3 Registrar em `frontend/README.md` comparações, medições de até dez parcelas em 1366×768, resultados reais e limites do grupo; conferir que não foi reintroduzida seleção de lote nem modal de detalhes.
 
 ## 4. Demais módulos e estados existentes

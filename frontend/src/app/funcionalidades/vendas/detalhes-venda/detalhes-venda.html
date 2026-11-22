@@ -99,9 +99,9 @@
           <dd>{{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}</dd>
         </dl>
         <section class="entrada-detalhe" aria-labelledby="titulo-entrada">
-          <h3 id="titulo-entrada" class="mb-2 text-base font-semibold">Entrada</h3>
+          <h3 id="titulo-entrada" class="mb-2 text-base font-semibold tracking-tight">Entrada</h3>
           @if (resultado.valor.entrada; as entrada) {
-            <dl class="detalhe-campos mb-0">
+            <dl class="detalhe-campos mb-0 rounded-lg bg-surface-muted p-2">
               <dt>Valor</dt>
               <dd>{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
               <dt>Data</dt>
@@ -110,14 +110,14 @@
               <dd>{{ entrada.forma }}</dd>
             </dl>
           } @else {
-            <p class="mb-0">Sem entrada</p>
+            <p class="mb-0 rounded-lg bg-surface-muted px-2 py-2 text-text-muted">Sem entrada</p>
           }
         </section>
       </section>
     </div>
 
     <section
-      class="parcelas-detalhe rounded-xl border-[1px] border-border bg-surface shadow-sm"
+      class="parcelas-detalhe overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
       aria-labelledby="titulo-parcelas"
     >
       <h2

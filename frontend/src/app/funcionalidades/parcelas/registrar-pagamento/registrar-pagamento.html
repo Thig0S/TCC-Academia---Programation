@@ -17,7 +17,9 @@
   </dl>
   <form novalidate (submit)="confirmar($event)">
     <div class="mb-3">
-      <label for="data-recebimento" class="mb-1 block text-sm font-medium">Data do pagamento</label>
+      <label for="data-recebimento" class="mb-1 block text-sm font-semibold"
+        >Data do pagamento</label
+      >
       <input
         id="data-recebimento"
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
@@ -29,7 +31,7 @@
       <app-erro-campo id="erro-data-recebimento" [campo]="campos.data" />
     </div>
     <div class="mb-3">
-      <label for="forma-recebimento" class="mb-1 block text-sm font-medium"
+      <label for="forma-recebimento" class="mb-1 block text-sm font-semibold"
         >Forma do pagamento</label
       >
       <select

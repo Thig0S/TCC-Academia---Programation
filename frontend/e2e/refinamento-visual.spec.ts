@@ -607,6 +607,9 @@ test('detalhe destaca saldo, recebimento e valores das parcelas nos dois temas',
     await expect(pagar).toHaveCSS('outline-width', '3px');
 
     const tabela = page.getByRole('region', { name: 'Parcelas da venda' }).locator('table');
+    await expect(page.locator('.detalhe-bloco').first()).toHaveCSS('padding', '8px');
+    await expect(page.locator('.entrada-detalhe dl')).toHaveCSS('border-radius', '8px');
+    await expect(page.locator('.parcelas-detalhe')).toHaveCSS('overflow', 'hidden');
     await expect(tabela.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
       'text-align',
       'right',

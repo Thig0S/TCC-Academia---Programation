@@ -286,6 +286,8 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
     await page.locator('[data-acao-pagar]').first().click();
     const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
     await expect(dialog).toBeVisible();
+    await expect(dialog.locator('dl')).toHaveCSS('border-radius', '8px');
+    await expect(dialog.locator('label[for="data-recebimento"]')).toHaveCSS('font-weight', '600');
     await expect(dialog.getByRole('alert')).toHaveCount(0);
     await expect(page.getByLabel('Data do pagamento')).toBeFocused();
     await expect(page.getByLabel('Forma do pagamento')).toHaveValue('');
@@ -443,6 +445,7 @@ for (const origem of ['/vendas', '/vendas/quitadas']) {
     await expect(
       page.getByRole('heading', { name: 'Editar dados do cliente', exact: true }),
     ).toBeFocused();
+    await expect(page.locator('form')).toHaveCSS('border-radius', '12px');
     await expect(page.locator('form input, form textarea')).toHaveCount(4);
     await page.getByLabel('Nome', { exact: true }).fill('DEMO alteração cancelada');
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
