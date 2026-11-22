@@ -1,7 +1,7 @@
 @if (consulta(); as resultado) {
   @if (resultado.tipo === 'sucesso') {
     <app-cabecalho titulo="Editar dados do cliente" />
-    <p class="text-text-muted">
+    <p class="mb-2 text-text-muted">
       Somente nome, CPF, telefone e descrição desta venda podem ser alterados. Use somente dados
       sintéticos.
     </p>
@@ -11,7 +11,14 @@
     </nav>
     <form novalidate (submit)="confirmar($event)">
       <app-identificacao-cliente [campos]="campos" />
-      <p class="text-sm text-error" role="alert">{{ mensagem() }}</p>
+      @if (mensagem()) {
+        <p
+          class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+          role="alert"
+        >
+          {{ mensagem() }}
+        </p>
+      }
       <div class="mb-3 flex flex-wrap gap-3">
         <button
           type="submit"

@@ -422,6 +422,53 @@ for (const origem of ['/vendas', '/vendas/quitadas']) {
   });
 }
 
+test('edita nome e descrição extensos, anuncia erro e preserva finanças nos dois temas', async ({
+  page,
+}, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas/seed%2Fvenda%2F1');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    const secaoFinanceira = page.locator('section[aria-labelledby="dados-financeiros"]');
+    const finançasAntes = await secaoFinanceira.innerText();
+    await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
+    const cpfOriginal = await page.getByLabel('CPF', { exact: true }).inputValue();
+    const nome = `Cliente DEMO edição extensa ${'nome integral preservado '.repeat(5)}`;
+    const descricao = 'Descrição longa de edição, preservada integralmente. '.repeat(12);
+    await page.getByLabel('Nome', { exact: true }).fill(nome);
+    await page.getByLabel('Descrição (opcional)').fill(descricao);
+    await page.getByLabel('CPF', { exact: true }).fill('11111111111');
+    await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+    await expect(page.locator('#erro-cpf')).toContainText('verificadores');
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByLabel('Nome', { exact: true })).toHaveValue(nome);
+    await expect(page.getByLabel('Descrição (opcional)')).toHaveValue(descricao);
+    await page.screenshot({
+      path: testInfo.outputPath(`edicao-erro-textos-extensos-${tema}.png`),
+      fullPage: true,
+    });
+    await writeFile(
+      testInfo.outputPath(`edicao-erro-textos-extensos-${tema}.json`),
+      JSON.stringify(
+        {
+          rota: new URL(page.url()).pathname,
+          tema,
+          viewport: page.viewportSize(),
+          cenário: 'erro de CPF mantém rascunho com nome e descrição extensos',
+        },
+        null,
+        2,
+      ),
+    );
+    await page.getByLabel('CPF', { exact: true }).fill(cpfOriginal);
+    await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+    await expect(page.getByRole('heading', { name: nome, exact: true })).toBeVisible();
+    await expect(page.getByRole('main')).toContainText(descricao);
+    expect(await secaoFinanceira.innerText()).toBe(finançasAntes);
+  }
+});
+
 test('cadastra sem entrada/descrição uma única vez com Enter repetido e descarta no reload', async ({
   page,
 }) => {

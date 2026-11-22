@@ -151,6 +151,24 @@ quando ocorre falha. Capturas de cadastro e prévia nos dois temas ficam em
 `test-results/refinar-design-cadastro-fluxos-final/`. Nenhuma regra de validação,
 binding ou comportamento de ação foi alterado.
 
+### Edição do cliente RD-03 — tarefa 5.1
+
+A edição agora apresenta a informação de escopo com intervalo consistente e uma
+mensagem geral de erro contextual, renderizada somente quando existente, mantendo
+`role="alert"`. Os quatro campos continuam fornecidos pelo componente compartilhado;
+nenhum dado financeiro ou botão novo foi introduzido. Confirmar segue primário e
+Cancelar secundário.
+
+Verificações reais: suíte unitária do componente de edição passou **10/10**, cobrindo
+valores iniciais, edição sem publicar durante digitação, estados sem pagamento/entrada/
+parcial/quitada, integridade financeira e de resumos, cancelamento, erros de campo,
+falha controlada/exceção com retry, sucesso e proteção contra envio duplicado. O E2E
+de nome/descrição extensos e CPF inválido passou **2/2 projetos Chromium**, em ambos
+temas e viewports; rascunho foi preservado após erro, sucesso exibiu os textos
+completos e a seção financeira permaneceu idêntica. Capturas do estado de erro com
+sidecars JSON estão em `test-results/refinar-design-edicao-final/`. As alterações
+são exclusivamente visuais.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

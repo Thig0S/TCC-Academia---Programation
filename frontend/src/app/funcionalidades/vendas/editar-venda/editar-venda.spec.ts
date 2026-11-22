@@ -153,6 +153,14 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
       /Falha controlada|Não foi possível/,
     );
     expect(
+      harness.routeNativeElement?.querySelector('[role="alert"]')!.classList.contains('rounded-lg'),
+    ).toBe(true);
+    expect(
+      harness.routeNativeElement
+        ?.querySelector('[role="alert"]')!
+        .classList.contains('bg-surface-muted'),
+    ).toBe(true);
+    expect(
       harness.routeNativeElement?.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled,
     ).toBe(false);
     enviar(harness);
