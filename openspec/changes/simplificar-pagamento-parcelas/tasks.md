@@ -2,7 +2,8 @@
 
 Change rastreada pelo PRD 1.19 e TDD 1.23/DEC-027. Produto confirmado; implementação
 autorizada nesta branch. Cada tarefa marcada foi executada e verificada conforme as
-evidências registradas; zoom nativo 200% permanece explicitamente pendente.
+evidências registradas; a confirmação manual de zoom nativo 200% é relato do solicitante,
+sem reprodução independente pelo agente.
 
 ## 1. Núcleo individual e compatibilidade histórica — FASE-014
 
@@ -22,7 +23,7 @@ evidências registradas; zoom nativo 200% permanece explicitamente pendente.
 
 - [x] 3.1 Executar regressão integrada do frontend: npm test -- --watch=false, npm run test:e2e, npm run test:e2e:paginacao-fixture, npm run build, npx ng run vendas-em-aberto:build-paginacao-fixture e npm run format:check; registrar comandos, resultados, avisos e limites reais em frontend/README.md, sem atualizar dependências, budgets ou enfraquecer asserções para passar (design D5/Migration Plan; RNF-005/008).
 - [x] 3.2 Verificar no navegador, em ambos os temas e viewports 1366×768/390×844, estilos 18 px/20 px/paddings, até dez parcelas sem rolagem da página no cenário desktop, excedente interno, textos extensos, coluna Ações, modal, contraste 4,5:1/3:1 e rolagem horizontal contida; registrar medidas/capturas e limites reais, sem ocultar dados/ações ou reduzir fonte (consulta-vendas e recebimentos-parcelas; CA-024/028).
-- [ ] 3.3 Obter e registrar verificação manual de zoom nativo 200% do detalhe e novo modal, nos dois temas, com ambiente/configurações, teclado, foco, campos, mensagens, ações e histórico alcançáveis; distinguir relato do solicitante de reprodução independente e não reutilizar evidência antiga ou CSS zoom. Se não executada, manter esta tarefa pendente e informar o bloqueio (CA-024/028; RNF-007).
+- [x] 3.3 Obter e registrar verificação manual de zoom nativo 200% do detalhe e novo modal, nos dois temas, com ambiente/configurações, teclado, foco, campos, mensagens, ações e histórico alcançáveis; distinguir relato do solicitante de reprodução independente e não reutilizar evidência antiga ou CSS zoom. Verificação relatada pelo solicitante em Chrome (versão não informada): detalhe e modal passaram nos dois temas e teclado/foco, mensagens, ações e histórico permaneceram alcançáveis. Não houve reprodução independente pelo agente (CA-024/028; RNF-007).
 - [x] 3.4 Conciliar PRD/TDD e tarefas com a implementação e evidências efetivamente realizadas, revisar todos os cenários das quatro deltas e executar openspec validate simplificar-pagamento-parcelas --strict; verificar diff restrito, referências válidas, nenhuma tarefa parcial marcada concluída e nenhuma alegação de aceite da ótica, testes não executados ou merge (design Migration Plan; rastreabilidade PRD → TDD → SDD).
 
 ## Workflow follow-up

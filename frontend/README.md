@@ -754,8 +754,14 @@ Verificação automatizada real: o E2E `detalhe reorganiza campos conforme a lar
 4303), nos temas escuro/claro e larguras de viewport 800, 640 e 390 px. Confirmou
 empilhamento conforme a largura do container, CPF/telefone/descrição visíveis e sem
 overflow horizontal global. Essas larguras cobrem a reorganização responsiva, mas
-não equivalem a zoom nativo. A pessoa solicitante ainda precisa repetir a verificação
-manual do detalhe e modal a 200%, nos dois temas; tarefa 3.3 permanece pendente.
+não equivalem a zoom nativo.
+
+Verificação manual do solicitante: confirmação em 22/11/2026 de que o zoom nativo
+200% passou no detalhe e modal, nos temas escuro/claro, com teclado, foco, mensagens,
+ações e histórico alcançáveis. Ambiente informado: Chrome; versão não informada.
+Registro de relato do solicitante, sem reprodução independente pelo agente. Com essa
+confirmação, a tarefa 3.3 foi marcada concluída; não foram reutilizadas capturas
+automatizadas como prova do zoom manual.
 
 Verificações: testes unitários 363/363; E2E de `formularios-vendas.spec.ts` 20/20
 nos viewports 1366×768 e 390×844; E2E combinado de layout/contraste 4/4. Contraste
