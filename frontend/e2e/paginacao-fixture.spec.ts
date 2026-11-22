@@ -51,6 +51,22 @@ test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page
         fullPage: true,
       });
       if (quantidade === 0) {
+        await writeFile(
+          info.outputPath(`colecao-vazia-${tema}.json`),
+          JSON.stringify(
+            {
+              rota: '/vendas?quantidade=0',
+              tema,
+              viewport: page.viewportSize(),
+              cenário: 'coleção vazia de vendas em aberto',
+              medidas: geometria,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+      if (quantidade === 0) {
         await page.goto('/visao-geral?quantidade=0');
         await expect(
           page.getByRole('heading', { level: 1, name: 'Vendas', exact: true }),
@@ -71,6 +87,19 @@ test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page
           path: info.outputPath(`resumos-vazios-${tema}.png`),
           fullPage: true,
         });
+        await writeFile(
+          info.outputPath(`resumos-vazios-${tema}.json`),
+          JSON.stringify(
+            {
+              rota: '/visao-geral?quantidade=0',
+              tema,
+              viewport: page.viewportSize(),
+              cenário: 'resumos sem parcelas próximas ou atrasadas',
+            },
+            null,
+            2,
+          ),
+        );
       }
     }
   }

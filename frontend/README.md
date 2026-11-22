@@ -260,6 +260,27 @@ layout e ausência de controles. Medição de contraste textual em 11 trechos: m
 `test-results/refinar-design-configuracoes-final/`. Comportamento, rotas e textos
 demonstrativos não foram alterados.
 
+### Estados auxiliares RD-04 — tarefa 7.2
+
+Estados de página ausente e de venda/edição ausente agora usam a mesma linguagem
+de aviso discreto (borda, fundo neutro, padding e raio), mantendo títulos, textos e
+retornos próprios. A pesquisa sem resultados e a coleção aberta vazia usam o mesmo
+tratamento de superfície, sem confundir “sem cadastro” com “sem correspondência”.
+Nenhum ID, item ou explicação foi inventado.
+
+Verificações reais: E2E passou **2/2** projetos Chromium em ambos os temas para
+página desconhecida, detalhe ausente, edição ausente e busca vazia em Vendas/Quitadas;
+confirmou mensagens específicas, links de retorno alcançáveis via Tab e ausência de
+overflow horizontal. A fixture de consulta passou **12/12**, incluindo coleção aberta
+vazia e resumos sem parcelas próximas/atrasadas nos dois temas, além de dados 1/10/11/21.
+Os unitários de Visão Geral/Relatórios cobrem seções vazias e totais zerados (17 testes
+ao todo, já executados). Capturas com metadados das rotas ausentes e buscas estão em
+`test-results/refinar-design-estados-final/`; coleção e resumos vazios em
+`test-results/refinar-design-estados-fixture/`. A primeira checagem presumiu foco
+automático no título inexistente para uma rota desconhecida; o comportamento real
+não promete isso, então a verificação foi corrigida para provar que os retornos são
+alcançáveis por teclado sem alterar gestão de foco da aplicação.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
