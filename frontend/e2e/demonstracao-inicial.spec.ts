@@ -440,6 +440,13 @@ test('anexa capturas sintéticas da Visão Geral, Relatórios e Configurações'
       await page.goto(rota);
       if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      if (rota === '/configuracoes') {
+        await expect(page.getByRole('heading', { name: 'Limites da demonstração' })).toHaveCSS(
+          'border-bottom-width',
+          '1px',
+        );
+        await expect(page.locator('main dt')).toHaveCount(4);
+      }
       const captura = await page.screenshot({ fullPage: true });
       await testInfo.attach(`${nome}-${tema}`, { body: captura, contentType: 'image/png' });
     }

@@ -174,6 +174,7 @@ test('alinha valores das quatro tabelas de Relatórios sem mudar densidade', asy
     };
     for (const nome of regioes) {
       const tabela = page.getByRole('region', { name: nome }).getByRole('table');
+      await expect(tabela.locator('xpath=../..')).toHaveCSS('border-radius', '12px');
       const cabecalhoMonetario = tabela.getByRole('columnheader', { name: colunas[nome] });
       const celulaMonetaria = tabela
         .locator('tbody tr')
