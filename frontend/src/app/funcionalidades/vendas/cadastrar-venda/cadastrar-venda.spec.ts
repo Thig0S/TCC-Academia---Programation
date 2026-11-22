@@ -32,6 +32,7 @@ describe('Cadastro demonstrativo pela interface', () => {
         'nome-cliente': 'Cliente DEMO cadastro',
         'cpf-cliente': '900.000.001-75',
         'telefone-cliente': '(00) 1234-5678',
+        'tem-entrada': 'nao',
         'valor-total': '100',
         'quantidade-parcelas': '3',
       }))
@@ -119,17 +120,69 @@ describe('Cadastro demonstrativo pela interface', () => {
     expect(pagina.textContent).not.toContain(
       'A entrada será registrada na data da venda e não conta como parcela paga.',
     );
-    pagina.querySelector<HTMLInputElement>('#tem-entrada')!.click();
-    await harness.fixture.whenStable();
-    expect(pagina.querySelector('tbody')).toBeNull();
     await preencher('valor-total', '1000');
     await preencher('quantidade-parcelas', '4');
+    await preencher('tem-entrada', 'sim');
+    expect(pagina.querySelector('tbody')).toBeNull();
     await preencher('valor-entrada', '200');
     await preencher('forma-entrada', 'Pix');
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(4);
     expect(pagina.textContent).toContain('800,00');
+    await preencher('tem-entrada', 'nao');
+    expect(pagina.querySelector('#valor-entrada')).toBeNull();
+    expect(pagina.querySelectorAll('tbody tr')).toHaveLength(4);
+    await preencher('tem-entrada', 'sim');
+    expect(pagina.querySelector<HTMLInputElement>('#valor-entrada')?.value).toBe('200');
+    expect(pagina.querySelector<HTMLSelectElement>('#forma-entrada')?.value).toBe('Pix');
     await preencher('valor-entrada', '1000');
     expect(pagina.querySelector('tbody')).toBeNull();
+  });
+
+  it('apresenta a escolha antes dos dados financeiros e foca erro sem escolha', async () => {
+    const { harness, fonte, pagina, preencher, enviar } = await abrir();
+    const antes = structuredClone(fonte.vendas());
+    expect(pagina.querySelector('label[for="tem-entrada"]')?.textContent).toContain('Possui Entrada');
+    expect(
+      pagina.querySelector<HTMLSelectElement>('#tem-entrada')?.options[0].textContent,
+    ).toBe('Selecione uma opção');
+    expect(
+      [...pagina.querySelector<HTMLSelectElement>('#tem-entrada')!.options].map((opcao) => [
+        opcao.value,
+        opcao.textContent,
+      ]),
+    ).toEqual([
+      ['', 'Selecione uma opção'],
+      ['sim', 'Sim'],
+      ['nao', 'Não'],
+    ]);
+    const ordem = ['tem-entrada', 'data-venda', 'valor-total', 'quantidade-parcelas'].map((id) =>
+      [...pagina.querySelectorAll('input, select')].findIndex((campo) => campo.id === id),
+    );
+    expect(ordem).toEqual([...ordem].sort((a, b) => a - b));
+    for (const [id, valor] of Object.entries({
+      'nome-cliente': 'Cliente DEMO sem escolha',
+      'cpf-cliente': '900.000.001-75',
+      'telefone-cliente': '(00) 1234-5678',
+      'valor-total': '100',
+      'quantidade-parcelas': '3',
+    })) await preencher(id, valor);
+    expect(pagina.querySelector('tbody')).toBeNull();
+    enviar();
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('#erro-tem-entrada')?.textContent).toContain(
+      'Informe se a venda possui entrada ou não.',
+    );
+    expect(document.activeElement).toBe(pagina.querySelector('#tem-entrada'));
+    expect(fonte.vendas()).toEqual(antes);
+    expect(
+      fonte.cadastrarVenda({
+        cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '0012345678' },
+        dataVenda: fonte.referencia,
+        valorTotalCentavos: 100,
+        quantidadeParcelas: 1,
+        entrada: null,
+      }),
+    ).toMatchObject({ tipo: 'sucesso', valor: { id: 'sessao/venda/1' } });
   });
 
   it('revela erros associados, foca o primeiro campo e não publica envio inválido', async () => {

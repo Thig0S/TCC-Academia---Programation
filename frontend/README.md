@@ -715,6 +715,40 @@ integral executada neste ponto aprovou 364/368 testes. Permaneceram quatro falha
 em rascunho/cadastro e recebimento/detalhe, cujos ajustes são tarefas 3.1/3.4;
 não foram considerados aprovação nem ocultados nesta entrega de fixture.
 
+### Apply `entrada-como-primeira-parcela` — escolha triestado — 22/11/2026
+
+Na tarefa 3.1, o rascunho distingue explicitamente `''`, `'sim'` e `'nao'`;
+inicia sem decisão e só `'sim'` ativa a conversão de valor/forma. Valores
+inativos permanecem no rascunho e são ignorados em “Não”; ao voltar a “Sim”,
+valor e forma são revalidados. A quantidade é N total; M futuras é N−1 com
+entrada e N sem ela, usada tanto no limite de centavos quanto na validação de
+calendário. Escolha ausente/desconhecida não gera comando nem prévia.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts`
+aprovou 46/46 testes. Cobertura inclui estado inicial, escolha ausente e
+desconhecida, Sim/Não, valores ocultos inválidos ignorados/restaurados,
+revalidação de entrada e conversão de N para M. A primeira execução encontrou
+uma expectativa antiga que contava N como futuras; o caso foi corrigido para
+validar três parcelas totais (duas futuras) e a reexecução passou.
+
+### Apply `entrada-como-primeira-parcela` — select obrigatório — 22/11/2026
+
+Na tarefa 3.2, a checkbox foi substituída pelo select nativo “Possui Entrada”,
+com “Selecione uma opção”, “Sim” e “Não”, no DOM antes de data, valor total e
+quantidade. A validação Signal Forms associa a mensagem especificada à seleção;
+no envio sem resposta, o erro aparece, o foco vai ao select e nenhum cadastro,
+prévia válida ou consumo de ID ocorre. “Sim” exige valor/forma; “Não” esconde e
+ignora os valores preservados.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts
+--include=src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts`
+aprovou 56/56 testes em 2 arquivos. A cobertura de componente confere opções e
+ordem DOM, escolha sem resposta com demais obrigatórios válidos, mensagem/foco,
+ausência de publicação/consumo de ID, exigência condicional e alternância com
+restauração do rascunho. Build do template foi concluído pelo target de testes.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,

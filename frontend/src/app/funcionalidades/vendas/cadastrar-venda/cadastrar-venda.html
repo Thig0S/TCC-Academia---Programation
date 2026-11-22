@@ -20,6 +20,20 @@
       <legend class="text-lg font-semibold">Dados da venda</legend>
       <div class="grid min-w-0 grid-cols-1 gap-3 @min-[22rem]:grid-cols-12">
         <div class="min-w-0 @min-[22rem]:col-span-6">
+          <label for="tem-entrada" class="mb-1 block text-sm font-medium">Possui Entrada</label>
+          <select
+            id="tem-entrada"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            [formField]="campos.temEntrada"
+            aria-describedby="erro-tem-entrada"
+          >
+            <option value="">Selecione uma opção</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+          </select>
+          <app-erro-campo id="erro-tem-entrada" [campo]="campos.temEntrada" />
+        </div>
+        <div class="min-w-0 @min-[22rem]:col-span-6">
           <label for="data-venda" class="mb-1 block text-sm font-medium">Data da venda</label>
           <input
             id="data-venda"
@@ -54,16 +68,7 @@
           />
           <app-erro-campo id="erro-quantidade" [campo]="campos.quantidadeParcelas" />
         </div>
-        <div class="col-span-full flex items-center gap-2">
-          <input
-            id="tem-entrada"
-            type="checkbox"
-            class="h-4 w-4 rounded border-control-border accent-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            [formField]="campos.temEntrada"
-          />
-          <label for="tem-entrada" class="text-sm font-medium">Há entrada</label>
-        </div>
-        @if (rascunho().temEntrada) {
+        @if (rascunho().temEntrada === 'sim') {
           <div class="min-w-0 @min-[22rem]:col-span-6">
             <label for="valor-entrada" class="mb-1 block text-sm font-medium"
               >Valor da entrada (R$)</label
