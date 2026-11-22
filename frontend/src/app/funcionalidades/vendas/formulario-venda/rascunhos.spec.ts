@@ -17,6 +17,7 @@ function cadastro(): RascunhoCadastro {
     nome: 'Cliente DEMO',
     cpf: '900.000.001-75',
     telefone: '(00) 1234-5678',
+    temEntrada: 'nao',
     valorTotal: '100',
     quantidadeParcelas: '3',
   };
@@ -42,6 +43,7 @@ describe('Adaptadores puros de rascunhos', () => {
       'cpf',
       'telefone',
       'valorTotal',
+      'temEntrada',
       'quantidadeParcelas',
     ]);
     expect(prepararPrevia(rascunho, referencia)).toBeNull();
@@ -146,33 +148,55 @@ describe('Adaptadores puros de rascunhos', () => {
       expect(resultado.erros.quantidadeParcelas).toContain('calendário');
   });
 
-  it('entrada só exige valor/forma quando presente e usa a data da venda', () => {
+  it('exige escolha explícita e ignora dados inativos ao selecionar Não', () => {
+    const rascunho = {
+      ...cadastro(),
+      temEntrada: '' as const,
+      valorEntrada: 'inválido',
+      formaEntrada: '',
+    };
+    const resultado = converterCadastro(rascunho, referencia);
+    expect(resultado.tipo).toBe('invalido');
+    if (resultado.tipo === 'invalido')
+      expect(resultado.erros.temEntrada).toBe('Informe se a venda possui entrada ou não.');
+    expect(prepararPrevia(rascunho, referencia)).toBeNull();
+    expect(converterCadastro({ ...rascunho, temEntrada: 'sim' }, referencia).tipo).toBe('invalido');
+    expect(
+      converterCadastro(
+        { ...rascunho, temEntrada: 'nao', valorEntrada: 'inválido', formaEntrada: '' },
+        referencia,
+      ).tipo,
+    ).toBe('sucesso');
+    expect(
+      converterCadastro({ ...rascunho, temEntrada: 'talvez' as never }, referencia).tipo,
+    ).toBe('invalido');
+  });
+
+  it('preserva e revalida valor/forma da entrada ao alternar Sim e Não', () => {
     const rascunho = {
       ...cadastro(),
       valorTotal: '1.000,00',
-      temEntrada: true,
+      temEntrada: 'sim' as const,
       valorEntrada: '200',
       formaEntrada: 'Pix',
       quantidadeParcelas: '4',
     };
     const previa = prepararPrevia(rascunho, referencia);
     expect(previa?.entrada).toEqual({ valorCentavos: 20000, data: referencia, forma: 'Pix' });
-    expect(previa?.parcelas.map((p) => p.valorCentavos)).toEqual([20000, 20000, 20000, 20000]);
-    expect(
-      converterCadastro(
-        { ...rascunho, temEntrada: false, valorEntrada: 'inválido', formaEntrada: '' },
-        referencia,
-      ).tipo,
-    ).toBe('sucesso');
-    const resultado = converterCadastro(
-      { ...rascunho, valorEntrada: '1000', formaEntrada: '' },
+    expect(previa?.parcelas.map((p) => p.valorCentavos)).toEqual([20000, 26667, 26667, 26666]);
+    const semEntrada = converterCadastro(
+      { ...rascunho, temEntrada: 'nao', valorEntrada: 'inválido', formaEntrada: '' },
       referencia,
     );
-    expect(resultado.tipo).toBe('invalido');
-    if (resultado.tipo === 'invalido') {
-      expect(resultado.erros.valorEntrada).toBeTruthy();
-      expect(resultado.erros.formaEntrada).toBeTruthy();
-    }
+    expect(semEntrada.tipo).toBe('sucesso');
+    expect(rascunho.valorEntrada).toBe('200');
+    expect(rascunho.formaEntrada).toBe('Pix');
+    expect(converterCadastro({ ...rascunho, valorEntrada: '1000', formaEntrada: '' }, referencia).tipo)
+      .toBe('invalido');
+    expect(
+      converterCadastro({ ...rascunho, temEntrada: 'nao', valorEntrada: '1000', formaEntrada: '' }, referencia)
+        .tipo,
+    ).toBe('sucesso');
   });
 
   it('rejeita quantidade maior que saldo após entrada', () => {
@@ -180,10 +204,10 @@ describe('Adaptadores puros de rascunhos', () => {
       {
         ...cadastro(),
         valorTotal: '1',
-        temEntrada: true,
+        temEntrada: 'sim',
         valorEntrada: '0,99',
         formaEntrada: 'Pix',
-        quantidadeParcelas: '2',
+        quantidadeParcelas: '3',
       },
       referencia,
     );

@@ -31,6 +31,7 @@ export class CadastrarVenda {
       'nome',
       'cpf',
       'telefone',
+      'temEntrada',
       'dataVenda',
       'valorTotal',
       'valorEntrada',

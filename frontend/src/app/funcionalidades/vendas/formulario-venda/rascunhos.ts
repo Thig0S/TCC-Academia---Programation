@@ -16,7 +16,7 @@ export interface RascunhoCliente {
 export interface RascunhoCadastro extends RascunhoCliente {
   dataVenda: string;
   valorTotal: string;
-  temEntrada: boolean;
+  temEntrada: '' | 'sim' | 'nao';
   valorEntrada: string;
   formaEntrada: string;
   quantidadeParcelas: string;
@@ -42,7 +42,7 @@ export function iniciarCadastro(referencia: string): RascunhoCadastro {
     descricao: '',
     dataVenda: referencia,
     valorTotal: '',
-    temEntrada: false,
+    temEntrada: '',
     valorEntrada: '',
     formaEntrada: '',
     quantidadeParcelas: '',
@@ -103,12 +103,17 @@ export function converterCadastro(
   const total = dinheiro(rascunho.valorTotal, 'valorTotal', erros);
   const data = erroData(rascunho.dataVenda, null, referencia);
   if (data) erros.dataVenda = data;
+  const temEntrada = rascunho.temEntrada === 'sim' || rascunho.temEntrada === 'nao'
+    ? rascunho.temEntrada
+    : null;
+  if (temEntrada === null)
+    erros.temEntrada = 'Informe se a venda possui entrada ou não.';
   const quantidade = inteiroPositivo(rascunho.quantidadeParcelas);
   if (quantidade === null)
     erros.quantidadeParcelas = 'Informe quantidade inteira positiva e segura.';
   let entrada: ComandoCadastro['entrada'] = null;
   let valorEntrada = 0;
-  if (rascunho.temEntrada) {
+  if (temEntrada === 'sim') {
     const valor = dinheiro(rascunho.valorEntrada, 'valorEntrada', erros);
     if (valor !== null) {
       valorEntrada = valor;
@@ -118,16 +123,19 @@ export function converterCadastro(
     }
     if (!formaAceita(rascunho.formaEntrada)) erros.formaEntrada = 'Selecione a forma da entrada.';
   }
+  const quantidadeFutura = quantidade === null ? null : quantidade - (temEntrada === 'sim' ? 1 : 0);
+  if (temEntrada === 'sim' && quantidade !== null && quantidade < 2)
+    erros.quantidadeParcelas = 'Informe ao menos duas parcelas totais quando houver entrada.';
   if (
-    quantidade !== null &&
+    quantidadeFutura !== null &&
     total !== null &&
     total > valorEntrada &&
-    quantidade > total - valorEntrada
+    quantidadeFutura > total - valorEntrada
   )
     erros.quantidadeParcelas = 'Cada parcela deve valer ao menos R$ 0,01.';
-  if (!data && quantidade !== null) {
+  if (!data && quantidadeFutura !== null && quantidadeFutura > 0) {
     try {
-      adicionarMeses(rascunho.dataVenda, quantidade);
+      adicionarMeses(rascunho.dataVenda, quantidadeFutura);
     } catch {
       erros.quantidadeParcelas =
         'Os vencimentos ultrapassam o calendário até 9999. Revise data ou quantidade.';
