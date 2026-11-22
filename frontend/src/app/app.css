@@ -5,6 +5,7 @@
 }
 .barra-superior {
   background: var(--app-surface);
+  min-height: 3.5rem;
 }
 .area-principal {
   color: var(--app-text);

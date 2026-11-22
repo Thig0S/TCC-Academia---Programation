@@ -23,7 +23,7 @@
   </aside>
   <div class="area-principal min-w-0">
     <header
-      class="barra-superior flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2 md:px-4"
+      class="barra-superior flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2 md:px-5"
     >
       <span class="text-sm font-semibold">Protótipo navegável</span>
       <button
@@ -36,7 +36,7 @@
         Tema ativo: {{ servicoTema.tema() === 'dark' ? 'Escuro' : 'Claro' }}
       </button>
     </header>
-    <div class="p-3">
+    <div class="p-3 md:px-4 md:py-3">
       <main id="conteudo" tabindex="-1">
         <router-outlet />
       </main>
