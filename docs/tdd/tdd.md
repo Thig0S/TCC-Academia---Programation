@@ -7,6 +7,22 @@
 
 ## 1. Identificação e situação
 
+**Pagamento individual — revisão 1.23, 22/11/2026:** PRD 1.19/FON-016,
+JOR-004, RF-005/007, RN-016 e CA-011/013/024/028 sustentam DEC-027 e o roadmap
+FASE-014 a FASE-016. Produto confirmado: somente a primeira pendente oferece
+Pagar, inclusive futura; posteriores mostram “Aguardando parcela anterior”; pagas
+sem ação. Modal sem quantidade ou valor editável, apenas data e forma; referência
+fixa da sessão mantida. Desenho técnico proposto para revisão, não implementado.
+Autorizada nesta etapa somente documentação PRD → TDD → SDD na branch
+`feature/simplificar-pagamento-parcelas`; aguardar novo apply após a apresentação.
+
+Inspeção atual de cadastro, rascunhos, seed, detalhe e specs principais já encontrou
+a entrada como parcela 1 paga, ao contrário dos registros históricos de ausência
+de implementação abaixo. Não foram reexecutados testes nem verificado merge dessa
+entrega nesta revisão. Recebimento em lote ainda existe na UI, conversor, comando e
+preparador. DEC-027 substitui esses contratos para novos pagamentos; representação
+do histórico em lote e invariantes contábeis são preservadas.
+
 **Zoom nativo 200% — revisão 1.22, 22/11/2026:** em atendimento a RNF-007/CA-028,
 o solicitante confirmou que a interface atende ao requisito usando as configurações
 já documentadas: Chrome 157.0.8103.79 (64 bits), escala Windows 125% e viewport útil
@@ -226,7 +242,7 @@ avaliações anteriores abaixo são históricos, não evidência de entrega inte
 
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto, demonstração de acompanhamento de vendas a prazo de uma ótica.
 - **Etapa:** MVP visual no navegador, exclusivamente frontend.
-- **Data e revisão:** 21/11/2026, revisão 1.20.
+- **Data e revisão:** 22/11/2026, revisão 1.23.
 - **Destino:** `docs/tdd/tdd.md`, relativo à raiz do repositório.
 - **Situação:** FASE-006 implementada e verificada na feature, com specs sincronizadas
   e Change arquivada; revisão e merge pendentes. FASE-007/008, avaliação e aceite
@@ -323,6 +339,8 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-026 | PRD 1.15 e solicitação explícita no Harness | 21/11/2026 | Tabelas de Relatórios com fonte 18 px, line-height 20 px e paddings iguais aos de Vendas/Quitadas e parcelas; verificação em dois temas/viewports registrada no frontend/README.md |
 | FON-027 | PRD 1.17/FON-015 e respostas explícitas no Harness; inspeção de rascunhos, cadastro, modelos, cálculos, relatório e seed | 21/11/2026 | Entrada é parcela 1 Paga, N inclui entrada, saldo em N−1, mínimo 2; seleção obrigatória; recebimento alocado como fonte única e rascunho preservado confirmados; planejamento somente |
 | FON-028 | Context7 `/angular/angular`, fontes oficiais `packages/forms/signals/src/api/structure.ts` e `api/rules/validation/validate.ts` no GitHub Angular | Consulta nesta revisão | `form`, `validate` e `submit`/`onInvalid` sustentam o padrão existente. Consulta geral, não comprova execução no patch instalado 22.2.6; verificar select e erro/foco localmente no apply, sem atualizar dependências |
+| FON-029 | PRD 1.19/FON-016; Harness e inspeção de `registrar-pagamento`, `detalhes-venda`, `rascunhos.ts`, `pagamento.modelos.ts`, `pagamento.validacoes.ts`, `servico-demonstracao.ts`, seed e testes adjacentes/E2E | 22/11/2026 | Uma parcela por confirmação, antecipação, data fixa/editável e texto nas bloqueadas confirmados; fronteira de comando individual e compatibilidade histórica propostas para revisão |
+| FON-030 | Context7 `/angular/angular`, fonte oficial `packages/forms/signals/src/api/structure.ts` e `src/field/node.ts` | 22/11/2026 | `submit` impede envio concorrente, chama `onInvalid` e libera estado em `finally`; `focusBoundControl` permite foco no campo inválido. Consulta não comprova comportamento do patch 22.2.6 instalado; testes locais continuam necessários |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -649,6 +667,10 @@ não leem relógio nem fuso. DEC-016 define inicialização e injeção testáve
    rascunho sem chamar o comando. A edição não deve reescrever pagamentos por conveniência.
 
 ### Recebimento proposto — DEC-007, DEC-010, DEC-011 e DEC-015
+
+**Fluxo histórico de lote:** o diagrama e o prefixo de múltiplas parcelas abaixo
+descrevem a solução anterior. Para novos pagamentos, prevalece DEC-027: ID único
+capturado no acionamento, valor derivado no núcleo e data/forma do rascunho.
 
 ```mermaid
 sequenceDiagram
@@ -1025,6 +1047,21 @@ DEC-013. Nas FASE-005 a FASE-007, reutilizar esses padrões em tabelas, formulá
 Os critérios de conclusão incluem a linha Bootstrap da seção 12, sem substituir o modal nativo
 ou introduzir plugins JavaScript. A FASE-008 confirma a regressão visual e de acessibilidade.
 
+### Roadmap de implementação — pagamento individual (DEC-027)
+
+| Fase | Objetivo e entregas | Dependências e bloqueios | Critério verificável | Estado |
+| --- | --- | --- | --- | --- |
+| FASE-014 — Comando individual | Contrato com venda/parcela/data/forma, valor derivado e revalidação da primeira pendente; preservar histórico em lote e seed; testes de núcleo, preparador, fonte e conversor | PRD 1.19, revisão de DEC-027/SDD e novo apply; nenhuma decisão de calendário pendente | CA-013/014/024: rejeitar salto, repetição, desconhecida, paga e comando de múltiplas; sem valor externo; saldo/histórico intactos em falha | Planejada, não implementada |
+| FASE-015 — Detalhe e modal | Coluna Ações, Pagar somente na primeira pendente, texto nas posteriores, remoção do Receber geral; modal com conferência, data/forma, cancelamento/retry/foco; testes de componentes e E2E do fluxo | FASE-014; DEC-007/010/022/027 | CA-011/016/017/024/028: antecipação individual até quitação, foco e erros corretos, sem quantidade/valor digitável, sem alterar entrada | Planejada, não implementada |
+| FASE-016 — Regressão e entrega | Unitários/componentes, E2E app/fixture, builds app/fixture, formatação, validação OpenSpec, visual/teclado/contraste e zoom nativo do fluxo alterado; evidências reais e PR único ao concluir | FASE-014/015; evidência de zoom do novo fluxo não pode ser substituída por aprovação anterior | Histórico em lote preservado, relatórios conciliados, temas/viewports e densidade mantidos; registrar verificações não executadas/bloqueios; não marcar tarefa parcial como concluída | Planejada, não implementada |
+
+Testes e acesso por teclado acompanham cada funcionalidade. Casos E2E podem ser
+preparados após estabilizar FASE-014, mas a verificação integrada depende de
+FASE-015. Não executar em paralelo contratos incompatíveis, nem abrir PR enquanto
+faltarem tarefas/verificações da Change. Um commit por funcionalidade coerente,
+incluindo testes e documentação; nenhum merge automático. As fases não concluem
+FASE-008 ou aceite da ótica e não autorizam apply por si mesmas.
+
 ### Evolução futura
 
 A direção Tauri → Angular → ASP.NET Core → SQLite permanece apenas uma referência de evolução:
@@ -1069,6 +1106,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-022 | Tipografia das tabelas | Fonte de 18 px e padding consistente em vendas e parcelas, com line-height controlado | Implementada e verificada nos dois temas/viewports; zoom nativo 200% permanece pendente | DEC-018/021; PRD 1.13/RF-002/005/RNF-007/CA-028; FON-024 |
 | DEC-023 | Aviso e limpeza de consultas | Sem aviso global ou “Limpar critérios”; ação Nova venda na faixa, restaurar lista via campo e situação | Implementação do solicitante e regressão ajustada; unitários 363/363, E2E 80/80, fixture 12/12 | DEC-018/022; PRD 1.14/RF-001/003/RN-019/CA-001/005/028; FON-025 |
 | DEC-024 | Tipografia das tabelas de Relatórios | Igualar dados/cabeçalhos das quatro tabelas ao padrão de 18 px e padding compartilhado | Implementada/verificada nos dois temas e viewports; regressão completa teve falha intermitente externa repetida com sucesso isoladamente | DEC-020/022; PRD 1.15/RF-010/RNF-003/007/009/CA-031; FON-026 |
+| DEC-027 | Pagamento individual | Comando com parcela única e valor derivado; histórico em lote compatível; modal data/forma e ações sequenciais | Proposta técnica para revisão; produto confirmado, não implementada | DEC-004/007/010/015/016/022/026; PRD 1.19/RN-016/CA-024; FON-029/030 |
 
 ### DEC-023 — Remoção do aviso global e limpeza conjunta
 
@@ -1888,6 +1926,71 @@ flowchart TD
   Confirmar -->|Cancelar ou falha| Manter[Preservar fonte sem mutacao]
 ```
 
+### DEC-027 — Pagamento individual com valor derivado e histórico compatível
+
+- **Problema/contexto:** pedir quantidade e redigitação de uma soma já conhecida
+  torna a baixa mais trabalhosa. PRD 1.19 limita novos pagamentos a uma parcela
+  por confirmação; lote ainda existe no código observado.
+- **Escopo/restrições:** somente frontend demonstrativo, sem nova dependência,
+  rota, store, relógio dinâmico, persistência, estorno ou mudança do parcelamento.
+  Preservar entrada como parcela 1 paga e os recebimentos históricos em lote.
+- **Alternativas:** esconder campos e continuar aceitando lotes/valor no comando
+  simplifica a UI, mas deixa a restrição apenas na apresentação; converter todo
+  histórico para pagamentos individuais altera IDs/semântica sem necessidade;
+  comando individual com representação histórica compatível separa criação e leitura.
+- **Escolha proposta:** redefinir `ComandoPagamento` para vendaId, parcelaId, data
+  e forma, sem quantidade, lista ou valor externo; `registrarPagamento` revalida
+  e deriva centavos da primeira pendente atual, criando uma única alocação. Não
+  selecionar automaticamente a próxima quando o ID capturado estiver obsoleto.
+  Rejeitar comando de múltiplas/legado na fronteira da sessão sem publicar estado.
+- **Compatibilidade histórica:** manter `PagamentoDemonstrativo.alocacoes` como
+  coleção e validação de recebimentos existentes com uma ou mais alocações.
+  Preservar IDs, valores, datas/formas, ordem e contabilidade do seed. Se preciso,
+  separar o preparo puro de lote usado pelo seed da criação de novos pagamentos;
+  helper histórico não deve ser uma alternativa acionável pela fonte/UI para
+  registrar lotes. Não gerar histórico sequencial novo para substituir lotes antigos.
+- **Responsabilidades:** `detalhes-venda` deriva primeira pendente por número e
+  captura ID/acionador; `registrar-pagamento` recebe a parcela explícita e mantém
+  apenas data/forma no rascunho; `converterRecebimento` valida esses campos e o ID
+  sem montar soma/quantidade. Fonte e preparador revalidam contra o agregado atual,
+  obtêm valor canônico e validam o conjunto completo antes de publicar uma vez.
+  Reutilizar a fronteira testável de DEC-016 para falhas controladas exclusivamente
+  em testes; adaptar sua prova de falha posterior do lote para falha de alocação
+  única e de validação final. Não remover cobertura de atomicidade do histórico.
+- **Interface proposta:** coluna Ações; Pagar apenas na primeira pendente, texto
+  “Aguardando parcela anterior” nas demais; pagas com marcador sem botão.
+  Remover Receber geral. Título “Pagar parcela”, conferência com cliente, número,
+  vencimento e valor BRL somente leitura. Data inicial na referência da sessão,
+  forma inicialmente vazia e quatro categorias atuais; confirmar/cancelar e aviso
+  demonstrativo com descarte ao recarregar. Erros de data/forma junto aos campos;
+  inelegibilidade em mensagem do modal, sem deslocar seleção ou sucesso fictício.
+- **Ciclo de vida/acessibilidade:** manter Modal nativo e Signal Forms existentes,
+  `submit`/`onInvalid`, proteção durante envio e guarda após sucesso. Foco inicial
+  na data; erro no primeiro campo inválido, ou resumo focalizável se inelegível.
+  Cancelar/Escape restauram acionador quando existente; sucesso foca próximo Pagar,
+  ou título das parcelas na quitação. Reabrir reconstrói rascunho, nunca confirma
+  descartes. Falha preserva dados e permite retry. Viewports 1366×768 e 390×844,
+  ambos os temas, excedente rolável, contraste e zoom nativo 200%; preservar fonte
+  de 18 px/padding e até dez parcelas no desktop sem ocultar dados ou ações.
+- **Justificativa/contrapartidas:** elimina entradas redundantes e restringe
+  corretamente o comando; exige adaptar testes de lote e múltiplas confirmações
+  no E2E. Compatibilidade do histórico permanece explícita; não é migração de dados.
+- **Origem/situação:** regras de produto confirmadas no Harness (FON-029/PRD
+  FON-016); representação e contratos acima são **Proposta**, aguardando revisão
+  dos artefatos. Implementação: **Não implementada** nesta revisão. FON-030
+  fundamenta reutilização de APIs, sem atualizar dependências ou alegar testes.
+- **Substitui:** criação em lote e valor digitável de DEC-015/fluxos de DEC-010 e
+  FASE-006; preserva seu histórico, centavos, atomicidade, intervalo de datas,
+  categorias, antecipação, referência fixa e DEC-026 sobre entrada.
+- **Dependências/validação:** FASE-014 a FASE-016; CA-011/013/014/016/017/024/028.
+  Cobrir diferenças de centavos, parcelas futuras/atrasadas, datas nas bordas e
+  formas inválidas, obsolescência, inexistência, envio duplicado, retry, quitação e
+  histórico com múltiplas alocações. Usar scripts existentes de `frontend/package.json`:
+  `npm test -- --watch=false`, `npm run test:e2e`,
+  `npm run test:e2e:paginacao-fixture`, `npm run build`,
+  `npx ng run vendas-em-aberto:build-paginacao-fixture`, `npm run format:check`.
+  São verificações futuras, não executadas neste planejamento.
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -1957,6 +2060,15 @@ PEN-008/010 em decisões originais foram substituídas pela DEC-019.
 | Edição/identificação; PRD/RF-004/006, RN-021/022/023, CA-007/012/016/017/030; ambiente PEN-013/014 | FON-023 | DEC-019 | 9, 12, 14, 15, 16 | Planejamento na Change decisoes-edicao-identificacao-avaliacao; unitários/integração futuros; ambiente definido não comprova medição/aceite |
 | Entrada como parcela e escolha obrigatória; PRD 1.17, RN-011/012/013/017/024, CA-008/033/034/035 | FON-027/028 | DEC-026 | 1, 8, 14, 15, 16 | FASE-010 a FASE-013; planejamento, sem testes novos de aplicação |
 
+**Rastreabilidade da revisão 1.23:** PRD 1.19/FON-016, RF-005/007, RN-016 e
+CA-011/013/014/016/017/024/028 → FON-029/030 → DEC-027 → FASE-014/015/016 →
+Change `openspec/changes/simplificar-pagamento-parcelas/`, deltas
+`recebimentos-parcelas`, `consulta-vendas`, `dominio-vendas` e `estado-demonstrativo`.
+Nesta revisão, inspeção e coerência documental foram verificadas; a Change passou
+em `openspec validate simplificar-pagamento-parcelas --strict`. `git diff --check`
+passou, com avisos de normalização LF/CRLF. Sem build, testes de aplicação, nova
+verificação de zoom, revisão do solicitante dos artefatos ou aceite da ótica.
+
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
 revisão do PRD e das referências relevantes, confirmação das escolhas por perguntas, consulta
 à compatibilidade oficial Angular 22 e documentação de formulários, zoneless e testes.
@@ -1991,6 +2103,7 @@ separadamente, após este registro técnico.
 
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
+| 1.23 — 22/11/2026 | Pagamento individual, valor derivado, histórico compatível, foco e roadmap FASE-014 a FASE-016 | DEC-027 proposta para revisão substitui criação em lote, preservando leitura histórica | PRD 1.19/FON-016, decisões no Harness, inspeção e FON-030; somente planejamento, sem testes de aplicação |
 | 1.21 — 21/11/2026 | Entrada como primeira parcela, recebimento canônico, seleção obrigatória triestado, rascunho preservado e roadmap FASE-010 a FASE-013 | DEC-026 substitui contratos conflitantes de entrada separada | PRD 1.17 e confirmações do solicitante, fonte Angular via Context7; planejamento documental após merge do PR #20, sem código ou testes de aplicação |
 | 1.14 — 20/11/2026 | PRD 1.10, recorte e roadmap da FASE-007; derivações e verificação financeira/visual | DEC-020, sem alterar decisões anteriores | Respostas no Harness e inspeção read-only; sem implementação ou testes de aplicação |
 | 1.0 — 12/11/2026 | Documento inicial, entrevista, arquitetura, Mermaid, plano de testes e pendências | DEC-001 a DEC-012 | Solicitação e respostas do usuário; fontes locais e documentação oficial |
