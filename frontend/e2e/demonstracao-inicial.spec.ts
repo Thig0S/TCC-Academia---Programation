@@ -134,6 +134,22 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
       const estilos = await tabela.evaluate((elemento) => {
         const cabecalho = getComputedStyle(elemento.querySelector('thead th')!);
         const celula = getComputedStyle(elemento.querySelector('tbody td')!);
+        const indiceMonetario = [...elemento.querySelectorAll('thead th')].findIndex(
+          (th) =>
+            th.textContent?.trim() ===
+            {
+              'Recebimentos do mês': 'Valor',
+              'Vendas do mês': 'Valor total',
+              'Posição em aberto': 'Saldo',
+              'Parcelas vencidas': 'Valor',
+            }[elemento.closest('[aria-label]')!.getAttribute('aria-label')!],
+        );
+        const thMonetario = getComputedStyle(
+          elemento.querySelectorAll('thead th')[indiceMonetario],
+        );
+        const tdMonetario = getComputedStyle(
+          elemento.querySelectorAll('tbody tr:first-child td')[indiceMonetario],
+        );
         return {
           fonte: getComputedStyle(elemento).fontSize,
           lineHeight: getComputedStyle(elemento).lineHeight,
@@ -141,6 +157,9 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
           paddingCabecalhoHorizontal: cabecalho.paddingLeft,
           paddingCelulaVertical: celula.paddingTop,
           paddingCelulaHorizontal: celula.paddingLeft,
+          alinhamentoMonetario: thMonetario.textAlign,
+          alinhamentoValor: tdMonetario.textAlign,
+          algarismos: tdMonetario.fontVariantNumeric,
         };
       });
       expect(estilos).toEqual({
@@ -150,6 +169,9 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
         paddingCabecalhoHorizontal: '10px',
         paddingCelulaVertical: '4px',
         paddingCelulaHorizontal: '10px',
+        alinhamentoMonetario: 'right',
+        alinhamentoValor: 'right',
+        algarismos: 'tabular-nums',
       });
       expect(await regiao.evaluate((elemento) => getComputedStyle(elemento).overflowX)).toBe(
         'auto',
