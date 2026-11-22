@@ -46,7 +46,7 @@ A aplicação SHALL disponibilizar controle visível por teclado para alternar e
 Cada tema SHALL abranger navegação, cabeçalho, Visão Geral, Vendas, detalhes, formulários, recebimento, Relatórios, Configurações, modais e controles existentes. Toda a aplicação SHALL usar uma linguagem visual coerente com as referências fornecidas, com superfícies, tipografia, espaçamento, bordas, cantos, identidade cromática e estados visuais consistentes. Textos, bordas, foco e indicação ativa SHALL continuar perceptíveis, sem depender apenas de cor. Elementos SHALL respeitar movimento reduzido e contraste mínimo de 4,5:1 para texto comum, 3:1 para texto grande e indicadores essenciais de foco/controle. A informação demonstrativa SHALL permanecer em Configurações e confirmações, sem aviso global persistente.
 
 #### Scenario: Conferir todas as superfícies nos dois temas
-- **WHEN** a pessoa alternar temas e percorrer todos os destinos, incluindo página não encontrada
+- **WHEN** a pessoa alternar temas e percorrer todos os destinos, incluindo páginas não encontradas e fluxos com modal
 - **THEN** a interface SHALL apresentar superfícies claras no tema claro e grafite/escuras no tema escuro, com identidade vermelha e linguagem visual consistente com as referências em todos os módulos
 - **AND** textos, rótulos e estados ativos SHALL permanecer compreensíveis além da cor, sem misturar superfícies de temas diferentes
 - **AND** foco e contraste SHALL satisfazer os mínimos definidos sem alegação de certificação integral de acessibilidade
