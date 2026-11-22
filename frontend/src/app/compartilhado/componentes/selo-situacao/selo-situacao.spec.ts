@@ -20,6 +20,8 @@ describe('SeloSituacao', () => {
       expect(selo.classList.contains(`bg-${cor}-badge`)).toBe(true);
       expect(selo.classList.contains(`text-${cor}-badge-text`)).toBe(true);
       expect(selo.classList.contains('text-white')).toBe(false);
+      expect(selo.classList.contains('rounded-full')).toBe(true);
+      expect(selo.classList.contains('text-sm')).toBe(true);
     });
   }
 });
