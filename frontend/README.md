@@ -787,6 +787,28 @@ edição/pagamento parcial; foram ajustados para preservar a entrada canônica e
 operar somente sobre parcelas futuras. A execução final direcionada passou; a
 regressão integral fica para 4.1.
 
+### Apply `entrada-como-primeira-parcela` — E2E do cadastro e consumidores — 22/11/2026
+
+Na tarefa 3.5, os fluxos E2E passaram a escolher explicitamente “Não” ou “Sim”
+no select, contabilizar a entrada dentro de N, e selecionar recebimentos apenas
+entre parcelas pendentes. O cenário novo percorre por teclado e nos temas escuro
+e claro: envio sem escolha com foco/mensagem, alternância com restauração,
+prévia de dez parcelas, confirmação única, entrada paga na parcela 1, lote das
+nove futuras, quitação e conferência de contagens/saldos. A suíte existente
+continua verificando cancelamento, relatórios e recarga. O cenário responsivo
+mede 1366, 1024, 768, 767 e 390 px e os dois temas; a suíte também roda nos
+projetos Chromium 1366×768 e 390×844. Permaneceram asserções financeiras e
+checagem de overflow global.
+
+Resultado real: `npm run test:e2e -- e2e/formularios-vendas.spec.ts -g
+"seleção por teclado"` passou 2/2 execuções Chromium. A suíte completa
+`npm run test:e2e -- e2e/formularios-vendas.spec.ts` passou 22/22 execuções (11
+cenários em dois projetos). As capturas sintéticas do novo fluxo foram anexadas
+ao resultado do Playwright para os dois temas. A primeira tentativa de lote
+usava `1.500`, rejeitado pelo formato monetário; com `1.500,00`, o fluxo passou.
+Essa evidência é focada no arquivo E2E; não substitui as verificações integradas
+4.1/4.2 nem a verificação manual 4.3.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,
