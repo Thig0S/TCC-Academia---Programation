@@ -5,6 +5,42 @@
 > são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
 > roadmap. Implementação técnica não equivale a aceite do produto.
 
+## Piloto visual da listagem de Vendas — desenho proposto em 22/11/2026
+
+Base: PRD, seção “Piloto visual de Vendas”, RF-002/003, RNF-002/007 e CA-027/028/029.
+Referência visual prioritária:
+`references/a_clean_modern_dashboard_ui_using_the_mercadão_do.png`. A Change
+anterior `novo-design` concluiu verificações funcionais, mas não estabeleceu
+fidelidade estética satisfatória; esta proposta é um novo piloto, não evidência de
+implementação. A adoção em outras páginas requer decisão posterior.
+
+**Decisão técnica — piloto restrito à listagem:** manter `ListarVendas`/Signals,
+`ServicoDemonstracao`, `buscarVendas`, `TabelaVendas`, `PaginacaoVendas`,
+`SeloSituacao`, links e seus inputs/outputs. Planejar uma composição de página
+própria para Vendas e um tratamento visual contextual dos componentes filhos
+(por exemplo, classe no host/contêiner da listagem e seletores descendentes), sem
+modificar o visual de Quitadas. Reutilizar tokens CSS de `styles.css`; se o desenho
+exigir novos valores, defini-los como variantes locais sem alterar a sidebar,
+o tema global ou criar uma segunda paleta/dependência. O cabeçalho e a faixa de
+critérios podem ser reorganizados **dentro da listagem**, preservando CTA e controles
+na linha contratual desktop; a busca do mockup no shell e o CTA deslocado para fora
+da faixa são alternativas rejeitadas por duplicação/CA-028. Colunas, fonte tabular
+18 px/20 px, paddings de células 10×4 px/dados e 10×8 px/cabeçalhos e todos os
+nomes acessíveis permanecem; a semelhança buscada é de composição e acabamento,
+não redução tipográfica. Evitar aplicar CSS global que faça outras rotas mudarem.
+
+**Roadmap do piloto:** (1) registrar baseline e mapa explícito de diferenças
+imagem↔Vendas atual em dois temas/viewports; (2) implementar o redesenho de
+cabeçalho/critério e tabela/rodapé contextual, com testes por funcionalidade;
+(3) verificar densidade, responsividade, contraste, foco e fluxos existentes;
+(4) produzir pares antes/depois e submeter à avaliação humana, antes de propor
+expansão. Verificação: testes unitários de listagem/componentes, E2E da consulta e
+fixture de paginação, build/formatação e regressão completa aplicável; comparação
+visual de capturas com a referência e registro de diferenças intencionais.
+Zoom nativo só pode ser alegado se realmente verificado para esta versão; relato
+anterior não é automaticamente nova evidência. Não iniciar o apply com decisão
+funcional bloqueante aberta, nem extrapolar o piloto para outros módulos.
+
 ## 1. Identificação e situação
 
 **Pagamento individual — revisão 1.23, 22/11/2026:** PRD 1.19/FON-016,
