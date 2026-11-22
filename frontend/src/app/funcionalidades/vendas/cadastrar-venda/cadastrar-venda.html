@@ -17,10 +17,10 @@
     <fieldset
       class="@container min-w-0 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
     >
-      <legend class="text-lg font-semibold">Dados da venda</legend>
+      <legend class="px-1 text-base font-semibold tracking-tight">Dados da venda</legend>
       <div class="grid min-w-0 grid-cols-1 gap-3 @min-[22rem]:grid-cols-12">
         <div class="min-w-0 @min-[22rem]:col-span-6">
-          <label for="tem-entrada" class="mb-1 block text-sm font-medium">Possui Entrada</label>
+          <label for="tem-entrada" class="mb-1 block text-sm font-semibold">Possui Entrada</label>
           <select
             id="tem-entrada"
             class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -34,7 +34,7 @@
           <app-erro-campo id="erro-tem-entrada" [campo]="campos.temEntrada" />
         </div>
         <div class="min-w-0 @min-[22rem]:col-span-6">
-          <label for="data-venda" class="mb-1 block text-sm font-medium">Data da venda</label>
+          <label for="data-venda" class="mb-1 block text-sm font-semibold">Data da venda</label>
           <input
             id="data-venda"
             type="date"
@@ -45,24 +45,24 @@
           <app-erro-campo id="erro-data-venda" [campo]="campos.dataVenda" />
         </div>
         <div class="min-w-0 @min-[22rem]:col-span-3">
-          <label for="valor-total" class="mb-1 block text-sm font-medium">Valor total (R$)</label>
+          <label for="valor-total" class="mb-1 block text-sm font-semibold">Valor total (R$)</label>
           <input
             id="valor-total"
             inputmode="decimal"
-            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 font-medium tabular-nums text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
             [formField]="campos.valorTotal"
             aria-describedby="erro-total"
           />
           <app-erro-campo id="erro-total" [campo]="campos.valorTotal" />
         </div>
         <div class="min-w-0 @min-[22rem]:col-span-4">
-          <label for="quantidade-parcelas" class="mb-1 block text-sm font-medium"
+          <label for="quantidade-parcelas" class="mb-1 block text-sm font-semibold"
             >Quantidade de parcelas</label
           >
           <input
             id="quantidade-parcelas"
             inputmode="numeric"
-            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 font-medium tabular-nums text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
             [formField]="campos.quantidadeParcelas"
             aria-describedby="erro-quantidade"
           />
@@ -70,20 +70,20 @@
         </div>
         @if (rascunho().temEntrada === 'sim') {
           <div class="min-w-0 @min-[22rem]:col-span-6">
-            <label for="valor-entrada" class="mb-1 block text-sm font-medium"
+            <label for="valor-entrada" class="mb-1 block text-sm font-semibold"
               >Valor da entrada (R$)</label
             >
             <input
               id="valor-entrada"
               inputmode="decimal"
-              class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-2 py-1.5 font-medium tabular-nums text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
               [formField]="campos.valorEntrada"
               aria-describedby="erro-entrada"
             />
             <app-erro-campo id="erro-entrada" [campo]="campos.valorEntrada" />
           </div>
           <div class="min-w-0 @min-[22rem]:col-span-6">
-            <label for="forma-entrada" class="mb-1 block text-sm font-medium"
+            <label for="forma-entrada" class="mb-1 block text-sm font-semibold"
               >Forma da entrada</label
             >
             <select
@@ -107,11 +107,16 @@
     class="min-w-0 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
     aria-labelledby="titulo-previa"
   >
-    <h2 id="titulo-previa" class="mb-2 text-lg font-semibold tracking-tight">
+    <h2
+      id="titulo-previa"
+      class="mb-3 border-b border-border pb-2 text-lg font-semibold tracking-tight"
+    >
       Prévia das parcelas
     </h2>
     @if (previa(); as venda) {
-      <p class="mb-3 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+      <p
+        class="mb-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm"
+      >
         Entrada: {{ formatarDinheiro(venda.entrada?.valorCentavos ?? 0) }} · Saldo a parcelar:
         {{
           formatarDinheiro(
@@ -120,7 +125,7 @@
         }}
       </p>
       <div
-        class="max-h-[22rem] max-w-full overflow-auto"
+        class="max-h-[22rem] max-w-full overflow-auto rounded-lg border border-border"
         role="region"
         aria-label="Prévia completa das parcelas"
         tabindex="0"
@@ -129,7 +134,7 @@
           <caption class="sr-only">
             Parcelas previstas; nenhuma venda foi criada
           </caption>
-          <thead class="sticky top-0 bg-surface-muted text-text">
+          <thead class="sticky top-0 z-10 bg-surface-muted text-text">
             <tr>
               <th
                 scope="col"
