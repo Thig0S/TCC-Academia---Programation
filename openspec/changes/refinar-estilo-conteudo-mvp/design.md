@@ -12,7 +12,7 @@ Estado observado na exploração e reconfirmado no planejamento:
 - Cadastro/edição têm templates próprios, identificação compartilhada e prévia; detalhe tem CSS local com composição compacta, overrides e rolagem para excedentes. Preservar comportamento; não transplantar o shell modal dos exemplos.
 - `e2e/demonstracao-inicial.spec.ts`, `e2e/formularios-vendas.spec.ts` e `e2e/paginacao-fixture.spec.ts` já cobrem temas, foco, contrastes, captura, fluxos e geometria. Adaptar seletor visual só quando necessário, sem afrouxar asserções funcionais.
 
-PRD 1.16 e TDD 1.20 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano. O cadastro lateral (DEC-025/CA-032) foi implementado depois da autorização separada; verificações e limites reais estão em `frontend/README.md`, enquanto zoom nativo 200% permanece pendente.
+PRD 1.16 e TDD 1.20 sustentam esta mudança conforme a rastreabilidade em `proposal.md`. Suas descrições históricas de migração não substituem a evidência do código atual. A situação de tarefas completa de `troca-para-tailwind` não é aceite visual dos HTMLs novos. Nenhuma suíte de aplicação foi executada para redigir este plano. O cadastro lateral (DEC-025/CA-032) foi implementado depois da autorização separada; verificações e limites reais estão em `frontend/README.md`. A pendência de zoom nativo 200% foi encerrada pelo relato e autorização do solicitante, com as limitações de evidência descritas em D5 e na tarefa 7.3.
 
 ## Goals / Non-Goals
 
@@ -116,7 +116,7 @@ Decisão complementar autorizada no Harness durante o apply (21/11/2026): exclui
 
 Por entrega coerente: testes de componentes afetados, E2E pertinentes nos dois temas/viewports, build e registro real; commit próprio com testes/documentação. Ao final: regressão integral da aplicação e fixture, dois builds e formatação, sem elevar budgets. Não remover expectativas financeiras, privacidade, rede, densidade ou foco para acomodar o estilo. Testes que localizam valores pelo `<p>` genérico dos indicadores merecem atenção ao adicionar decoração.
 
-Zoom nativo 200% precisa de registro manual de navegador/versão, escala Windows e viewport útil; redução do viewport, CSS zoom ou escala de captura não substituem essa verificação. Ausência de evidência fica pendente e não é declarada aprovada. Não confundir revisão visual técnica com aceite da ótica ou FASE-008.
+Zoom nativo 200% previa registro manual de navegador/versão, escala Windows e viewport útil; redução do viewport, CSS zoom ou escala de captura não substituem essa verificação. Em 21/11/2026, o solicitante relatou ausência de distorção e barras laterais desnecessárias e empilhamento esperado, autorizando encerrar 7.3 com esses dados. Essa exceção dispensa a complementação para abertura do PR, sem afirmar os metadados ou a cobertura por tela/tema/teclado não fornecidos. O relato e suas limitações estão em `frontend/README.md` e substituem as indicações históricas de pendência deste plano. Não confundir revisão visual técnica com aceite da ótica ou FASE-008.
 
 **Alternativas:** só build/unitários não detecta composição; só snapshots não prova comportamento; uma comparação sem cenários fixos e diferenças registradas repete a lacuna da migração anterior.
 

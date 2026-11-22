@@ -582,15 +582,47 @@ na raiz e os dois HTMLs de referência. Nenhuma asserção financeira, de foco,
 contraste, privacidade, rede ou densidade foi removida. Fechamento automatizado
 não conclui zoom nativo, aceite da ótica ou a Change inteira.
 
-### Zoom nativo — tarefa 7.3 pendente
+### Verificação final para abertura do PR — 21/11/2026
 
-O solicitante informou nesta continuação que fará a conferência manual da interface
-refinada em 200%. Ainda faltam navegador/versão, escala Windows, viewport útil e
-resultados nos dois temas para consultas, formulários, recebimento, resumos,
-Relatórios e estados auxiliares, incluindo alcance de conteúdo/ações/foco.
-O relato da Change `troca-para-tailwind` abaixo é histórico e não fecha esta tarefa.
-Não substituir por CSS zoom ou redução de viewport. PR e conclusão integral da
-Change permanecem bloqueados enquanto essa evidência estiver pendente.
+Após os commits de tipografia, consulta, cadastro lateral e remoção do texto
+redundante da entrada, foram executados novamente:
+
+| Diretório   | Comando                                                                                                          | Resultado                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `frontend/` | `npm test -- --watch=false`                                                                                      | 30 arquivos, 363 testes aprovados            |
+| `frontend/` | `npm run build`                                                                                                  | Aprovado; inicial 299,92 kB                  |
+| `frontend/` | `npx ng run vendas-em-aberto:build-paginacao-fixture`                                                            | Aprovado; inicial 301,65 kB                  |
+| `frontend/` | `npm run format:check`                                                                                           | Aprovado                                     |
+| `frontend/` | `npm run test:e2e:paginacao-fixture`                                                                             | 12 testes aprovados                          |
+| `frontend/` | `npx playwright test --config C:/Users/Thiago/AppData/Local/Temp/opencode/playwright-refinamento-4202.config.ts` | 82 testes aprovados, dois viewports Chromium |
+
+O comando padrão `npm run test:e2e` não iniciou os testes porque a porta 4200
+estava ocupada. A execução aprovada utilizou configuração temporária fora do
+repositório, importando `frontend/playwright.config.ts` e mantendo testes,
+projetos e asserções; alterou somente URL/servidor para 4202 e caminhos absolutos
+necessários (`testDir`, `webServer.cwd`). Não foi interrompido o servidor existente
+nem alterada a configuração versionada. O Angular avisou que a opção de porta
+foi fornecida duas vezes, usando 4202. Capturas dessa execução são artefatos locais
+em `frontend/test-results/`, não versionados.
+
+A validação `openspec validate refinar-estilo-conteudo-mvp --strict`, na raiz,
+também foi aprovada; `git diff --check` não apontou erros de whitespace.
+
+### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
+
+Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,
+o solicitante relatou: “A página comporta como esperado. Os elementos não são
+distorcidos e nem criadas novas barras laterais desnecessárias. Os elementos
+ficam uns abaixo dos outros conforme o esperado.” Autorizou explicitamente
+finalizar a pendência com esses dados.
+
+A tarefa foi encerrada por esse relato, com dispensa expressa da complementação
+da evidência para abertura do PR. Não foram fornecidos navegador/versão, escala
+Windows, viewport útil, capturas nem resultados discriminados por tela, tema e
+teclado/foco. Portanto, não se afirma cobertura integral desses itens nem execução
+manual independente pelo agente. Não houve substituição por CSS zoom ou redução
+de viewport. Os registros anteriores de pendência neste README são históricos;
+este encerramento não representa aceite da ótica ou conclusão da FASE-008.
 
 ## Apply `troca-para-tailwind` — linha de base — 20/11/2026
 
