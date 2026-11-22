@@ -459,10 +459,12 @@ test('identifica o painel de Vendas com resultados, vazio e pesquisa sem resulta
   await expect(situacao).toHaveValue('Atrasada');
   await expect(titulo).toBeVisible();
 
-  await page.getByRole('searchbox', { name: 'Buscar por nome, CPF, telefone ou data da venda' })
+  await page
+    .getByRole('searchbox', { name: 'Buscar por nome, CPF, telefone ou data da venda' })
     .fill('termo-sem-correspondencia');
-  await expect(page.getByText('Nenhuma venda corresponde à pesquisa e à situação selecionadas.'))
-    .toBeVisible();
+  await expect(
+    page.getByText('Nenhuma venda corresponde à pesquisa e à situação selecionadas.'),
+  ).toBeVisible();
   await expect(titulo).toBeVisible();
 });
 
@@ -484,6 +486,20 @@ test('alinha valores monetários e recuos das consultas abertas e quitadas', asy
         await expect(contagem).toHaveCSS('margin-inline-start', '8px');
         const tabela = page.locator('app-tabela-vendas table');
         await expect(tabela).toBeVisible();
+        expect(
+          await tabela
+            .locator('tbody app-selo-situacao span')
+            .first()
+            .evaluate((selo) => parseFloat(getComputedStyle(selo).borderTopLeftRadius)),
+        ).toBeGreaterThan(100);
+        await expect(tabela.locator('tbody app-selo-situacao span').first()).toHaveCSS(
+          'font-size',
+          '14px',
+        );
+        await expect(page.locator('app-tabela-vendas [role="region"]')).toHaveCSS(
+          'border-radius',
+          '8px',
+        );
         for (const nomeColuna of ['Valor total', 'Saldo devedor']) {
           await expect(tabela.getByRole('columnheader', { name: nomeColuna })).toHaveCSS(
             'text-align',

@@ -16,14 +16,14 @@ export class SeloSituacao {
     switch (this.situacao()) {
       case 'Quitada':
       case 'Paga':
-        return 'inline-flex w-fit items-center whitespace-nowrap rounded-md bg-success-badge px-2 py-0.5 text-xs leading-3 font-semibold text-success-badge-text';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-success-badge px-2.5 py-0 text-sm leading-4 font-semibold text-success-badge-text';
       case 'Atrasada':
       case 'Atrasado':
-        return 'inline-flex w-fit items-center whitespace-nowrap rounded-md bg-danger-badge px-2 py-0.5 text-xs leading-3 font-semibold text-danger-badge-text';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-danger-badge px-2.5 py-0 text-sm leading-4 font-semibold text-danger-badge-text';
       case 'Próximos dias':
-        return 'inline-flex w-fit items-center whitespace-nowrap rounded-md bg-warning-badge px-2 py-0.5 text-xs leading-3 font-semibold text-warning-badge-text';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-warning-badge px-2.5 py-0 text-sm leading-4 font-semibold text-warning-badge-text';
       default:
-        return 'inline-flex w-fit items-center whitespace-nowrap rounded-md bg-neutral-badge px-2 py-0.5 text-xs leading-3 font-semibold text-neutral-badge-text';
+        return 'inline-flex w-fit items-center whitespace-nowrap rounded-full bg-neutral-badge px-2.5 py-0 text-sm leading-4 font-semibold text-neutral-badge-text';
     }
   }
 }
