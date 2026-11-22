@@ -3614,6 +3614,44 @@ Nenhuma pasta preexistente foi apagada. Há somente página técnica, não FASE-
 As evidências estão prontas para revisão conforme o template de PR do repositório;
 nenhum commit, push, PR ou merge foi executado por este agente.
 
+## Apply `novo-design` — demais módulos e estados — tarefa 4.3 — 22/11/2026
+
+Nos módulos existentes, os rótulos dos quatro indicadores da Visão Geral ganharam
+ênfase tipográfica; os três resumos, ordem, links e limites foram preservados. As
+quatro tabelas de Relatórios agora compartilham painel com borda semântica e recorte
+arredondado, conservando fonte 18 px, paddings, valores, filtros temporais e
+rolagem horizontal interna. Configurações mantém suas quatro explicações, agora com
+divisória sob o título. Estados vazios e ausentes usam superfície neutra, raio de
+12 px e padding uniforme, sem alterar texto, retornos, foco ou semântica.
+
+Comparação com `../references/mercadao_oculos_dashboard_light.html` e
+`../references/mercadao_oculos_dashboard_dark.html`: os protótipos apresentam uma
+Visão Geral de duas listas e indicadores compartilhados em Relatórios; o código atual
+tem quatro indicadores e três resumos na Visão Geral, e quatro tabelas de consultas
+reais da demonstração em Relatórios. As referências também propõem exportar CSV e
+preferências de unidade/tema/modo em Configurações; esses controles/conteúdos não
+foram copiados. A exportação continua explicitamente indisponível, sem download,
+rede ou mutação. Foram preservados o tema e os textos explicativos atuais. Inter,
+CDN, ícones remotos e outros dados/ações fictícios do mockup não foram introduzidos.
+
+Resultados reais:
+
+- Testes unitários direcionados de Visão Geral e Relatórios: **17/17 em 4 arquivos**.
+- E2E direcionados a indicadores/resumos, quatro tabelas, capturas de Configurações
+  e exportação indisponível: **10/10** nos projetos Chromium 1366×768 e 390×844,
+  incluindo ambos os temas.
+- Estados auxiliares (página/registro ausente e pesquisa sem resultados), com
+  leitura, retorno por teclado e temas claro/escuro: **2/2 E2E**; componentes
+  próximos de listas, detalhe e edição: **27/27 unitários**.
+- Prettier direcionado e `git diff --check`: aprovados. Como a porta padrão 4200
+  estava ocupada, os E2E deste grupo usaram servidor isolado na porta 4304; a
+  configuração temporária foi removida e o servidor preexistente não foi encerrado.
+
+Capturas e medições Playwright são artefatos locais em `frontend/test-results/`, não
+versionados; não equivalem a inspeção manual de zoom ou aceite visual. O grupo não
+altera dados, fórmulas, navegação, número de tabelas, explicações nem disponibilidade
+funcional da exportação.
+
 ## Apply `novo-design` — detalhe, edição e recebimento — tarefa 3.3 — 22/11/2026
 
 O PNG `../references/a_detailed_ui_screenshot_of_a_sales_detail_page_fo.png` orientou
