@@ -137,6 +137,10 @@ describe('Dados sintéticos', () => {
           data: '2027-01-31',
           forma: 'Dinheiro',
           valorCentavos: 80000,
+          alocacoes: v.parcelas.map((parcela) => ({
+            parcelaId: parcela.id,
+            valorCentavos: parcela.valorCentavos,
+          })),
         });
     });
   });
