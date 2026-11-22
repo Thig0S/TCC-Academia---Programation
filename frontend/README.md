@@ -281,6 +281,32 @@ automático no título inexistente para uma rota desconhecida; o comportamento r
 não promete isso, então a verificação foi corrigida para provar que os retornos são
 alcançáveis por teclado sem alterar gestão de foco da aplicação.
 
+### Comparação visual integrada RD-05 — tarefa 8.1
+
+Capturas atuais de nove rotas principais/ausentes foram geradas nos dois temas e
+viewports; cadastro válido/inválido, edição e modal têm capturas E2E próprias. Os
+arquivos incluem metadados e continuam fora do Git. Inspeção automatizada e revisão
+das evidências confirmam as hierarquias e mensagens descritas nas entregas RD-02 a
+RD-04; as superfícies sem alteração funcional mantêm seu conteúdo/rotas/controles.
+Não foram removidos dados, marca, ações ou componentes. O detalhe continua usando a
+composição compacta; formulários seguem com seus próprios escalonamentos.
+
+Comparação de 36 pares de geometria/estilos da lateral (nove superfícies × dois
+temas × dois viewports): largura, cores, degradê, tipografia, marca, textos e estilos
+sem diferenças nos **36/36**. Em **32/36** o JSON completo é idêntico. Os quatro pares
+restantes são cadastro e Relatórios no desktop, escuro/claro: só mudam altura da
+lateral e posição vertical do bloco fixo de perfil, como consequência de a grade
+acompanhar a altura/documento do conteúdo. Cadastro ficou 28 px mais curto após
+remover margem duplicada; Relatórios ficou 52 px mais alto após espaçar as seções.
+Não há alteração de estilo ou conteúdo da lateral; a diferença de altura é
+intencional e acompanha as páginas, em vez de mascarar a rolagem do documento.
+
+Contraste foi conferido em estados/telas nos dois temas, teclado/foco nos fluxos de
+ação e modal, e `prefers-reduced-motion` nos testes de paginação (movimento 0 s).
+Comparação técnica não equivale a aprovação visual/ótica; nenhuma aprovação foi
+alegada. Capturas basais e atuais estão em
+`test-results/refinar-design-baseline/` e `test-results/refinar-design-final-superficies/`.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
