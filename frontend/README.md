@@ -213,6 +213,20 @@ teste diretamente no controle para inspecionar as classes existentes (submissão
 normal não permanece indisponível tempo suficiente para captura); nenhum estado
 artificial foi introduzido na aplicação.
 
+### Visão Geral RD-04 — tarefa 6.1
+
+A Visão Geral mantém os quatro indicadores com seus valores e a grade própria, mas
+ganha uma separação de 12 px antes dos resumos. Os três resumos agora usam intervalos
+de 16 px entre si e títulos com 12 px antes do conteúdo, reforçando a hierarquia sem
+alterar conteúdo, ordem, links ou o limite de cinco itens. Estados vazios preservam
+mensagens específicas; nenhum controle foi adicionado.
+
+Verificações reais: testes unitários/calculados passaram **6/6**; E2E de hierarquia,
+quatro indicadores, três resumos, links/limite e recorte passou **2/2** em Chromium
+1366×768 e 390×844 nos dois temas. Exportação, valores e acessibilidade permanecem
+fora do escopo desta superfície. Capturas pós-refinamento com rota, tema e viewport
+estão em `test-results/refinar-design-visao-geral/`.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
