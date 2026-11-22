@@ -191,7 +191,14 @@
       </p>
     }
   </section>
-  <p class="text-error text-sm md:col-span-2" role="alert">{{ mensagem() }}</p>
+  @if (mensagem()) {
+    <p
+      class="rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error md:col-span-2"
+      role="alert"
+    >
+      {{ mensagem() }}
+    </p>
+  }
   <div class="flex flex-wrap gap-3 md:col-span-2">
     <button
       type="submit"
