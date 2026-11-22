@@ -538,7 +538,7 @@ test('alinha valores monetários e recuos das consultas abertas e quitadas', asy
         );
         await expect(page.locator('app-tabela-vendas [role="region"]')).toHaveCSS(
           'border-radius',
-          '8px',
+          nome === 'vendas' ? '12px' : '8px',
         );
         for (const nomeColuna of ['Valor total', 'Saldo devedor']) {
           await expect(tabela.getByRole('columnheader', { name: nomeColuna })).toHaveCSS(
