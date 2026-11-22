@@ -22,7 +22,7 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 
 ## 4. Cadastro e prévia — RD-03
 
-- [ ] 4.1 Refinar espaços entre identificação/dados financeiros/prévia/ações e alinhar cabeçalhos/valores monetários da prévia, mantendo sua tipografia própria; verificar duas colunas a partir de 768 px e empilhamento em 767 px, proporcionalidade dos campos, erros e ausência de overflow nos dois temas; incluir testes e evidências no commit do cadastro.
+- [x] 4.1 Refinar espaços entre identificação/dados financeiros/prévia/ações e alinhar cabeçalhos/valores monetários da prévia, mantendo sua tipografia própria; verificar duas colunas a partir de 768 px e empilhamento em 767 px, proporcionalidade dos campos, erros e ausência de overflow nos dois temas; incluir testes e evidências no commit do cadastro.
 - [ ] 4.2 Padronizar apresentação das mensagens e ações de cadastro sem mudar bindings ou validação; verificar erro da escolha obrigatória de entrada, Sim/Não e preservação do rascunho, prévia completa válida/inválida, parcela 1 paga, cancelamento, falha/retry e confirmação única com testes de formulário/E2E existentes e documentar resultados antes de concluir a funcionalidade.
 
 ## 5. Edição e recebimento — RD-03

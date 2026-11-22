@@ -1,5 +1,5 @@
 <app-cabecalho titulo="Nova venda" />
-<p class="text-text-muted">
+<p class="mb-2 text-text-muted">
   Referência da sessão: {{ formatarDataCivil(referencia) }}. Cadastro exclusivamente demonstrativo.
 </p>
 <a routerLink="/vendas">Voltar para Vendas</a>
@@ -111,7 +111,7 @@
       Prévia das parcelas
     </h2>
     @if (previa(); as venda) {
-      <p>
+      <p class="mb-3 flex flex-wrap gap-x-3 gap-y-1 text-sm">
         Entrada: {{ formatarDinheiro(venda.entrada?.valorCentavos ?? 0) }} · Saldo a parcelar:
         {{
           formatarDinheiro(
@@ -139,7 +139,7 @@
               </th>
               <th
                 scope="col"
-                class="whitespace-nowrap border-b border-border px-2 py-2 font-semibold"
+                class="whitespace-nowrap border-b border-border px-2 py-2 text-right font-semibold"
               >
                 Valor
               </th>
@@ -169,7 +169,9 @@
                     · Entrada
                   }
                 </th>
-                <td class="whitespace-nowrap border-b border-border px-2 py-1">
+                <td
+                  class="whitespace-nowrap border-b border-border px-2 py-1 text-right tabular-nums"
+                >
                   {{ formatarDinheiro(parcela.valorCentavos) }}
                 </td>
                 <td class="whitespace-nowrap border-b border-border px-2 py-1">
@@ -190,7 +192,7 @@
     }
   </section>
   <p class="text-error text-sm md:col-span-2" role="alert">{{ mensagem() }}</p>
-  <div class="mb-3 flex flex-wrap gap-3 md:col-span-2">
+  <div class="flex flex-wrap gap-3 md:col-span-2">
     <button
       type="submit"
       class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"

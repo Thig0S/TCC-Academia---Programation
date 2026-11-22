@@ -108,6 +108,28 @@ argumento de fixture ausente; corrigi o isolamento para porta 4303 e o teste par
 receber `testInfo`, e as execuções finais acima passaram. Nenhuma alteração de
 regra, cálculo ou dado de produção.
 
+### Cadastro e prévia RD-03 — tarefa 4.1
+
+Removida a margem duplicada do fieldset de identificação quando ele participa do
+grid adaptativo do cadastro; o grid passa a manter o intervalo uniforme de 12 px
+entre identificação e dados da venda. Mantive os campos e o breakpoint 768 px.
+Na prévia, somente o cabeçalho e os valores de “Valor” foram alinhados à direita e
+os valores receberam algarismos tabulares. A fonte própria da prévia continua 14 px;
+os cabeçalhos e células mantêm paddings anteriores. O resumo de entrada/saldo passou
+a quebrar com espaçamento explícito quando estreito, e as ações não acrescentam
+margem inferior fora do grid.
+
+Verificação real: teste responsivo passou **2/2 projetos Chromium**, percorrendo
+ambos temas em 1366, 1024, 768, 767 e 390 px; confirmou duas colunas em 768+, empilhamento
+em 767-, proporção dos campos, alinhamento/tabularidade e ausência de overflow global.
+Medições do grid formulário/prévia: 589/482 px em 1366, 400/328 px em 1024, 260/212 px
+em 768, 743/743 px em 767 e 366/366 px em 390. O campo Nome continuou mais largo
+que Valor total nas larguras onde o teste exige essa proporção. O E2E de erros,
+prévia extensa e acessibilidade passou **2/2** nos dois temas/viewports; o menor
+contraste textual medido nesse percurso foi 4,899:1. Capturas PNG e metadados de
+cadastro válido em 1366×768 e 390×844 estão em
+`test-results/refinar-design-cadastro/`. As mudanças são apenas de apresentação.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
