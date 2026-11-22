@@ -451,6 +451,43 @@ test('registra baseline visual do piloto em Vendas e Quitadas', async ({ page },
   }
 });
 
+test('hierarquia de Vendas apresenta cabeçalho e critérios com controles destacados', async ({
+  page,
+}, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas?quantidade=10');
+    if (tema === 'light')
+      await page.getByRole('button', { name: 'Tema escuro', exact: true }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+    const titulo = page.getByRole('heading', { level: 1, name: 'Vendas', exact: true });
+    const painel = page.getByRole('heading', { level: 2, name: 'Vendas cadastradas' });
+    const controles = page.locator(
+      '[aria-label="Pesquisa e filtros de vendas"] input, [aria-label="Pesquisa e filtros de vendas"] select, [aria-label="Pesquisa e filtros de vendas"] button, [aria-label="Pesquisa e filtros de vendas"] a',
+    );
+    await expect(titulo).toHaveCSS('font-size', '30px');
+    await expect(painel).toHaveCSS('font-size', '20px');
+    await expect(page.getByText(/Referência da demonstração:/)).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: /Buscar por nome/ })).toBeVisible();
+    await expect(page.getByLabel('Filtrar por situação')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Nova venda', exact: true })).toBeVisible();
+    const viewport = page.viewportSize()!;
+    const bases = await controles.evaluateAll((itens) =>
+      itens.map((item) => item.getBoundingClientRect().bottom),
+    );
+    if (viewport.width >= 1024)
+      expect(Math.max(...bases) - Math.min(...bases)).toBeLessThanOrEqual(1);
+    for (const controle of await controles.all())
+      await expect(controle).toHaveCSS('height', '48px');
+    await expect(page.locator('app-tabela-vendas tbody tr')).toHaveCount(10);
+    await page.screenshot({
+      path: testInfo.outputPath(`piloto-hierarquia-vendas-${tema}.png`),
+      fullPage: true,
+    });
+  }
+});
+
 test('mostra dez parcelas e blocos de cliente/venda em ambos os temas e viewports', async ({
   page,
 }, testInfo) => {
