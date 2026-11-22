@@ -54,13 +54,16 @@ export class PaginacaoFixture {
         entrada,
       });
       if (venda.tipo !== 'sucesso') throw new Error(venda.mensagem);
+      const pagas = new Set(
+        venda.valor.recebimentos.flatMap((recebimento) =>
+          recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
+        ),
+      );
+      const pendentes = venda.valor.parcelas.filter((parcela) => !pagas.has(parcela.id));
       const pagamento = this.servico.registrarPagamento({
         vendaId: venda.valor.id,
-        parcelaIds: venda.valor.parcelas.map((parcela) => parcela.id),
-        valorCentavos: venda.valor.parcelas.reduce(
-          (total, parcela) => total + parcela.valorCentavos,
-          0,
-        ),
+        parcelaIds: pendentes.map((parcela) => parcela.id),
+        valorCentavos: pendentes.reduce((total, parcela) => total + parcela.valorCentavos, 0),
         data: this.servico.referencia,
         forma: 'Pix',
       });
@@ -69,10 +72,11 @@ export class PaginacaoFixture {
     const quantidade = new URLSearchParams(location.search).get('quantidade');
     if (quantidade !== null && ['0', '1', '10', '11', '21'].includes(quantidade)) {
       for (const venda of this.servico.abertas().slice(Number(quantidade))) {
+        const pendentes = venda.parcelas.filter((parcela) => parcela.situacao !== 'Paga');
         const pagamento = this.servico.registrarPagamento({
           vendaId: venda.id,
-          parcelaIds: venda.parcelas.map((parcela) => parcela.id),
-          valorCentavos: venda.saldoCentavos,
+          parcelaIds: pendentes.map((parcela) => parcela.id),
+          valorCentavos: pendentes.reduce((total, parcela) => total + parcela.valorCentavos, 0),
           data: this.servico.referencia,
           forma: 'Pix',
         });

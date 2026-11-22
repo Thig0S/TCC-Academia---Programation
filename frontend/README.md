@@ -699,6 +699,22 @@ Resultado real: `npm test -- --watch=false
 44/44 testes em 3 arquivos, incluindo publicação/retry, IDs, rejeição de entrada,
 quitação, edições e isolamento de sessão.
 
+### Apply `entrada-como-primeira-parcela` — fixtures de paginação — 22/11/2026
+
+Na tarefa 2.2, a fixture seleciona apenas parcelas sem recebimento para concluir
+as vendas de detalhe; ao ajustar o tamanho de abertas, também envia somente as
+parcelas ainda não pagas. Assim, o cenário “dez parcelas” conta a entrada entre
+as dez linhas e o detalhe de onze mantém seu excedente rolável, sem nova
+persistência ou migração.
+
+Resultados reais: `npx ng run vendas-em-aberto:build-paginacao-fixture` aprovou;
+`npm run test:e2e:paginacao-fixture` aprovou 12/12 testes em Chromium, viewports
+1366×768 e 390×844 e temas claro/escuro, cobrindo coleções 0/1/10/11/21, detalhe
+de 10/11 parcelas, navegação por teclado e geometria/overflow. A suíte unitária
+integral executada neste ponto aprovou 364/368 testes. Permaneceram quatro falhas
+em rascunho/cadastro e recebimento/detalhe, cujos ajustes são tarefas 3.1/3.4;
+não foram considerados aprovação nem ocultados nesta entrega de fixture.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,
