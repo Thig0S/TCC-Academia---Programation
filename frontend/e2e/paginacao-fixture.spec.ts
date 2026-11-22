@@ -1,6 +1,55 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+test('paginação extensa permanece contida e operável em todas as larguras', async ({
+  page,
+}, info) => {
+  for (const largura of [390, 767, 768, 1024, 1366]) {
+    await page.setViewportSize({ width: largura, height: 844 });
+    for (const tema of ['dark', 'light']) {
+      await page.goto('/vendas?quantidade=80');
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      const navegacao = page.getByRole('navigation', { name: 'Paginação de vendas' });
+      for (const pagina of [1, 4, 8]) {
+        if (pagina === 4) {
+          for (let passo = 0; passo < 3; passo++)
+            await navegacao.getByRole('button', { name: 'Próxima página' }).click();
+        }
+        if (pagina !== 1)
+          await navegacao.getByRole('button', { name: `Página ${pagina}`, exact: true }).click();
+        await expect(navegacao.locator('[aria-current="page"]')).toHaveText(String(pagina));
+        await expect(page.getByLabel('Faixa de resultados')).toHaveText(
+          `${(pagina - 1) * 10 + 1}–${pagina * 10} de 80 vendas`,
+        );
+        await page.screenshot({
+          path: info.outputPath(`paginacao-extensa-${largura}-${tema}-${pagina}.png`),
+          fullPage: true,
+        });
+        expect(
+          await page.evaluate(() => document.documentElement.scrollWidth),
+          `${largura}/${tema}/${pagina}`,
+        ).toBeLessThanOrEqual(largura);
+        const limites = await navegacao.getByRole('button').evaluateAll((botoes) =>
+          botoes.map((botao) => {
+            const caixa = botao.getBoundingClientRect();
+            return { esquerda: caixa.left, direita: caixa.right };
+          }),
+        );
+        for (const limite of limites) {
+          expect(limite.esquerda).toBeGreaterThanOrEqual(0);
+          expect(limite.direita).toBeLessThanOrEqual(largura);
+        }
+      }
+      const anterior = navegacao.getByRole('button', { name: 'Página anterior' });
+      await anterior.focus();
+      await page.keyboard.press('Enter');
+      await expect(navegacao.locator('[aria-current="page"]')).toHaveText('7');
+      await expect(anterior).toBeFocused();
+    }
+  }
+});
+
 test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page }, info) => {
   for (const quantidade of [0, 1, 10, 11, 21]) {
     for (const tema of ['dark', 'light']) {

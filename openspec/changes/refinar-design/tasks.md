@@ -52,7 +52,7 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 ## 9. Revisão pós-implementação autorizada — 22/11/2026
 
 - [ ] 9.1 Revisar implementação contra PRD/TDD/delta e reproduzir lacunas de paginação extensa e nomes sem espaços, com evidências antes da correção; preservar os contratos compactos e documentar achados reais.
-- [ ] 9.2 Corrigir overflow comprovado da paginação com muitas páginas, sem alterar funções, inputs/outputs ou navegação; verificar primeira/intermediária/última, teclado e faixa, nos dois temas e larguras de 390/767/768/1024/1366 px; incluir teste e documentação no commit.
+- [x] 9.2 Corrigir overflow comprovado da paginação com muitas páginas, sem alterar funções, inputs/outputs ou navegação; verificar primeira/intermediária/última, teclado e faixa, nos dois temas e larguras de 390/767/768/1024/1366 px; incluir teste e documentação no commit.
 - [ ] 9.3 Corrigir overflow comprovado dos resumos da Visão Geral com nomes sem espaços, sem truncar texto ou alterar recortes/valores; verificar ambos temas e larguras, com captura antes/depois, teste e documentação no commit.
 - [ ] 9.4 Executar regressão unitária/E2E/fixture, builds, formatação e validação estrita, registrar limitações e revisar o diff antes do PR único; não alegar nova verificação manual de zoom ou aceite da ótica.
 

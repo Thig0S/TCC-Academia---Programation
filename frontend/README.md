@@ -1,5 +1,30 @@
 # Base técnica — Vendas em Aberto
 
+## Revisão pós-implementação `refinar-design` — 22/11/2026
+
+Reutilizados PRD RNF-002/007/009, RF-003 e CA-027/028 e TDD DEC-018/021/023,
+sem mudança de requisitos ou arquitetura. A revisão autorizada na
+`feature/redesign` preserva lateral, tema, fonte tabular de 18 px, CTA Nova venda
+na faixa de critérios, rotas e regras financeiras. `DESIGN.md` não rastreado é
+trabalho do solicitante e não foi alterado/incluído nos commits.
+
+### Paginação extensa — tarefa 9.2
+
+Reprodução antes da correção: com 80 vendas na fixture e página 4, a largura
+documental foi **472 px em viewport de 390 px**; Próxima ficava fora do painel.
+O novo E2E falhou nos dois projetos por esse overflow (não por timeout).
+A única alteração de produção é `flex-wrap` na lista dos controles compartilhados:
+mantém ordem, texto, semântica, eventos e foco, permitindo outra linha quando necessário.
+A fixture aceita 80 vendas exclusivamente no alvo de testes; o seed real não muda.
+
+`npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/revisao-paginacao-depois`
+passou **16/16**. Inclui primeira/intermediária/última páginas e Enter com foco
+preservado em ambos temas, nas larguras 390/767/768/1024/1366. Os testes existentes
+de contraste, movimento reduzido e densidade também passaram: em 1366×768,
+décima linha até 641,5 px, rodapé até 709 px, dez parcelas até 735 px.
+Capturas locais antes/depois estão em `test-results/revisao-paginacao-antes/` e
+`test-results/revisao-paginacao-depois/`; não equivalem a zoom nativo ou aceite.
+
 ## Apply `refinar-design` — linha de base RD-01 — 22/11/2026
 
 Esta matriz é a baseline de geometria anterior à edição, vinculada aos contratos
