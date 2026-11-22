@@ -149,6 +149,12 @@
               >
                 Vencimento
               </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2 py-2 font-semibold"
+              >
+                Situação
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -158,13 +164,18 @@
                   scope="row"
                   class="whitespace-nowrap border-b border-border px-2 py-1 font-medium"
                 >
-                  {{ parcela.numero }}
+                  {{ parcela.numero }}@if (venda.entrada && parcela.numero === 1) {
+                    · Entrada
+                  }
                 </th>
                 <td class="whitespace-nowrap border-b border-border px-2 py-1">
                   {{ formatarDinheiro(parcela.valorCentavos) }}
                 </td>
                 <td class="whitespace-nowrap border-b border-border px-2 py-1">
                   {{ formatarDataCivil(parcela.vencimento) }}
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2 py-1">
+                  {{ parcela.situacao }}
                 </td>
               </tr>
             }

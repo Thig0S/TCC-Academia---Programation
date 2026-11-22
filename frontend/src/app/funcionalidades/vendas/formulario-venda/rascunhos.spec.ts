@@ -199,6 +199,32 @@ describe('Adaptadores puros de rascunhos', () => {
     ).toBe('sucesso');
   });
 
+  it('prévia projeta entrada como primeira paga em N linhas e divide só o saldo futuro', () => {
+    const previa = prepararPrevia(
+      {
+        ...cadastro(),
+        temEntrada: 'sim',
+        valorTotal: '2.000,00',
+        quantidadeParcelas: '10',
+        valorEntrada: '500',
+        formaEntrada: 'Pix',
+      },
+      referencia,
+    );
+    expect(previa?.parcelas).toHaveLength(10);
+    expect(previa?.parcelas[0]).toMatchObject({
+      numero: 1,
+      valorCentavos: 50000,
+      vencimento: referencia,
+      situacao: 'Paga',
+      dataPagamento: referencia,
+      formaPagamento: 'Pix',
+    });
+    expect(previa?.parcelas.slice(1).map((parcela) => parcela.valorCentavos)).toEqual([
+      16667, 16667, 16667, 16667, 16667, 16667, 16666, 16666, 16666,
+    ]);
+  });
+
   it('rejeita quantidade maior que saldo após entrada', () => {
     const resultado = converterCadastro(
       {
