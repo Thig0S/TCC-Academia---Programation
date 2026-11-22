@@ -1,10 +1,10 @@
-import { prepararPagamento } from '../../funcionalidades/parcelas/pagamento.validacoes';
 import { adicionarMeses, interpretarDataCivil } from '../../funcionalidades/vendas/data-civil';
 import { somarCentavos } from '../../funcionalidades/vendas/dinheiro';
 import { projetarVendas } from '../../funcionalidades/vendas/venda.calculos';
 import { Resultado, Venda } from '../../funcionalidades/vendas/venda.modelos';
 import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes';
 import { criarIdentificacaoSintetica } from './identificacao-sintetica';
+import { prepararPagamentoHistorico } from './preparar-pagamento-historico';
 
 function exigirSucesso<T>(resultado: Resultado<T>): T {
   if (resultado.tipo !== 'sucesso') throw new RangeError(resultado.mensagem);
@@ -73,7 +73,7 @@ export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
       const futurasPendentes = venda.parcelas.filter((parcela) => !pagas.has(parcela.id));
       const parcelasPagamento = futurasPendentes.slice(0, quantidadePaga);
       vendas = exigirSucesso(
-        prepararPagamento(
+        prepararPagamentoHistorico(
           vendas,
           {
             vendaId: id,
