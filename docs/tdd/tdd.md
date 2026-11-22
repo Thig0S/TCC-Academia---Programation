@@ -7,6 +7,18 @@
 
 ## 1. Identificação e situação
 
+**Entrada como primeira parcela — revisão 1.21, 21/11/2026:** PRD 1.17/FON-015,
+RN-011/012/013/017/024 e CA-008/033/034/035 fundamentam DEC-026. O solicitante
+confirmou uma única origem contábil (recebimento alocado à parcela 1) e preservação
+do rascunho de entrada ao alternar Sim/Não. Planejamento documental autorizado,
+não implementado; não executar apply nesta solicitação. A main foi atualizada e o
+merge do PR #20 confirmado no GitHub antes da criação da branch dedicada
+`feature/entrada-como-primeira-parcela`. As evidências anteriores do refinamento,
+inclusive encerramento de zoom com relato limitado, estão em `frontend/README.md`;
+não foram repetidas nesta revisão. Trechos anteriores que tratam entrada separada
+e contagem que a ignora são históricos/substituídos por DEC-026, não regras atuais
+do plano. O código inspecionado ainda segue esse modelo anterior.
+
 **Cadastro com prévia lateral — revisão 1.20, 21/11/2026:** PRD 1.16/FON-014,
 RF-004 e CA-032 sustentam a DEC-025. Planejar duas colunas a partir de `md`
 (48rem/768 px na configuração padrão), formulário à esquerda e prévia à direita;
@@ -302,6 +314,8 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-024 | PRD 1.13 e confirmações explícitas no Harness | 21/11/2026 | Tabelas de Vendas/Quitadas e parcelas com tipografia de 18 px e padding consistente; compactar o resumo sem perda de dados e manter densidade em ambos os temas |
 | FON-025 | PRD 1.14 e confirmação explícita no Harness | 21/11/2026 | Sem aviso global persistente ou ação conjunta “Limpar critérios”; contexto demonstrativo em Configurações/confirmações e limpeza via termo + situação Todas |
 | FON-026 | PRD 1.15 e solicitação explícita no Harness | 21/11/2026 | Tabelas de Relatórios com fonte 18 px, line-height 20 px e paddings iguais aos de Vendas/Quitadas e parcelas; verificação em dois temas/viewports registrada no frontend/README.md |
+| FON-027 | PRD 1.17/FON-015 e respostas explícitas no Harness; inspeção de rascunhos, cadastro, modelos, cálculos, relatório e seed | 21/11/2026 | Entrada é parcela 1 Paga, N inclui entrada, saldo em N−1, mínimo 2; seleção obrigatória; recebimento alocado como fonte única e rascunho preservado confirmados; planejamento somente |
+| FON-028 | Context7 `/angular/angular`, fontes oficiais `packages/forms/signals/src/api/structure.ts` e `api/rules/validation/validate.ts` no GitHub Angular | Consulta nesta revisão | `form`, `validate` e `submit`/`onInvalid` sustentam o padrão existente. Consulta geral, não comprova execução no patch instalado 22.2.6; verificar select e erro/foco localmente no apply, sem atualizar dependências |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -574,7 +588,9 @@ classDiagram
 Este é um modelo interno proposto, não esquema SQL ou contrato HTTP. Cada venda mantém
 seus dados de cliente. Conforme DEC-015 e PRD/RN-013/016, um pagamento pertence a uma venda
 e aloca o valor integral de uma ou mais parcelas consecutivas; cada parcela possui zero ou
-uma alocação aceita. A entrada é separada, nunca uma parcela ou alocação de pagamento.
+uma alocação aceita. A representação separada da entrada desta seção é histórica:
+DEC-026 passa a exigir parcela 1 e recebimento integral alocado; o objeto de entrada
+fica somente como metadado consistente, sem valor financeiro adicional.
 
 - Identificadores são estáveis, independentes do índice de uma lista ou nome do cliente.
 - Ausência de descrição, data de pagamento ou forma deve ser representada explicitamente,
@@ -594,7 +610,8 @@ na apresentação, usando recursos de internacionalização da plataforma/Angula
 
 Fórmula: `valorAParcelarCentavos = valorTotalCentavos - valorEntradaCentavos`.
 A distribuição, os limites financeiros e a contabilização seguem PRD/RN-012/013/017,
-centralizados tecnicamente em DEC-015. Somar ou multiplicar centavos exige verificar também
+centralizados tecnicamente em DEC-015, com a substituição da entrada por DEC-026.
+Somar ou multiplicar centavos exige verificar também
 o resultado como inteiro seguro, inclusive nas projeções globais; overflow rejeita o comando.
 
 Representar datas civis com formato interno `AAAA-MM-DD` validado, não como instantes UTC.
@@ -934,6 +951,25 @@ Estado das fases, com acompanhamento da consolidação da FASE-006 em 18/11/2026
 | FASE-007 | Implementada e verificada na `feature/fase-007` (13/13 tarefas); zoom nativo 200% registrado por relato manual, sem medição independente; sem aceite/merge |
 | FASE-009 | Planejada na revisão 1.15, com Change `troca-para-tailwind`; sem implementação ou compatibilidade local comprovada |
 | FASE-008 | Não concluída; regressões técnicas anteriores não são validação do MVP completo |
+
+### Roadmap de implementação — entrada como primeira parcela (DEC-026)
+
+Complemento da revisão 1.21, ainda não implementado. A base visual necessária foi
+integrada pelos PRs #19/#20; os estados antigos de FASE-009 acima são históricos.
+As fases abaixo não substituem nem concluem FASE-008 e dependem de autorização
+separada de apply após revisão dos artefatos. Qualidade acompanha cada entrega.
+
+| Fase | Objetivo e entregas | Dependências e bloqueios | Critério verificável | Estado |
+| --- | --- | --- | --- | --- |
+| FASE-010 — Domínio da entrada | N inclui entrada; parcela 1 paga com recebimento alocado; invariantes, calendário, projeções, período e relatório sem dupla contagem; testes de núcleo/serviço | PRD 1.17, DEC-026, autorização de apply | CA-008/009/011/014/034; soma das parcelas = total e pago = soma de recebimentos, sem novo recebimento da entrada | Planejada, não implementada |
+| FASE-011 — Coleção demonstrativa e fixtures | Adaptar seed e fixtures/testes ao novo domínio, mantendo 12 vendas, IDs de venda, valores financeiros, histórico e datas pendentes | FASE-010; preservar política de bordas da DEC-016 | CA-035 em referências comuns e extremas; contagens incluem entrada; nenhum recebimento duplicado | Planejada, não implementada |
+| FASE-012 — Cadastro, prévia e consumidores | Select obrigatório antes dos dados; rascunho triestado; erros/foco; prévia com situação e entrada; detalhe/contagens/seleção de recebimento e edição compatíveis | FASE-010/011; DEC-010/025/026 | CA-007/008/016/017/032/033; ambos os temas, 1366×768, 390×844 e fronteira 767/768, sem overflow global | Planejada, não implementada |
+| FASE-013 — Regressão e entrega da Change | Unitários, E2E app/fixture, dois builds, formatação, validação OpenSpec, revisão visual/teclado e zoom manual do fluxo alterado; registrar resultados reais | FASE-010/011/012 concluídas; nenhuma aprovação global presumida | CA-008/014/033/034/035 conciliados; tarefas concluídas com evidências/limitações e PR único para main, sem merge automático | Planejada, não implementada |
+
+Asserções/E2E do cadastro podem ser preparados após o contrato de FASE-010 estar
+coerente, mas a integração depende do seed válido de FASE-011. Não publicar estado
+transitório incompatível. Commits por funcionalidade, incluindo seus testes e
+documentação; um único PR apenas ao concluir todo o escopo, não após planejamento.
 
 **Recorte histórico da FASE-003 — revisão 1.4, entregue posteriormente:** somente estrutura visual, navegação e temas.
 Destinos `/visao-geral`, `/vendas`, `/vendas/quitadas`, `/relatorios` e `/configuracoes`;
@@ -1380,6 +1416,11 @@ sem ignorar peers, usar flags de força ou importar JavaScript desses pacotes.
 
 ### DEC-015 — Modelo financeiro do MVP e recebimentos sequenciais
 
+**Substituição parcial na revisão 1.21:** os contratos abaixo de entrada separada,
+total pago somando entrada à parte e contagem que ignora entrada são históricos.
+DEC-026 os substitui; lote integral, atomicidade, centavos e demais restrições
+continuam válidos. A implementação anterior não comprova o novo contrato.
+
 - **Problema/contexto:** a revisão anterior não podia definir cardinalidade de pagamentos,
   entrada, calendário e projeções sem decidir políticas do MVP. PRD 1.3 registra respostas
   explícitas do solicitante (FON-017), não regras operacionais validadas pela ótica.
@@ -1741,6 +1782,105 @@ e computed com múltiplas dependências; suporte documental geral, não execuç�
 - **Condições de revisão:** qualquer seletor, gráfico ou posição histórica exige
   PRD/TDD antes de SDD; nenhuma pendência global de aceite foi resolvida aqui.
 
+### DEC-026 — Entrada como parcela 1 e escolha explícita no cadastro
+
+- **Problema/contexto:** o código atual gera N parcelas sobre o saldo, mantém entrada
+  fora delas e soma seu valor separadamente em `venda.calculos.ts` e
+  `relatorios.calculos.ts`. A checkbox booleana inicia em false e não representa
+  ausência de escolha. Isso conflita com PRD 1.17 e exige revisão transversal, não
+  ajuste isolado de template.
+- **Escopo/origem/situação:** FON-027/028; decisão **Confirmada** pelo solicitante,
+  implementação **Não implementada**. Afeta cadastro, domínio, seed/fixtures,
+  consultas, recebimento e relatórios. Sem backend, persistência, alteração de
+  dependências ou autorização de código. Complementa DEC-004/005/010/016/019/025 e
+  substitui somente os contratos conflitantes de DEC-015/017/018/020.
+- **Alternativas:** uma linha visual fictícia mantém contagens/domínio divergentes;
+  adicionar entrada e continuar somando-a separadamente duplica o pago; remover
+  todo metadado de entrada dificulta identificar a origem. Escolher um recebimento
+  canônico com alocação e conservar metadado como referência validada evita isso.
+- **Escolha — agregado:** manter `Venda.entrada` como metadado de valor/data/forma,
+  nunca como segunda origem contábil. Com entrada, `prepararCadastro` gera N
+  parcelas: primeira com valor da entrada e vencimento na venda, demais em N−1
+  meses futuros. Gerar no mesmo agregado um recebimento da entrada com ID estável
+  derivado do ID opaco da venda, com alocação integral exclusiva à primeira parcela.
+  Sem entrada, N futuras e nenhum recebimento inicial. Não armazenar situação paga,
+  saldo ou contagens editáveis: derivar de alocações. Nenhum ID real é consumido pela
+  prévia, que usa o ID local já existente.
+- **Invariantes:** soma de todas as parcelas = total; total pago = soma de
+  `recebimentos.valorCentavos`, incluindo entrada exatamente uma vez; saldo = total
+  − pago = soma de pendentes. Metadado não nulo exige parcela 1 e exatamente um
+  recebimento exclusivo com mesmo valor/data/forma e alocação, sem duplicidade de
+  IDs; sem metadado, não existe recebimento marcado como entrada. Identificação da
+  origem deriva dessa relação, não da data (um lote antecipado pode ter a mesma
+  data). `validarVenda` valida estrutura, vínculo, sequência e totais, não compara
+  todos os recebimentos apenas ao agregado inicial. A seleção de pagamento começa
+  na primeira pendente e rejeita a entrada já paga e comandos obsoletos.
+- **Centavos/calendário:** converter quantidade total N para futuras M=N−1 ou M=N
+  antes de validar limite por centavos/calendário e gerar vencimentos. Com entrada,
+  N≥2 e 0<entrada<total; demais limites seguros preservados. Distribuir o resto
+  somente entre as M futuras. Parcela 2 com entrada vence um mês após a venda, não
+  dois. Última futura no mês M, não N; testar 31/01, anos bissextos, 0001/9999.
+- **Projeções/períodos:** revisar `projetarVenda`, `validarVenda`, `consultarPeriodo`
+  e `resumirVendas` para não somar o metadado. Em `relatorios.calculos.ts`, iterar
+  recebimentos uma vez, identificando Entrada pelo vínculo exclusivo da primeira
+  parcela e os demais como Lote; não gerar linha extra pelo metadado. Manter mês
+  civil e ordem estável pertinente. Visão Geral, listas e detalhe consomem as
+  mesmas projeções; contagem inicial com entrada é 1/N. Detalhe identifica a parcela
+  1 como entrada e mantém data/forma; resumo de entrada não é nova cobrança.
+- **Seed/fixtures:** adaptar a geração, não migrar armazenamento (não existe).
+  Para vendas com entrada que tinham K parcelas futuras, gerar N=K+1, acrescentando
+  a paga e preservando valores/vencimentos/histórico das K existentes. Manter IDs de
+  venda e vínculos de alocações; IDs de parcelas são opacos, não precisam coincidir
+  com a nova numeração. Usar namespace sem colisão para a parcela/recebimento de
+  entrada e preservar IDs antigos quando possível; não deslocar datas para
+  acomodar numeração. Recebimentos já gerados devem continuar nas mesmas parcelas,
+  valores e datas. A referência e as 12 vendas permanecem, inclusive em bordas.
+  Atualizar slices de pagamento do seed para selecionar somente pendentes.
+- **Rascunho/UI:** representar `temEntrada` por união textual explícita de não
+  informado/Sim/Não (por exemplo, `'' | 'sim' | 'nao'`), não por truthiness de string.
+  O `<select>` nativo mantém `id="tem-entrada"`, rótulo “Possui Entrada”, opções
+  exatas do PRD e erro associado. Ficar no início de Dados da venda, antes de
+  data/total/quantidade tanto em DOM quanto em tela. Converter para o comando
+  existente (`entrada:null` para Não, objeto para Sim) só após escolha válida.
+  Preservar valor/forma no rascunho ao selecionar Não, mas ocultar/ignorar sua
+  validação e envio; voltar a Sim restaura e revalida. Vazio/valor desconhecido
+  invalida a prévia e o envio. Incluir campo na validação Signal Forms e manter
+  `submit`/`onInvalid`, erro textual e foco no primeiro inválido; nada de atributo
+  disabled que torne o erro de envio inalcançável.
+- **Prévia:** usar a mesma preparação/projeção de domínio com referência explícita,
+  sem publicar. Adicionar coluna Situação e identificação Entrada na primeira
+  linha, Paga textual (padrão existente), demais estados derivados de RN-014, sem
+  criar histórico real. Manter resumo de saldo futuro, região rolável, caption e
+  prévia lateral DEC-025. Cancelamento, retry e envio único não mudam.
+- **Contrapartidas:** metadado e alocação precisam de validação cruzada; remover a
+  soma separada exige atualizar testes/fixtures de todo o núcleo simultaneamente.
+  Um agregado antigo em memória não é aceito como híbrido: nova sessão usa o seed
+  novo; não há requisito de migração de sessão em execução ou dados persistidos.
+- **Validação planejada:** FASE-010 a FASE-013; unitários de cálculos/cadastro/
+  parcelas/rascunhos/serviço/seed/relatórios, componentes de cadastro/detalhe/listas
+  e E2E de fluxo completo, erros, troca de opção, calendário, bordas e duas formas
+  de entrada (igual/desigual). R$ 2.000/10 com R$ 200 → 1 paga + 9×R$ 200;
+  com R$ 500 → 6×R$ 166,67 + 3×R$ 166,66 futuras. Testar R$ 0,02 em 2x com
+  R$ 0,01 de entrada como mínimo válido, sem perda ou dupla contagem. Verificar
+  teclado/foco, contraste, responsividade e zoom nativo do fluxo alterado com
+  ambiente/limitações reais, sem reutilizar aceite da Change anterior.
+
+Fluxo proposto de DEC-026, sem implementação ou renderização validada:
+
+```mermaid
+flowchart TD
+  Escolha[Possui Entrada] --> Valido{Sim ou Nao?}
+  Valido -->|Nao informado| Erro[Erro no campo sem publicar]
+  Valido -->|Sim| Entrada[Validar entrada e gerar parcela 1 com recebimento]
+  Valido -->|Nao| Futuras[Gerar N parcelas futuras sem entrada]
+  Entrada --> Saldo[Dividir saldo entre N menos 1 futuras]
+  Saldo --> Previa[Projetar previa sem publicar]
+  Futuras --> Previa
+  Previa --> Confirmar{Confirmar valido?}
+  Confirmar -->|Sim| Publicar[Validar agregado e publicar uma vez]
+  Confirmar -->|Cancelar ou falha| Manter[Preservar fonte sem mutacao]
+```
+
 ## 16. Riscos, hipóteses e pendências
 
 ### Riscos deste desenho
@@ -1765,7 +1905,8 @@ e computed com múltiplas dependências; suporte documental geral, não execuç�
 | ID | Questão e origem | Impacto e decisões afetadas | Como resolver | Bloqueio |
 | --- | --- | --- | --- | --- |
 | PEN-001 | Vencimento em mês sem dia original; `PRD/PEN-001` | Calendário, DEC-005/015 | Resolvida por PRD/RN-011 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
-| PEN-002 | Entrada nos pagamentos, saldos e recebimentos; `PRD/PEN-002` | Cadastro e resumos, DEC-004/005/015 | Resolvida por PRD/RN-013 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
+| PEN-002 | Entrada nos pagamentos, saldos e recebimentos; `PRD/PEN-002` | Cadastro e resumos, DEC-004/005/015/026 | PRD/RN-013 redefinida na revisão 1.17 por FON-015: entrada como parcela 1 e recebimento alocado único | Decisão confirmada; nova regra não implementada; contrato separado anterior superado |
+| PEN-017 | Adequação transversal à entrada como parcela; PRD 1.17 | DEC-026; cadastro, seed, projeções e relatórios | Respostas no Harness resolvem regra e fonte contábil; aplicar FASE-010 a FASE-013 somente após autorização | Sem decisão bloqueante neste recorte; implementação não autorizada por esta revisão; PEN-013/014 globais preservadas |
 | PEN-003 | Distribuição de centavos; `PRD/PEN-003` | Parcelamento, DEC-005/015 | Resolvida por PRD/RN-012 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
 | PEN-004 | Hoje e próximos sete dias; `PRD/PEN-004` | Situações, DEC-005/015 | Resolvida por PRD/RN-014 em 14/11/2026 | Sem bloqueio no núcleo; não implementada |
 | PEN-005 | Combinação, normalização e datas da pesquisa; `PRD/PEN-005` | Consulta, DEC-004/017 | PRD/RN-018/019 e respostas do Harness | Resolvida e implementada na FASE-005; PRs #9/#10, sem aceite comercial |
@@ -1807,6 +1948,7 @@ PEN-008/010 em decisões originais foram substituídas pela DEC-019.
 | Consultas, pesquisa e recorte somente leitura; PRD/RF-002/003/005/008, RN-018/019, CA-026 | FON-020/021 | DEC-017 | 9, 14, 15 | Busca, URLs com ID opaco, vazio/inexistência e testes de UI entregues; cartões de Vendas retirados pela DEC-018; evidências anteriores no README |
 | Refinamento de consultas; PRD/RF-001/002/003/005/008/009, RN-014/020, CA-027/028/029 | FON-022 | DEC-018 substitui os trechos conflitantes da DEC-017 | 10, 12, 14, 15 | Paginação, geometria/capturas, links, atraso civil e regressão com evidências anteriores no README; sem nova execução ou aceite comercial |
 | Edição/identificação; PRD/RF-004/006, RN-021/022/023, CA-007/012/016/017/030; ambiente PEN-013/014 | FON-023 | DEC-019 | 9, 12, 14, 15, 16 | Planejamento na Change decisoes-edicao-identificacao-avaliacao; unitários/integração futuros; ambiente definido não comprova medição/aceite |
+| Entrada como parcela e escolha obrigatória; PRD 1.17, RN-011/012/013/017/024, CA-008/033/034/035 | FON-027/028 | DEC-026 | 1, 8, 14, 15, 16 | FASE-010 a FASE-013; planejamento, sem testes novos de aplicação |
 
 **Verificações documentais:** leitura das instruções e do modelo, inspeção da estrutura local,
 revisão do PRD e das referências relevantes, confirmação das escolhas por perguntas, consulta
@@ -1842,6 +1984,7 @@ separadamente, após este registro técnico.
 
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
+| 1.21 — 21/11/2026 | Entrada como primeira parcela, recebimento canônico, seleção obrigatória triestado, rascunho preservado e roadmap FASE-010 a FASE-013 | DEC-026 substitui contratos conflitantes de entrada separada | PRD 1.17 e confirmações do solicitante, fonte Angular via Context7; planejamento documental após merge do PR #20, sem código ou testes de aplicação |
 | 1.14 — 20/11/2026 | PRD 1.10, recorte e roadmap da FASE-007; derivações e verificação financeira/visual | DEC-020, sem alterar decisões anteriores | Respostas no Harness e inspeção read-only; sem implementação ou testes de aplicação |
 | 1.0 — 12/11/2026 | Documento inicial, entrevista, arquitetura, Mermaid, plano de testes e pendências | DEC-001 a DEC-012 | Solicitação e respostas do usuário; fontes locais e documentação oficial |
 | 1.1 — 12/11/2026 | Roadmap com oito fases, entregas, dependências, bloqueios e critérios de conclusão; correção do destino documental; skill e modelo passam a exigir roadmap | DEC-012 detalhada; demais decisões preservadas | Solicitação explícita do usuário para revisar o TDD e a skill de geração |
