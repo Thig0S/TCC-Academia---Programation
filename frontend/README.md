@@ -741,6 +741,22 @@ manteve `overflow-x: auto` na região identificada. Capturas dark/light em 1366 
 390 px estão anexadas ao resultado do teste
 `Nova venda mantém formulário e prévia responsivos sem overflow nos dois temas`.
 
+### Correção responsiva do detalhe após relato de zoom — 22/11/2026
+
+O relato manual apontou CPF, telefone e descrição comprimidos em colunas a 200%.
+O detalhe agora usa a largura efetivamente disponível ao componente (container
+queries), não apenas o breakpoint da viewport: com até 832 px úteis, os blocos e
+seus pares rótulo/valor empilham em uma coluna, mantendo texto integral e ações.
+Os demais breakpoints e o layout compacto para largura suficiente permanecem.
+
+Verificação automatizada real: o E2E `detalhe reorganiza campos conforme a largura
+útil sem perder conteúdo` passou **1/1** em Chromium (configuração isolada, porta
+4303), nos temas escuro/claro e larguras de viewport 800, 640 e 390 px. Confirmou
+empilhamento conforme a largura do container, CPF/telefone/descrição visíveis e sem
+overflow horizontal global. Essas larguras cobrem a reorganização responsiva, mas
+não equivalem a zoom nativo. A pessoa solicitante ainda precisa repetir a verificação
+manual do detalhe e modal a 200%, nos dois temas; tarefa 3.3 permanece pendente.
+
 Verificações: testes unitários 363/363; E2E de `formularios-vendas.spec.ts` 20/20
 nos viewports 1366×768 e 390×844; E2E combinado de layout/contraste 4/4. Contraste
 mínimo medido no cadastro: 4,90:1 em ambos os temas. Build principal 299,92 kB

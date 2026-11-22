@@ -17,6 +17,40 @@ async function valorEmCentavos(elemento: Locator): Promise<number> {
   return Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
 }
 
+test('detalhe reorganiza campos conforme a largura útil sem perder conteúdo', async ({ page }) => {
+  for (const largura of [800, 640, 390]) {
+    await page.setViewportSize({ width: largura, height: 844 });
+    for (const tema of ['dark', 'light']) {
+      await page.goto('/vendas/seed%2Fvenda%2F1');
+      if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+      await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+
+      const resumo = page.locator('.detalhe-resumo');
+      const larguraResumo = await resumo.evaluate((elemento) => elemento.clientWidth);
+      const colunasResumo = await resumo.evaluate(
+        (elemento) => getComputedStyle(elemento).gridTemplateColumns,
+      );
+      if (larguraResumo <= 832) expect(colunasResumo.split(' ').length).toBe(1);
+      for (const campo of ['CPF', 'Telefone', 'Descrição']) {
+        const rotulo = page
+          .locator('.detalhe-campos dt')
+          .filter({ hasText: new RegExp(`^${campo}$`) });
+        await expect(rotulo).toBeVisible();
+        const valor = rotulo.locator('+ dd');
+        await expect(valor).toBeVisible();
+        const dimensoes = await valor.evaluate((elemento) => ({
+          largura: elemento.clientWidth,
+          conteudo: elemento.scrollWidth,
+        }));
+        expect(dimensoes.conteudo).toBeLessThanOrEqual(dimensoes.largura);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+    }
+  }
+});
+
 test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois temas', async ({
   page,
 }, testInfo) => {
