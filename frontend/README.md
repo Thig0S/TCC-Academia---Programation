@@ -100,6 +100,33 @@ Contraste medido de texto de paginação: mínimo **4,89:1** no estado ativo; co
 e foco excederam os limites automatizados de **3:1**. As outras áreas de UI não foram
 mudadas por esta etapa.
 
+### Verificação integrada — tarefas 3.1 e 3.2
+
+Execuções finais em `frontend/`, 22/11/2026:
+
+| Comando                                                                                                 | Resultado                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm.cmd test -- --watch=false`                                                                         | **31 arquivos, 373 testes aprovados**                                                                                                              |
+| `npm.cmd run test:e2e -- --config=playwright.pilot-temp.config.ts --workers=2`                          | **116/116** aprovados; config temporária aponta para servidor Chromium na porta 4310, pois a 4200 estava ocupada; arquivo removido após a execução |
+| `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/piloto-fidelidade-visual-vendas-final` | **24/24** aprovados; inclui coleções 0/1/10/11/21, ambos temas/viewports, medições e capturas                                                      |
+| `npm.cmd run build`                                                                                     | Aprovado; bundle inicial **305,08 kB** (transferência estimada **81,47 kB**)                                                                       |
+| `npm.cmd run format:check`                                                                              | Aprovado após formatar os JSONs e comparação versionada das evidências                                                                             |
+| `openspec validate piloto-fidelidade-visual-vendas --strict`                                            | Aprovado                                                                                                                                           |
+| `git diff --check`                                                                                      | Aprovado                                                                                                                                           |
+
+Durante a integração, o E2E completo inicialmente atingiu o limite de cinco minutos
+com 112/116 cenários executados e revelou dois contratos visuais que precisavam ser
+atualizados: raio opt-in de Vendas versus raio padrão de Quitadas e contraste dos
+textos sobre zebra translúcida. O teste de raio agora diferencia as variantes e o
+fundo alternado usa o token sólido `surface-muted`; após as correções a suíte completa
+foi executada novamente pelo script padrão, com **116/116 aprovados**. O format check
+inicial também apontou os JSONs gerados, corrigidos antes do resultado final. Não foi
+encerrado o processo que ocupava a porta 4200.
+
+Não houve reinspeção de zoom nativo do navegador nesta Change; nenhum resultado de
+zoom é alegado. A avaliação visual humana permanece pendente: as capturas são
+sintéticas e a aprovação estética não é inferida dos testes automatizados.
+
 ## Apply `novo-design` — verificação integrada — 22/11/2026
 
 Conclusão da Change `novo-design` na `feature/redesign`. O escopo ficou restrito
