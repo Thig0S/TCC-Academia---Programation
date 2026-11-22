@@ -105,6 +105,7 @@ test('mede formulários, erros, prévia extensa e modal rolável nos dois temas'
     await page.getByLabel('Nome', { exact: true }).fill('Cliente DEMO texto extenso '.repeat(8));
     await page.getByLabel('CPF', { exact: true }).fill('900.000.001-75');
     await page.getByLabel('Telefone com DDD').fill('(00) 91234-5678');
+    await page.getByLabel('Possui Entrada').selectOption('nao');
     await page.getByLabel('Descrição (opcional)').fill('Descrição sintética extensa. '.repeat(50));
     await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
     await page.getByLabel('Quantidade de parcelas').fill('24');
