@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Mercadão dos Óculos | Gestão de Vendas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          canvas: '#111217', panel: '#1d1e24', raised: '#25262d', line: '#33343d',
+          muted: '#a1a1aa', brand: '#d72848', brandSoft: '#3c1924',
+          sidebar: '#310e19', sidebarDark: '#1d0b12'
+        },
+        fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'] },
+        boxShadow: { soft: '0 12px 36px rgba(0,0,0,.14)' }
+      }}
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { background:#111217; color:#f4f4f5; font-family:Inter,system-ui,sans-serif; }
+    ::selection { background:#8e1c36; color:white; }
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-thumb { background:#41414b; border-radius:20px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    .sidebar-bg { background:linear-gradient(168deg,#49101f 0%,#300e19 47%,#1d0c13 100%); }
+    .nav-link { transition:background .18s ease,color .18s ease; color:#d8bfc7; }
+    .nav-link:hover { background:rgba(255,255,255,.075); color:#fff; }
+    .nav-link.active { background:rgba(238,61,97,.16); color:#fff; box-shadow:inset 3px 0 0 #ff5674; }
+    .surface { background:#1d1e24; border:1px solid #30313a; }
+    .input { background:#25262d; border:1px solid #393a44; color:#f4f4f5; outline:0; transition:border .2s,box-shadow .2s; }
+    .input:focus { border-color:#d72848; box-shadow:0 0 0 3px rgba(215,40,72,.15); }
+    .input::placeholder { color:#81818c; }
+    .btn-primary { background:#d72848; color:white; transition:background .18s,transform .18s; }
+    .btn-primary:hover { background:#ed3b5c; transform:translateY(-1px); }
+    .btn-outline { border:1px solid #3c3d47; background:#25262d; transition:background .18s; }
+    .btn-outline:hover { background:#31323a; }
+    .sale-row { transition:background .16s; }
+    .sale-row:hover { background:#292a32; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:7px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .pill.paid { background:rgba(31,163,108,.13); color:#58d9a1; }
+    .pill.late { background:rgba(232,61,85,.13); color:#ff6c83; }
+    .pill.current { background:rgba(231,171,65,.12); color:#f1c36c; }
+    .pill-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+    .metric-icon { width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:11px; }
+    .overlay { background:rgba(4,4,8,.68); backdrop-filter:blur(3px); }
+    .toast { animation:toastin .25s ease-out; }
+    @keyframes toastin { from { opacity:0; transform:translateY(10px); } to {opacity:1; transform:translateY(0);} }
+    @media(max-width:1100px) { .desktop-sidebar { width:76px!important; } .sidebar-label,.brand-text,.sidebar-footer-text,.sidebar-section-label {display:none!important;} .sidebar-nav-item {justify-content:center!important;} .brand-icon {margin:auto;} }
+    @media(max-width:680px) { .desktop-sidebar { display:none!important; } .mobile-menu { display:flex!important; } }
+  </style>
+</head>
+<body class="min-h-screen">
+<div class="flex min-h-screen">
+  <!-- Barra lateral -->
+  <aside class="desktop-sidebar sidebar-bg fixed inset-y-0 left-0 z-30 flex w-[248px] shrink-0 flex-col border-r border-white/5">
+    <div class="flex h-[91px] items-center gap-3 px-6 border-b border-white/10">
+      <div class="brand-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#d72848] shadow-lg shadow-red-950/30">
+        <i data-lucide="glasses" class="h-6 w-6 text-white"></i>
+      </div>
+      <div class="brand-text min-w-0">
+        <div class="text-[15px] font-extrabold leading-tight tracking-[-.03em] text-white">MERCADÃO</div>
+        <div class="text-[12px] font-bold leading-tight tracking-[.03em] text-[#ffc4d0]">DOS ÓCULOS!</div>
+        <div class="mt-1 text-[10px] text-[#bc96a2]">Gestão de vendas</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label px-6 pt-9 pb-3 text-[10px] font-bold uppercase tracking-[.17em] text-[#a77e8b]">Menu principal</div>
+    <nav id="sidebarNav" class="space-y-1 px-3">
+      <button data-page="overview" class="nav-link sidebar-nav-item flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-[13px] font-medium"><i data-lucide="layout-dashboard" class="h-[18px] w-[18px] shrink-0"></i><span class="sidebar-label">Visão geral</span></button>
+      <button data-page="sales" class="nav-link active sidebar-nav-item flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-[13px] font-medium"><i data-lucide="shopping-bag" class="h-[18px] w-[18px] shrink-0"></i><span class="sidebar-label">Vendas</span></button>
+      <button data-page="reports" class="nav-link sidebar-nav-item flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-[13px] font-medium"><i data-lucide="chart-no-axes-combined" class="h-[18px] w-[18px] shrink-0"></i><span class="sidebar-label">Relatórios</span></button>
+      <button data-page="settings" class="nav-link sidebar-nav-item flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-[13px] font-medium"><i data-lucide="settings-2" class="h-[18px] w-[18px] shrink-0"></i><span class="sidebar-label">Configurações</span></button>
+    </nav>
+    <div class="sidebar-section-label px-6 pt-9 pb-3 text-[10px] font-bold uppercase tracking-[.17em] text-[#a77e8b]">Ajuda</div>
+    <nav class="px-3">
+      <button data-page="help" class="nav-link sidebar-nav-item flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-[13px] font-medium"><i data-lucide="circle-help" class="h-[18px] w-[18px] shrink-0"></i><span class="sidebar-label">Central de ajuda</span></button>
+    </nav>
+    <div class="mt-auto border-t border-white/10 p-4">
+      <div class="flex items-center gap-3 rounded-xl px-2 py-2">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e77a90]/40 bg-[#703044] text-xs font-bold text-white">AD</div>
+        <div class="sidebar-footer-text min-w-0 flex-1"><p class="text-[12px] font-semibold text-white">Administrador</p><p class="truncate text-[10px] text-[#b78d9b]">Unidade da ótica</p></div>
+        <i data-lucide="chevrons-up-down" class="sidebar-footer-text h-4 w-4 text-[#b78d9b]"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Área principal -->
+  <div class="ml-[248px] min-w-0 flex-1 max-[1100px]:ml-[76px] max-[680px]:ml-0">
+    <header class="sticky top-0 z-20 flex h-[91px] items-center justify-between gap-4 border-b border-[#30313a] bg-[#17181e]/95 px-7 backdrop-blur-xl lg:px-9">
+      <div class="mobile-menu hidden"><i data-lucide="glasses" class="h-6 w-6 text-[#e03b5b]"></i></div>
+      <label class="flex h-[43px] w-full max-w-[450px] items-center gap-3 rounded-lg border border-[#353640] bg-[#23242b] px-4 focus-within:border-[#c62b4b]">
+        <i data-lucide="search" class="h-[17px] w-[17px] shrink-0 text-[#92929c]"></i>
+        <input id="globalSearch" class="w-full bg-transparent text-[12px] text-white outline-none placeholder:text-[#868691]" placeholder="Buscar cliente, CPF ou venda..." aria-label="Buscar cliente, CPF ou venda">
+        <span class="hidden rounded border border-[#42434b] px-1.5 py-0.5 text-[10px] text-[#777782] sm:block">⌘ K</span>
+      </label>
+      <div class="flex shrink-0 items-center gap-3">
+        <button id="notificationsBtn" class="relative flex h-10 w-10 items-center justify-center rounded-lg text-[#aaaab3] hover:bg-[#292a32]" title="Notificações">
+          <i data-lucide="bell" class="h-[19px] w-[19px]"></i><span class="absolute right-[10px] top-[9px] h-[6px] w-[6px] rounded-full bg-[#e03b5b]"></span>
+        </button>
+        <div class="hidden h-7 w-px bg-[#34353e] sm:block"></div>
+        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[#753044] text-[11px] font-bold text-white">AD</div>
+        <div class="hidden sm:block"><div class="text-[12px] font-semibold text-white">Administrador</div><div class="text-[10px] text-[#8f8f9a]">Gerente da loja</div></div>
+        <i data-lucide="chevron-down" class="hidden h-4 w-4 text-[#9999a3] sm:block"></i>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-[1560px] px-5 pb-16 pt-8 lg:px-9">
+      <div id="mainContent"></div>
+      <footer class="mt-10 flex flex-wrap items-center justify-between gap-2 border-t border-[#30313a] pt-5 text-[10px] text-[#777783]">
+        <span>© 2026 Mercadão dos Óculos • Protótipo demonstrativo</span>
+        <span>Dados fictícios • Nenhuma informação é salva em servidor</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<!-- Modal e drawer -->
+<div id="modalRoot"></div>
+<div id="toastRoot" class="pointer-events-none fixed bottom-6 right-6 z-[90]"></div>
+
+<script>
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+  const brl = n => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+  const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
+  const today = new Date('2026-11-20T12:00:00');
+  const isoToday = '2026-11-20';
+  const addMonths = (iso,n) => {
+    const [y,m,d] = iso.split('-').map(Number);
+    const dt = new Date(y,m-1+n,1);
+    const last = new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();
+    dt.setDate(Math.min(d,last));
+    return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  };
+  const seed = [
+    ['Maria Oliveira','093.456.789-12','(49) 99981-1203','2026-06-06',1388.80,10,4,'2026-07-06'],
+    ['João Pereira','126.837.450-09','(49) 99811-3342','2026-06-22',1200,10,3,'2026-07-22'],
+    ['Ana Souza','351.462.870-30','(49) 99121-5510','2026-07-24',620,4,4,'2026-08-24'],
+    ['Carlos Ferreira','084.211.390-42','(49) 99911-7442','2026-07-12',920,8,2,'2026-08-12'],
+    ['Juliana Martins','073.125.640-50','(49) 99882-1000','2026-08-02',1450,10,2,'2026-09-02'],
+    ['Pedro Almeida','151.722.560-11','(49) 99761-2211','2026-09-05',780,6,2,'2026-10-05'],
+    ['Fernanda Costa','352.810.650-32','(49) 99912-7780','2026-09-14',1860,12,1,'2026-10-14'],
+    ['Ricardo Santos','108.562.780-77','(49) 99682-8812','2026-10-01',560,4,1,'2026-11-01'],
+    ['Beatriz Lima','481.562.330-13','(49) 99983-0054','2026-10-19',1090,10,0,'2026-11-19'],
+    ['Lucas Ribeiro','601.452.330-22','(49) 99741-6622','2026-11-03',430,3,0,'2026-12-03'],
+    ['Patrícia Mendes','090.887.321-12','(49) 99923-1144','2026-08-08',870,6,6,'2026-09-08'],
+    ['Eduardo Rocha','202.432.320-30','(49) 99882-7740','2026-10-08',1560,12,1,'2026-11-08']
+  ];
+  let sales = seed.map((a,i)=>({
+    id:1024+i,name:a[0],cpf:a[1],phone:a[2],date:a[3],total:a[4],count:a[5],firstDue:a[7],notes:'',
+    installments:Array.from({length:a[5]},(_,j)=>({
+      number:j+1,amount:Math.round((a[4]/a[5])*100)/100,due:addMonths(a[7],j),
+      paid:j<a[6],paidAt:j<a[6]?addMonths(a[7],j):null,method:j<a[6]?(j%2?'Dinheiro':'Pix'):null
+    }))
+  }));
+  let state = {page:'sales',query:'',filter:'Todas',pageIndex:1,pageSize:8,selected:null,modal:null,reportMonth:'2026-11'};
+  const balance = s => s.installments.filter(p=>!p.paid).reduce((a,p)=>a+p.amount,0);
+  const paidCount = s => s.installments.filter(p=>p.paid).length;
+  const overdue = p => !p.paid && p.due < isoToday;
+  const status = s => paidCount(s)===s.count ? 'Quitada' : s.installments.some(overdue) ? 'Atrasada' : 'Em dia';
+  const nextDue = s => s.installments.filter(p=>!p.paid).sort((a,b)=>a.due.localeCompare(b.due))[0]?.due || null;
+  const initials = name => name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+  const icon = (name,cls='h-4 w-4') => `<i data-lucide="${name}" class="${cls}"></i>`;
+  const esc = x => String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const statusPill = s => `<span class="pill ${s==='Quitada'||s==='Paga'?'paid':s==='Atrasada'||s==='Vencida'?'late':'current'}"><span class="pill-dot"></span>${esc(s)}</span>`;
+  const title = (t,sub,button='') => `<div class="mb-7 flex flex-wrap items-start justify-between gap-4"><div><h1 class="text-[27px] font-bold tracking-[-.04em] text-[#f4f4f6]">${t}</h1><p class="mt-1.5 text-[12px] text-[#9999a5]">${sub}</p></div>${button}</div>`;
+  const newButton = `<button onclick="openSaleForm()" class="btn-primary flex items-center gap-2 rounded-lg px-4 py-2.5 text-[12px] font-semibold shadow-lg shadow-red-950/20">${icon('plus','h-[16px] w-[16px]')} Nova venda</button>`;
+  function metrics() {
+    const open = sales.reduce((a,s)=>a+balance(s),0);
+    const late = sales.flatMap(s=>s.installments).filter(overdue).reduce((a,p)=>a+p.amount,0);
+    const paid = sales.flatMap(s=>s.installments).filter(p=>p.paid&&p.paidAt?.startsWith('2026-11')).reduce((a,p)=>a+p.amount,0);
+    return [
+      ['Total em aberto',brl(open),'wallet','#c99aff','rgba(153,85,240,.13)'],
+      ['Valores em atraso',brl(late),'alert-triangle','#ff7890','rgba(237,56,89,.12)'],
+      ['Recebido no mês',brl(paid),'circle-check','#59d9a6','rgba(42,184,122,.12)'],
+      ['Vendas cadastradas',String(sales.length),'shopping-bag','#e9b974','rgba(217,159,72,.12)']
+    ];
+  }
+  function cards() { return `<section class="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">${metrics().map(([name,value,ic,color,bg])=>`
+    <div class="surface rounded-xl px-5 py-5 shadow-soft">
+      <div class="flex items-start justify-between gap-2"><span class="text-[11px] font-medium text-[#aaaab4]">${name}</span><span class="metric-icon" style="background:${bg};color:${color}">${icon(ic,'h-[19px] w-[19px]')}</span></div>
+      <div class="mt-3 text-[23px] font-bold tracking-[-.035em] text-[#f5f5f7]">${value}</div>
+      <div class="mt-1 text-[10px] text-[#80808b]">Atualizado na demonstração</div>
+    </div>`).join('')}</section>`; }
+  function renderSales() {
+    let filtered = sales.filter(s=>(state.filter==='Todas'||status(s)===state.filter)&&
+      `${s.name} ${s.cpf} ${s.id}`.toLowerCase().includes(state.query.toLowerCase()));
+    const pages = Math.max(1,Math.ceil(filtered.length/state.pageSize));
+    state.pageIndex=Math.min(state.pageIndex,pages);
+    const pageRows=filtered.slice((state.pageIndex-1)*state.pageSize,state.pageIndex*state.pageSize);
+    return title('Vendas','Gerencie vendas parceladas e acompanhe os pagamentos dos clientes.',newButton)+cards()+`
+    <section class="surface overflow-hidden rounded-xl shadow-soft">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#32333b] px-5 py-5 lg:px-6">
+        <div><h2 class="text-[14px] font-semibold text-white">Vendas cadastradas</h2><p class="mt-1 text-[11px] text-[#92929d]">Consulte e gerencie os registros de vendas</p></div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center gap-2 rounded-lg border border-[#393a43] bg-[#26272e] px-3 py-2">
+            ${icon('filter','h-[14px] w-[14px] text-[#aaaab3]')}
+            <select id="statusFilter" class="min-w-[110px] cursor-pointer bg-transparent text-[11px] text-[#e4e4e7] outline-none">
+              ${['Todas','Em dia','Atrasada','Quitada'].map(s=>`<option value="${s}" ${state.filter===s?'selected':''} style="background:#26272e">${s==='Todas'?'Todas as situações':s}</option>`).join('')}
+            </select>
+          </div>
+          <button onclick="clearFilters()" class="btn-outline flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] text-[#d0d0d6]">${icon('rotate-ccw','h-[13px] w-[13px]')} Limpar</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto"><table class="w-full min-w-[980px] text-left">
+        <thead class="bg-[#23242b]"><tr class="text-[10px] font-semibold uppercase tracking-[.045em] text-[#a2a2ad]">
+          <th class="py-4 pl-6 pr-3">Cliente</th><th class="px-3 py-4">Data da venda</th>
+          <th class="px-3 py-4">Valor total</th><th class="px-3 py-4">Parcelas</th>
+          <th class="px-3 py-4">Saldo devedor</th><th class="px-3 py-4">Próximo vencimento</th>
+          <th class="px-3 py-4">Situação</th><th class="py-4 pl-3 pr-6 text-right">Ações</th>
+        </tr></thead>
+        <tbody>${pageRows.map(s=>`<tr class="sale-row cursor-pointer border-t border-[#30313a] text-[11px] text-[#e0e0e5]" onclick="openDetails(${s.id})">
+          <td class="py-[15px] pl-6 pr-3"><div class="flex items-center gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#49303b] text-[10px] font-semibold text-[#f6b8c8]">${initials(s.name)}</span><span><span class="block whitespace-nowrap font-semibold text-[#f1f1f3]">${esc(s.name)}</span><span class="mt-0.5 block text-[10px] text-[#8d8d99]">Venda #${s.id}</span></span></div></td>
+          <td class="px-3 py-[15px] whitespace-nowrap">${fmt(s.date)}</td>
+          <td class="px-3 py-[15px] whitespace-nowrap font-medium">${brl(s.total)}</td>
+          <td class="px-3 py-[15px]"><span class="whitespace-nowrap">${paidCount(s)}/${s.count}</span><div class="mt-2 h-1 w-[72px] rounded-full bg-[#393a43]"><div class="h-1 rounded-full bg-[#df4966]" style="width:${paidCount(s)/s.count*100}%"></div></div></td>
+          <td class="px-3 py-[15px] whitespace-nowrap font-semibold">${brl(balance(s))}</td>
+          <td class="px-3 py-[15px] whitespace-nowrap">${fmt(nextDue(s))}</td>
+          <td class="px-3 py-[15px]">${statusPill(status(s))}</td>
+          <td class="py-[15px] pl-3 pr-6 text-right"><button title="Ver detalhes" onclick="event.stopPropagation();openDetails(${s.id})" class="rounded-md p-2 text-[#aaaab5] hover:bg-[#3a3b44] hover:text-white">${icon('ellipsis','h-[18px] w-[18px]')}</button></td>
+        </tr>`).join('') || `<tr><td colspan="8" class="py-14 text-center text-[12px] text-[#aaaab4]">Nenhuma venda encontrada para os filtros selecionados.</td></tr>`}</tbody>
+      </table></div>
+      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[#34353d] px-6 py-4">
+        <span class="text-[11px] text-[#9696a1]">Exibindo <span class="font-semibold text-[#e4e4e7]">${filtered.length?((state.pageIndex-1)*state.pageSize+1):0}–${Math.min(state.pageIndex*state.pageSize,filtered.length)}</span> de <span class="font-semibold text-[#e4e4e7]">${filtered.length}</span> vendas</span>
+        <div class="flex items-center gap-1"><button onclick="changePage(-1)" class="btn-outline flex h-8 w-8 items-center justify-center rounded-md text-[#c1c1ca]" aria-label="Página anterior">${icon('chevron-left','h-4 w-4')}</button>
+          ${Array.from({length:pages},(_,i)=>`<button onclick="state.pageIndex=${i+1};render()" class="flex h-8 w-8 items-center justify-center rounded-md text-[11px] ${state.pageIndex===i+1?'bg-[#d72848] font-bold text-white':'text-[#aaaab4] hover:bg-[#2e2f37]'}">${i+1}</button>`).join('')}
+          <button onclick="changePage(1)" class="btn-outline flex h-8 w-8 items-center justify-center rounded-md text-[#c1c1ca]" aria-label="Próxima página">${icon('chevron-right','h-4 w-4')}</button>
+        </div>
+      </div>
+    </section>`;
+  }
+  function renderOverview() {
+    const lateSales=sales.filter(s=>status(s)==='Atrasada').slice(0,5);
+    return title('Visão geral','Acompanhe os principais indicadores da sua loja.',newButton)+cards()+`
+      <div class="grid gap-5 lg:grid-cols-2">
+        <section class="surface rounded-xl p-6"><h2 class="mb-4 text-[14px] font-semibold">Vendas recentes</h2>${sales.slice(-5).reverse().map(s=>`<button onclick="openDetails(${s.id})" class="flex w-full items-center justify-between border-b border-[#34353d] py-3 text-left last:border-0 hover:text-white"><span class="text-[12px]">${esc(s.name)}<span class="mt-1 block text-[10px] text-[#8c8c96]">${fmt(s.date)}</span></span><span class="text-[12px] font-semibold">${brl(s.total)}</span></button>`).join('')}</section>
+        <section class="surface rounded-xl p-6"><h2 class="mb-4 text-[14px] font-semibold">Vendas com parcelas vencidas</h2>${lateSales.map(s=>`<button onclick="openDetails(${s.id})" class="flex w-full items-center justify-between border-b border-[#34353d] py-3 text-left last:border-0"><span class="text-[12px]">${esc(s.name)}<span class="mt-1 block text-[10px] text-[#8c8c96]">Venda #${s.id}</span></span>${statusPill('Atrasada')}</button>`).join('')}</section>
+      </div>`;
+  }
+  function renderReports() {
+    const all = sales.flatMap(s=>s.installments);
+    const late = all.filter(overdue);
+    return title('Relatórios','Resumo demonstrativo dos pagamentos e valores pendentes.')+cards()+`
+      <section class="surface rounded-xl p-6"><h2 class="text-[15px] font-semibold">Resumo financeiro</h2><p class="mt-1 text-[11px] text-[#9999a5]">Valores calculados com os dados fictícios desta demonstração.</p>
+      <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        ${[['Parcelas registradas',all.length],['Parcelas pagas',all.filter(p=>p.paid).length],['Parcelas vencidas',late.length]].map(([t,v])=>`<div class="rounded-lg border border-[#383941] bg-[#24252c] p-5"><p class="text-[11px] text-[#a0a0aa]">${t}</p><p class="mt-2 text-[25px] font-bold">${v}</p></div>`).join('')}
+      </div><button onclick="exportCSV()" class="btn-outline mt-6 flex items-center gap-2 rounded-lg px-4 py-2.5 text-[12px]">${icon('download')} Exportar vendas (CSV)</button></section>`;
+  }
+  function renderSettings() {return title('Configurações','Preferências locais do protótipo.')+`<section class="surface max-w-2xl rounded-xl p-6"><h2 class="mb-4 text-[14px] font-semibold">Informações da aplicação</h2><div class="space-y-4 text-[12px]"><div class="flex justify-between border-b border-[#35363e] pb-3"><span class="text-[#a3a3ad]">Unidade</span><span>Mercadão dos Óculos</span></div><div class="flex justify-between border-b border-[#35363e] pb-3"><span class="text-[#a3a3ad]">Tema</span><span>Escuro</span></div><div class="flex justify-between border-b border-[#35363e] pb-3"><span class="text-[#a3a3ad]">Modo</span><span>Protótipo com dados fictícios</span></div><div class="flex justify-between"><span class="text-[#a3a3ad]">Armazenamento</span><span>Somente em memória</span></div></div></section>`;}
+  function renderHelp() {return title('Central de ajuda','Como navegar pelo protótipo.')+`<section class="surface max-w-2xl rounded-xl p-6 text-[12px] leading-7 text-[#c2c2cb]"><h2 class="mb-4 text-[15px] font-semibold text-white">Como utilizar</h2><p>Na aba <b>Vendas</b>, utilize a pesquisa para localizar um cliente, CPF ou número de venda. Selecione uma linha para visualizar as parcelas e registrar um pagamento fictício.</p><p class="mt-3">O botão <b>Nova venda</b> abre um formulário demonstrativo. As alterações ficam apenas na memória desta página e são perdidas quando ela é recarregada.</p></section>`;}
+  function render() {
+    $('#mainContent').innerHTML=({sales:renderSales,overview:renderOverview,reports:renderReports,settings:renderSettings,help:renderHelp}[state.page]||renderSales)();
+    $$('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.page===state.page));
+    if($('#statusFilter')) $('#statusFilter').onchange=e=>{state.filter=e.target.value;state.pageIndex=1;render();};
+    lucide.createIcons();
+  }
+  function changePage(delta) {state.pageIndex=Math.max(1,state.pageIndex+delta);render();}
+  function clearFilters() {state.filter='Todas';state.query='';$('#globalSearch').value='';state.pageIndex=1;render();}
+  function navigate(page) {state.page=page;state.pageIndex=1;render();}
+  function toast(msg) {
+    const el=document.createElement('div');el.className='toast pointer-events-auto flex max-w-[370px] items-center gap-3 rounded-xl border border-[#484851] bg-[#2b2c34] px-4 py-3 text-[12px] text-white shadow-2xl';
+    el.innerHTML=`${icon('check-circle-2','h-5 w-5 text-[#60daa8]')}<span>${esc(msg)}</span>`;$('#toastRoot').append(el);lucide.createIcons();setTimeout(()=>el.remove(),3400);
+  }
+  function closeModal() {$('#modalRoot').innerHTML='';document.body.style.overflow='';}
+  function shell(content,wide=false) {
+    document.body.style.overflow='hidden';
+    $('#modalRoot').innerHTML=`<div class="overlay fixed inset-0 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal()"><div class="surface max-h-[92vh] w-full ${wide?'max-w-[760px]':'max-w-[590px]'} overflow-y-auto rounded-2xl shadow-2xl">${content}</div></div>`;
+    lucide.createIcons();
+  }
+  function modalHeading(title,sub) {return `<div class="flex items-start justify-between border-b border-[#34353d] px-6 py-5"><div><h2 class="text-[18px] font-bold text-white">${title}</h2><p class="mt-1 text-[11px] text-[#9d9da7]">${sub}</p></div><button onclick="closeModal()" class="rounded-lg p-1.5 text-[#aaaab4] hover:bg-[#34353d]" aria-label="Fechar">${icon('x','h-5 w-5')}</button></div>`;}
+  const field = (label,id,type='text',placeholder='',value='',required=true) => `<label class="block"><span class="mb-2 block text-[11px] font-medium text-[#c7c7cf]">${label}</span><input id="${id}" name="${id}" type="${type}" ${required?'required':''} value="${esc(value)}" placeholder="${esc(placeholder)}" class="input w-full rounded-lg px-3.5 py-3 text-[12px]" ${type==='number'?'min="0" step="0.01"':''}></label>`;
+  function openSaleForm() {
+    shell(`${modalHeading('Cadastrar nova venda','Preencha os dados para simular o cadastro de uma venda.')}
+      <form id="saleForm" class="space-y-5 px-6 py-6">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2">${field('Nome do cliente','clientName','text','Ex.: Maria Oliveira')}</div>
+          ${field('CPF','clientCpf','text','000.000.000-00')}
+          ${field('Telefone','clientPhone','tel','(49) 99999-9999')}
+          ${field('Data da venda','saleDate','date','',isoToday)}
+          ${field('Valor total (R$)','saleAmount','number','0,00')}
+          ${field('Quantidade de parcelas','installmentCount','number','Ex.: 6','6')}
+          ${field('Primeiro vencimento','firstDue','date','','2026-12-20')}
+        </div>
+        <div id="salePreview" class="rounded-lg border border-[#3c3340] bg-[#2b232d] p-4 text-[12px] text-[#e5c6cf]">Informe o valor da venda para visualizar o parcelamento.</div>
+        <div class="flex justify-end gap-3 border-t border-[#34353d] pt-5">
+          <button type="button" onclick="closeModal()" class="btn-outline rounded-lg px-5 py-2.5 text-[12px]">Cancelar</button>
+          <button class="btn-primary rounded-lg px-5 py-2.5 text-[12px] font-semibold">Cadastrar venda</button>
+        </div>
+      </form>`,true);
+    const update=()=>{const amount=Number($('#saleAmount').value),count=Number($('#installmentCount').value);$('#salePreview').textContent=amount>0&&count>0?`Prévia: ${count} parcelas de aproximadamente ${brl(amount/count)}.`:'Informe o valor da venda para visualizar o parcelamento.';};
+    ['saleAmount','installmentCount'].forEach(id=>$('#'+id).addEventListener('input',update));
+    $('#saleForm').onsubmit=e=>{
+      e.preventDefault();const amount=Number($('#saleAmount').value),count=Math.floor(Number($('#installmentCount').value));
+      if(amount<=0||count<1||count>120) return toast('Informe um valor e de 1 a 120 parcelas.');
+      const date=$('#saleDate').value,due=$('#firstDue').value;
+      if(!date||!due) return toast('Informe as datas da venda e do vencimento.');
+      const id=Math.max(...sales.map(s=>s.id))+1;
+      const base=Math.floor(amount*100/count),rem=Math.round(amount*100)-base*count;
+      sales.unshift({id,name:$('#clientName').value.trim(),cpf:$('#clientCpf').value.trim(),phone:$('#clientPhone').value.trim(),date,total:amount,count,firstDue:due,notes:'',
+        installments:Array.from({length:count},(_,i)=>({number:i+1,amount:(base+(i<rem?1:0))/100,due:addMonths(due,i),paid:false,paidAt:null,method:null}))});
+      closeModal();navigate('sales');toast('Venda fictícia cadastrada na demonstração.');openDetails(id);
+    };
+  }
+  function openDetails(id) {
+    const s=sales.find(x=>x.id===id);if(!s)return;
+    shell(`${modalHeading('Venda #'+s.id,'Detalhes da venda e acompanhamento das parcelas.')}
+      <div class="space-y-5 p-6">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-lg border border-[#353640] bg-[#25262d] p-4"><p class="text-[10px] uppercase tracking-wider text-[#9696a0]">Cliente</p><p class="mt-2 text-[14px] font-semibold">${esc(s.name)}</p><p class="mt-1 text-[11px] text-[#aaaab3]">${esc(s.cpf)} · ${esc(s.phone)}</p></div>
+          <div class="rounded-lg border border-[#353640] bg-[#25262d] p-4"><p class="text-[10px] uppercase tracking-wider text-[#9696a0]">Venda</p><p class="mt-2 text-[14px] font-semibold">${brl(s.total)}</p><p class="mt-1 text-[11px] text-[#aaaab3]">${fmt(s.date)} · ${s.count} parcelas</p></div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#3b2e38] bg-[#2b202a] p-4">
+          <div><p class="text-[10px] text-[#c5aab4]">Saldo devedor</p><p class="mt-1 text-[22px] font-bold">${brl(balance(s))}</p></div>${statusPill(status(s))}
+        </div>
+        <div><h3 class="mb-3 text-[13px] font-semibold">Parcelas da venda</h3>
+          <div class="overflow-x-auto rounded-lg border border-[#34353d]"><table class="w-full min-w-[520px] text-left text-[11px]">
+          <thead class="bg-[#282930] text-[10px] text-[#a7a7b1]"><tr><th class="px-3 py-3">Parcela</th><th class="px-3 py-3">Valor</th><th class="px-3 py-3">Vencimento</th><th class="px-3 py-3">Situação</th><th class="px-3 py-3 text-right">Ação</th></tr></thead>
+          <tbody>${s.installments.map(p=>`<tr class="border-t border-[#35363e]"><td class="px-3 py-3">${p.number}/${s.count}</td><td class="px-3 py-3">${brl(p.amount)}</td><td class="px-3 py-3">${fmt(p.due)}</td><td class="px-3 py-3">${statusPill(p.paid?'Paga':overdue(p)?'Vencida':'Pendente')}</td><td class="px-3 py-3 text-right">${p.paid?`<span class="text-[10px] text-[#858590]">${fmt(p.paidAt)}</span>`:`<button onclick="openPayment(${s.id},${p.number})" class="rounded-md bg-[#56303e] px-2.5 py-1.5 text-[10px] font-semibold text-[#ffc0ce] hover:bg-[#71384b]">Registrar</button>`}</td></tr>`).join('')}</tbody></table></div>
+        </div>
+        <div class="flex justify-end"><button onclick="closeModal()" class="btn-outline rounded-lg px-5 py-2.5 text-[12px]">Fechar</button></div>
+      </div>`,true);
+  }
+  function openPayment(id,number) {
+    const s=sales.find(x=>x.id===id),p=s.installments.find(x=>x.number===number);
+    shell(`${modalHeading('Registrar pagamento',`Venda #${id} · Parcela ${number}/${s.count}`)}
+      <form id="paymentForm" class="space-y-5 p-6">
+        <div class="rounded-lg border border-[#3a3440] bg-[#29252d] p-4"><p class="text-[11px] text-[#a9a1aa]">Valor da parcela</p><p class="mt-1 text-[22px] font-bold">${brl(p.amount)}</p></div>
+        ${field('Data do pagamento','paymentDate','date','',isoToday)}
+        <label class="block"><span class="mb-2 block text-[11px] font-medium text-[#c7c7cf]">Forma de pagamento</span><select id="paymentMethod" class="input w-full rounded-lg px-3.5 py-3 text-[12px]"><option>Pix</option><option>Dinheiro</option><option>Cartão</option><option>Transferência</option></select></label>
+        <div class="flex justify-end gap-3 border-t border-[#34353d] pt-5"><button type="button" onclick="openDetails(${id})" class="btn-outline rounded-lg px-5 py-2.5 text-[12px]">Voltar</button><button class="btn-primary rounded-lg px-5 py-2.5 text-[12px] font-semibold">Confirmar pagamento</button></div>
+      </form>`);
+    $('#paymentForm').onsubmit=e=>{e.preventDefault();p.paid=true;p.paidAt=$('#paymentDate').value;p.method=$('#paymentMethod').value;render();openDetails(id);toast('Pagamento fictício registrado com sucesso.');};
+  }
+  function exportCSV() {
+    const rows=[['Venda','Cliente','CPF','Data da venda','Valor total','Parcelas pagas','Total de parcelas','Saldo devedor','Situação'],...sales.map(s=>[s.id,s.name,s.cpf,fmt(s.date),s.total,paidCount(s),s.count,balance(s),status(s)])];
+    const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='vendas-demonstracao.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Relatório fictício exportado.');
+  }
+  $$('.nav-link').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));
+  $('#globalSearch').addEventListener('input',e=>{state.query=e.target.value;state.page='sales';state.pageIndex=1;render();});
+  $('#notificationsBtn').addEventListener('click',()=>toast('Nenhuma nova notificação na demonstração.'));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closeModal();
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus();}
+  });
+  render();
+</script>
+</body>
+</html>
