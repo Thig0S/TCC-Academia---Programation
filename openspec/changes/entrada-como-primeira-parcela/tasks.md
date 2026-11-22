@@ -1,11 +1,11 @@
 # Tasks
 
-> Somente planejamento autorizado nesta solicitação. Requer revisão dos artefatos
-> e nova autorização de apply antes de executar qualquer tarefa abaixo. Reutilizar
-> PRD 1.17/FON-015, RN-007/011/012/013/015/017/024, CA-008/033/034/035 e
-> TDD 1.21/DEC-026/FASE-010 a FASE-013. Não confundir artefatos completos com
-> implementação comprovada. Manter todas as entregas na branch dedicada derivada
-> da main com o PR #20 integrado.
+> A proposta foi inicialmente criada para planejamento; após revisão, o apply foi
+> autorizado e executado nesta feature branch. Rastreabilidade: PRD
+> 1.17/FON-015, RN-007/011/012/013/015/017/024, CA-008/033/034/035 e TDD
+> 1.21/DEC-026/FASE-010 a FASE-013. Diferenciar plano, autorização e evidência
+> real de implementação. Manter as entregas nesta branch dedicada derivada da
+> main com o PR #20 integrado.
 >
 > Cada funcionalidade coerente leva testes, documentação/resultados reais em
 > `frontend/README.md`, tarefa correspondente e commit individual em português.
