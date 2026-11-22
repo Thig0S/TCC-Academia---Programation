@@ -49,6 +49,13 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 - [x] 8.4 Executar em `frontend/` os comandos de regressão de D5: unitários sem watch, build da aplicação, build da fixture, E2E da aplicação, E2E da fixture e `format:check`; verificar também consulta → cadastro com entrada → edição → recebimento/quitação → resumos → recarga, registrar resultados/avisos reais e corrigir regressões sem mudar budgets ou enfraquecer contratos.
 - [x] 8.5 Revisar rastreabilidade PRD → TDD reutilizados → SDD, marcar somente tarefas comprovadas e executar `openspec validate refinar-design --strict`; verificar que documentação final distingue entrega, limitações, verificações não executadas e ausência de aceite da ótica, e que o diff não contém alterações financeiras, dependências ou trabalho alheio.
 
+## 9. Revisão pós-implementação autorizada — 22/11/2026
+
+- [ ] 9.1 Revisar implementação contra PRD/TDD/delta e reproduzir lacunas de paginação extensa e nomes sem espaços, com evidências antes da correção; preservar os contratos compactos e documentar achados reais.
+- [ ] 9.2 Corrigir overflow comprovado da paginação com muitas páginas, sem alterar funções, inputs/outputs ou navegação; verificar primeira/intermediária/última, teclado e faixa, nos dois temas e larguras de 390/767/768/1024/1366 px; incluir teste e documentação no commit.
+- [ ] 9.3 Corrigir overflow comprovado dos resumos da Visão Geral com nomes sem espaços, sem truncar texto ou alterar recortes/valores; verificar ambos temas e larguras, com captura antes/depois, teste e documentação no commit.
+- [ ] 9.4 Executar regressão unitária/E2E/fixture, builds, formatação e validação estrita, registrar limitações e revisar o diff antes do PR único; não alegar nova verificação manual de zoom ou aceite da ótica.
+
 ## Workflow follow-up
 
 - Somente após apply autorizado e conclusão integral, publicar a feature branch e abrir um único PR para `main`, usando `.github/pull_request_template.md` e evidências/referências da Change; não abrir PR apenas pelos artefatos prontos.

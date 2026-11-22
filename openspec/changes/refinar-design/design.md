@@ -1,5 +1,22 @@
 # Design
 
+## Revisão pós-implementação — 22/11/2026
+
+Pedido explícito do solicitante para revisar a implementação e corrigir problemas
+necessários, na branch `feature/redesign`. Reutilizar PRD RF-003/RNF-007/CA-027/028
+e TDD DEC-018/021/023: manter Nova venda na faixa de critérios, fonte tabular de
+18 px, lateral, rotas e domínio. O `DESIGN.md` não rastreado permanece intocado;
+suas referências não substituem esses contratos existentes. Não reabrir o redesign
+do shell nem transportar comportamentos dos protótipos.
+
+A revisão acrescenta regressões para duas lacunas: paginação com oito páginas
+(primeira/intermediária/última) em largura estreita e nome sintético extenso sem
+espaços nos resumos. Reproduzir antes de corrigir; usar somente dados da fixture
+ou cadastro real da demonstração, sem modificar seed/serviços. Se comprovado,
+permitir quebra dos controles e texto apenas nos componentes afetados, mantendo
+conteúdo integral, ordem, foco e navegação. Verificar ambos temas, capturas
+antes/depois, regressão completa e registrar resultados reais no README.
+
 ## Context
 
 Ver motivação e limites em `proposal.md`. Este desenho é necessário por atingir todas as funcionalidades, componentes compartilhados e estilos, mesmo sem mudar arquitetura.
