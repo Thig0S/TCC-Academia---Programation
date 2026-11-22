@@ -1,12 +1,12 @@
 # Tasks
 
-> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.16 e TDD 1.20 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações, estende o padrão tabular às quatro tabelas de Relatórios e acrescenta o layout lateral de Nova venda. Zoom nativo de 200% (7.3) continua uma verificação manual pendente e não deve ser declarada concluída sem evidência.
+> Apply autorizado para o refinamento visual na feature branch. Reutilizar PRD 1.16 e TDD 1.20 conforme `proposal.md`. A tarefa 4.4 aplica a atualização tipográfica solicitada e compacta os blocos existentes do detalhe para preservar CA-028; esta revisão também remove o aviso global e “Limpar critérios”, com transparência mantida em Configurações/confirmações, estende o padrão tabular às quatro tabelas de Relatórios e acrescenta o layout lateral de Nova venda. Zoom nativo de 200% (7.3) foi encerrado por relato e autorização do solicitante, com limitações explícitas de evidência, sem alegar cobertura não comprovada.
 >
 > No apply, manter esta Change na mesma feature branch. Cada entrega coerente inclui testes, capturas, registro real em `frontend/README.md` e commit individual em português; não acumular funcionalidades independentes num commit final nem incluir arquivos do usuário no staging. As referências HTML são locais/não rastreadas e não devem ser editadas ou incluídas silenciosamente.
 
 > Extensão PRD 1.16/TDD 1.20 (DEC-025/CA-032): documentação aprovada e tarefa 5.4
 > implementada/verificada; evidências específicas estão em `frontend/README.md`.
-> Manter 7.3 pendente até verificação manual de zoom nativo.
+> A tarefa 7.3 foi encerrada em 21/11/2026 pelo relato manual do solicitante e sua autorização explícita para aceitar a evidência limitada registrada no README; não há medição independente do agente.
 
 ## 1. Registrar linha de base e proteger contratos
 
@@ -48,12 +48,12 @@
 
 - [x] 7.1 Executar regressão integral em `frontend/`: `npm test -- --watch=false`, `npm run test:e2e` e `npm run test:e2e:paginacao-fixture`; conferir cadastro com entrada → recebimento → quitação → edição → consultas/resumos → recarga, privacidade e ausência de rede externa. Registrar comandos, resultados reais e limitações no README, sem remover asserções funcionais, densidade ou foco para acomodar o visual.
 - [x] 7.2 Consolidar a matriz de D5 cobrindo todas as superfícies/estados de D3 nos dois temas e viewports; comparar HTML/referência complementar, antes/depois e lateral preservada, com caminhos de captura e diferenças justificadas. Verificar hierarquia, alinhamento, cores, superfícies, tipografia, espaçamento, bordas/cantos, sombras, teclado e contraste; registrar revisão visual real separadamente de testes verdes, sem alegar igualdade pixel a pixel ou aceite da ótica.
-- [ ] 7.3 Verificar zoom nativo de 200% nos dois temas para consultas, formulários, modal, resumos, relatórios e estados auxiliares, registrando navegador/versão, escala Windows, viewport útil e resultado em `frontend/README.md`; confirmar alcance de conteúdo/ações/foco. Se evidência manual não estiver disponível, manter esta tarefa pendente e informar bloqueio; CSS zoom ou viewport reduzido não a concluem.
+- [x] 7.3 Conferência de zoom nativo de 200% encerrada pelo relato manual do solicitante em 21/11/2026: sem distorção, sem barras laterais desnecessárias e com elementos empilhados conforme esperado. O solicitante autorizou expressamente finalizar com esses dados, dispensando a complementação originalmente exigida para abertura do PR. Limitações em `frontend/README.md`: navegador/versão, escala Windows, viewport útil, capturas e cobertura individual por tela/tema/teclado não informados; não alegar verificação integral ou execução independente pelo agente. CSS zoom ou viewport reduzido não substituem zoom nativo.
 - [x] 7.4 Executar `npm run build`, `npx ng run vendas-em-aberto:build-paginacao-fixture` e `npm run format:check` em `frontend/`, além de `openspec validate refinar-estilo-conteudo-mvp --strict` na raiz; registrar resultados/avisos no README sem alterar budgets. Aplicar somente as duas exceções explícitas de referências HTML em `.prettierignore` autorizadas em D5, preservando os arquivos originais. Revisar o diff final para comprovar escopo de apresentação/testes/documentação e essa exceção de ferramenta, ausência de mudanças em domínio/estado/rotas/campos/regras/dependências e preservação dos arquivos alheios.
 - [x] 7.5 Remover contorno dos alvos não interativos que recebem foco programático ao navegar entre páginas, sem remover o foco visível de teclado dos controles. Verificar as abas principais nos dois temas e preservar o indicador em controle interativo com E2E (Chromium 1366×768 e 390×844).
 
 ## Workflow follow-up
 
-- Não abrir PR até concluir toda a Change, incluindo zoom nativo 200% pendente. Depois, abrir um único PR da mesma feature para `main` usando `.github/pull_request_template.md`, referências PRD/TDD/SDD, verificações reais e limitações.
+- Com as tarefas concluídas e 7.3 encerrada pela autorização e relato limitado acima, abrir um único PR da mesma feature para `main` usando `.github/pull_request_template.md`, referências PRD/TDD/SDD, verificações reais e limitações, inclusive a evidência manual incompleta de zoom.
 - Sync/archive seguem autorização e fluxo próprios; não executar nesta proposta. Não declarar FASE-008, aprovação global ou aceite comercial por conclusão técnica.
 - Merge exige autorização explícita do usuário e verificações/revisão aplicáveis; após integração, confirmar estado do PR e presença da mudança na `main`.
