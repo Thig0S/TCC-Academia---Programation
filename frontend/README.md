@@ -188,6 +188,31 @@ geraram capturas do modal inicial nos dois temas/viewports com metadados em
 `test-results/refinar-design-recebimento-capturas/`. A apresentação é visual; o
 fluxo e as regras de recebimento não mudaram.
 
+### Matriz responsiva de edição e recebimento RD-03 — tarefa 5.3
+
+Edição e modal foram verificados em 390, 767, 768, 1024 e 1366 px, ambos temas,
+com nome/descrição longos, erro real de CPF/valor e lista de 24 parcelas. A edição
+mantém o erro e os textos completos alcançáveis; corrigir CPF conclui o fluxo sem
+alterar os dados financeiros. No recebimento, o campo com erro foi focado e
+rolado até a área visível; o estado indisponível do botão manteve cursor `not-allowed`
+e opacidade 0,6. Os checks de contraste do estado de erro em ambos os temas também
+estão cobertos pela suíte de acessibilidade visual existente, que exige ao menos
+4,5:1.
+
+Verificação real: matriz E2E passou **2/2 projetos Chromium**, perfazendo 10
+combinações viewport/tema. Não houve overflow horizontal global: `scrollWidth` foi
+igual à largura do viewport (390, 767, 768, 1024 ou 1366 px). A lista de 24 parcelas
+mede 576 px de conteúdo para 160 px visíveis em desktop/intermediários e 1152 px
+para 160 px no mobile; portanto a conferência permanece em rolagem interna. O modal
+fica limitado a 736 px de altura no viewport 1366×768 e 812 px no 390×844; no mobile,
+seu conteúdo de 902 px rola dentro do limite visível de 810 px. Botão de confirmação,
+campo e mensagem foram alcançados após erro, e Escape fechou o modal. Capturas e
+sidecars com rota, tema, viewport e medidas estão em
+`test-results/refinar-design-fluxos-matriz/`. O estilo desabilitado foi ativado no
+teste diretamente no controle para inspecionar as classes existentes (submissão
+normal não permanece indisponível tempo suficiente para captura); nenhum estado
+artificial foi introduzido na aplicação.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

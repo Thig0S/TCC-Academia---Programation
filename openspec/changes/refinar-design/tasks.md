@@ -29,7 +29,7 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 
 - [x] 5.1 Refinar formulário de edição e mensagens com o padrão comum, preservando somente os quatro campos do cliente; verificar dados iniciais, erros, cancelar, falhar/repetir e sucesso sem alteração financeira, incluindo testes de componentes/E2E, capturas e documentação no commit da edição.
 - [x] 5.2 Refinar conferência, campos, mensagens e ações do modal de recebimento sem mudar a seleção sequencial; verificar valor/soma, primeira pendente, quitação, envio duplicado, erro/retry, Escape, Tab/Shift+Tab e retorno de foco, com testes afetados e resultados documentados no commit do recebimento.
-- [ ] 5.3 Confirmar edição e modal nos dois temas, incluindo textos extensos, erro e indisponibilidade dos controles, em 390, 767, 768, 1024 e 1366 px; verificar controles e mensagens alcançáveis, contraste e rolagem sem overflow global, registrando evidência antes de concluir esses fluxos.
+- [x] 5.3 Confirmar edição e modal nos dois temas, incluindo textos extensos, erro e indisponibilidade dos controles, em 390, 767, 768, 1024 e 1366 px; verificar controles e mensagens alcançáveis, contraste e rolagem sem overflow global, registrando evidência antes de concluir esses fluxos.
 
 ## 6. Visão Geral e Relatórios — RD-04
 
