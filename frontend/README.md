@@ -246,6 +246,20 @@ unitária. Capturas pós-refinamento com sidecars JSON estão em
 `test-results/refinar-design-visao-relatorios-capturas/`. Nenhuma consulta ou cálculo
 financeiro foi alterado.
 
+### Configurações RD-04 — tarefa 7.1
+
+As quatro explicações demonstrativas agora usam rótulo e descrição alinhados em
+duas colunas a partir do breakpoint `sm`, empilhando no mobile. Recuos padrões do
+`dd` foram substituídos por uma grade explícita; separadores e textos integrais
+permanecem. Nenhum controle foi introduzido e a página continua sem alerta global.
+
+Verificações reais: E2E passou **2/2** projetos Chromium em 1366×768 e 390×844,
+ambos temas e pelos acessos principal/atalho; confirmou os quatro tópicos completos,
+layout e ausência de controles. Medição de contraste textual em 11 trechos: mínimo
+7,74:1 no tema escuro e 5,64:1 no claro. Capturas com sidecars JSON em
+`test-results/refinar-design-configuracoes-final/`. Comportamento, rotas e textos
+demonstrativos não foram alterados.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

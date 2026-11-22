@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { expect, test as base } from '@playwright/test';
 
 const produto = 'Mercadão dos Óculos - Vendas em Aberto';
@@ -191,7 +192,7 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
   const medir = async () =>
     page
       .locator(
-        'main h1, main h2, main h3, main p, main a, main button, main th, main td, main caption',
+        'main h1, main h2, main h3, main p, main dt, main dd, main a, main button, main th, main td, main caption',
       )
       .evaluateAll((elementos) => {
         const canais = (valor: string) => (valor.match(/[\d.]+/g) ?? []).map(Number);
@@ -228,13 +229,19 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
-    for (const rota of ['Visão Geral', 'Relatórios', 'Nova venda']) {
+    for (const rota of ['Visão Geral', 'Relatórios', 'Configurações', 'Nova venda']) {
       if (rota === 'Relatórios') {
         await page
           .getByRole('navigation', { name: 'Navegação principal' })
           .getByRole('link', { name: 'Relatórios', exact: true })
           .click();
         await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+      } else if (rota === 'Configurações') {
+        await page
+          .getByRole('navigation', { name: 'Navegação principal' })
+          .getByRole('link', { name: 'Configurações', exact: true })
+          .click();
+        await expect(page.getByRole('heading', { level: 1, name: 'Configurações' })).toBeVisible();
       } else if (rota === 'Nova venda') {
         await page.goto('/vendas/nova');
         await expect(page.getByRole('heading', { level: 1, name: 'Nova venda' })).toBeVisible();
@@ -573,7 +580,9 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeFocused();
 });
 
-test('Configurações explica os quatro limites pelos dois acessos e temas', async ({ page }) => {
+test('Configurações explica os quatro limites pelos dois acessos e temas', async ({
+  page,
+}, info) => {
   await page.goto('/');
   for (const tema of ['dark', 'light']) {
     if (tema === 'light')
@@ -600,6 +609,31 @@ test('Configurações explica os quatro limites pelos dois acessos e temas', asy
         page.getByRole('main').locator('form, input, select, textarea, button, a'),
       ).toHaveCount(0);
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+      const itens = page.getByRole('main').locator('dl > div');
+      await expect(itens).toHaveCount(4);
+      for (const item of await itens.all()) {
+        await expect(item).toHaveCSS('row-gap', '4px');
+        await expect(item.locator('dd')).not.toHaveCSS('margin-left', '40px');
+      }
+      if (acesso === 'principal') {
+        await page.screenshot({
+          path: info.outputPath(`configuracoes-refinadas-${tema}.png`),
+          fullPage: true,
+        });
+        await writeFile(
+          info.outputPath(`configuracoes-refinadas-${tema}.json`),
+          JSON.stringify(
+            {
+              rota: '/configuracoes',
+              tema,
+              viewport: page.viewportSize(),
+              cenário: 'quatro limites demonstrativos',
+            },
+            null,
+            2,
+          ),
+        );
+      }
       await page
         .getByRole('navigation', { name: 'Navegação principal' })
         .getByRole('link', { name: 'Visão Geral', exact: true })
