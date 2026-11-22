@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { expect, Locator, Page, test } from '@playwright/test';
 
 async function preencherCadastro(page: Page, nome: string) {
@@ -20,7 +21,7 @@ test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois
   page,
 }, testInfo) => {
   for (const largura of [1366, 1024, 768, 767, 390]) {
-    await page.setViewportSize({ width: largura, height: 844 });
+    await page.setViewportSize({ width: largura, height: largura === 1366 ? 768 : 844 });
     for (const tema of ['dark', 'light']) {
       await page.goto('/vendas/nova');
       if (tema === 'light')
@@ -44,6 +45,28 @@ test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois
       await preencherCadastro(page, `Cliente responsivo ${largura}`);
       await page.getByLabel('Descrição (opcional)').fill('Descrição ampla de teste');
       await expect(previa.locator('tbody tr')).toHaveCount(3);
+      await expect(previa.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
+        'text-align',
+        'right',
+      );
+      const celulaValor = previa.locator('tbody tr').first().locator('td').first();
+      await expect(celulaValor).toHaveCSS('text-align', 'right');
+      await expect(celulaValor).toHaveCSS('font-variant-numeric', /tabular-nums/);
+      await expect(celulaValor).toHaveCSS('font-size', '14px');
+      const espacamento = await page.evaluate(() => {
+        const grupos = document.querySelector('app-identificacao-cliente')!.parentElement!;
+        const secaoPrevia = document.querySelector(
+          'form section[aria-labelledby="titulo-previa"]',
+        )!;
+        const acoes = document.querySelector('form > div:last-child')!;
+        return {
+          intervaloEntreGrupos: getComputedStyle(grupos).rowGap,
+          previaAcoes:
+            acoes.getBoundingClientRect().top - secaoPrevia.getBoundingClientRect().bottom,
+        };
+      });
+      expect(espacamento.intervaloEntreGrupos).toBe('12px');
+      expect(espacamento.previaAcoes).toBeGreaterThanOrEqual(12);
       await expect(previa.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCSS(
         'overflow-x',
         'auto',
@@ -70,11 +93,35 @@ test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois
         );
 
       if ([1366, 390].includes(largura)) {
-        const captura = await page.screenshot({ fullPage: true });
+        const nomeCaptura = `nova-venda-${tema}-${largura}px`;
+        const captura = await page.screenshot({
+          path: testInfo.outputPath(`${nomeCaptura}.png`),
+          fullPage: true,
+        });
         await testInfo.attach(`nova-venda-${tema}-${largura}px`, {
           body: captura,
           contentType: 'image/png',
         });
+        await writeFile(
+          testInfo.outputPath(`${nomeCaptura}.json`),
+          JSON.stringify(
+            {
+              rota: '/vendas/nova',
+              tema,
+              viewport: page.viewportSize(),
+              cenário: 'cadastro válido e prévia de três parcelas',
+              medidas: {
+                larguraFormulario: caixaFormulario!.width,
+                larguraPrevia: caixaPrevia!.width,
+                larguraNome,
+                larguraValor,
+                overflowGlobal: !semOverflowGlobal,
+              },
+            },
+            null,
+            2,
+          ),
+        );
       }
     }
   }
