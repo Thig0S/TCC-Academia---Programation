@@ -38,7 +38,7 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 
 ## 7. Configurações e estados auxiliares — RD-04
 
-- [ ] 7.1 Refinar leitura/recuos das quatro explicações de Configurações sem controles novos; verificar temas, conteúdo demonstrativo completo, contraste, teclado e ausência de aviso global com testes pertinentes, capturas e resultados documentados no commit da funcionalidade.
+- [x] 7.1 Refinar leitura/recuos das quatro explicações de Configurações sem controles novos; verificar temas, conteúdo demonstrativo completo, contraste, teclado e ausência de aviso global com testes pertinentes, capturas e resultados documentados no commit da funcionalidade.
 - [ ] 7.2 Harmonizar página inexistente, detalhe/edição ausentes, coleções vazias e busca sem resultados, sem unificar seus significados ou inventar dados; verificar mensagens e retornos existentes nos dois temas, nomes extensos e foco por E2E/componentes e registrar capturas e resultado no commit dos estados auxiliares.
 
 ## 8. Verificação integrada e entrega — RD-05
