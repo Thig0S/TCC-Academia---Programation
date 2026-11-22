@@ -20,7 +20,7 @@
 
 ## 4. Demais módulos e estados existentes
 
-- [ ] 4.1 Harmonizar visualmente Visão Geral (quatro indicadores e três resumos existentes), Relatórios (quatro tabelas) e Configurações (explicações existentes), sem criar controles/ações; verificar `visao-geral-refinamento.spec.ts`, testes de Relatórios e `refinamento-visual.spec.ts`, preservando dados e a indicação de exportação indisponível.
+- [x] 4.1 Harmonizar visualmente Visão Geral (quatro indicadores e três resumos existentes), Relatórios (quatro tabelas) e Configurações (explicações existentes), sem criar controles/ações; verificar `visao-geral-refinamento.spec.ts`, testes de Relatórios e `refinamento-visual.spec.ts`, preservando dados e a indicação de exportação indisponível.
 - [ ] 4.2 Aplicar acabamento consistente a Quitadas/registro ausente, página não encontrada e demais estados vazios/erros já implementados; verificar `estados-auxiliares.spec.ts`, navegação por teclado e leitura nos dois temas.
 - [ ] 4.3 Registrar no `frontend/README.md` as comparações e resultados reais deste grupo, incluindo divergências intencionais de mockups com dados/ações fictícios; conferir texto e fluxos atuais com os testes executados.
 
