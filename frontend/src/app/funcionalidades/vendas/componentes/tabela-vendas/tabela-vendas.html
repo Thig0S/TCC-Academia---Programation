@@ -1,5 +1,7 @@
 <div
-  class="max-w-full overflow-x-auto rounded-lg border border-border"
+  class="max-w-full overflow-x-auto border border-border"
+  [class.rounded-lg]="!visualPiloto()"
+  [class.rounded-xl]="visualPiloto()"
   role="region"
   [attr.aria-label]="legenda()"
   tabindex="0"
@@ -48,7 +50,11 @@
     </thead>
     <tbody>
       @for (venda of vendas(); track venda.id) {
-        <tr class="hover:bg-surface-muted focus-within:bg-surface-muted">
+        <tr
+          class="hover:bg-surface-muted focus-within:bg-surface-muted"
+          [class.transition-colors]="visualPiloto()"
+          [class.even:bg-surface-muted/50]="visualPiloto()"
+        >
           <th scope="row" class="whitespace-nowrap border-b border-border px-2.5 py-1 font-medium">
             <a
               [routerLink]="['/vendas', venda.id]"
@@ -78,7 +84,7 @@
             }}
           </td>
           <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-            <app-selo-situacao [situacao]="venda.situacao" />
+            <app-selo-situacao [situacao]="venda.situacao" [visualPiloto]="visualPiloto()" />
           </td>
           <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
             <a

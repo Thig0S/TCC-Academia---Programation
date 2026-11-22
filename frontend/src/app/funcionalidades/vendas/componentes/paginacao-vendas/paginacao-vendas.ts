@@ -10,6 +10,7 @@ export class PaginacaoVendas {
   readonly faixa = input.required<FaixaPaginacao>();
   readonly paginaAtual = input.required<number>();
   readonly totalPaginas = input.required<number>();
+  readonly visualPiloto = input(false);
   readonly paginaAlterada = output<number>();
   protected readonly itens = computed(() =>
     obterItensNavegacao(this.totalPaginas(), this.paginaAtual()),

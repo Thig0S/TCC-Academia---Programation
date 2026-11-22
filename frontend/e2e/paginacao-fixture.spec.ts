@@ -481,8 +481,54 @@ test('hierarquia de Vendas apresenta cabeçalho e critérios com controles desta
     for (const controle of await controles.all())
       await expect(controle).toHaveCSS('height', '48px');
     await expect(page.locator('app-tabela-vendas tbody tr')).toHaveCount(10);
+    const tabela = page.getByRole('table', { name: 'Vendas em aberto' });
+    await expect(tabela.locator('thead th')).toHaveCount(8);
+    await expect(tabela).toHaveCSS('font-size', '18px');
+    await expect(tabela.locator('tbody td').first()).toHaveCSS('padding-top', '4px');
+    await expect(page.locator('app-selo-situacao span').first()).toHaveCSS('padding-top', '0px');
     await page.screenshot({
       path: testInfo.outputPath(`piloto-hierarquia-vendas-${tema}.png`),
+      fullPage: true,
+    });
+  }
+});
+
+test('paginação de Vendas aplica o acabamento contextual somente no piloto', async ({ page }) => {
+  await page.goto('/vendas?quantidade=80');
+  const navegacao = page.getByRole('navigation', { name: 'Paginação de vendas' });
+  await expect(navegacao).toBeVisible();
+  await expect(navegacao.getByRole('button', { name: 'Página 1' })).toHaveClass(/rounded-xl/);
+  await expect(navegacao.locator('[aria-current="page"]')).toHaveCSS(
+    'background-color',
+    'rgb(215, 40, 72)',
+  );
+});
+
+test('Quitadas conserva acabamento compartilhado anterior ao piloto', async ({
+  page,
+}, testInfo) => {
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas?quantidade=0');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await page.getByRole('link', { name: 'Quitadas', exact: true }).first().click();
+    const tabela = page.getByRole('table', { name: 'Vendas quitadas' });
+    await expect(tabela).toBeVisible();
+    await expect(tabela.locator('thead th')).toHaveCount(8);
+    await expect(tabela).toHaveCSS('font-size', '18px');
+    await expect(tabela.locator('tbody tr').first().locator('td').first()).toHaveCSS(
+      'padding-top',
+      '4px',
+    );
+    await expect(page.locator('app-tabela-vendas > div')).toHaveCSS('border-radius', '8px');
+    await expect(page.locator('app-selo-situacao span').first()).toHaveCSS('padding-top', '0px');
+    await expect(page.locator('app-selo-situacao span').first()).toHaveCSS('padding-left', '10px');
+    const navegacao = page.getByRole('navigation', { name: 'Paginação de vendas' });
+    if (await navegacao.count())
+      await expect(navegacao.getByRole('button', { name: 'Página 1' })).not.toHaveClass(
+        /rounded-xl/,
+      );
+    await page.screenshot({
+      path: testInfo.outputPath(`quitadas-sem-variante-${tema}.png`),
       fullPage: true,
     });
   }

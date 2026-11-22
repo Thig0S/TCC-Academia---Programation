@@ -55,7 +55,9 @@ fica alinhada ao título como informação auxiliar. A faixa única de critério
 fundo contextual, mais respiro e controles de 48 px com superfície/contorno
 consistentes; busca, situação, Limpar pesquisa e Nova venda continuam no mesmo
 grupo, sem busca duplicada ou KPI. O status de resultados ganhou separação visual.
-Não foi alterado componente compartilhado, shell ou listagem Quitadas.
+Shell e template de Quitadas não foram alterados. Componentes de tabela, selo e
+paginação receberam variantes opt-in que permanecem desligadas por padrão; somente
+Vendas abertas solicita esse acabamento.
 
 Capturas sintéticas pós-2.1 (1366×768 e 390×844, claro/escuro) estão em
 `evidencias/piloto-fidelidade-visual-vendas/hierarquia/`; comparação direta com a
@@ -63,13 +65,40 @@ baseline usa os arquivos correspondentes de
 `evidencias/piloto-fidelidade-visual-vendas/baseline/`. O E2E direcionado
 `npm.cmd run test:e2e:paginacao-fixture -- --grep "hierarquia de Vendas apresenta"`
 passou 2/2 projetos; o teste inclui título, faixa única, alinhamento desktop,
-controles, registros sintéticos e capturas. A suíte unitária passou com 31 arquivos
-e 373 testes. A tentativa de executar o E2E `consulta listas, combina critérios`
-com seu servidor próprio não iniciou porque `127.0.0.1:4200` já estava ocupado.
-No navegador já disponível nesse endereço, busca textual, combinação com situação,
-Limpar pesquisa (mantendo o filtro) e CTA Nova venda foram exercitados manualmente;
-o CTA abriu `/vendas/nova`. Reexecutar a automação de consulta quando a porta estiver
-livre.
+controles, registros sintéticos e capturas. A automação `consulta listas, combina
+critérios` passou **2/2** em servidor isolado na porta 4310 após detectar a porta
+4200 ocupada; verificou busca, combinação com situação, Limpar pesquisa preservando
+o filtro e CTA Nova venda.
+
+### 2.2 — tabela, situações, estados e rodapé contextual
+
+O acabamento opt-in da tabela mantém as oito colunas, fonte de **18 px**, line-height
+de **20 px**, paddings das células (4 px vertical/10 px horizontal) e ações textuais.
+Em Vendas abertas, o contorno da região fica mais arredondado, linhas alternadas
+recebem superfície suave e hover/foco passam a transicionar sem alterar o conteúdo.
+Selos mantêm os paddings verticais originais e ampliam somente o respiro horizontal;
+a paginação usa contornos arredondados, sombra discreta e borda de destaque na página
+ativa. A composição funciona com os tokens light/dark existentes e sem gradientes
+novos. As variantes padrão continuam inalteradas em Quitadas.
+
+Após 2.2, em 1366×768 e ambos os temas: décima linha até **676 px**, rodapé até
+**720,5 px**, documento permanece **1366×768**, controles desktop alinhados, fonte/
+line-height **18/20 px**, padding celular **4/10 px**. Em 390×844, documento **390×1581**,
+largura global **390 px** e tabela rola apenas dentro da região; décima linha e
+paginação estão disponíveis no documento rolável. Capturas atualizadas da mesma
+fixture sintética de dez vendas (pós-2.2) substituem os quatro PNGs em
+`evidencias/piloto-fidelidade-visual-vendas/hierarquia/`; a baseline de dez vendas
+permanece em sua pasta homônima. O quadro visual lado a lado e o controle de Quitadas
+estão em `evidencias/piloto-fidelidade-visual-vendas/comparacao.md`. A fixture
+completa passou **24/24**, incluindo
+coleções 0/1/10/11/21, contraste, foco, teclado e viewports. A suíte unitária passou
+**373/373** e o build passou. Quitadas foi capturada após a mudança nos dois
+temas/viewports em `evidencias/piloto-fidelidade-visual-vendas/quitadas-verificacao/`;
+verificações de oito colunas, fonte, paddings, raio da tabela, badge e paginação
+confirmam que a variante compartilhada permanece desligada nessa página.
+Contraste medido de texto de paginação: mínimo **4,89:1** no estado ativo; contornos
+e foco excederam os limites automatizados de **3:1**. As outras áreas de UI não foram
+mudadas por esta etapa.
 
 ## Apply `novo-design` — verificação integrada — 22/11/2026
 

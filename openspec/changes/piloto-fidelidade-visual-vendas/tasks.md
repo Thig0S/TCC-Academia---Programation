@@ -8,8 +8,8 @@
 ## 2. Composição do piloto de Vendas
 
 - [x] 2.1 Redesenhar a hierarquia do cabeçalho, título textual e faixa única de critérios em `listar-vendas.html` sem duplicar a busca ou mover a ação fora da faixa; verificar com testes de componente e E2E busca/filtro/Limpar pesquisa/CTA e captura antes/depois da página clara e escura. E2E visual direcionado 2/2 e unitários 31 arquivos/373 testes passaram; fluxos de consulta foram exercitados manualmente no servidor já ativo. A execução E2E dedicada de consulta ficou pendente porque a porta 4200 estava ocupada; registrada no README para reexecução.
-- [ ] 2.2 Dar à tabela, situações, estados e rodapé de Vendas acabamento contextual coerente com o PNG, preservando oito colunas, links textuais, fonte 18 px, paddings e componentes compartilhados; verificar E2E de resultados/ausências, contraste/foco/teclado e comparação de capturas/estilos de Quitadas antes/depois sem mudança visual indevida.
-- [ ] 2.3 Registrar em `frontend/README.md` as diferenças efetivamente implementadas, adaptação para o tema escuro e desvios intencionais (sem busca global/KPIs/filtro de data/reticências), com capturas sintéticas lado a lado verificáveis.
+- [x] 2.2 Dar à tabela, situações, estados e rodapé de Vendas acabamento contextual coerente com o PNG, preservando oito colunas, links textuais, fonte 18 px, paddings e componentes compartilhados; verificar E2E de resultados/ausências, contraste/foco/teclado e comparação de capturas/estilos de Quitadas antes/depois sem mudança visual indevida. Variantes opt-in desligadas em Quitadas; consulta automatizada passou 2/2, fixture completa 24/24. Medições desktop/mobile, contraste, foco/teclado e comparação visual estão no README e em `frontend/evidencias/piloto-fidelidade-visual-vendas/`.
+- [x] 2.3 Registrar em `frontend/README.md` as diferenças efetivamente implementadas, adaptação para o tema escuro e desvios intencionais (sem busca global/KPIs/filtro de data/reticências), com capturas sintéticas lado a lado verificáveis. Comparação versionada em `frontend/evidencias/piloto-fidelidade-visual-vendas/comparacao.md`.
 
 ## 3. Verificação e apresentação do piloto
 
