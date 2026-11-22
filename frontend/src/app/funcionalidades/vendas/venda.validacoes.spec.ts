@@ -64,18 +64,68 @@ describe('Preparação pura de cadastro', () => {
     ).toEqual([1, 1, 1]);
   });
 
-  it.each(FORMAS_PAGAMENTO)('mantém entrada separada com %s', (forma) => {
+  it.each(FORMAS_PAGAMENTO)('prepara entrada como primeira parcela paga com %s', (forma) => {
     const entrada = { valorCentavos: 20000, data: referencia, forma };
     const preparada = venda({
       ...comando(),
-      valorTotalCentavos: 100000,
-      quantidadeParcelas: 4,
+      valorTotalCentavos: 200000,
+      quantidadeParcelas: 10,
       entrada,
     });
     expect(preparada.entrada).toEqual(entrada);
     expect(preparada.entrada).not.toBe(entrada);
-    expect(preparada.recebimentos).toEqual([]);
-    expect(preparada.parcelas.map((p) => p.valorCentavos)).toEqual([20000, 20000, 20000, 20000]);
+    expect(preparada.parcelas).toHaveLength(10);
+    expect(preparada.parcelas[0]).toMatchObject({
+      id: 'v1/parcela/entrada',
+      numero: 1,
+      valorCentavos: 20000,
+      vencimento: referencia,
+    });
+    expect(preparada.parcelas.slice(1).map((p) => p.valorCentavos)).toEqual(Array(9).fill(20000));
+    expect(preparada.parcelas.slice(1).map((p) => p.id)).toEqual(
+      Array.from({ length: 9 }, (_, indice) => `v1/parcela/${indice + 1}`),
+    );
+    expect(preparada.recebimentos).toEqual([
+      {
+        ...entrada,
+        id: 'v1/recebimento/entrada',
+        alocacoes: [{ parcelaId: 'v1/parcela/entrada', valorCentavos: 20000 }],
+      },
+    ]);
+  });
+
+  it('distribui somente o saldo após uma entrada desigual entre as futuras', () => {
+    const preparada = venda({
+      ...comando(),
+      valorTotalCentavos: 200000,
+      quantidadeParcelas: 10,
+      entrada: { valorCentavos: 50000, data: referencia, forma: 'Pix' },
+    });
+    expect(preparada.parcelas.map((p) => p.valorCentavos)).toEqual([
+      50000, 16667, 16667, 16667, 16667, 16667, 16667, 16666, 16666, 16666,
+    ]);
+  });
+
+  it('conta entrada no total, permite sem entrada uma parcela e rejeita entrada em parcela única', () => {
+    expect(venda({ ...comando(), quantidadeParcelas: 1 }).parcelas).toHaveLength(1);
+    expect(
+      prepararCadastro(
+        {
+          ...comando(),
+          quantidadeParcelas: 1,
+          entrada: { valorCentavos: 1, data: referencia, forma: 'Pix' },
+        },
+        referencia,
+        'v1',
+      ).tipo,
+    ).toBe('validacao');
+    const minima = venda({
+      ...comando(),
+      valorTotalCentavos: 2,
+      quantidadeParcelas: 2,
+      entrada: { valorCentavos: 1, data: referencia, forma: 'Pix' },
+    });
+    expect(minima.parcelas.map((p) => p.valorCentavos)).toEqual([1, 1]);
   });
 
   it.each([
@@ -103,10 +153,43 @@ describe('Preparação pura de cadastro', () => {
     expect(dados).toEqual(antes);
   });
 
-  it('rejeita calendário final antes de alocar e aceita extremo monetário seguro', () => {
+  it('preserva calendário mensal e aceita a futura de dezembro/9999 após entrada', () => {
     expect(
       prepararCadastro({ ...comando(), dataVenda: '9999-12-31' }, '9999-12-31', 'v1').tipo,
     ).toBe('validacao');
+    const bissexto = prepararCadastro(
+      {
+        ...comando(),
+        dataVenda: '2028-01-31',
+        quantidadeParcelas: 3,
+        valorTotalCentavos: 300,
+      },
+      '2028-01-31',
+      'bissexto',
+    );
+    expect(bissexto.tipo).toBe('sucesso');
+    if (bissexto.tipo === 'sucesso') {
+      expect(bissexto.valor.parcelas.map((p) => p.vencimento)).toEqual([
+        '2028-02-29', '2028-03-31', '2028-04-30',
+      ]);
+    }
+    const limite = prepararCadastro(
+      {
+        ...comando(),
+        dataVenda: '9999-11-30',
+        valorTotalCentavos: 200,
+        quantidadeParcelas: 2,
+        entrada: { valorCentavos: 100, data: '9999-11-30', forma: 'Pix' },
+      },
+      '9999-11-30',
+      'limite',
+    );
+    expect(limite).toMatchObject({ tipo: 'sucesso' });
+    if (limite.tipo === 'sucesso') {
+      expect(limite.valor.parcelas.map((p) => p.vencimento)).toEqual([
+        '9999-11-30', '9999-12-30',
+      ]);
+    }
     expect(
       somarCentavos(
         venda({ ...comando(), valorTotalCentavos: Number.MAX_SAFE_INTEGER }).parcelas.map(

@@ -608,6 +608,97 @@ em `frontend/test-results/`, não versionados.
 A validação `openspec validate refinar-estilo-conteudo-mvp --strict`, na raiz,
 também foi aprovada; `git diff --check` não apontou erros de whitespace.
 
+### Apply `entrada-como-primeira-parcela` — preparação de cadastro — 22/11/2026
+
+Comportamento planejado na tarefa 1.1: a quantidade informada inclui a entrada
+como parcela 1 paga; as futuras usam o saldo e conservam os IDs históricos
+opacos. Sem entrada, N=1 continua válido; com entrada, são necessárias pelo
+menos duas parcelas totais. O recebimento integral da entrada é preparado junto
+com a venda, sem publicação ou consumo de identificador nesta função.
+
+Resultado real: `npx vitest run --globals
+src/app/funcionalidades/vendas/venda.validacoes.spec.ts` aprovou 33/33 testes,
+cobrindo entradas de R$ 200 e R$ 500 em R$ 2.000/10, mínimo de R$ 0,02/2,
+N=1 com/sem entrada, IDs, 31/01, ano bissexto e novembro/dezembro de 9999.
+O primeiro `npx vitest run` sem `--globals` não encontrou `describe`; repetido
+com a opção compatível com a configuração local, passou.
+
+A regressão integral `npm test -- --watch=false`, executada durante a transição
+do agregado, terminou com 234/365 testes aprovados e 131 falhas em 17 arquivos.
+As falhas observadas são consumidores ainda no contrato de entrada separada
+(validação/projeções, seed, recebimento, formulário e detalhe); não são tratadas
+como aprovadas nem ocultadas. Serão reavaliadas após as tarefas 1.2–3.5; este
+registro não representa resultado final da Change.
+
+### Apply `entrada-como-primeira-parcela` — validação e projeções — 22/11/2026
+
+Na tarefa 1.2, `validarVenda` agora exige o recebimento inicial integral,
+coincidente com o metadado e alocado exclusivamente à parcela 1; as alocações
+subsequentes continuam em prefixo integral. Pago é derivado exclusivamente da
+soma dos recebimentos; quantidade paga e saldo resultam das parcelas liquidadas,
+com a soma das pendentes validada contra o saldo. Falhas são puras e não alteram
+o agregado.
+
+Resultado focado: `npx vitest run --globals
+src/app/funcionalidades/vendas/venda.validacoes.spec.ts
+src/app/funcionalidades/vendas/venda.calculos.spec.ts -t "Preparação pura|Projeções financeiras puras"`
+aprovou 49 testes; 3 testes de período foram filtrados para a tarefa 1.3.
+Os testes adicionados rejeitam recebimento inicial ausente/duplicado/inconsistente,
+alocação parcial, repetida ou com salto, e centavos inseguros; confirmam
+preservação do objeto nas falhas. A execução de toda a suíte de cálculos ainda
+reproduz a dupla contagem do metadado na consulta mensal, explicitamente pendente
+da tarefa 1.3, e não foi registrada como aprovada.
+
+### Apply `entrada-como-primeira-parcela` — períodos e Relatórios — 22/11/2026
+
+Na tarefa 1.3, a consulta por período e o resumo mensal somam somente os
+recebimentos. Relatórios também percorre cada recebimento uma vez e determina
+“Entrada” pelo vínculo da alocação com a parcela 1; o metadado não gera linha
+ou valor próprio. A ordem original por venda foi preservada, com o recebimento
+inicial antes dos lotes.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/funcionalidades/vendas/venda.calculos.spec.ts
+--include=src/app/funcionalidades/relatorios/relatorios.calculos.spec.ts
+--include=src/app/funcionalidades/relatorios/relatorios.spec.ts` aprovou 30/30
+testes em 3 arquivos. Inclui período civil inclusivo e vazio, bordas de
+referência, reconciliação de entrada R$ 200 + lote R$ 400 = R$ 600, bem como
+Relatórios e seus consumidores. A chamada direta ao Vitest para o teste Angular
+não inicializou `TestBed`; a execução correta foi pelo target `ng test` via
+`npm test`.
+
+### Apply `entrada-como-primeira-parcela` — seed demonstrativo — 22/11/2026
+
+Na tarefa 2.1, as 12 vendas sintéticas mantêm K parcelas futuras históricas;
+com entrada, o cadastro recebe N=K+1 e gera a parcela 1 paga com recebimento
+canônico. IDs existentes das futuras e dos pagamentos históricos permanecem
+estáveis. O seed paga somente o prefixo de futuras ainda pendentes, preservando
+os critérios de data e valor, sem incluir novamente a entrada nos lotes.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/nucleo/demonstracao/dados-demonstrativos.spec.ts` aprovou
+17/17 testes. A suíte percorreu todos os dias nos meses de borda 0001-01 a
+0001-04 e 9999-09 a 9999-12, além de referências usuais, verificando 12 vendas,
+unicidade de IDs, estrutura financeira reconciliada, situações possíveis,
+identificações sintéticas aceitas e isolamento entre sessões.
+
+### Apply `entrada-como-primeira-parcela` — serviço e recebimentos — 22/11/2026
+
+Na tarefa 1.4, o serviço conserva publicação atômica: cadastro e recebimento da
+entrada são um único agregado e uma única publicação, usando o ID da venda e
+namespace próprio para o recebimento inicial. Lotes posteriores consomem os IDs
+de operação existentes; rejeições, comandos obsoletos e falhas de preparação não
+publicam nem avançam o contador. A seleção começa na primeira futura pendente,
+rejeitando explicitamente a entrada paga, inclusive quando incluída em comando
+antigo. Permanecem cobertos cópia defensiva, edição somente de cliente e quitação.
+
+Resultado real: `npm test -- --watch=false
+--include=src/app/funcionalidades/parcelas/pagamento.validacoes.spec.ts
+--include=src/app/nucleo/demonstracao/edicao-cliente-servico.spec.ts
+--include=src/app/nucleo/demonstracao/servico-demonstracao.spec.ts` aprovou
+44/44 testes em 3 arquivos, incluindo publicação/retry, IDs, rejeição de entrada,
+quitação, edições e isolamento de sessão.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,

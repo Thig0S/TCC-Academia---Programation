@@ -24,9 +24,9 @@ describe('Dados sintéticos', () => {
           expect(() => validarVenda(venda, referencia)).not.toThrow();
           expect(venda.dataVenda <= referencia).toBe(true);
           expect(venda.parcelas.length).toBeGreaterThanOrEqual(1);
-          expect(venda.parcelas.length).toBeLessThanOrEqual(4);
+          expect(venda.parcelas.length).toBeLessThanOrEqual(venda.entrada ? 5 : 4);
           expect(somarCentavos(venda.parcelas.map((p) => p.valorCentavos))).toBe(
-            venda.valorTotalCentavos - (venda.entrada?.valorCentavos ?? 0),
+            venda.valorTotalCentavos,
           );
           const pagas = venda.recebimentos.flatMap((r) => r.alocacoes.map((a) => a.parcelaId));
           expect(pagas).toEqual(venda.parcelas.slice(0, pagas.length).map((p) => p.id));
@@ -98,10 +98,11 @@ describe('Dados sintéticos', () => {
       expect(v.entrada).toEqual(
         i % 2 === 0 ? { valorCentavos: 20000, data: v.dataVenda, forma: 'Pix' } : null,
       );
-      expect(v.parcelas).toEqual(
+      const futuras = v.entrada ? v.parcelas.slice(1) : v.parcelas;
+      expect(futuras).toEqual(
         Array.from({ length: 4 }, (_, p) => ({
           id: `seed/venda/${i + 1}/parcela/${p + 1}`,
-          numero: p + 1,
+          numero: p + 1 + (v.entrada ? 1 : 0),
           valorCentavos: 20000,
           vencimento: [
             ['2027-02-28', '2027-03-31', '2027-04-30', '2027-05-31'],
@@ -111,8 +112,27 @@ describe('Dados sintéticos', () => {
           ][i % 4][p],
         })),
       );
+      if (v.entrada) {
+        expect(v.parcelas[0]).toEqual({
+          id: `seed/venda/${i + 1}/parcela/entrada`,
+          numero: 1,
+          valorCentavos: 20000,
+          vencimento: v.dataVenda,
+        });
+      }
       expect(v.dataVenda).toBe(['2027-01-31', '2026-12-31', '2026-10-31', '2026-10-31'][i % 4]);
-      expect(v.recebimentos).toHaveLength(i % 4 === 3 ? 1 : 0);
+      expect(v.recebimentos).toHaveLength(i % 2 === 0 ? 1 : i % 4 === 3 ? 1 : 0);
+      if (v.entrada) {
+        expect(v.recebimentos[0]).toMatchObject({
+          id: `seed/venda/${i + 1}/recebimento/entrada`,
+          data: v.dataVenda,
+          forma: 'Pix',
+          valorCentavos: 20000,
+          alocacoes: [
+            { parcelaId: `seed/venda/${i + 1}/parcela/entrada`, valorCentavos: 20000 },
+          ],
+        });
+      }
       if (i % 4 === 3)
         expect(v.recebimentos[0]).toMatchObject({
           id: `seed/recebimento/${i + 1}`,

@@ -16,7 +16,7 @@ function venda(id = 'v1', dataVenda = '2027-01-01', entrada = true): Venda {
       cliente: { nome: 'DEMO', cpf: '90000000175', telefone: '00900000001' },
       dataVenda,
       valorTotalCentavos: 100000,
-      quantidadeParcelas: 4,
+      quantidadeParcelas: entrada ? 5 : 4,
       entrada: entrada ? { valorCentavos: 20000, data: dataVenda, forma: 'Pix' } : null,
     },
     '2027-05-31',
@@ -26,12 +26,17 @@ function venda(id = 'v1', dataVenda = '2027-01-01', entrada = true): Venda {
   return resultado.valor;
 }
 function pagar(v: Venda, quantidade: number, data = '2027-03-31'): Venda {
+  const jaPagas = new Set(v.recebimentos.flatMap((recebimento) =>
+    recebimento.alocacoes.map((alocacao) => alocacao.parcelaId),
+  ));
   const alocacoes = v.parcelas
+    .filter((parcela) => !jaPagas.has(parcela.id))
     .slice(0, quantidade)
     .map((p) => ({ parcelaId: p.id, valorCentavos: p.valorCentavos }));
   return {
     ...v,
     recebimentos: [
+      ...v.recebimentos,
       {
         id: `${v.id}/r1`,
         data,
@@ -95,7 +100,7 @@ describe('Projeções financeiras puras', () => {
     expect(projecao).toMatchObject({
       totalPagoCentavos: 60000,
       saldoCentavos: 40000,
-      quantidadePaga: 2,
+      quantidadePaga: 3,
       proximoVencimento: '2027-04-01',
       situacao: 'Próximos dias',
     });
@@ -163,7 +168,7 @@ describe('Projeções financeiras puras', () => {
     expect(projecoes[0]).toMatchObject({
       saldoCentavos: 0,
       totalPagoCentavos: 100000,
-      quantidadePaga: 4,
+      quantidadePaga: 5,
       proximoVencimento: null,
       situacao: 'Quitada',
     });
@@ -199,6 +204,77 @@ describe('Projeções financeiras puras', () => {
         '2027-03-31',
       ),
     ).toThrow(RangeError);
+  });
+
+  it('rejeita entrada sem recebimento, duplicada, inconsistente ou com metadado órfão', () => {
+    const original = venda();
+    const inconsistentes: Venda[] = [
+      { ...original, recebimentos: [] },
+      { ...original, recebimentos: [...original.recebimentos, ...original.recebimentos] },
+      {
+        ...original,
+        entrada: { ...original.entrada!, valorCentavos: 21000 },
+      },
+      {
+        ...original,
+        entrada: null,
+        parcelas: original.parcelas.slice(1),
+      },
+    ];
+    for (const invalida of inconsistentes) {
+      const snapshot = structuredClone(invalida);
+      expect(() => projetarVenda(invalida, '2027-03-31')).toThrow(RangeError);
+      expect(invalida).toEqual(snapshot);
+    }
+  });
+
+  it('rejeita alocações parciais, repetidas, saltos e valores inseguros sem mutar', () => {
+    const original = venda();
+    const inicial = original.recebimentos[0];
+    const variantes: Venda[] = [
+      {
+        ...original,
+        recebimentos: [
+          { ...inicial, valorCentavos: inicial.valorCentavos - 1 },
+        ],
+      },
+      {
+        ...original,
+        recebimentos: [inicial, { ...inicial, id: 'duplicado' }],
+      },
+      {
+        ...original,
+        recebimentos: [
+          inicial,
+          {
+            id: 'salto',
+            data: '2027-02-01',
+            forma: 'Pix',
+            valorCentavos: original.parcelas[2].valorCentavos,
+            alocacoes: [
+              {
+                parcelaId: original.parcelas[2].id,
+                valorCentavos: original.parcelas[2].valorCentavos,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        ...original,
+        recebimentos: [
+          {
+            ...inicial,
+            valorCentavos: Number.MAX_SAFE_INTEGER + 1,
+          },
+        ],
+      },
+    ];
+    for (const invalida of variantes) {
+      const snapshot = structuredClone(invalida);
+      expect(() => projetarVenda(invalida, '2027-03-31')).toThrow(RangeError);
+      expect(invalida).toEqual(snapshot);
+    }
   });
 });
 

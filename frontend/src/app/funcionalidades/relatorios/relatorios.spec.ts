@@ -60,13 +60,18 @@ function venda(
   };
 }
 
-function pagamento(id: string, data: string, valorCentavos: number): PagamentoDemonstrativo {
+function pagamento(
+  id: string,
+  data: string,
+  valorCentavos: number,
+  parcelaId = `parcela/${id}`,
+): PagamentoDemonstrativo {
   return {
     id,
     data,
     forma: 'Pix',
     valorCentavos,
-    alocacoes: [{ parcelaId: `parcela/${id}`, valorCentavos }],
+    alocacoes: [{ parcelaId, valorCentavos }],
   };
 }
 
@@ -110,8 +115,14 @@ describe('Relatórios', () => {
     const id = 'venda/com/barras';
     const primeira = venda(id, '2027-02-28', {
       entrada: { data: '2027-02-28', forma: 'Dinheiro', valorCentavos: 200 },
-      recebimentos: [pagamento('lote/marco', '2027-03-31', 300)],
-      parcelas: [parcela('atrasada', 2, '2027-03-30', 'Atrasado', 300)],
+      recebimentos: [
+        pagamento('entrada', '2027-02-28', 200, 'parcela/entrada'),
+        pagamento('lote/marco', '2027-03-31', 300),
+      ],
+      parcelas: [
+        parcela('parcela/entrada', 1, '2027-02-28', 'Paga', 200),
+        parcela('atrasada', 2, '2027-03-30', 'Atrasado', 300),
+      ],
       saldo: 500,
     });
     const vendasDoMes = Array.from({ length: 6 }, (_, indice) =>
@@ -121,6 +132,23 @@ describe('Relatórios', () => {
           forma: 'Pix',
           valorCentavos: 10,
         },
+        recebimentos: [
+          pagamento(
+            `entrada/${indice}`,
+            `2027-03-${String(indice + 1).padStart(2, '0')}`,
+            10,
+            `parcela/entrada/${indice}`,
+          ),
+        ],
+        parcelas: [
+          parcela(
+            `parcela/entrada/${indice}`,
+            1,
+            `2027-03-${String(indice + 1).padStart(2, '0')}`,
+            'Paga',
+            10,
+          ),
+        ],
         saldo: 100,
       }),
     );
