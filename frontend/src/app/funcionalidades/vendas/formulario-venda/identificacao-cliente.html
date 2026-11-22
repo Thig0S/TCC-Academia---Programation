@@ -5,8 +5,8 @@
       : 'mb-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm'
   "
 >
-  <legend class="text-lg font-semibold">Dados sintéticos do cliente</legend>
-  <p class="text-sm text-text-muted">
+  <legend class="px-1 text-base font-semibold tracking-tight">Dados sintéticos do cliente</legend>
+  <p class="mb-3 text-sm text-text-muted">
     Use somente dados inventados. Não informe dados de pessoas reais.
   </p>
   <div
@@ -17,7 +17,7 @@
     "
   >
     <div [class]="gradeAdaptativa() ? 'min-w-0 @min-[22rem]:col-span-2' : 'min-w-0 md:col-span-2'">
-      <label for="nome-cliente" class="mb-1 block text-sm font-medium">Nome</label>
+      <label for="nome-cliente" class="mb-1 block text-sm font-semibold">Nome</label>
       <input
         id="nome-cliente"
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -27,7 +27,7 @@
       <app-erro-campo id="erro-nome" [campo]="campos().nome" />
     </div>
     <div class="min-w-0">
-      <label for="cpf-cliente" class="mb-1 block text-sm font-medium">CPF</label>
+      <label for="cpf-cliente" class="mb-1 block text-sm font-semibold">CPF</label>
       <input
         id="cpf-cliente"
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -38,7 +38,9 @@
       <app-erro-campo id="erro-cpf" [campo]="campos().cpf" />
     </div>
     <div class="min-w-0">
-      <label for="telefone-cliente" class="mb-1 block text-sm font-medium">Telefone com DDD</label>
+      <label for="telefone-cliente" class="mb-1 block text-sm font-semibold"
+        >Telefone com DDD</label
+      >
       <input
         id="telefone-cliente"
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -49,7 +51,7 @@
       <app-erro-campo id="erro-telefone" [campo]="campos().telefone" />
     </div>
     <div [class]="gradeAdaptativa() ? 'min-w-0 @min-[22rem]:col-span-2' : 'min-w-0 md:col-span-2'">
-      <label for="descricao-cliente" class="mb-1 block text-sm font-medium"
+      <label for="descricao-cliente" class="mb-1 block text-sm font-semibold"
         >Descrição (opcional)</label
       >
       <textarea

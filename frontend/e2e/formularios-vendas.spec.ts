@@ -80,6 +80,19 @@ test('Nova venda mantém formulário e prévia responsivos sem overflow nos dois
       await preencherCadastro(page, `Cliente responsivo ${largura}`);
       await page.getByLabel('Descrição (opcional)').fill('Descrição ampla de teste');
       await expect(previa.locator('tbody tr')).toHaveCount(3);
+      await expect(page.locator('app-identificacao-cliente label').first()).toHaveCSS(
+        'font-weight',
+        '600',
+      );
+      await expect(page.getByLabel('Valor total (R$)', { exact: true })).toHaveCSS(
+        'font-variant-numeric',
+        /tabular-nums/,
+      );
+      await expect(previa.getByRole('region', { name: 'Prévia completa das parcelas' })).toHaveCSS(
+        'border-radius',
+        '8px',
+      );
+      await expect(previa.locator('p').first()).toHaveCSS('border-radius', '8px');
       await expect(previa.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
         'text-align',
         'right',
