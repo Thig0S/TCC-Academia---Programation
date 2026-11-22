@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: 'refinamento-visual.spec.ts',
+  testIgnore: 'paginacao-fixture.spec.ts',
   fullyParallel: false,
   workers: 1,
   reporter: 'list',

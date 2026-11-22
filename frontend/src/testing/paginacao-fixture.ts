@@ -22,7 +22,7 @@ export class PaginacaoFixture {
           ...criarIdentificacaoSintetica(100 + indice),
         },
         dataVenda: this.servico.referencia,
-        valorTotalCentavos: 60000,
+        valorTotalCentavos: 5000 + indice * 19750,
         quantidadeParcelas: 1,
         entrada: null,
       });

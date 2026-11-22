@@ -12,6 +12,15 @@ test('mede coleções de 0, 1, 10, 11 e 21 vendas nos dois temas', async ({ page
       await expect(page.locator('app-tabela-vendas tbody tr')).toHaveCount(
         Math.min(10, quantidade),
       );
+      if (quantidade === 21) {
+        const valores = page.locator('app-tabela-vendas tbody tr td:nth-of-type(2)');
+        const textos = await valores.allTextContents();
+        expect(new Set(textos.map((texto) => texto.trim())).size).toBeGreaterThan(1);
+        for (const valor of await valores.all()) {
+          await expect(valor).toHaveCSS('text-align', 'right');
+          await expect(valor).toHaveCSS('font-variant-numeric', /tabular-nums/);
+        }
+      }
       await expect(page.getByRole('navigation', { name: 'Paginação de vendas' })).toHaveCount(
         quantidade > 10 ? 1 : 0,
       );

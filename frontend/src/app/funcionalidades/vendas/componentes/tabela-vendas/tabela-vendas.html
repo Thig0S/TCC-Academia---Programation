@@ -15,13 +15,19 @@
         <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold">
           Data da venda
         </th>
-        <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold">
+        <th
+          scope="col"
+          class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+        >
           Valor total
         </th>
         <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold">
           Parcelas pagas/total
         </th>
-        <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold">
+        <th
+          scope="col"
+          class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+        >
           Saldo devedor
         </th>
         <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold">
@@ -50,13 +56,13 @@
           <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
             {{ formatarDataCivil(venda.dataVenda) }}
           </td>
-          <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+          <td class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums">
             {{ formatarDinheiro(venda.valorTotalCentavos) }}
           </td>
           <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
             {{ venda.quantidadePaga }}/{{ venda.parcelas.length }}
           </td>
-          <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+          <td class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums">
             {{ formatarDinheiro(venda.saldoCentavos) }}
           </td>
           <td class="whitespace-nowrap border-b border-border px-2.5 py-1">

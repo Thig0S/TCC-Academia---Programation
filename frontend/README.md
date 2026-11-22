@@ -51,6 +51,32 @@ Chromium aprovados).
 
 Verificação real: `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --output=test-results/refinar-design-rd02 --workers=1 -g "ação Nova venda|registra conteúdo"` passou **4/4** em Chromium, nos dois temas/viewports. Os estilos computados confirmaram fundo normal `rgb(215, 40, 72)`, texto branco, hover `rgb(181, 31, 61)` e foco de 3 px; os dois estados de fundo atingem o limiar de contraste testado de 4,5:1. Comparação de 36 pares JSON da lateral (nove superfícies × dois temas × dois viewports): nenhuma diferença de geometria, cores, degradê ou fonte.
 
+### Consultas e valores monetários RD-02
+
+Quitadas agora alinha o status da contagem à mesma margem lógica de Vendas. Nas
+tabelas compartilhadas, “Valor total” e “Saldo devedor” têm cabeçalhos alinhados à
+direita e valores com `tabular-nums`; datas, parcelas, situação e ações mantêm o
+alinhamento próprio. As medidas contratadas continuam 18 px/20 px, dados com
+padding 10×4 px e cabeçalhos 10×8 px (horizontal×vertical). Vendas e Quitadas
+mantêm o mesmo recuo de pesquisa/contagem e a mesma região de paginação.
+
+Verificações reais: o E2E novo de alinhamento passou 2/2 projetos Chromium (1366×768
+e 390×844), verificando ambos temas e coleções; testes de consulta/filtros/semântica
+passaram 8/8; `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-design-rd02-fixture`
+passou 12/12, incluindo coleções 0/1/10/11/21, navegação por teclado e dez linhas
+visíveis em 1366×768. A décima linha termina em 641,5 px, rodapé em 709 px; largura
+global 1366 px no desktop. Em 390×844, largura do documento 390 px e altura da lista
+com dez linhas 1468 px, sem overflow horizontal global. Capturas e medidas locais
+estão em `test-results/refinar-design-rd02/` e
+`test-results/refinar-design-rd02-fixture/`. Nenhuma alteração nos dados/contratos
+financeiros de produção.
+
+Na fixture, os valores das vendas sintéticas agora variam entre magnitudes, sem
+alterar o seed real, serviços ou regras financeiras. O E2E comprova valores distintos
+e alinhamento/tabularidade nos dois temas quando a coleção tem 21 vendas. A execução
+final da fixture passou 12/12. Comparação final da lateral com a baseline: 36/36
+pares de geometria e paleta sem diferenças.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1

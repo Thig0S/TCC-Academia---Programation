@@ -12,8 +12,8 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 ## 2. Padrões comuns e listas — RD-02
 
 - [x] 2.1 Harmonizar ações existentes e espaçamentos de cabeçalho/conteúdo sem alterar fonte global ou lateral; resolver classes concorrentes de Nova venda e verificar estilos computados, contraste normal/hover/foco e acesso por teclado nos dois temas, com testes de componentes/E2E pertinentes e resultados documentados.
-- [ ] 2.2 Unificar alinhamento de contagem, pesquisa e paginação entre Vendas/Quitadas e alinhar cabeçalhos/valores monetários à direita com algarismos tabulares em `tabela-vendas.html`; verificar testes de busca/filtros/paginação e fonte 18 px, line-height 20 px e padding contratado, documentando capturas e resultados da funcionalidade.
-- [ ] 2.3 Estender a fixture de paginação para comprovar dez vendas/paginação visíveis, casos 0/1/10/11/21 e valores de magnitudes diferentes nos dois temas; verificar ausência de overflow global, rolagem contida, lateral equivalente e CA-027/028, registrando evidências antes do commit da consulta.
+- [x] 2.2 Unificar alinhamento de contagem, pesquisa e paginação entre Vendas/Quitadas e alinhar cabeçalhos/valores monetários à direita com algarismos tabulares em `tabela-vendas.html`; verificar testes de busca/filtros/paginação e fonte 18 px, line-height 20 px e padding contratado, documentando capturas e resultados da funcionalidade.
+- [x] 2.3 Estender a fixture de paginação para comprovar dez vendas/paginação visíveis, casos 0/1/10/11/21 e valores de magnitudes diferentes nos dois temas; verificar ausência de overflow global, rolagem contida, lateral equivalente e CA-027/028, registrando evidências antes do commit da consulta.
 
 ## 3. Detalhe e resultados da operação — RD-02
 
