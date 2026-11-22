@@ -809,6 +809,39 @@ usava `1.500`, rejeitado pelo formato monetário; com `1.500,00`, o fluxo passou
 Essa evidência é focada no arquivo E2E; não substitui as verificações integradas
 4.1/4.2 nem a verificação manual 4.3.
 
+### Apply `entrada-como-primeira-parcela` — verificação integrada — 22/11/2026
+
+Ambiente: Windows, Node v24.21.0, npm 11.19.0, Playwright Chromium nos projetos
+1366×768 e 390×844. Verificações executadas após as tarefas 3.1–3.5:
+
+- `npm test -- --watch=false`: **372/372 testes em 30 arquivos aprovados**.
+- `npm run test:e2e`: **84/84 execuções aprovadas** nos dois projetos. A primeira
+  execução revelou um cenário de acessibilidade que ainda não selecionava
+  “Possui Entrada”; após ajustar a fixture para “Não”, o arquivo específico
+  passou 2/2 e a suíte completa passou 84/84. A cobertura inclui fluxo de
+  cadastro, cancelamento, recebimentos/quitação, relatórios, recarga em contexto
+  limpo, privacidade/rede e reconciliação de contagens/valores. Sem aviso de
+  `pageerror` ou console nos monitores E2E.
+- `npm run test:e2e:paginacao-fixture`: **12/12 execuções aprovadas**, com
+  coleções 0/1/10/11/21, detalhe de 1/10/11 parcelas, excedentes em rolagem
+  interna, teclado, dois viewports e temas. Aviso do runner: prebundling
+  desativado porque otimização de scripts está habilitada.
+- `npm run build` e `npx ng run vendas-em-aberto:build-paginacao-fixture`:
+  ambos concluídos com sucesso. Os bundles iniciais foram respectivamente
+  300,25 kB e 302,18 kB; sem avisos de budget/Sass nestas execuções.
+- `openspec validate entrada-como-primeira-parcela --strict` e `git diff
+  --check`: aprovados.
+- `npm run format:check`: primeira execução apontou 13 arquivos da Change fora
+  do padrão. Prettier foi aplicado somente nesses arquivos; a reexecução aprovou
+  todos os arquivos do projeto.
+
+A revisão do diff após as funcionalidades encontrou apenas arquivos da Change
+em E2E, formulário/prévia, projeções/validações, seeds/serviço e respectivos
+testes/documentação; sem alteração de dependências, persistência ou edição
+financeira. A formatação final é exclusivamente ajuste de estilo. Estes
+resultados não concluem a conferência manual de zoom nativo 200% requerida em
+4.3.
+
 ### Zoom nativo — tarefa 7.3 encerrada por relato e autorização do solicitante
 
 Em 21/11/2026, no contexto da conferência solicitada em zoom nativo de 200%,
