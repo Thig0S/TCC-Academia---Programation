@@ -124,6 +124,10 @@ test('registra conteúdo e lateral para comparação visual nos dois temas', asy
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await page.screenshot({ path: info.outputPath(`${nome}-${tema}.png`), fullPage: true });
+      await writeFile(
+        info.outputPath(`${nome}-${tema}.json`),
+        JSON.stringify({ rota, tema, viewport: page.viewportSize(), cenário: nome }, null, 2),
+      );
       await page.locator('.barra-lateral').screenshot({
         path: info.outputPath(`${nome}-lateral-${tema}.png`),
       });
@@ -169,7 +173,80 @@ test('registra conteúdo e lateral para comparação visual nos dois temas', asy
           path: info.outputPath(`${nome}-sem-resultados-${tema}.png`),
           fullPage: true,
         });
+        await writeFile(
+          info.outputPath(`${nome}-sem-resultados-${tema}.json`),
+          JSON.stringify(
+            { rota, tema, viewport: page.viewportSize(), cenário: 'pesquisa sem resultados' },
+            null,
+            2,
+          ),
+        );
       }
     }
+  }
+});
+
+test('registra baseline dos fluxos válidos, inválidos e do modal', async ({ page }, info) => {
+  const abrirNoTema = async (rota: string, tema: 'dark' | 'light') => {
+    await page.goto(rota);
+    if (tema === 'light') {
+      const alternar = page.getByRole('button', { name: 'Tema escuro' });
+      if (await alternar.count()) await alternar.click();
+    }
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+  };
+  const capturar = async (nome: string, tema: 'dark' | 'light') => {
+    const rota = new URL(page.url()).pathname;
+    await page.screenshot({ path: info.outputPath(`${nome}-${tema}.png`), fullPage: true });
+    await writeFile(
+      info.outputPath(`${nome}-${tema}.json`),
+      JSON.stringify({ rota, tema, viewport: page.viewportSize(), cenário: nome }, null, 2),
+    );
+  };
+
+  for (const tema of ['dark', 'light']) {
+    await abrirNoTema('/vendas', tema);
+
+    const detalheHref = await page
+      .locator('a[href^="/vendas/"]')
+      .evaluateAll((links) =>
+        links
+          .map((link) => link.getAttribute('href'))
+          .find((href) => href && /^\/vendas\/seed%2Fvenda%2F\d+$/.test(href)),
+      );
+    expect(detalheHref, 'a lista deve expor uma venda sintética estável').toBeTruthy();
+
+    await abrirNoTema(detalheHref!, tema);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await capturar('detalhe-valido', tema);
+
+    const editarHref = detalheHref!.replace(/$/, '/editar');
+    await abrirNoTema(editarHref, tema);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await capturar('edicao-valida', tema);
+
+    await abrirNoTema(detalheHref!, tema);
+    const receber = page.getByRole('button', { name: /Receber parcelas da venda de/ });
+    await expect(receber).toBeVisible();
+    await receber.click();
+    const dialogo = page.getByRole('dialog', { name: 'Receber parcelas' });
+    await expect(dialogo).toBeVisible();
+    await capturar('recebimento-modal', tema);
+    await page.keyboard.press('Escape');
+    await expect(dialogo).toBeHidden();
+
+    await abrirNoTema('/vendas/nova', tema);
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+    await expect(page.locator('form')).toBeVisible();
+    await capturar('cadastro-invalido', tema);
+
+    await page.getByLabel('Nome', { exact: true }).fill('Cliente baseline determinístico');
+    await page.getByLabel('CPF', { exact: true }).fill('900.000.001-75');
+    await page.getByLabel('Telefone com DDD').fill('(00) 1234-5678');
+    await page.getByLabel('Possui Entrada').selectOption('nao');
+    await page.getByLabel('Valor total (R$)', { exact: true }).fill('100');
+    await page.getByLabel('Quantidade de parcelas').fill('3');
+    await expect(page.getByRole('region', { name: 'Prévia completa das parcelas' })).toBeVisible();
+    await capturar('cadastro-valido', tema);
   }
 });

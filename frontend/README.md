@@ -1,5 +1,41 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `refinar-design` — linha de base RD-01 — 22/11/2026
+
+Esta matriz é a baseline de geometria anterior à edição, vinculada aos contratos
+CA-028 (densidade), CA-031 (conteúdo e estados) e CA-032 (composição responsiva);
+não representa aceite dos critérios visuais novos.
+
+Antes de editar a apresentação, foi usada uma instância Angular isolada em
+`127.0.0.1:4302`; o servidor preexistente em 4200 não foi encerrado nem reutilizado.
+As rotas usam a referência fixa `22/11/2026` e os dados sintéticos versionados do
+seed. O cadastro de baseline usa dados determinísticos próprios e não submete nem
+persiste a venda.
+
+- `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --output=test-results/refinar-design-baseline --workers=1`:
+  **12/12 E2E passaram** em Chromium nas viewports 1366×768 e 390×844.
+- `npm.cmd run test:e2e:paginacao-fixture -- --output=test-results/refinar-design-baseline-fixture`:
+  **12/12 E2E passaram**; aviso do Angular: prebundling não é usado com otimização
+  de scripts.
+- A baseline visual registra rotas principais, páginas/registros ausentes, detalhe
+  e edição válidos, modal aberto, cadastro inválido/válido e pesquisa sem resultados,
+  em tema escuro/claro. Os arquivos `.png` têm sidecars `.json` com rota, tema,
+  viewport e cenário; a saída local não é versionada pelo Git. O teste também grava
+  geometria/estilos da lateral para cada rota e tema.
+- Nas medições da fixture em 1366×768, a décima linha termina em 641,5 px e o rodapé
+  em 709 px; no detalhe, dez parcelas terminam em 727 px. Fonte das tabelas: 18 px;
+  padding das células: 10×4 px (horizontal×vertical). Documento da lista e detalhe:
+  1366 px de largura, sem rolagem vertical da página neste cenário.
+- Em 390×844, o documento mantém 390 px de largura, sem overflow horizontal global;
+  lista com dez linhas mede 1472 px de altura e detalhe com dez parcelas 1644 px.
+  A rolagem é vertical da página. Em todas as páginas sob teste, a asserção de
+  largura global passou nos dois temas/viewports.
+- A geometria registrada da lateral foi 260 px em 1366 px e largura integral de
+  390 px no viewport estreito; seus estilos ficam nos JSONs `*-lateral-*.json` para
+  a comparação depois das alterações. Não há comparação antes/depois nem aceite
+  visual nesta etapa. Zoom nativo de 200% e estados de falha/retry permanecem para
+  as tarefas de QA correspondentes.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
@@ -830,7 +866,7 @@ Ambiente: Windows, Node v24.21.0, npm 11.19.0, Playwright Chromium nos projetos
   ambos concluídos com sucesso. Os bundles iniciais foram respectivamente
   300,25 kB e 302,18 kB; sem avisos de budget/Sass nestas execuções.
 - `openspec validate entrada-como-primeira-parcela --strict` e `git diff
-  --check`: aprovados.
+--check`: aprovados.
 - `npm run format:check`: primeira execução apontou 13 arquivos da Change fora
   do padrão. Prettier foi aplicado somente nesses arquivos; a reexecução aprovou
   todos os arquivos do projeto.

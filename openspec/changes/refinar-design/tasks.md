@@ -6,8 +6,8 @@ Cada funcionalidade deve incluir testes afetados, evidências e atualização de
 
 ## 1. Linha de base reproduzível — RD-01
 
-- [ ] 1.1 Capturar antes de editar todas as páginas enumeradas em D5, modal e estados auxiliares, com dados sintéticos e referência controlados, nos dois temas em 1366×768 e 390×844; verificar que cada captura registra rota, tema confirmado após renderização, viewport e cenário, incluindo detalhe/edição ausentes.
-- [ ] 1.2 Registrar em `frontend/README.md` a matriz de cobertura, medições iniciais de densidade/overflow e comparação da lateral; verificar que separa evidência reproduzível da inspeção exploratória desta proposta e referencia CA-028/031/032, sem alegar aceite.
+- [x] 1.1 Capturar antes de editar todas as páginas enumeradas em D5, modal e estados auxiliares, com dados sintéticos e referência controlados, nos dois temas em 1366×768 e 390×844; verificar que cada captura registra rota, tema confirmado após renderização, viewport e cenário, incluindo detalhe/edição ausentes.
+- [x] 1.2 Registrar em `frontend/README.md` a matriz de cobertura, medições iniciais de densidade/overflow e comparação da lateral; verificar que separa evidência reproduzível da inspeção exploratória desta proposta e referencia CA-028/031/032, sem alegar aceite.
 
 ## 2. Padrões comuns e listas — RD-02
 
