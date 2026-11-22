@@ -84,7 +84,14 @@
       </select>
       <app-erro-campo id="erro-forma-recebimento" [campo]="campos.forma" />
     </div>
-    <p class="text-error text-sm" role="alert">{{ mensagem() }}</p>
+    @if (mensagem()) {
+      <p
+        class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+        role="alert"
+      >
+        {{ mensagem() }}
+      </p>
+    }
     <div class="flex flex-wrap gap-3">
       <button
         type="submit"

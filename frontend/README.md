@@ -169,6 +169,25 @@ completos e a seção financeira permaneceu idêntica. Capturas do estado de err
 sidecars JSON estão em `test-results/refinar-design-edicao-final/`. As alterações
 são exclusivamente visuais.
 
+### Recebimento RD-03 — tarefa 5.2
+
+O aviso geral do modal agora segue o mesmo padrão contextual das mensagens nos
+formulários: só aparece quando há aviso e, quando renderizado, mantém `role="alert"`
+com borda/superfície e texto de erro. A conferência soma, ordem, seleção pelo
+prefixo pendente e as ações primária/secundária permanecem inalteradas; nenhum
+estado de sucesso ou confirmação novo foi criado no modal.
+
+Verificações reais: suíte unitária passou **11/11**, incluindo seleção e soma,
+parcelas consecutivas desde a primeira pendente, quitação, erro de validação,
+falha/exceção com rascunho preservado e retry, envio duplicado, cancelamento e
+fechamento via evento nativo. E2E passou **4/4** em Chromium 1366×768 e 390×844,
+nos dois temas, verificando valor/soma, modalidade sequencial, pagamento inicial,
+primeira parcela pendente, quitação e ausência da ação após quitar; Escape,
+Tab/Shift+Tab, contenção e retorno de foco também passaram. Mais **2/2** execuções
+geraram capturas do modal inicial nos dois temas/viewports com metadados em
+`test-results/refinar-design-recebimento-capturas/`. A apresentação é visual; o
+fluxo e as regras de recebimento não mudaram.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
