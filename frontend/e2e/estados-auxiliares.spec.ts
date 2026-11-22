@@ -28,7 +28,9 @@ test('preserva significado e retornos dos estados auxiliares nos dois temas', as
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
       const heading = page.getByRole('heading', { level: 1, name: titulo, exact: true });
       await expect(heading).toBeVisible();
-      await expect(page.getByText(mensagem, { exact: true })).toBeVisible();
+      const aviso = page.getByText(mensagem, { exact: true });
+      await expect(aviso).toBeVisible();
+      await expect(aviso).toHaveCSS('border-radius', '12px');
       const linkRetorno =
         rota === '/caminho-ausente'
           ? page.getByRole('link', { name: 'Voltar para Visão Geral' })
@@ -85,6 +87,7 @@ test('preserva significado e retornos dos estados auxiliares nos dois temas', as
         .fill('cliente sem correspondência 987xyz '.repeat(8));
       await expect(page.getByRole('status').first()).toContainText('0');
       await expect(page.getByText(mensagem, { exact: true })).toBeVisible();
+      await expect(page.getByText(mensagem, { exact: true })).toHaveCSS('border-radius', '12px');
       await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         page.viewportSize()!.width,
