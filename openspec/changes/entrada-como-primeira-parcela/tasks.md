@@ -22,7 +22,7 @@
 ## 2. Seed e fixtures compatíveis — FASE-011
 
 - [x] 2.1 Adaptar `dados-demonstrativos.ts` para K futuras históricas e N=K+1 com entrada, pagando apenas prefixos pendentes após a parcela de entrada. Verificar testes do seed para 12 vendas, IDs/vínculos únicos preservados, total/pago/saldo/recebido por período e vencimentos pendentes equivalentes ao contrato anterior na mesma referência, inclusive 0001-01-01, fevereiro/0001, dias 28/29/30/31 e dezembro/9999; manter situações possíveis e documentar resultados no README.
-- [ ] 2.2 Atualizar fixtures de `src/testing/paginacao-fixture.ts` e dados de testes que assumem entrada separada ou N futuras; cenários de dez parcelas contam a entrada entre as dez. Verificar testes de fixture e consumidores para 0/1/10/11/21 vendas e detalhe 1/10/11 parcelas, referência estável e ausência de migração/storage; registrar ajustes/resultados no README e criar commit próprio da entrega coerente de seed/fixtures com seus testes.
+- [x] 2.2 Atualizar fixtures de `src/testing/paginacao-fixture.ts` e dados de testes que assumem entrada separada ou N futuras; cenários de dez parcelas contam a entrada entre as dez. Verificar testes de fixture e consumidores para 0/1/10/11/21 vendas e detalhe 1/10/11 parcelas, referência estável e ausência de migração/storage; registrar ajustes/resultados no README e criar commit próprio da entrega coerente de seed/fixtures com seus testes.
 
 ## 3. Cadastro, prévia e consultas — FASE-012
 
