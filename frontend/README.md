@@ -3613,3 +3613,47 @@ caminho absoluto falhou e foi repetida com diretório relativo, após confirmaç
 Nenhuma pasta preexistente foi apagada. Há somente página técnica, não FASE-003 a FASE-008.
 As evidências estão prontas para revisão conforme o template de PR do repositório;
 nenhum commit, push, PR ou merge foi executado por este agente.
+
+## Apply `novo-design` — detalhe, edição e recebimento — tarefa 3.3 — 22/11/2026
+
+O PNG `../references/a_detailed_ui_screenshot_of_a_sales_detail_page_fo.png` orientou
+a hierarquia dos blocos de cliente/venda, valores tabulares, divisórias e lista de
+parcelas. A implementação mantém a página de detalhe, a entrada separada, todos os
+campos e histórico, tabela de 18 px e ação individual somente na primeira parcela
+elegível. Não foram copiadas a busca global, métricas/ações fictícias, ações em todas
+as parcelas, seleção de lote ou modal de detalhes. Edição permanece limitada aos
+quatro campos de cliente; o modal nativo de pagamento preserva contratos, sequência,
+validação, cancelamento e retorno de foco. O refinamento acrescenta respiro compacto
+aos blocos, superfície semântica à entrada, acabamento da tabela, painel de edição e
+ênfase tipográfica nos rótulos do recebimento.
+
+Medições reais da fixture de dez parcelas, nos temas claro/escuro:
+
+| Viewport | Documento (largura × altura) | Blocos cliente/venda               | Última parcela / painel     | Tabela                                         |
+| -------- | ---------------------------- | ---------------------------------- | --------------------------- | ---------------------------------------------- |
+| 1366×768 | 1366 × 768 px                | ambos iniciam em 149 px            | base em 753,5 px / 754 px   | fonte 18 px; dados 10×4 px e cabeçalho 10×8 px |
+| 390×844  | 390 × 2031 px                | cliente em 511 px; venda em 746 px | base em 1806,5 px / 1807 px | fonte 18 px; dados 10×4 px e cabeçalho 10×8 px |
+
+No desktop, dez parcelas e a página inteira permanecem no limite de 768 px, sem
+rolagem vertical global; no mobile, a rolagem vertical é esperada e a largura não
+excede 390 px. O primeiro ajuste de espaçamento excedeu o limite desktop (documento
+781,5 px); a densidade foi recalibrada e a execução final mediu 768 px. O cenário de
+mais de dez parcelas permaneceu em região interna rolável e operável por teclado.
+
+Verificações reais desta tarefa:
+
+- `npx ng test vendas-em-aberto --watch=false --include src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts --include src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts --include src/app/funcionalidades/parcelas/registrar-pagamento/registrar-pagamento.spec.ts`:
+  **29/29 testes em 3 arquivos**.
+- E2E de detalhe, pagamento individual e edição nos projetos Chromium 1366×768 e
+  390×844: **8/8**; inclui erro de validação, pagamentos sequenciais/quitação e
+  preservação das finanças ao cancelar edição.
+- E2E do modal nativo, cancelamento por botão/Escape, contenção e retorno de foco:
+  **2/2** nos dois viewports.
+- `paginacao-fixture.spec.ts`, dez parcelas e excedentes roláveis: **4/4** nos dois
+  viewports/temas; fonte, padding, largura documental e limite desktop conferidos.
+- Prettier direcionado e `git diff --check`: aprovados.
+
+As capturas e sidecars gerados estão localmente em `frontend/test-results/` e não são
+versionados; documentam execução automatizada, não substituem zoom nativo ou aceite
+visual. Não houve inspeção manual de zoom nesta tarefa. O resultado do grupo não
+representa a regressão integrada nem a conclusão da Change.
