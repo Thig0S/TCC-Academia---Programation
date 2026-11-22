@@ -26,9 +26,9 @@
 
 ## 5. Verificação integrada da Change
 
-- [ ] 5.1 Executar `npm test`, `npm run test:e2e`, `npm run build` e `npm run format:check` em `frontend/`; registrar comandos, contagens, falhas/avisos e eventuais execuções não realizadas em `frontend/README.md`, sem declarar aprovação por antecipação.
-- [ ] 5.2 Comparar navegação, listagens, cadastro, detalhe, pagamento e demais módulos em claro/escuro, 1366×768, 390×844 e zoom nativo 200% quando disponível com os cinco PNGs, dois HTMLs e template Angular efetivamente presentes em `references/`; verificar contraste, foco, ausência de overflow da página, densidade, resultados reais e registrar no `frontend/README.md` diferenças intencionais e a comparação impossível com o sexto PNG ausente.
-- [ ] 5.3 Validar `openspec validate novo-design --strict`, revisar rastreabilidade PRD/TDD/SDD e o diff para assegurar que só houve mudanças autorizadas de apresentação e testes; registrar o resultado real e as divergências documentais preexistentes sem alegar conciliação/aceite/merge que não ocorreu.
+- [x] 5.1 Executar `npm test`, `npm run test:e2e`, `npm run build` e `npm run format:check` em `frontend/`; registrar comandos, contagens, falhas/avisos e eventuais execuções não realizadas em `frontend/README.md`, sem declarar aprovação por antecipação.
+- [x] 5.2 Comparar navegação, listagens, cadastro, detalhe, pagamento e demais módulos em claro/escuro, 1366×768, 390×844 e zoom nativo 200% quando disponível com os cinco PNGs, dois HTMLs e template Angular efetivamente presentes em `references/`; verificar contraste, foco, ausência de overflow da página, densidade, resultados reais e registrar no `frontend/README.md` diferenças intencionais e a comparação impossível com o sexto PNG ausente.
+- [x] 5.3 Validar `openspec validate novo-design --strict`, revisar rastreabilidade PRD/TDD/SDD e o diff para assegurar que só houve mudanças autorizadas de apresentação e testes; registrar o resultado real e as divergências documentais preexistentes sem alegar conciliação/aceite/merge que não ocorreu.
 
 ## Workflow follow-up
 
