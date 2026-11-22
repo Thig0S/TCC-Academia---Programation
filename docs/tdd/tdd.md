@@ -7,6 +7,13 @@
 
 ## 1. Identificação e situação
 
+**Zoom nativo 200% — revisão 1.22, 22/11/2026:** em atendimento a RNF-007/CA-028,
+o solicitante confirmou que a interface atende ao requisito usando as configurações
+já documentadas: Chrome 157.0.8103.79 (64 bits), escala Windows 125% e viewport útil
+506×528,65 CSS px. O registro é evidência manual declarada, não medição independente;
+PEN-013/014, homologação geral e aceite da ótica não são concluídos por esta verificação.
+Cobertura e limitações constam em `frontend/README.md` e na tarefa 8.3 da Change ativa.
+
 **Entrada como primeira parcela — revisão 1.21, 21/11/2026:** PRD 1.17/FON-015,
 RN-011/012/013/017/024 e CA-008/033/034/035 fundamentam DEC-026. O solicitante
 confirmou uma única origem contábil (recebimento alocado à parcela 1) e preservação

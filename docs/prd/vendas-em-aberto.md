@@ -5,13 +5,20 @@
 ## 1. Identificação e resumo executivo
 
 - **Situação:** rascunho para validação.
-- **Data de elaboração:** 11/11/2026. **Versão:** 1.17 — planejamento da entrada como primeira parcela e escolha obrigatória de entrada, em 21/11/2026.
+- **Data de elaboração:** 11/11/2026. **Versão:** 1.18 — registro da verificação manual de zoom nativo 200%, em 22/11/2026.
 - **Produto:** Mercadão dos Óculos - Vendas em Aberto — MVP visual de gestão de vendas a prazo de uma ótica.
 - **Origem do briefing:** solicitação de criar um PRD baseado no `README.md`, sem autorização para implementação.
 - **Responsáveis e aprovadores:** participação do solicitante e da equipe da ótica prevista por confirmação do solicitante; papéis, quantidade e autoridade de aceite ainda não definidos. Aprovação documental não é aceite da ótica.
 - **Proposta:** demonstrar uma alternativa à planilha auxiliar de crediário, concentrando cadastro de venda, identificação do cliente, consulta de parcelas e simulação de recebimento em uma navegação simples.
 - **Valor esperado:** validar se a equipe consegue cadastrar e conferir uma venda com menos dificuldade, distinguir clientes com nomes semelhantes e entender pagamentos e saldos. Redução efetiva de erros e ganhos de tempo ainda não foram medidos.
 - **Limite:** Angular + TypeScript, dados sintéticos, operações locais e perda das alterações ao recarregar. Backend, banco, autenticação, persistência e integrações não fazem parte do MVP.
+
+**Verificação de zoom — revisão 1.18, 22/11/2026:** para RNF-007/CA-028, o
+solicitante confirmou que a interface atende ao requisito em zoom nativo de 200%,
+nas configurações já registradas: Google Chrome 157.0.8103.79 (64 bits), Windows
+com escala 125% e viewport útil de 506×528,65 CSS px. A evidência é relato manual,
+sem reprodução independente pelo agente; compatibilidade geral e aceite da ótica
+continuam pendentes. Detalhes e limites da cobertura estão em `frontend/README.md`.
 
 ## 2. Contexto, problema e evidências
 
@@ -550,7 +557,7 @@ Origem FON-015; essencial para RF-004, confirmada para planejamento.
 | RNF-004 | Privacidade e isolamento | Nenhum dado pessoal real ou transmissão a serviços de dados; ausência de armazenamento persistente dos registros | Revisar fonte sintética e uso de rede/armazenamento durante operações e recarga | Essencial | FON-001 e FON-002; confirmado por fonte |
 | RNF-005 | Integridade | Cada operação válida altera todos os derivados de forma coerente; erros/cancelamentos mantêm o estado anterior | Cenários CA-011 a CA-017, comparando centavos e registros antes/depois | Essencial | FON-002; confirmado por fonte |
 | RNF-006 | Usabilidade e desempenho | Busca e abertura de detalhes sem espera artificial; avaliação proposta de resposta em até 300 ms com 15 vendas na máquina de demonstração | Medição local após definir ambiente; observação de tarefas | Importante | FON-001; limite numérico é HIP-006, não medição existente |
-| RNF-007 | Layout e compatibilidade | Desktop 1366 × 768 a 100%: barra de critérios em uma linha, até 10 vendas e paginação visíveis sem rolagem da página; detalhe padrão com até 10 parcelas visíveis. Excedente de parcelas rola internamente. Em 390 × 844 e zoom nativo 200%, permitir reorganização/rolagem acessível sem perda de conteúdo | Medir geometria e capturas nos dois temas; testar teclado, textos extensos e zoom, conforme CA-028; PEN-013 ainda limita aceite geral de compatibilidade | Essencial no recorte de consulta | FON-010; critério confirmado, não verificado |
+| RNF-007 | Layout e compatibilidade | Desktop 1366 × 768 a 100%: barra de critérios em uma linha, até 10 vendas e paginação visíveis sem rolagem da página; detalhe padrão com até 10 parcelas visíveis. Excedente de parcelas rola internamente. Em 390 × 844 e zoom nativo 200%, permitir reorganização/rolagem acessível sem perda de conteúdo | Medir geometria e capturas nos dois temas; testar teclado, textos extensos e zoom, conforme CA-028; PEN-013 ainda limita aceite geral de compatibilidade | Essencial no recorte de consulta | FON-010; zoom nativo 200% confirmado por relato manual em 22/11/2026; compatibilidade geral não homologada |
 | RNF-008 | Manutenibilidade e tecnologia | Angular + TypeScript; standalone, HTML separado, estado por signals, novos formulários com Signal Forms compatível; dados/cálculos fora da apresentação, tipos estritos | Revisão da estrutura/configuração e futuros testes de domínio | Essencial | FON-002; base e navegação existentes; domínio financeiro e formulários não implementados |
 | RNF-009 | Coerência visual | Temas claro e escuro, escuro inicial; alternância acessível com indicação do tema ativo, preservada entre rotas somente em memória; recarga restaura escuro; tokens e contraste consistentes | Revisão visual e por teclado das áreas existentes nos dois temas; componentes futuros herdam o mesmo contrato | Essencial | FON-001 e confirmação do solicitante em 13/11/2026; PEN-006 resolvida documentalmente |
 | RNF-010 | Limite arquitetural | Ausência de backend, banco, autenticação, APIs de dados externas e persistência; sem contratos futuros inventados | Revisão de escopo e futura inspeção de dependências/código | Essencial | FON-001 e FON-002; confirmado por fonte |
