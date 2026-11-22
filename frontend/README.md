@@ -25,6 +25,39 @@ décima linha até 641,5 px, rodapé até 709 px, dez parcelas até 735 px.
 Capturas locais antes/depois estão em `test-results/revisao-paginacao-antes/` e
 `test-results/revisao-paginacao-depois/`; não equivalem a zoom nativo ou aceite.
 
+### Auditoria e reprodução — tarefa 9.1
+
+Os 372 testes unitários passaram antes das alterações. A primeira execução E2E
+registrou 109/110 aprovados e um timeout no pagamento repetido; ocorreu durante
+edições com servidor de desenvolvimento ativo, portanto não serve como baseline
+isolada completa. A repetição isolada do mesmo teste passou 2/2, sem alterar fluxo
+ou teste de pagamento. A regressão final será feita sem editar a aplicação durante
+a execução.
+
+A nova regressão da Visão Geral cadastrou pela interface um nome sintético sem
+espaços de 322 caracteres e total de R$ 1.000.000.000.000,00, ambos aceitos pelas
+validações atuais. Em 390 px, o documento chegou a **2177 px**; reprodução falhou
+nos dois projetos. Isso comprova que a matriz anterior com textos longos contendo
+espaços não cobria essa quebra. Fonte, serviços, limites e recortes não devem ser
+alterados para contornar o problema.
+
+### Resumos e indicadores resilientes — tarefa 9.3
+
+Aplicado `wrap-anywhere` somente aos indicadores e à grade dos resumos da Visão
+Geral. Nomes sem espaços e valores extensos podem quebrar dentro do painel sem
+truncar, reduzir fonte, esconder overflow ou mudar cálculo/ordem/limites. A regra
+é herdada pelos três resumos, preservando os quatro indicadores e cinco links
+por resumo no cenário de teste.
+
+`npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --grep
+"resumos preservam nome|preserva os indicadores e refina"
+--output=test-results/revisao-resumos-depois` passou **4/4**. O teste novo percorre
+390/767/768/1024/1366 px nos dois temas, mede conteúdo versus largura dos painéis
+e itens e confirma nome integral. Capturas antes/depois foram inspecionadas em
+`test-results/revisao-resumos-antes/` e `test-results/revisao-resumos-depois/`.
+As evidências selecionadas de ambas correções estão versionadas em
+`evidencias/revisao-refinar-design/`; sem dados reais, zoom nativo ou homologação.
+
 ## Apply `refinar-design` — linha de base RD-01 — 22/11/2026
 
 Esta matriz é a baseline de geometria anterior à edição, vinculada aos contratos

@@ -1,6 +1,56 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+test('resumos preservam nome sem espaços e valores extensos sem overflow', async ({
+  page,
+}, info) => {
+  const nome = `Cliente${'Sintetico'.repeat(35)}`;
+  for (const tema of ['dark', 'light']) {
+    await page.goto('/vendas/nova');
+    if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
+    await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
+    await page.getByLabel('Nome', { exact: true }).fill(nome);
+    await page.getByLabel('CPF', { exact: true }).fill('900.000.001-75');
+    await page.getByLabel('Telefone com DDD').fill('(00) 1234-5678');
+    await page.getByLabel('Possui Entrada').selectOption('nao');
+    await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000000000000');
+    await page.getByLabel('Quantidade de parcelas').fill('3');
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Detalhes da venda', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Visão Geral', exact: true }).click();
+    const resumo = page.getByRole('region', { name: 'Vendas recentes' });
+    await expect(resumo.getByRole('link', { name: nome, exact: true })).toHaveText(nome);
+    for (const titulo of ['Vendas recentes', 'Parcelas próximas', 'Parcelas atrasadas']) {
+      await expect(page.getByRole('region', { name: titulo })).toHaveCSS(
+        'overflow-wrap',
+        'anywhere',
+      );
+      await expect(page.getByRole('region', { name: titulo }).getByRole('link')).toHaveCount(5);
+    }
+    for (const largura of [390, 767, 768, 1024, 1366]) {
+      await page.setViewportSize({ width: largura, height: 844 });
+      await page.screenshot({
+        path: info.outputPath(`resumo-extenso-${largura}-${tema}.png`),
+        fullPage: true,
+      });
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+        `${largura}/${tema}`,
+      ).toBeLessThanOrEqual(largura);
+      const medidas = await page.locator('main article, main li').evaluateAll((elementos) =>
+        elementos.map((elemento) => ({
+          largura: elemento.clientWidth,
+          conteudo: elemento.scrollWidth,
+        })),
+      );
+      for (const medida of medidas) expect(medida.conteudo).toBeLessThanOrEqual(medida.largura);
+      await expect(resumo.getByRole('link', { name: nome, exact: true })).toHaveText(nome);
+    }
+  }
+});
+
 test('mantém o indicador nativo de data no esquema do formulário', async ({ page }) => {
   await page.goto('/vendas/nova');
   await expect(page.locator('input[type="date"]')).toHaveCSS('color-scheme', 'dark');
