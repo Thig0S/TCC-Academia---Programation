@@ -307,6 +307,27 @@ Comparação técnica não equivale a aprovação visual/ótica; nenhuma aprova�
 alegada. Capturas basais e atuais estão em
 `test-results/refinar-design-baseline/` e `test-results/refinar-design-final-superficies/`.
 
+### Matriz responsiva integrada RD-05 — tarefa 8.2
+
+A matriz integrada percorreu nove rotas (Visão Geral, Vendas, Quitadas, cadastro,
+Relatórios, Configurações, página ausente, detalhe ausente e edição ausente) mais o
+modal: **100 combinações por projeto** = cinco larguras (390, 767, 768, 1024, 1366)
+× dois temas × dez superfícies. Os dois projetos Chromium passaram. Em todos, a
+largura documental foi menor ou igual à viewport; cadastro manteve a fronteira
+767/768 px e suas duas colunas a partir de 768 px. O modal permaneceu dentro da
+largura disponível, com foco inicial e fechamento por Escape.
+
+Na fixture, mais **30 amostras por projeto Chromium** cobriram 21 vendas, as quatro
+tabelas de Relatórios e a venda de 11 parcelas com nome/descrição longos, nos mesmos
+cinco limites e temas. A matriz passou **2/2**; textos completos foram localizados,
+a largura global não excedeu a viewport, e regiões com tabelas mantiveram rolagem
+interna quando necessária. Cobertura dedicada anterior confirma dez linhas e dez
+parcelas no desktop, parcela excedente em região rolável acessível e sem sobreposição.
+As medições estão em `test-results/refinar-design-matriz-integrada/` e
+`test-results/refinar-design-matriz-fixture/`; os cenários especializados de cadastro,
+edição e modal permanecem em seus diretórios de captura. Não foi aplicado `overflow-x:hidden`
+para esconder falhas.
+
 ## Apply `refinar-estilo-conteudo-mvp` — 21/11/2026
 
 ### Referências confirmadas — tarefa 1.1
