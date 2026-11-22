@@ -49,6 +49,50 @@ imagens mencionadas no documento é
 `references/a_clean_modern_desktop_app_dashboard_ui_light_the.png`; os demais caminhos
 citados existem. Não se afirma comparação com a imagem ausente nem com zoom nativo.
 
+## Apply `novo-design` — shell e componentes compartilhados — 22/11/2026
+
+Reutilizados PRD RNF-002/007, TDD DEC-006/021/022 e os protótipos
+`references/mercadao_oculos_dashboard_light.html` e
+`references/mercadao_oculos_dashboard_dark.html`. Os protótipos exibem busca global,
+notificações/controles de janela, gradientes e outros elementos que não fazem parte
+do shell atual aprovado. A barra superior continua contendo apenas a identificação
+do protótipo e o controle acessível de tema; a busca permanece local à lista. Logo,
+sidebar, textos/rotas de navegação e tokens próprios da lateral não foram alterados.
+
+O ritmo foi ajustado com gutter horizontal de 16 px no conteúdo desktop (12 px em
+viewports menores), preservando 12 px verticais; a barra superior usa altura mínima
+de 56 px e a separação de 8 px entre cabeçalho de página e conteúdo permanece. Os
+tokens existentes `--app-surface`, `--app-canvas`, `--app-text`, `--app-brand` e
+`--app-focus` já atendem aos estados atuais; não foi necessário criar/alterar tokens
+nem tocar em `styles.css`. O subtítulo comum dos cabeçalhos usa o token semântico de
+marca, e as mensagens de sucesso existentes no detalhe compartilham raio de borda
+de 8 px com os demais painéis. Os contratos do cabeçalho, modal, foco e mensagens
+foram preservados; não foi necessário modificar o modal. Nenhuma dependência foi
+adicionada.
+
+Verificações reais:
+
+- Captura E2E anterior à edição: **2/2** (`test-results/novo-design-shell-before/`).
+- E2E de tema inicial escuro, alternância por teclado, contraste/foco da lateral e
+  medidas do shell: **12/12**, Chromium 1366×768 e 390×844, nos dois temas.
+- Capturas E2E posteriores para comparação: **2/2** em
+  `test-results/novo-design-shell-final/`.
+- Comparação de 36 pares de metadados da sidebar (rotas, dois temas e dois viewports):
+  **32/36 idênticos**. Nos quatro demais (cadastro e relatórios, claro/escuro),
+  a altura geométrica do `<aside>` e a posição vertical do bloco de perfil variaram
+  **1 px**, pelo estiramento automático da linha da grade conforme a altura do
+  conteúdo. Largura, cores, gradiente, fonte, navegação e estilos computados dos
+  elementos internos permaneceram iguais; o E2E
+  da lateral mediu contraste mínimo de texto/ícones **4,83:1** no claro e **5,96:1**
+  no escuro, e foco **5,75:1** e **10,41:1**, respectivamente.
+- Testes de contraste/tabelas, matriz responsiva, mensagens de sucesso e cabeçalho:
+  **8/8 E2E**; componentes de cabeçalho e selo: **8/8 unitários**.
+- `package.json`/lockfile não foram alterados; o diff do shell não toca logo, rotas,
+  navegação lateral ou busca global.
+
+As evidências são capturas/metadados Playwright locais, não equivalem a auditoria de
+leitor de tela, zoom nativo de 200% ou aceite da ótica.
+
 ## Revisão pós-implementação `refinar-design` — 22/11/2026
 
 Reutilizados PRD RNF-002/007/009, RF-003 e CA-027/028 e TDD DEC-018/021/023,
