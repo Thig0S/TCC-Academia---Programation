@@ -1,5 +1,70 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `novo-design` — verificação integrada — 22/11/2026
+
+Conclusão da Change `novo-design` na `feature/redesign`. O escopo ficou restrito
+à apresentação existente, seus testes e documentação: rotas, conteúdo/ações,
+contratos de componentes, filtros, cálculos, seed e regras de negócio foram
+preservados. PRD `docs/prd/vendas-em-aberto.md` e TDD `docs/tdd/tdd.md` foram
+reutilizados; a proposta, o desenho, o delta `consulta-vendas` e as tarefas OpenSpec
+registram a rastreabilidade. Permanecem como conflitos documentais preexistentes as
+menções históricas a “Limpar critérios” e recebimento em lote; esta Change não as
+concilia nem reintroduz esses comportamentos.
+
+### Regressão integrada — tarefa 5.1
+
+Execuções finais em `frontend/`, 22/11/2026:
+
+| Comando                                  | Resultado                                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `npm.cmd test -- --watch=false`          | **373/373** testes unitários/componentes aprovados                                              |
+| `npm.cmd run test:e2e -- --workers=1`    | **116/116** cenários E2E aprovados; execução isolada na porta 4304 porque a 4200 estava ocupada |
+| `npm.cmd run build`                      | Aprovado; bundle inicial **303,68 kB**, transferência estimada **81,19 kB**                     |
+| `npm.cmd run format:check`               | Aprovado                                                                                        |
+| `npm.cmd run test:e2e:paginacao-fixture` | **16/16** aprovados; aviso esperado de prebundling não utilizado com otimização de scripts      |
+| Capturas visuais direcionadas            | **10/10** verificações aprovadas; saídas locais em `test-results/novo-design-visual-final/`     |
+| `openspec validate novo-design --strict` | Aprovado                                                                                        |
+
+Não houve falha na execução integrada final. A ocupação da porta padrão foi
+contornada com configuração isolada; nenhum processo alheio foi encerrado. A fixture
+passou integralmente apesar do aviso acima. As capturas Playwright são evidência
+automatizada local, não anexos versionados.
+
+### Comparação visual integrada — tarefa 5.2
+
+Foram conferidos os cinco PNGs presentes, os HTMLs claro/escuro e o template
+`nova_venda_refatorada.component.html` em `references/`, junto às capturas atuais
+em ambos os temas e viewports 1366×768 e 390×844. A imagem
+`a_clean_modern_desktop_app_dashboard_ui_light_the.png`, citada em `DESIGN.md`, não
+existe; nenhuma comparação com ela é alegada. Também não se copiou dos protótipos
+busca global, KPIs na lista, controles de janela, filtros, ações ou campos fictícios
+que conflitam com os contratos atuais.
+
+Na revisão das capturas representativas de Vendas, Visão Geral, cadastro/prévia,
+detalhe/parcelas e Relatórios, nos dois temas e tamanhos, a hierarquia e os estados
+permanecem legíveis; formulários empilham no viewport estreito, e tabelas/conteúdo
+extenso usam rolagem local onde previsto, sem overflow horizontal global. Os cenários
+automatizados cobrem ainda Configurações, Quitadas, ausências, erros e modal de
+recebimento. Contraste, foco/teclado, densidade e resultados são respaldados pelas
+medições e testes registrados nas seções de cada entrega acima; a revisão visual não
+substitui auditoria de tecnologia assistiva ou aceite da ótica.
+
+**Zoom nativo 200% — evidência anterior, não repetida nesta execução:** o solicitante
+confirmou os destinos e modal nos temas claro/escuro usando Chrome 157.0.8103.79
+(64 bits), escala Windows 125% e viewport útil de 506×528,65 CSS px. O registro e
+seus limites estão descritos nas revisões do PRD/TDD e na matriz visual anterior deste
+README (linhas históricas abaixo); é relato manual, não inspeção nem medição
+independente do agente, e não equivale a homologação geral ou aceite da ótica.
+Não foi usado `CSS zoom` como substituto. Capturas recentes não são evidência de zoom.
+
+### Fechamento SDD — tarefa 5.3
+
+`openspec validate novo-design --strict` passou. A revisão de rastreabilidade confirma
+o reaproveitamento do PRD, TDD e specs; o diff da Change contém templates de
+apresentação, testes, tarefas OpenSpec e este registro, sem mudança de contratos,
+regras financeiras, rotas ou dependências. Não se afirma conciliação dos conflitos
+documentais preexistentes, aprovação da ótica, publicação, PR ou merge nesta etapa.
+
 ## Apply `novo-design` — listagens — 22/11/2026
 
 Reutilizados PRD RF-002/RF-003 e CA-027/028, TDD DEC-018/022/023 e o delta
