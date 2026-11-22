@@ -1,5 +1,51 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `piloto-fidelidade-visual-vendas` — baseline e mapa de referência — 22/11/2026
+
+### Baseline anterior à edição — tarefa 1.1
+
+A captura reprodutível adicionada em `e2e/paginacao-fixture.spec.ts` foi executada
+antes de alterar templates/estilos de produção:
+
+`npm.cmd run test:e2e:paginacao-fixture -- --grep "registra baseline visual do piloto" --output=test-results/piloto-fidelidade-visual-vendas-baseline`
+
+Resultado: **2/2 projetos Chromium** (1366×768 e 390×844), ambos percorrem Vendas e
+Quitadas nos temas escuro/claro. O seed é sintético; Vendas usa exatamente dez
+registros abertos e Quitadas tem 16 registros, com dez linhas visíveis na primeira
+página. O teste grava PNG/JSON local em `test-results/`; uma cópia versionada das
+oito combinações página×tema×viewport está em
+`evidencias/piloto-fidelidade-visual-vendas/baseline/`.
+
+Na baseline clara/escura de Vendas em 1366×768, documento **1366×768**, décima linha
+até **661,5 px**, rodapé até **692 px**, fonte/line-height **18/20 px**. A região da
+tabela tem **1070 px** visíveis para **1305 px** de conteúdo e mantém `overflow-x:auto`;
+na tela estreita, documento **390×1447**, tabela **362/1305 px** (visível/conteúdo),
+com a mesma rolagem local e sem overflow horizontal global. Quitadas em 1366×768
+tem décima linha até **633,5 px**, rodapé até **682 px**, tabela **1070/1309 px**;
+em 390×844, documento **390×1370 px** e tabela **362/1309 px**. Os JSONs por tema
+e viewport contêm as medições completas.
+
+### Mapa referência ↔ contrato vigente — tarefa 1.2
+
+| Área da referência escolhida                                              | Alvo estético do piloto                                                   | Contrato mantido / item fora                                                                                                                            |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cabeçalho “Vendas” com ícone/copy e CTA à direita                         | Reforçar hierarquia, respiro e acabamento do cabeçalho/painel             | Sem conteúdo comercial demonstrativo novo; “Nova venda” permanece na faixa dos critérios (RF-003/CA-028/DEC-023)                                        |
+| Quatro cartões KPI acima dos critérios                                    | **Não reproduzir** na listagem                                            | Total em aberto, Valores em atraso, Recebido no mês e Vendas cadastradas não aparecem como cartões (RF-002/CA-028)                                      |
+| Busca destacada, situação, filtro de período e limpar filtros             | Dar tratamento de controle coeso à busca e situação locais                | Uma busca local; sem período; “Limpar pesquisa” limpa apenas o termo e preserva situação; sem limpeza conjunta (RF-003/CA-028/DEC-023)                  |
+| Tabela em cartão branco, cabeçalho suave, linhas e separadores finos      | Reorganizar visualmente superfícies, alinhamentos, densidade e hover/foco | Oito colunas/dados atuais; texto de ação Visualizar/Editar permanece visível; não criar avatares/IDs falsos nem menu de reticências (RF-002/CA-028/029) |
+| Selos suaves coloridos por situação                                       | Aplicar pills legíveis e integradas à linha                               | Texto e classificação real continuam presentes, sem depender só de cor                                                                                  |
+| Rodapé com faixa à esquerda e paginação à direita                         | Unificar faixa e navegação em composição de tabela                        | Contagem, páginas e foco seguem o contrato de paginação (CA-027)                                                                                        |
+| Tipografia compacta da imagem (captura 1672×920)                          | Referência de ritmo e hierarquia, não de redução tipográfica              | 18 px/20 px e padding atual permanecem; em 1366×768 a tabela rola horizontalmente dentro da região, como medido na baseline (CA-028)                    |
+| Sidebar clara, busca global, notificações, janela e largura desktop ampla | Registrar como contexto da composição, fora deste piloto                  | Shell/sidebar não são alterados; sem busca duplicada, notificação, controle de janela ou mudança de largura global                                      |
+
+A imagem mostra 8 colunas compatíveis em conceito, mas usa avatar e menu de ações
+ilustrativos, fonte menor e um desktop de 1672 px. A versão atual preserva seus dados
+e ações verdadeiros. A fidelidade desta etapa será julgada por composição, superfície,
+hierarquia e acabamento no conteúdo de Vendas; sem prometer réplica pixel a pixel ou
+aprovação automática. PRD RF-002/RF-003, CA-027/028/029, TDD DEC-018/022/023 e o delta
+`openspec/changes/piloto-fidelidade-visual-vendas/specs/consulta-vendas/spec.md`
+foram conferidos antes da implementação.
+
 ## Apply `novo-design` — verificação integrada — 22/11/2026
 
 Conclusão da Change `novo-design` na `feature/redesign`. O escopo ficou restrito

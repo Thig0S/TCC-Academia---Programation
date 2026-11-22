@@ -1,0 +1,22 @@
+{
+  "pagina": "quitadas",
+  "tema": "dark",
+  "viewport": {
+    "largura": 1366,
+    "altura": 768
+  },
+  "documento": {
+    "largura": 1366,
+    "altura": 768
+  },
+  "linhasVisiveis": 10,
+  "baseDecimaLinha": 633.5,
+  "baseRodape": 682,
+  "tabela": {
+    "larguraVisivel": 1070,
+    "larguraConteudo": 1309,
+    "scrollHorizontal": "auto",
+    "fonte": "18px",
+    "lineHeight": "20px"
+  }
+}
