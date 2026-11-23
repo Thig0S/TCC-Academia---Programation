@@ -15,8 +15,11 @@ e `actions/deploy-pages`. Declarar `pages: write`, `id-token: write` e `contents
 no menor escopo necessário; ambiente `github-pages`, concorrência por grupo e sem
 cancelamento do deploy já em andamento. Configurar Pages com source `GitHub Actions`.
 
-O fallback de rotas diretas deve ser tratado de modo compatível com GitHub Pages (por
-exemplo, cópia controlada do `index.html` para `404.html` no artefato), sem modificar
+Recursos da pasta `public/` referenciados pela aplicação devem usar caminhos relativos
+ao `<base href>` (sem `/` inicial), para que imagens e favicon sejam resolvidos sob o
+subcaminho; validar especificamente `imgs/logo-franquia.jpg`. O fallback de rotas
+diretas deve ser tratado de modo compatível com GitHub Pages (por exemplo, cópia
+controlada do `index.html` para `404.html` no artefato), sem modificar
 roteamento/URL pública da aplicação sem necessidade. Validar a saída real do build,
 incluindo subcaminhos e assets, antes de fixar o diretório do artefato. Credenciais
 permanecem no `GITHUB_TOKEN` com permissões declaradas; não criar secrets próprios.
