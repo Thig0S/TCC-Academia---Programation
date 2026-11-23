@@ -16,5 +16,5 @@ Apply autorizado após revisão Harness. Referências: PRD “Publicação demon
 
 ## 3. Entrega
 
-- [ ] 3.1 Revisar escopo/diff e abrir um único PR para `main` usando `.github/pull_request_template.md` apenas após todas as tarefas e verificações aplicáveis.
+- [x] 3.1 Revisar escopo/diff e abrir um único PR para `main` usando `.github/pull_request_template.md`; PR #29 aberto para validação/revisão.
 - [ ] 3.2 Não mesclar sem autorização explícita; confirmar estado remoto após integração antes de declarar deploy concluído.
