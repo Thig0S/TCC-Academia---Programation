@@ -5,6 +5,29 @@
 > são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
 > roadmap. Implementação técnica não equivale a aceite do produto.
 
+## Seed com nomes e valores variados — desenho de 23/11/2026
+
+Base: refinamento do PRD de 23/11/2026. Alterar somente `criarDadosDemonstrativos`
+e os testes diretamente ligados ao conjunto inicial. Usar listas determinísticas de
+12 nomes completos sintéticos distintos e 12 totais em centavos, todos entre
+60.000 e 240.000 e sem repetição. Não gerar identificação a partir de pessoas ou
+serviços externos; manter `criarIdentificacaoSintetica` e seu aviso de que números
+válidos podem coincidir com titulares.
+
+Manter estáveis IDs, datas, grupo de situação, critério de bordas do calendário,
+quantidade de parcelas futuras e presença de entrada. Nas vendas com entrada, usar
+20% do total em centavos (total escolhido divisível por cinco); deixar a preparação
+de cadastro distribuir exatamente o saldo nas futuras. Recriar liquidações históricas
+usando os valores efetivos das parcelas, sem duplicar a entrada ou modificar regras
+do domínio. Atualizar asserts que hoje fixam nomes ou valores uniformes; manter os
+testes de determinismo, validação, isolamento, situações e limites 0001–9999.
+
+Verificação: testes focados do seed, regressão unitária, build e formatação. Comparar
+antes/depois para uma referência comum, confirmando 12 IDs preservados, todos os
+totais distintos na faixa, valores de parcelas somando cada total e situações/estrutura
+temporal inalteradas. Não ampliar para fixtures independentes, dados criados pela UI
+ou regras gerais de produto.
+
 ## Piloto visual da listagem de Vendas — desenho proposto em 22/11/2026
 
 Base: PRD, seção “Piloto visual de Vendas”, RF-002/003, RNF-002/007 e CA-027/028/029.
