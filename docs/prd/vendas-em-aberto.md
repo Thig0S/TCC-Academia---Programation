@@ -1,5 +1,25 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Publicação demonstrativa no GitHub Pages — planejamento de 23/11/2026
+
+**Problema:** a SPA demonstrativa ainda não possui publicação web automatizada para
+avaliação. **Objetivo:** disponibilizar a versão compilada em GitHub Pages, publicando
+automaticamente após cada commit integrado à branch `main`.
+
+**Escopo:** workflow GitHub Actions acionado por `push` em `main`, instalação
+reprodutível pelo lockfile, build de produção do Angular em `frontend/` e publicação
+do artefato pelo mecanismo oficial do GitHub Pages. Usar permissões mínimas, concorrência
+para evitar deploys ultrapassados e configuração compatível com a URL de projeto do
+repositório. A configuração do Pages deve selecionar GitHub Actions. Deploy de branches
+ou pull requests, backend, domínio próprio, segredos, validações adicionais de produto
+e mudanças na aplicação fora do necessário para servir a rota/asset são não objetivos.
+
+**Critérios de aceite:** workflow válido e limitado a commits em `main`; build de
+produção e artefato publicado com sucesso; caminhos de assets e acesso direto às rotas
+funcionam no caminho de projeto do Pages; configuração do Pages usa Actions; evidências
+de verificação e limitações registradas. A publicação só ocorre após merge na `main`;
+este plano não representa deploy já realizado ou aprovação do produto.
+
 > Documento de planejamento. Não comprova implementação nem aprovação. O MVP descrito é uma demonstração com dados sintéticos e estado em memória, inadequada para controlar cobranças reais.
 
 ## Refinamento dos dados demonstrativos — 23/11/2026
