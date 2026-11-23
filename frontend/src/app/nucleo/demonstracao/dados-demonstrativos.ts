@@ -6,6 +6,25 @@ import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes'
 import { criarIdentificacaoSintetica } from './identificacao-sintetica';
 import { prepararPagamentoHistorico } from './preparar-pagamento-historico';
 
+const NOMES_CLIENTES = [
+  'Pedro Farias',
+  'Lucas Santos',
+  'Marina Costa',
+  'Beatriz Almeida',
+  'Rafael Nogueira',
+  'Camila Ribeiro',
+  'Felipe Martins',
+  'Júlia Carvalho',
+  'Gustavo Lima',
+  'Helena Duarte',
+  'André Barros',
+  'Isabela Rocha',
+] as const;
+
+const VALORES_TOTAIS_CENTAVOS = [
+  68900, 79900, 89900, 97500, 112500, 124900, 138000, 149900, 167500, 189900, 219900, 239900,
+] as const;
+
 function exigirSucesso<T>(resultado: Resultado<T>): T {
   if (resultado.tipo !== 'sucesso') throw new RangeError(resultado.mensagem);
   return resultado.valor;
@@ -42,14 +61,20 @@ export function criarDadosDemonstrativos(referencia: string): readonly Venda[] {
       prepararCadastro(
         {
           cliente: {
-            nome: `Cliente DEMO ${indice < 6 ? 'Aurora' : 'Aurora Azul'} ${indice + 1}`,
+            nome: NOMES_CLIENTES[indice],
             ...criarIdentificacaoSintetica(indice + 1),
             descricao: 'Registro gerado sinteticamente; não representa titularidade verificada.',
           },
           dataVenda,
-          valorTotalCentavos: comEntrada ? 100000 : 80000,
+          valorTotalCentavos: VALORES_TOTAIS_CENTAVOS[indice],
           quantidadeParcelas,
-          entrada: comEntrada ? { valorCentavos: 20000, data: dataVenda, forma: 'Pix' } : null,
+          entrada: comEntrada
+            ? {
+                valorCentavos: (VALORES_TOTAIS_CENTAVOS[indice] * 20) / 100,
+                data: dataVenda,
+                forma: 'Pix',
+              }
+            : null,
         },
         referencia,
         id,

@@ -5,6 +5,24 @@ import { criarDadosDemonstrativos } from './dados-demonstrativos';
 import { cpfValido, telefoneValido } from '../../funcionalidades/vendas/identificacao.validacoes';
 
 describe('Dados sintéticos', () => {
+  const totaisEsperados = [
+    68900, 79900, 89900, 97500, 112500, 124900, 138000, 149900, 167500, 189900, 219900, 239900,
+  ];
+  const nomesEsperados = [
+    'Pedro Farias',
+    'Lucas Santos',
+    'Marina Costa',
+    'Beatriz Almeida',
+    'Rafael Nogueira',
+    'Camila Ribeiro',
+    'Felipe Martins',
+    'Júlia Carvalho',
+    'Gustavo Lima',
+    'Helena Duarte',
+    'André Barros',
+    'Isabela Rocha',
+  ];
+
   it.each(['0001-01', '0001-02', '0001-03', '0001-04', '9999-09', '9999-10', '9999-11', '9999-12'])(
     'preserva invariantes e todas as situações possíveis em cada dia de %s',
     (anoMes) => {
@@ -59,13 +77,13 @@ describe('Dados sintéticos', () => {
     (referencia) => {
       const vendas = criarDadosDemonstrativos(referencia);
       expect(vendas).toHaveLength(12);
-      vendas.forEach((venda) => {
+      vendas.forEach((venda, indice) => {
         expect(() => validarVenda(venda, referencia)).not.toThrow();
         expect(cpfValido(venda.cliente.cpf)).toBe(true);
         expect(telefoneValido(venda.cliente.telefone)).toBe(true);
         expect(venda.cliente.cpf).toMatch(/^\d{11}$/);
         expect(venda.cliente.telefone).toMatch(/^\d{11}$/);
-        expect(venda.cliente.nome).toContain('DEMO Aurora');
+        expect(venda.cliente.nome).toBe(nomesEsperados[indice]);
         const ids = venda.recebimentos.flatMap((r) => r.alocacoes.map((a) => a.parcelaId));
         expect(ids).toEqual(venda.parcelas.slice(0, ids.length).map((p) => p.id));
       });
@@ -74,6 +92,12 @@ describe('Dados sintéticos', () => {
       );
       expect(vendas.some((v) => v.entrada === null)).toBe(true);
       expect(vendas.some((v) => v.entrada !== null)).toBe(true);
+      expect(new Set(vendas.map((v) => v.cliente.nome)).size).toBe(12);
+      expect(vendas.map((v) => v.valorTotalCentavos)).toEqual(totaisEsperados);
+      expect(new Set(vendas.map((v) => v.valorTotalCentavos)).size).toBe(12);
+      expect(
+        vendas.every((v) => v.valorTotalCentavos >= 60000 && v.valorTotalCentavos <= 240000),
+      ).toBe(true);
     },
   );
 
@@ -94,16 +118,20 @@ describe('Dados sintéticos', () => {
       Array.from({ length: 12 }, (_, i) => `seed/venda/${i + 1}`),
     );
     vendas.forEach((v, i) => {
-      expect(v.valorTotalCentavos).toBe(i % 2 === 0 ? 100000 : 80000);
+      const total = totaisEsperados[i];
+      expect(v.valorTotalCentavos).toBe(total);
       expect(v.entrada).toEqual(
-        i % 2 === 0 ? { valorCentavos: 20000, data: v.dataVenda, forma: 'Pix' } : null,
+        i % 2 === 0 ? { valorCentavos: (total * 20) / 100, data: v.dataVenda, forma: 'Pix' } : null,
       );
       const futuras = v.entrada ? v.parcelas.slice(1) : v.parcelas;
+      const saldoFuturo = total - (v.entrada?.valorCentavos ?? 0);
+      const quociente = Math.floor(saldoFuturo / 4);
+      const resto = saldoFuturo % 4;
       expect(futuras).toEqual(
         Array.from({ length: 4 }, (_, p) => ({
           id: `seed/venda/${i + 1}/parcela/${p + 1}`,
           numero: p + 1 + (v.entrada ? 1 : 0),
-          valorCentavos: 20000,
+          valorCentavos: quociente + (p < resto ? 1 : 0),
           vencimento: [
             ['2027-02-28', '2027-03-31', '2027-04-30', '2027-05-31'],
             ['2027-01-31', '2027-02-28', '2027-03-31', '2027-04-30'],
@@ -116,7 +144,7 @@ describe('Dados sintéticos', () => {
         expect(v.parcelas[0]).toEqual({
           id: `seed/venda/${i + 1}/parcela/entrada`,
           numero: 1,
-          valorCentavos: 20000,
+          valorCentavos: (total * 20) / 100,
           vencimento: v.dataVenda,
         });
       }
@@ -127,8 +155,13 @@ describe('Dados sintéticos', () => {
           id: `seed/venda/${i + 1}/recebimento/entrada`,
           data: v.dataVenda,
           forma: 'Pix',
-          valorCentavos: 20000,
-          alocacoes: [{ parcelaId: `seed/venda/${i + 1}/parcela/entrada`, valorCentavos: 20000 }],
+          valorCentavos: (total * 20) / 100,
+          alocacoes: [
+            {
+              parcelaId: `seed/venda/${i + 1}/parcela/entrada`,
+              valorCentavos: (total * 20) / 100,
+            },
+          ],
         });
       }
       if (i % 4 === 3)
@@ -136,7 +169,7 @@ describe('Dados sintéticos', () => {
           id: `seed/recebimento/${i + 1}`,
           data: '2027-01-31',
           forma: 'Dinheiro',
-          valorCentavos: 80000,
+          valorCentavos: total,
           alocacoes: v.parcelas.map((parcela) => ({
             parcelaId: parcela.id,
             valorCentavos: parcela.valorCentavos,
