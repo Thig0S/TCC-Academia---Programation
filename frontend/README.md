@@ -1,5 +1,29 @@
 # Base técnica — Vendas em Aberto
 
+## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
+
+Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
+`push` em `main`; `workflow_dispatch` permite execução manual. O workflow instala
+dependências com `npm ci` (Node.js 24 e npm 11.19.0), compila no diretório `frontend/`
+com base `/TCC-Academia---Programation/`, copia `index.html` para `404.html` como
+fallback da SPA e publica `dist/vendas-em-aberto/browser` usando as Actions oficiais
+de artefato/deploy do Pages. `GITHUB_TOKEN` possui permissões de leitura de conteúdo
+no build e `pages: write`/`id-token: write` no job de deploy. Concorrência evita
+cancelar um deploy em andamento.
+
+O GitHub Pages foi configurado via API do GitHub com `build_type=workflow`; a API
+retornou a URL `https://thig0s.github.io/TCC-Academia---Programation/` e `https_enforced=true`.
+Isso confirma configuração, não publicação: ainda não houve push/merge em `main` após
+a criação do workflow, então a execução real, o carregamento público de assets e uma
+rota acessada diretamente permanecem pendentes.
+
+Verificações locais em 23/11/2026: `npm run build -- --base-href=/TCC-Academia---Programation/`
+passou; conferência da saída confirmou base href, arquivos JS/CSS e fallback `404.html`.
+`npm test -- --watch=false`: 373 testes em 31 arquivos aprovados. `npm run format:check`
+e `prettier --check .github/workflows/deploy-pages.yml` passaram. `openspec validate
+deploy-github-pages --strict` passou. A validação remota do workflow e o deploy dependem
+de sua publicação/execução no GitHub após integração na `main`.
+
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
 O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também

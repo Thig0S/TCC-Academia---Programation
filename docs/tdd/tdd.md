@@ -1,5 +1,33 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## Deploy automatizado no GitHub Pages — desenho de 23/11/2026
+
+**Base:** planejamento do PRD “Publicação demonstrativa no GitHub Pages”. Preservar
+Angular SPA e o isolamento em `frontend/`; não introduzir plataforma de hospedagem
+externa nem dependências de runtime.
+
+**Decisões técnicas:** workflow em `.github/workflows/` acionado exclusivamente por
+`push` na `main`, com `workflow_dispatch` opcional para operação manual; checkout,
+Node.js 24, instalação `npm ci` e `npm run build` no diretório `frontend/`. Configurar
+`base-href` para a URL de projeto correspondente ao nome real do repositório, publicar
+somente o diretório de saída de produção do Angular via `actions/upload-pages-artifact`
+e `actions/deploy-pages`. Declarar `pages: write`, `id-token: write` e `contents: read`
+no menor escopo necessário; ambiente `github-pages`, concorrência por grupo e sem
+cancelamento do deploy já em andamento. Configurar Pages com source `GitHub Actions`.
+
+O fallback de rotas diretas deve ser tratado de modo compatível com GitHub Pages (por
+exemplo, cópia controlada do `index.html` para `404.html` no artefato), sem modificar
+roteamento/URL pública da aplicação sem necessidade. Validar a saída real do build,
+incluindo subcaminhos e assets, antes de fixar o diretório do artefato. Credenciais
+permanecem no `GITHUB_TOKEN` com permissões declaradas; não criar secrets próprios.
+
+**Verificação:** inspeção/validação do YAML, build local de produção com base path,
+conferência do conteúdo do artefato e deploy real pela execução do workflow após merge
+na `main`; validar a URL publicada, carregamento dos assets e uma rota interna acessada
+diretamente. Registrar falhas, limitações e resultado do Pages sem alegar sucesso antes
+de evidência do GitHub. Não executar alterações de configuração remota até a etapa de
+apply autorizada.
+
 > Technical Design Document: documento de desenho técnico do MVP visual. Não representa
 > aprovação da ótica nem desenvolvimento orientado a testes. Registros de planejamento abaixo
 > são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
