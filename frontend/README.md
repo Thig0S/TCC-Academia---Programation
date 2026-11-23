@@ -124,8 +124,13 @@ inicial também apontou os JSONs gerados, corrigidos antes do resultado final. N
 encerrado o processo que ocupava a porta 4200.
 
 Não houve reinspeção de zoom nativo do navegador nesta Change; nenhum resultado de
-zoom é alegado. A avaliação visual humana permanece pendente: as capturas são
-sintéticas e a aprovação estética não é inferida dos testes automatizados.
+zoom é alegado. As capturas são sintéticas; a avaliação estética registrada abaixo
+foi fornecida explicitamente pelo solicitante, não inferida dos testes automatizados.
+
+Em 23/11/2026, após revisar a comparação `evidencias/piloto-fidelidade-visual-vendas/comparacao.md`,
+o solicitante aprovou explicitamente a direção visual do piloto pelo Harness. A
+aprovação limita-se à listagem de Vendas; não autoriza aplicar o padrão às outras
+páginas nem mesclar o PR.
 
 ## Apply `novo-design` — verificação integrada — 22/11/2026
 
