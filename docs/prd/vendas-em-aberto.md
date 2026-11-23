@@ -2,6 +2,19 @@
 
 > Documento de planejamento. Não comprova implementação nem aprovação. O MVP descrito é uma demonstração com dados sintéticos e estado em memória, inadequada para controlar cobranças reais.
 
+## Refinamento dos dados demonstrativos — 23/11/2026
+
+Para tornar as 12 vendas iniciais mais verossímeis em apresentações, substituir
+marcadores como “Cliente DEMO Aurora 1” por nomes completos sintéticos distintos
+(por exemplo, “Pedro Farias” e “Lucas Santos”). Variar os valores totais entre
+R$ 600,00 e R$ 2.400,00. Nomes não devem ser obtidos de pessoas reais nem implicar
+identidade/titularidade; números de CPF e telefone continuam sintéticos, sem garantia
+de inexistência de titulares. Preservar os 12 registros, IDs, datas, situações,
+entrada quando aplicável e regras financeiras; recalcular parcelas, recebimentos
+históricos e projeções de modo consistente com os novos totais. O escopo limita-se ao
+seed inicial e suas expectativas de teste, sem alterar regras gerais de cadastro ou
+as vendas criadas durante a sessão.
+
 ## Piloto visual de Vendas — planejamento em 22/11/2026
 
 **Problema:** mesmo após `refinar-design` e `novo-design`, a listagem ainda não
