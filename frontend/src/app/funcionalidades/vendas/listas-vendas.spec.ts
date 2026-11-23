@@ -195,16 +195,16 @@ describe('Listas de vendas', () => {
     const campo = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
     const situacao = pagina.querySelector<HTMLSelectElement>('#situacao-vendas')!;
 
-    campo.value = 'Cliente DEMO Aurora 1';
+    campo.value = 'Pedro Farias';
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(pagina.querySelector('tbody')?.textContent).toContain('Cliente DEMO Aurora 1');
+    expect(pagina.querySelector('tbody')?.textContent).toContain('Pedro Farias');
 
     campo.value = servico.abertas().find((v) => v.id === 'seed/venda/2')!.cliente.cpf;
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     await harness.fixture.whenStable();
-    expect(pagina.querySelector('tbody')?.textContent).toContain('Cliente DEMO Aurora 2');
+    expect(pagina.querySelector('tbody')?.textContent).toContain('Lucas Santos');
 
     const dataVisivel =
       pagina.querySelector('tbody tr td')?.textContent?.trim() ??
@@ -282,7 +282,7 @@ describe('Listas de vendas', () => {
       ),
     ).toBe(false);
 
-    campo.value = 'Cliente DEMO';
+    campo.value = 'Pedro Farias';
     campo.dispatchEvent(new Event('input', { bubbles: true }));
     situacao.value = 'Atrasada';
     situacao.dispatchEvent(new Event('change', { bubbles: true }));

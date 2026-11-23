@@ -1,5 +1,21 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
+
+O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também
+distintos, de R$ 689,00 a R$ 2.399,00. IDs, datas, grupos de situação e presença de
+entrada foram preservados; entradas equivalem a 20% do total e parcelas/recebimentos
+históricos são derivados dos valores efetivos. Nenhum nome ou número foi consultado
+externamente, e não há garantia de inexistência de titulares. PRD, TDD e a Change
+`nomes-e-valores-seed-vendas` registram os requisitos e o desenho.
+
+Verificações desta alteração: `npm.cmd test -- --watch=false` — **373/373 testes**;
+`npm.cmd run build` — aprovado (bundle inicial de **305,21 kB**, transferência
+estimada **81,56 kB**); `npm.cmd run format:check` — aprovado; e
+`openspec validate nomes-e-valores-seed-vendas --strict` — aprovado. Os testes do
+seed também mantêm os cenários de datas extremas, situações possíveis, determinismo,
+identificação válida e reconciliação financeira.
+
 ## Apply `piloto-fidelidade-visual-vendas` — baseline e mapa de referência — 22/11/2026
 
 ### Baseline anterior à edição — tarefa 1.1
