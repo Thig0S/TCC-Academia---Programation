@@ -24,6 +24,23 @@ e `prettier --check .github/workflows/deploy-pages.yml` passaram. `openspec vali
 deploy-github-pages --strict` passou. A validação remota do workflow e o deploy dependem
 de sua publicação/execução no GitHub após integração na `main`.
 
+### Revisão dos caminhos de imagens
+
+A conferência identificou `src="/imgs/logo-franquia.jpg"`, que apontaria à raiz do
+domínio (`/imgs/...`) e quebraria na URL de projeto do Pages. A referência foi corrigida
+para `src="imgs/logo-franquia.jpg"`, resolvida relativamente ao `<base href>`; o teste
+unitário confirma que a URL resultante é
+`/TCC-Academia---Programation/imgs/logo-franquia.jpg`. O arquivo existe em
+`frontend/public/imgs/logo-franquia.jpg` e é copiado para `browser/imgs/logo-franquia.jpg`
+no build. O favicon já usa caminho relativo (`favicon.svg`) e também é copiado de
+`frontend/public/`. A validação final da resposta HTTP da imagem e do favicon no Pages
+depende da publicação após merge.
+
+O teste E2E `npm run test:e2e -- --grep "logo local"` não iniciou: o endereço padrão
+`127.0.0.1:4200` já estava ocupado. O servidor existente foi preservado e não reutilizado;
+portanto esse teste não é contado como aprovado. A resolução no subcaminho é verificada
+pela regressão unitária e pela presença do arquivo no build local.
+
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
 O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também

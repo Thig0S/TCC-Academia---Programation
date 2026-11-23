@@ -23,7 +23,11 @@ describe('Estrutura navegável', () => {
     expect(pagina.textContent).toContain('Mercadão dos Óculos - Vendas em Aberto');
     expect(pagina.querySelector('h1')?.textContent).toBe('Visão Geral');
     expect(pagina.querySelectorAll('h1').length).toBe(1);
-    expect(pagina.querySelector('img')?.getAttribute('src')).toBe('/imgs/logo-franquia.jpg');
+    const caminhoLogo = pagina.querySelector('img')?.getAttribute('src');
+    expect(caminhoLogo).toBe('imgs/logo-franquia.jpg');
+    expect(
+      new URL(caminhoLogo!, 'https://exemplo.github.io/TCC-Academia---Programation/').pathname,
+    ).toBe('/TCC-Academia---Programation/imgs/logo-franquia.jpg');
     expect(pagina.querySelector('img')?.alt).toBe('');
   });
 

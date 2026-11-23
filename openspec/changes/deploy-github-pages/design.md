@@ -15,7 +15,7 @@ A aplicação é Angular SPA em `frontend/`, com build de produção pelo Angula
 1. Workflow em `.github/workflows/`, evento `push` filtrado para `main`, com `workflow_dispatch` apenas se não ampliar gatilhos automáticos. Checkout e Node.js 24; rodar `npm ci` e build no diretório `frontend/`.
 2. Determinar e validar o `base-href` do projeto usando o nome real do repositório (`TCC-Academia---Programation`). Examinar a saída do Angular antes de selecionar o diretório a publicar.
 3. Publicar pelo par oficial `actions/upload-pages-artifact` / `actions/deploy-pages`, com permissões `contents: read`, `pages: write` e `id-token: write`, ambiente `github-pages` e concorrência para evitar deploy concorrente obsoleto.
-4. Preservar as rotas da SPA no Pages. Se necessário, gerar `404.html` a partir do index no artefato; comprovar que acesso direto a rota retorna a aplicação e que assets usam o subcaminho correto.
+4. Preservar as rotas da SPA no Pages. Se necessário, gerar `404.html` a partir do index no artefato; comprovar que acesso direto a rota retorna a aplicação e que assets usam o subcaminho correto. Recursos locais copiados de `public/`, inclusive a logo, devem usar URL relativa ao `<base href>`; caminhos absolutos a partir da raiz do domínio falham em Pages de projeto.
 5. Configurar o repositório para Pages source `GitHub Actions` após o workflow estar pronto. A ação remota requer acesso autorizado; registrar resultado observado.
 
 ## Risks / Trade-offs

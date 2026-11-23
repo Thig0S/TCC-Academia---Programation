@@ -5,7 +5,7 @@ Apply autorizado após revisão Harness. Referências: PRD “Publicação demon
 ## 1. Workflow e build
 
 - [x] 1.1 Criar workflow com gatilho `push` em `main`, instalação reprodutível, Node compatível, build de produção e permissões mínimas; conferir que branches/PRs não disparam deploy automático.
-- [x] 1.2 Configurar base path do projeto e produzir fallback de rota; verificar saída real do Angular e assets no subcaminho.
+- [x] 1.2 Configurar base path do projeto e produzir fallback de rota; verificar saída real do Angular e assets no subcaminho. Corrigida a referência da logo para caminho relativo e incluído teste de resolução no subcaminho.
 - [x] 1.3 Publicar artefato via GitHub Pages Actions com ambiente e concorrência adequados; validar estrutura do YAML e artefato localmente.
 
 ## 2. Configuração e verificação
