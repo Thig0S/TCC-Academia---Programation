@@ -41,6 +41,7 @@ function venda(
 ): ProjecaoVenda {
   return {
     id,
+    statusAdministrativo: 'Ativo',
     cliente: {
       nome: `Cliente ${id}`,
       cpf: '90000000175',

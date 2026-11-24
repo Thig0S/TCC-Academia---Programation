@@ -108,6 +108,7 @@ export function prepararCadastro(
       mensagem: 'Venda demonstrativa preparada.',
       valor: {
         id,
+        statusAdministrativo: 'Ativo',
         cliente: cliente.valor,
         dataVenda: comando.dataVenda,
         valorTotalCentavos: total,
