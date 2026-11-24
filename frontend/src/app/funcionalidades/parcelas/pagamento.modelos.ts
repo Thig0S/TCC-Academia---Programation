@@ -49,6 +49,15 @@ export interface ComandoPagamento {
   readonly observacao?: string;
 }
 
+export interface ComandoCorrecaoPagamento {
+  readonly vendaId: string;
+  readonly recebimentoId: string;
+  readonly valorCentavos: number;
+  readonly data: string;
+  readonly forma: string;
+  readonly observacao: string;
+}
+
 export function formaAceita(forma: string): forma is FormaPagamento {
   return FORMAS_PAGAMENTO.some((aceita) => aceita === forma);
 }
