@@ -50,8 +50,11 @@ export class ServicoDemonstracao {
   readonly vendas = computed(() =>
     copiarCongelado(projetarVendas(this.estado().vendas, this.referencia)),
   );
-  readonly abertas = computed(() => congelar(separarVendas(this.vendas()).abertas));
-  readonly quitadas = computed(() => congelar(separarVendas(this.vendas()).quitadas));
+  private readonly colecoes = computed(() => separarVendas(this.vendas()));
+  readonly abertas = computed(() => congelar(this.colecoes().abertas));
+  readonly quitadas = computed(() => congelar(this.colecoes().quitadas));
+  readonly inativas = computed(() => congelar(this.colecoes().inativas));
+  readonly prejuizos = computed(() => congelar(this.colecoes().prejuizos));
   readonly resumo = computed(() =>
     copiarCongelado(resumirVendas(this.estado().vendas, this.referencia)),
   );

@@ -55,6 +55,7 @@ describe('Fonte demonstrativa de sessão', () => {
     const conferir = () => {
       const vendas = fonte.vendas();
       const recebimentos = vendas.flatMap((v) => v.recebimentos);
+      const ativas = vendas.filter((v) => v.statusAdministrativo === 'Ativo');
       for (const v of vendas) {
         const pagas = new Set(v.recebimentos.flatMap((r) => r.alocacoes.map((a) => a.parcelaId)));
         const pendentes = v.parcelas.filter((p) => !pagas.has(p.id));
@@ -65,9 +66,13 @@ describe('Fonte demonstrativa de sessão', () => {
         expect(v.proximoVencimento).toBe(pendentes[0]?.vencimento ?? null);
         expect(sucesso(fonte.consultarVenda(v.id))).toEqual(v);
       }
-      expect(fonte.abertas()).toEqual(vendas.filter((v) => v.saldoCentavos > 0));
-      expect(fonte.quitadas()).toEqual(vendas.filter((v) => v.saldoCentavos === 0));
-      const pendentes = vendas.flatMap((v) => v.parcelas.filter((p) => p.situacao !== 'Paga'));
+      expect(fonte.abertas()).toEqual(ativas.filter((v) => v.saldoCentavos > 0));
+      expect(fonte.quitadas()).toEqual(ativas.filter((v) => v.saldoCentavos === 0));
+      expect(fonte.inativas()).toEqual(vendas.filter((v) => v.statusAdministrativo === 'Inativo'));
+      expect(fonte.prejuizos()).toEqual(
+        vendas.filter((v) => v.statusAdministrativo === 'Prejuízo'),
+      );
+      const pendentes = ativas.flatMap((v) => v.parcelas.filter((p) => p.situacao !== 'Paga'));
       expect(fonte.resumo()).toEqual({
         totalEmAbertoCentavos: somar(pendentes.map((p) => p.valorCentavos)),
         valoresEmAtrasoCentavos: somar(
@@ -78,7 +83,7 @@ describe('Fonte demonstrativa de sessão', () => {
             .filter((r) => r.data.slice(0, 7) === referencia.slice(0, 7))
             .map((r) => r.valorCentavos),
         ),
-        vendasCadastradas: vendas.length,
+        vendasCadastradas: ativas.length,
       });
       for (const [inicio, fim] of [
         ['0001-01-01', '9999-12-31'],
@@ -247,6 +252,74 @@ describe('Fonte demonstrativa de sessão', () => {
     expect(fonte.vendas()).toBe(antes);
   });
 
+  it('reconcilia coleções e indicadores após inativação, prejuízo e reativação sem duplicar recebimentos', () => {
+    const fonte = iniciar();
+    const venda = sucesso(
+      fonte.cadastrarVenda({ ...cadastro(), dataVenda: '2026-09-01', entrada: null }),
+    );
+    sucesso(
+      fonte.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: venda.parcelas[0].id,
+        data: '2027-01-15',
+        forma: 'Pix',
+      }),
+    );
+    const resumoAtivo = fonte.resumo();
+    const recebimentosDoDia = sucesso(
+      fonte.consultarPeriodo('2027-01-15', '2027-01-15'),
+    ).recebidosCentavos;
+    expect(sucesso(fonte.consultarVenda(venda.id))).toMatchObject({
+      statusAdministrativo: 'Ativo',
+      saldoCentavos: 75000,
+    });
+    expect(resumoAtivo).toMatchObject({
+      totalEmAbertoCentavos: expect.any(Number),
+      valoresEmAtrasoCentavos: expect.any(Number),
+      recebidoNoMesCentavos: expect.any(Number),
+      vendasCadastradas: 13,
+    });
+    expect(recebimentosDoDia).toBe(25000);
+    expect(fonte.abertas().some((item) => item.id === venda.id)).toBe(true);
+
+    const resumoSemVenda = {
+      totalEmAbertoCentavos: resumoAtivo.totalEmAbertoCentavos - 75000,
+      valoresEmAtrasoCentavos: resumoAtivo.valoresEmAtrasoCentavos - 75000,
+      recebidoNoMesCentavos: resumoAtivo.recebidoNoMesCentavos,
+      vendasCadastradas: resumoAtivo.vendasCadastradas - 1,
+    };
+    sucesso(fonte.alterarStatus({ vendaId: venda.id, status: 'Inativo' }));
+    expect(fonte.resumo()).toEqual(resumoSemVenda);
+    expect(fonte.abertas().some((item) => item.id === venda.id)).toBe(false);
+    expect(fonte.quitadas().some((item) => item.id === venda.id)).toBe(false);
+    expect(fonte.inativas().some((item) => item.id === venda.id)).toBe(true);
+    expect(fonte.prejuizos().some((item) => item.id === venda.id)).toBe(false);
+    expect(sucesso(fonte.consultarPeriodo('2027-01-15', '2027-01-15')).recebidosCentavos).toBe(
+      recebimentosDoDia,
+    );
+
+    sucesso(fonte.alterarStatus({ vendaId: venda.id, status: 'Ativo' }));
+    expect(fonte.resumo()).toEqual(resumoAtivo);
+    expect(fonte.abertas().some((item) => item.id === venda.id)).toBe(true);
+    expect(fonte.inativas().some((item) => item.id === venda.id)).toBe(false);
+
+    sucesso(fonte.alterarStatus({ vendaId: venda.id, status: 'Prejuízo' }));
+    expect(fonte.resumo()).toEqual(resumoSemVenda);
+    expect(fonte.abertas().some((item) => item.id === venda.id)).toBe(false);
+    expect(fonte.prejuizos().some((item) => item.id === venda.id)).toBe(true);
+    expect(sucesso(fonte.consultarPeriodo('2027-01-15', '2027-01-15')).recebidosCentavos).toBe(
+      recebimentosDoDia,
+    );
+
+    sucesso(fonte.alterarStatus({ vendaId: venda.id, status: 'Ativo' }));
+    expect(fonte.resumo()).toEqual(resumoAtivo);
+    expect(fonte.abertas().some((item) => item.id === venda.id)).toBe(true);
+    expect(fonte.prejuizos().some((item) => item.id === venda.id)).toBe(false);
+    expect(sucesso(fonte.consultarPeriodo('2027-01-15', '2027-01-15')).recebidosCentavos).toBe(
+      recebimentosDoDia,
+    );
+  });
+
   it('preserva o estado e permite retry quando a publicação da mudança de status falha', () => {
     const fonte = iniciar();
     const venda = sucesso(fonte.cadastrarVenda(cadastro()));
@@ -352,6 +425,8 @@ describe('Fonte demonstrativa de sessão', () => {
         resumo: fonte.resumo(),
         abertas: fonte.abertas(),
         quitadas: fonte.quitadas(),
+        inativas: fonte.inativas(),
+        prejuizos: fonte.prejuizos(),
         referencia: fonte.referencia,
       });
       const anterior = fonte.vendas();
@@ -371,6 +446,8 @@ describe('Fonte demonstrativa de sessão', () => {
         resumo: fonte.resumo(),
         abertas: fonte.abertas(),
         quitadas: fonte.quitadas(),
+        inativas: fonte.inativas(),
+        prejuizos: fonte.prejuizos(),
         referencia: fonte.referencia,
       }).toEqual(snapshot);
       vi.restoreAllMocks();

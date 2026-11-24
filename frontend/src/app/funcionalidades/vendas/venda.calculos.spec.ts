@@ -183,7 +183,9 @@ describe('Projeções financeiras puras', () => {
 
   it('deriva quitação, ausência de vencimento e separação de coleções sem mover registros', () => {
     const quitada = pagar(venda(), 4);
-    const projecoes = projetarVendas([quitada, venda('v2')], '2027-03-31');
+    const inativa = { ...venda('inativa'), statusAdministrativo: 'Inativo' as const };
+    const prejuizo = { ...venda('prejuizo'), statusAdministrativo: 'Prejuízo' as const };
+    const projecoes = projetarVendas([quitada, venda('v2'), inativa, prejuizo], '2027-03-31');
     expect(projecoes[0]).toMatchObject({
       saldoCentavos: 0,
       totalPagoCentavos: 100000,
@@ -194,6 +196,8 @@ describe('Projeções financeiras puras', () => {
     const colecoes = separarVendas(projecoes);
     expect(colecoes.abertas.map((v) => v.id)).toEqual(['v2']);
     expect(colecoes.quitadas.map((v) => v.id)).toEqual(['v1']);
+    expect(colecoes.inativas.map((v) => v.id)).toEqual(['inativa']);
+    expect(colecoes.prejuizos.map((v) => v.id)).toEqual(['prejuizo']);
     expect(colecoes.quitadas[0]).toBe(projecoes[0]);
   });
 
@@ -336,6 +340,30 @@ describe('Resumos globais e períodos inclusivos', () => {
     });
   });
 
+  it('mantém recebimentos de todos os status e limita indicadores operacionais às Ativas', () => {
+    const ativa = pagar(venda('ativa'), 1, '2027-03-17');
+    const inativa = {
+      ...pagar(venda('inativa'), 1, '2027-03-15'),
+      statusAdministrativo: 'Inativo' as const,
+    };
+    const prejuizo = {
+      ...pagar(venda('prejuizo'), 1, '2027-03-16'),
+      statusAdministrativo: 'Prejuízo' as const,
+    };
+    const vendas = [ativa, inativa, prejuizo];
+
+    expect(resumirVendas(vendas, '2027-03-31')).toEqual({
+      totalEmAbertoCentavos: 60000,
+      valoresEmAtrasoCentavos: 20000,
+      recebidoNoMesCentavos: 60000,
+      vendasCadastradas: 1,
+    });
+    expect(consultarPeriodo(vendas, '2027-03-01', '2027-03-31')).toMatchObject({
+      tipo: 'sucesso',
+      valor: { recebidosCentavos: 60000 },
+    });
+  });
+
   it('retorna zero e coleções vazias; rejeita intervalo inválido', () => {
     expect(resumirVendas([], '2027-03-31')).toEqual({
       totalEmAbertoCentavos: 0,
@@ -343,7 +371,7 @@ describe('Resumos globais e períodos inclusivos', () => {
       recebidoNoMesCentavos: 0,
       vendasCadastradas: 0,
     });
-    expect(separarVendas([])).toEqual({ abertas: [], quitadas: [] });
+    expect(separarVendas([])).toEqual({ abertas: [], quitadas: [], inativas: [], prejuizos: [] });
     expect(consultarPeriodo([], '2027-03-31', '2027-03-01').tipo).toBe('validacao');
     expect(consultarPeriodo([], '2027-02-29', '2027-03-31').tipo).toBe('validacao');
     expect(consultarPeriodo([], '2027-03-01', '2027-03-31')).toMatchObject({

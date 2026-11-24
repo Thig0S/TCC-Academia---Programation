@@ -149,10 +149,15 @@ export function projetarVendas(
 export function separarVendas(vendas: readonly ProjecaoVenda[]): {
   readonly abertas: readonly ProjecaoVenda[];
   readonly quitadas: readonly ProjecaoVenda[];
+  readonly inativas: readonly ProjecaoVenda[];
+  readonly prejuizos: readonly ProjecaoVenda[];
 } {
+  const ativas = vendas.filter((venda) => venda.statusAdministrativo === 'Ativo');
   return {
-    abertas: vendas.filter((venda) => venda.saldoCentavos > 0),
-    quitadas: vendas.filter((venda) => venda.saldoCentavos === 0),
+    abertas: ativas.filter((venda) => venda.saldoCentavos > 0),
+    quitadas: ativas.filter((venda) => venda.saldoCentavos === 0),
+    inativas: vendas.filter((venda) => venda.statusAdministrativo === 'Inativo'),
+    prejuizos: vendas.filter((venda) => venda.statusAdministrativo === 'Prejuízo'),
   };
 }
 
@@ -191,19 +196,20 @@ export function consultarPeriodo(
 
 export function resumirVendas(vendas: readonly Venda[], referencia: string): ResumoVendas {
   const projecoes = projetarVendas(vendas, referencia);
+  const ativas = projecoes.filter((venda) => venda.statusAdministrativo === 'Ativo');
   const [inicio, fim] = limitesDoMes(referencia);
   const periodo = consultarPeriodo(vendas, inicio, fim);
   if (periodo.tipo !== 'sucesso') throw new RangeError(periodo.mensagem);
   return {
-    totalEmAbertoCentavos: somarCentavos(projecoes.map((venda) => venda.saldoCentavos)),
+    totalEmAbertoCentavos: somarCentavos(ativas.map((venda) => venda.saldoCentavos)),
     valoresEmAtrasoCentavos: somarCentavos(
-      projecoes.flatMap((venda) =>
+      ativas.flatMap((venda) =>
         venda.parcelas
           .filter((parcela) => parcela.situacao === 'Atrasado')
           .map((parcela) => parcela.valorCentavos),
       ),
     ),
     recebidoNoMesCentavos: periodo.valor.recebidosCentavos,
-    vendasCadastradas: vendas.length,
+    vendasCadastradas: ativas.length,
   };
 }
