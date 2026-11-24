@@ -139,6 +139,35 @@ execução. A suíte E2E completa e a fixture de paginação não foram executad
 tarefa; estão previstas na regressão integrada. Os testes são sintéticos e não constituem
 aceite operacional.
 
+## Apply `feedback-luighi` — ordenação e navegação por coleções — 24/11/2026
+
+A consulta normal de Vendas lista apenas contratos Ativos e combina pesquisa, situação
+financeira e ordenação antes da paginação de dez linhas. Os critérios são cliente A–Z,
+data de venda crescente e próximo vencimento pendente crescente; empates usam ID crescente
+e vendas sem vencimento ficam por último. Trocar o critério retorna à primeira página e
+preserva os demais filtros. Inativas e Prejuízo continuam em rotas e coleções próprias,
+acessíveis pela navegação principal e pela navegação entre coleções; não foi adicionado
+seletor administrativo à lista normal nem uma segunda cópia de Prejuízo. A busca e o
+filtro financeiro permanecem aplicados somente à coleção corrente.
+
+Verificações de consulta: os testes de componente das listas normais e administrativas
+passaram **12/12**, cobrindo coleções exclusivas, rotas por ID, estados vazios, busca e
+paginação; os testes de ordenação cobrem empate por ID, datas crescentes, vencimento
+ausente, reset da página, combinação de filtros e redução para dez itens. O E2E de
+navegação por teclado passou em **2/2 projetos Chromium** (390×844 e 1366×768): Tab/Enter
+percorreu Quitadas, Inativas e Prejuízo, os destinos vazios foram anunciados e não houve
+overflow horizontal. O E2E de transições com dados passou em **4/4 casos** nos dois
+viewports e temas claro/escuro, retornando Inativas e Prejuízo aos destinos dedicados.
+Esses testes validam somente o protótipo demonstrativo, não aceite operacional.
+
+Verificações executadas em 24/11/2026: `npm.cmd test -- --watch=false` — **410/410
+testes em 33 arquivos**; `npm.cmd run build` — aprovado (bundle inicial de **314,08 kB**,
+transferência estimada **83,19 kB**); Prettier dos arquivos alterados — aprovado;
+`git diff --check` — aprovado; `openspec validate feedback-luighi --strict` — aprovado.
+Os testes E2E foram direcionados às rotas e transições administrativas; a suíte E2E
+completa e a fixture separada de paginação extensa não foram executadas nesta tarefa.
+Nenhum desses testes sintéticos constitui aceite operacional.
+
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
 O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também
