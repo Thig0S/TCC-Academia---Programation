@@ -12,7 +12,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 - [x] 2.1 Preservar valor-base e registrar montante efetivo, acréscimo e nota em novos recebimentos individuais; diferenciar origem individual de entrada/lote histórico e testar seed, centavos/overflow, alocação, total efetivo − recebido = saldo-base e ausência de crédito residual (D2/D3; CA-037).
 - [x] 2.2 Estender comando e modal para valor manual >= base e observação opcional <= 20 caracteres, mantendo data/forma, ordem e atomicidade; testar valores iguais/acima/abaixo do base, nota, falhas, repetição, antecipação, foco e mensagem “Checar juros do Crediloja!” somente em parcela atrasada (D2/D5; CA-037).
-- [ ] 2.3 Registrar comportamento, limitações e evidências reais da baixa alterada em `frontend/README.md`; verificar concordância com PRD/TDD/SDD e testes do grupo, sem declarar juros calculados ou aceite operacional.
+- [x] 2.3 Registrar comportamento, limitações e evidências reais da baixa alterada em `frontend/README.md`; verificar concordância com PRD/TDD/SDD e testes do grupo, sem declarar juros calculados ou aceite operacional.
 
 ## 3. Correção de pagamento individual
 
