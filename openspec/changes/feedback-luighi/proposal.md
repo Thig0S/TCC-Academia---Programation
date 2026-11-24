@@ -6,7 +6,7 @@ O feedback do proprietário pede separar vendas ativas, lançamentos inválidos 
 
 ## What Changes
 
-- **BREAKING:** adicionar status administrativo Ativo/Inativo/Prejuízo independente da situação financeira; isolar Prejuízo em seção própria com reabertura manual e manter Inativas consultáveis sem excluí-las definitivamente.
+- **BREAKING:** adicionar status administrativo Ativo/Inativo/Prejuízo independente da situação financeira; permitir somente Ativo→Inativo, Ativo→Prejuízo com saldo aberto, Inativo→Ativo e Prejuízo→Ativo. Rejeitar transição direta Inativo↔Prejuízo; repetir o status atual SHALL ser um no-op idempotente. Isolar Prejuízo em seção própria e manter Inativas consultáveis, sem exclusão definitiva.
 - **BREAKING:** permitir valor recebido manual igual ou superior à parcela-base, registrar acréscimo externo no total efetivo da venda sem juros calculados pelo MVP, nota curta e correção de valor/data/forma/nota de pagamentos individuais; avisar “Checar juros do Crediloja!” em parcela atrasada.
 - Permitir ordenar Vendas por cliente, data da venda e primeiro vencimento pendente antes da paginação.
 - Renomear seções de Relatórios, mostrar CPF/telefone e primeiro vencimento, ordenar vencidas e separar um grid de contratos em Prejuízo com total restrito aos sem pagamentos anteriores; preservar a apresentação detalhada atual nesta Change. A transformação visual em dashboard pertence à Change posterior `dashboard-relatorios`.

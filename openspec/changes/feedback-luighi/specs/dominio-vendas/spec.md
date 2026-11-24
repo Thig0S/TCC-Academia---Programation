@@ -4,12 +4,26 @@
 
 ### Requirement: Status administrativo independente da situação financeira
 
-Cada venda SHALL ter status Ativo, Inativo ou Prejuízo, inicialmente Ativo, independente da situação financeira derivada. SHALL permitir inativar sem excluir, marcar Prejuízo somente com saldo aberto e reabrir Prejuízo como Ativo sem apagar histórico.
+Cada venda SHALL ter status Ativo, Inativo ou Prejuízo, inicialmente Ativo, independente da situação financeira derivada. As únicas transições permitidas SHALL ser Ativo→Inativo, Ativo→Prejuízo com saldo aberto, Inativo→Ativo e Prejuízo→Ativo. Transição direta Inativo↔Prejuízo SHALL ser rejeitada; solicitar o status atual novamente SHALL ser aceito como no-op idempotente, sem mutação.
 
 #### Scenario: Marcar e reabrir prejuízo
 - **WHEN** uma venda Ativa com parcelas pendentes for marcada Prejuízo e depois reaberta
 - **THEN** SHALL passar de Ativo para Prejuízo e retornar a Ativo preservando ID, parcelas, vencimentos e recebimentos
 - **AND** a situação de atraso ou quitação SHALL continuar derivada, sem inferir Prejuízo automaticamente
+
+#### Scenario: Reativar venda Inativa
+- **WHEN** uma venda Inativa for reativada
+- **THEN** SHALL voltar a Ativo e à coleção normal correspondente ao saldo, preservando o mesmo ID
+- **AND** parcelas, recebimentos e valores SHALL permanecer inalterados
+
+#### Scenario: Rejeitar transição direta entre Inativo e Prejuízo
+- **WHEN** for solicitada transição direta Inativo→Prejuízo ou Prejuízo→Inativo
+- **THEN** SHALL rejeitar a solicitação sem alterar status, parcelas, recebimentos ou projeções
+
+#### Scenario: Repetir o status atual
+- **WHEN** for solicitado novamente o status administrativo que a venda já possui
+- **THEN** SHALL aceitar a solicitação como no-op idempotente
+- **AND** SHALL preservar integralmente o registro e não duplicar efeitos nas projeções
 
 #### Scenario: Recusar prejuízo em venda quitada
 - **WHEN** a venda não tiver parcelas pendentes e a pessoa solicitar Prejuízo

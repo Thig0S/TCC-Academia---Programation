@@ -27,6 +27,11 @@ Relatórios SHALL apresentar Recebimentos no mês de todos os status por data ef
 - **WHEN** uma venda com recebimento no mês for inativada ou marcada Prejuízo
 - **THEN** SHALL manter esse recebimento na seção mensal, mas retirar a venda do total operacional de Vendas no mês
 
+#### Scenario: Incluir venda reativada nas posições operacionais
+- **WHEN** uma venda Inativa for reativada como Ativa
+- **THEN** SHALL voltar uma única vez às seções operacionais aplicáveis conforme período e saldo atual
+- **AND** seus recebimentos históricos SHALL permanecer no mês da data efetiva, sem duplicação
+
 ### Requirement: Posição de saldos e parcelas vencidas
 
 Relatórios SHALL apresentar Parcelas em aberto como posição de saldos positivos por venda Ativa e Parcelas vencidas como pendências atrasadas somente de Ativas, na referência da sessão. SHALL exibir CPF e telefone em ambas, primeiro vencimento pendente na posição em aberto e ordenar essa posição e as vencidas pelas datas respectivas crescentes. SHALL manter totais próprios separados das análises mensais.

@@ -26,12 +26,17 @@ A aplicação SHALL apresentar em Vendas somente Ativas com saldo positivo e em 
 
 ### Requirement: Status no cabeçalho e consulta de Inativas
 
-O detalhe SHALL indicar status administrativo textual e permitir mudanças manuais elegíveis sem excluir registro. Vendas SHALL mostrar Ativas por padrão, com filtro para consultar Inativas; status SHALL não substituir o filtro financeiro de situação das Ativas.
+O detalhe SHALL indicar status administrativo textual e expor somente ações permitidas pela matriz de `dominio-vendas`, sem excluir registro. Vendas SHALL mostrar Ativas por padrão, com filtro para consultar Inativas; status SHALL não substituir o filtro financeiro de situação das Ativas.
 
 #### Scenario: Inativar lançamento errado sem excluir
 - **WHEN** uma venda Ativa for inativada após confirmação
 - **THEN** SHALL sair da lista padrão e permanecer consultável por filtro de Inativas e pelo mesmo ID
 - **AND** SHALL não existir ação de exclusão definitiva
+
+#### Scenario: Reativar venda Inativa
+- **WHEN** uma venda Inativa for reativada a partir do detalhe
+- **THEN** SHALL retornar a Ativo e aparecer uma única vez em Vendas ou Quitadas, conforme seu saldo
+- **AND** SHALL preservar o mesmo ID, parcelas, recebimentos e situação financeira derivada
 
 #### Scenario: Manter filtros distintos
 - **WHEN** selecionar Inativas e retornar ao padrão Ativas

@@ -17,7 +17,7 @@ Todas as consultas e comandos internos SHALL usar a mesma fonte de vendas durant
 - **AND** as demais vendas, parcelas, recebimentos, saldos e resumos SHALL permanecer inalterados
 
 #### Scenario: Reclassificar sem duplicar nem apagar venda
-- **WHEN** uma venda Ativa for inativada ou marcada Prejuízo e, no segundo caso, reaberta
+- **WHEN** uma venda percorrer Ativo→Inativo→Ativo ou Ativo→Prejuízo→Ativo
 - **THEN** o ID SHALL permanecer único na fonte e as projeções SHALL refletir o status atual sem alterar os pagamentos já registrados
 
 ### Requirement: Consultas imutáveis e comandos protegidos
@@ -49,3 +49,12 @@ Consultas SHALL não permitir alterar o estado por referências retornadas. Coma
 #### Scenario: Rejeitar correção ou transição obsoleta
 - **WHEN** uma correção tiver ID de pagamento ausente/obsoleto, valor inválido ou uma mudança de status não for elegível
 - **THEN** SHALL preservar todos os registros e totais sem anunciar sucesso nem deslocar a ação para outro ID
+
+#### Scenario: Rejeitar transição direta entre Inativo e Prejuízo
+- **WHEN** uma mudança direta Inativo→Prejuízo ou Prejuízo→Inativo for solicitada
+- **THEN** SHALL rejeitar a transição e preservar o agregado e suas projeções
+
+#### Scenario: Repetir o status atual sem nova mutação
+- **WHEN** um comando solicitar o status administrativo que a venda já possui
+- **THEN** SHALL aceitar o comando como no-op idempotente
+- **AND** SHALL preservar o agregado e não publicar efeitos duplicados
