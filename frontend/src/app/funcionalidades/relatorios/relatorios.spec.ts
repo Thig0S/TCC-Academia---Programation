@@ -36,12 +36,13 @@ function venda(
     readonly recebimentos?: readonly PagamentoDemonstrativo[];
     readonly parcelas?: readonly ProjecaoParcela[];
     readonly saldo?: number;
+    readonly statusAdministrativo?: ProjecaoVenda['statusAdministrativo'];
     readonly situacao?: ProjecaoVenda['situacao'];
   } = {},
 ): ProjecaoVenda {
   return {
     id,
-    statusAdministrativo: 'Ativo',
+    statusAdministrativo: options.statusAdministrativo ?? 'Ativo',
     cliente: {
       nome: `Cliente ${id}`,
       cpf: '90000000175',
@@ -212,6 +213,42 @@ describe('Relatórios', () => {
     expect(texto(pagina)).toContain('Cliente editado');
     expect(texto(pagina)).toContain('Nenhuma parcela vencida nesta referência.');
     expect(texto(pagina)).toContain('Referência: 31/03/2027');
+  });
+
+  it('recalcula as coleções após inativar, reativar e marcar Prejuízo sem duplicar recebimentos', async () => {
+    const inativa = venda('status/financeiro', '2027-03-01', {
+      statusAdministrativo: 'Inativo',
+      recebimentos: [pagamento('recibo-unico', '2027-03-15', 200, 'parcela-paga')],
+      parcelas: [
+        parcela('parcela-paga', 1, '2027-03-01', 'Paga', 200),
+        parcela('parcela-pendente', 2, '2027-04-01', 'Aberto', 800),
+      ],
+      saldo: 800,
+    });
+    vendas.set([inativa]);
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = () => harness.routeNativeElement!;
+    const tabela = (nome: string) => pagina().querySelector(`[aria-label="${nome}"] table`);
+
+    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Vendas do mês')).toBeNull();
+    expect(tabela('Posição em aberto')).toBeNull();
+    expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
+
+    vendas.set([{ ...inativa, statusAdministrativo: 'Ativo' }]);
+    harness.detectChanges();
+    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Vendas do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Posição em aberto')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(texto(pagina())).toContain('R$ 2,00');
+
+    vendas.set([{ ...inativa, statusAdministrativo: 'Prejuízo' }]);
+    harness.detectChanges();
+    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Vendas do mês')).toBeNull();
+    expect(tabela('Posição em aberto')).toBeNull();
+    expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
+    expect(texto(pagina())).toContain('R$ 2,00');
   });
 
   it('explica a exportação indisponível e anuncia a ação sem gerar arquivo', async () => {
