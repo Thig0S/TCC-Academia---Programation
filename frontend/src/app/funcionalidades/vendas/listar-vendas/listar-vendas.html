@@ -17,7 +17,7 @@
     aria-label="Pesquisa e filtros de vendas"
   >
     <div
-      class="grid grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,1.5fr)_minmax(9rem,1fr)_minmax(9rem,1fr)] consulta-controles"
+      class="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,2.5fr)_minmax(0,1.5fr)_minmax(10rem,1fr)_minmax(9rem,1fr)_minmax(9rem,1fr)] consulta-controles"
     >
       <div class="min-w-0">
         <label for="busca-vendas" class="mb-1 block text-sm font-semibold"
@@ -47,6 +47,19 @@
           <option value="Em aberto">Em aberto</option>
           <option value="Próximos dias">Próximos dias</option>
           <option value="Atrasada">Atrasada</option>
+        </select>
+      </div>
+      <div class="min-w-0">
+        <label for="ordenacao-vendas" class="mb-1 block text-sm font-semibold">Ordenar por</label>
+        <select
+          id="ordenacao-vendas"
+          class="h-12 w-full rounded-xl border border-control-border bg-surface px-4 text-text shadow-sm transition-colors hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          [value]="ordenacao()"
+          (change)="atualizarOrdenacao($event)"
+        >
+          @for (criterio of criteriosOrdenacao; track criterio.valor) {
+            <option [value]="criterio.valor">{{ criterio.rotulo }}</option>
+          }
         </select>
       </div>
       <div class="min-w-0">
