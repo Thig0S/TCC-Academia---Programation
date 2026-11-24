@@ -107,6 +107,38 @@ da baixa não foram executados nesta etapa; os testes de componente usam um dial
 simulado e não comprovam top layer/inércia do navegador. Não houve cálculo de juros,
 integração externa ou avaliação operacional.
 
+## Apply `feedback-luighi` — correção pela interface e conciliação no relatório — 24/11/2026
+
+O detalhe da venda agora separa valor-base, total efetivo, recebido por parcela e acréscimo.
+A ação **Corrigir pagamento** aparece somente em parcelas pagas por um recebimento
+individual de uma venda Ativa. O modal apresenta valor, data, forma e observação atuais,
+permite confirmar ou cancelar e também pode ser fechado por Escape. A correção substitui
+o mesmo recebimento pelo ID estável e mantém sua alocação; não cria recebimento nem ID
+novo. Valor abaixo da base, data fora do período venda–referência, forma inválida e nota
+acima de 20 caracteres são recusados, mantendo a venda e o rascunho para nova tentativa.
+Entradas e lotes históricos continuam sem edição.
+
+O relatório mensal distingue a origem `Individual` de `Entrada` e `Lote`. A correção
+recalcula o valor efetivo e move o recebimento para o mês da nova data, contado uma única
+vez. Em cenário E2E sintético de venda de R$ 100,00 em três parcelas sem entrada, a
+primeira base de R$ 33,34 recebeu R$ 34,34 e foi corrigida para R$ 33,84 (acréscimo de
+R$ 0,50). A parcela-base permaneceu inalterada; a linha saiu do relatório do mês original,
+o total desse mês diminuiu R$ 34,34 e a correção ficou associada ao mesmo pagamento. A
+validação de domínio também cobriu movimentação entre meses, preservação do saldo-base e
+retry atômico. Juros do Crediloja não são calculados nem integrados.
+
+Verificações executadas em 24/11/2026: `npm.cmd test -- --watch=false` — **404/404
+testes em 32 arquivos**; `npm.cmd run build` — aprovado (bundle inicial de **314,04 kB**,
+transferência estimada **83,13 kB**); Prettier dos arquivos alterados — aprovado;
+`git diff --check` — aprovado; e `openspec validate feedback-luighi --strict` — aprovado.
+Teste E2E direcionado — **2/2 projetos Chromium**, 390×844 e 1366×768, com os temas
+escuro e claro exercitados em cada projeto; cobriu valores iniciais, Escape/foco,
+validação dos campos, correção e reconciliação mensal. O E2E reutilizou temporariamente
+um `ng serve` já ativo na porta 4200; a configuração temporária foi removida após a
+execução. A suíte E2E completa e a fixture de paginação não foram executadas nesta
+tarefa; estão previstas na regressão integrada. Os testes são sintéticos e não constituem
+aceite operacional.
+
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
 O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também
