@@ -7,6 +7,7 @@ import { prepararCadastro } from './venda.validacoes';
 
 export interface ProjecaoVenda extends Venda {
   readonly parcelas: readonly ProjecaoParcela[];
+  readonly valorTotalEfetivoCentavos: number;
   readonly totalPagoCentavos: number;
   readonly saldoCentavos: number;
   readonly quantidadePaga: number;
@@ -57,6 +58,9 @@ export function validarVenda(venda: Venda, referencia: string): void {
         recebido.valorCentavos === venda.entrada.valorCentavos &&
         recebido.data === venda.entrada.data &&
         recebido.forma === venda.entrada.forma &&
+        recebido.origem === undefined &&
+        recebido.acrescimoCentavos === undefined &&
+        recebido.observacao === undefined &&
         recebido.alocacoes.length === 1 &&
         recebido.alocacoes[0].parcelaId === preparada.valor.parcelas[0].id &&
         recebido.alocacoes[0].valorCentavos === venda.entrada.valorCentavos,
@@ -78,23 +82,56 @@ export function validarVenda(venda: Venda, referencia: string): void {
       'Data de recebimento fora do intervalo permitido.',
     );
     exigir(recebimento.alocacoes.length > 0, 'O recebimento precisa de alocações.');
-    for (const alocacao of recebimento.alocacoes) {
+    validarCentavos(recebimento.valorCentavos);
+    if (recebimento.origem === 'individual') {
+      exigir(recebimento.alocacoes.length === 1, 'Pagamento individual deve quitar uma parcela.');
       const parcela = venda.parcelas[proxima++];
+      const alocacao = recebimento.alocacoes[0];
+      const acrescimo = validarCentavos(recebimento.acrescimoCentavos);
+      exigir(
+        typeof recebimento.observacao === 'string' &&
+          Array.from(recebimento.observacao).length <= 20,
+        'A observação do pagamento individual deve ter no máximo 20 caracteres.',
+      );
       exigir(
         !!parcela &&
           alocacao.parcelaId === parcela.id &&
-          alocacao.valorCentavos === parcela.valorCentavos,
-        'Alocação fora da sequência integral permitida.',
+          validarCentavos(alocacao.valorCentavos) === recebimento.valorCentavos &&
+          recebimento.valorCentavos >= parcela.valorCentavos &&
+          acrescimo === recebimento.valorCentavos - parcela.valorCentavos,
+        'Pagamento individual incompatível com a parcela-base e seu acréscimo.',
+      );
+    } else {
+      exigir(
+        recebimento.origem === undefined &&
+          recebimento.acrescimoCentavos === undefined &&
+          recebimento.observacao === undefined,
+        'Recebimento histórico não pode conter metadados de pagamento individual.',
+      );
+      for (const alocacao of recebimento.alocacoes) {
+        const parcela = venda.parcelas[proxima++];
+        exigir(
+          !!parcela &&
+            alocacao.parcelaId === parcela.id &&
+            alocacao.valorCentavos === parcela.valorCentavos,
+          'Alocação fora da sequência integral permitida.',
+        );
+      }
+      exigir(
+        recebimento.valorCentavos ===
+          somarCentavos(recebimento.alocacoes.map((item) => item.valorCentavos)),
+        'Valor do recebimento diferente das alocações históricas.',
       );
     }
-    exigir(
-      validarCentavos(recebimento.valorCentavos) ===
-        somarCentavos(recebimento.alocacoes.map((item) => item.valorCentavos)),
-      'Valor do recebimento diferente das alocações.',
-    );
   }
+  const acrescimos = somarCentavos(
+    venda.recebimentos
+      .filter((item) => item.origem === 'individual')
+      .map((item) => item.acrescimoCentavos),
+  );
+  const totalEfetivo = somarCentavos([venda.valorTotalCentavos, acrescimos]);
   const pago = somarCentavos(venda.recebimentos.map((item) => item.valorCentavos));
-  const saldo = subtrairCentavos(venda.valorTotalCentavos, pago);
+  const saldo = subtrairCentavos(totalEfetivo, pago);
   exigir(
     saldo === somarCentavos(venda.parcelas.slice(proxima).map((item) => item.valorCentavos)),
     'Saldo incompatível com as parcelas pendentes.',
@@ -107,12 +144,19 @@ export function projetarVenda(venda: Venda, referencia: string): ProjecaoVenda {
   const parcelas = venda.parcelas.map((parcela) =>
     projetarParcela(parcela, venda.recebimentos, referencia),
   );
+  const acrescimos = somarCentavos(
+    venda.recebimentos
+      .filter((item) => item.origem === 'individual')
+      .map((item) => item.acrescimoCentavos),
+  );
+  const valorTotalEfetivoCentavos = somarCentavos([venda.valorTotalCentavos, acrescimos]);
   const pendentes = parcelas.filter((parcela) => parcela.situacao !== 'Paga');
   const totalPagoCentavos = somarCentavos(venda.recebimentos.map((item) => item.valorCentavos));
-  const saldoCentavos = subtrairCentavos(venda.valorTotalCentavos, totalPagoCentavos);
+  const saldoCentavos = subtrairCentavos(valorTotalEfetivoCentavos, totalPagoCentavos);
   return {
     ...venda,
     parcelas,
+    valorTotalEfetivoCentavos,
     totalPagoCentavos,
     saldoCentavos,
     quantidadePaga: parcelas.length - pendentes.length,
@@ -141,6 +185,7 @@ export function projetarVendas(
   const projecoes = vendas.map((venda) => projetarVenda(venda, referencia));
   // Inclui projeções não visíveis: nenhum total financeiro inseguro pode ser aceito.
   somarCentavos(projecoes.map((venda) => venda.valorTotalCentavos));
+  somarCentavos(projecoes.map((venda) => venda.valorTotalEfetivoCentavos));
   somarCentavos(projecoes.map((venda) => venda.totalPagoCentavos));
   somarCentavos(projecoes.map((venda) => venda.saldoCentavos));
   return projecoes;

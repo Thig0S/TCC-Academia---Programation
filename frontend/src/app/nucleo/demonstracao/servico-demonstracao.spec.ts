@@ -408,6 +408,69 @@ describe('Fonte demonstrativa de sessão', () => {
     );
   });
 
+  it('publica pagamento com acréscimo informado mantendo parcelas-base e sem crédito residual', () => {
+    const fonte = iniciar();
+    const venda = sucesso(
+      fonte.cadastrarVenda({
+        ...cadastro(),
+        valorTotalCentavos: 100003,
+        quantidadeParcelas: 4,
+        entrada: null,
+      }),
+    );
+    const parcela = venda.parcelas[0];
+    const recebimento = sucesso(
+      fonte.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: parcela.id,
+        data: referencia,
+        forma: 'Pix',
+        valorCentavos: parcela.valorCentavos + 7,
+        observacao: 'juros 7c',
+      }),
+    ).recebimentos.at(-1)!;
+
+    expect(recebimento).toMatchObject({
+      origem: 'individual',
+      valorCentavos: parcela.valorCentavos + 7,
+      acrescimoCentavos: 7,
+      observacao: 'juros 7c',
+      alocacoes: [{ parcelaId: parcela.id, valorCentavos: parcela.valorCentavos + 7 }],
+    });
+    const parcial = sucesso(fonte.consultarVenda(venda.id));
+    expect(parcial).toMatchObject({
+      valorTotalCentavos: 100003,
+      valorTotalEfetivoCentavos: 100010,
+      totalPagoCentavos: parcela.valorCentavos + 7,
+      saldoCentavos: venda.parcelas.slice(1).reduce((total, item) => total + item.valorCentavos, 0),
+    });
+    expect(parcial.parcelas.map((item) => item.valorCentavos)).toEqual(
+      venda.parcelas.map((item) => item.valorCentavos),
+    );
+    expect(parcial.valorTotalEfetivoCentavos - parcial.totalPagoCentavos).toBe(
+      parcial.saldoCentavos,
+    );
+
+    for (const pendente of venda.parcelas.slice(1)) {
+      sucesso(
+        fonte.registrarPagamento({
+          vendaId: venda.id,
+          parcelaId: pendente.id,
+          data: referencia,
+          forma: 'Pix',
+          valorCentavos: pendente.valorCentavos,
+        }),
+      );
+    }
+    expect(sucesso(fonte.consultarVenda(venda.id))).toMatchObject({
+      valorTotalCentavos: 100003,
+      valorTotalEfetivoCentavos: 100010,
+      totalPagoCentavos: 100010,
+      saldoCentavos: 0,
+      situacao: 'Quitada',
+    });
+  });
+
   it.each(['alocação', 'final'] as const)(
     'double TestBed com falha de %s preserva agregado e contador e permite nova tentativa',
     (etapa) => {

@@ -229,6 +229,56 @@ describe('Projeções financeiras puras', () => {
     ).toThrow(RangeError);
   });
 
+  it('valida marcador individual, acréscimo, nota e alocação contra a parcela-base', () => {
+    const original = venda();
+    const parcela = original.parcelas[1];
+    const recebimento = {
+      id: `${original.id}/individual`,
+      data: '2027-01-31',
+      forma: 'Pix' as const,
+      origem: 'individual' as const,
+      valorCentavos: parcela.valorCentavos + 25,
+      acrescimoCentavos: 25,
+      observacao: 'acréscimo',
+      alocacoes: [{ parcelaId: parcela.id, valorCentavos: parcela.valorCentavos + 25 }],
+    };
+    const preparada: Venda = {
+      ...original,
+      recebimentos: [...original.recebimentos, recebimento],
+    };
+    expect(projetarVenda(preparada, '2027-01-31')).toMatchObject({
+      valorTotalEfetivoCentavos: 100025,
+      totalPagoCentavos: 40025,
+      saldoCentavos: 60000,
+    });
+
+    const corrompidas = [
+      { ...recebimento, acrescimoCentavos: 24 },
+      { ...recebimento, observacao: '123456789012345678901' },
+      {
+        ...recebimento,
+        alocacoes: [{ parcelaId: parcela.id, valorCentavos: parcela.valorCentavos }],
+      },
+      { ...recebimento, origem: undefined, acrescimoCentavos: undefined, observacao: undefined },
+      {
+        ...recebimento,
+        alocacoes: [
+          ...recebimento.alocacoes,
+          { parcelaId: original.parcelas[2].id, valorCentavos: original.parcelas[2].valorCentavos },
+        ],
+      },
+    ];
+    for (const corrompido of corrompidas) {
+      const invalida = {
+        ...preparada,
+        recebimentos: [...original.recebimentos, corrompido],
+      } as unknown as Venda;
+      const snapshot = structuredClone(invalida);
+      expect(() => projetarVenda(invalida, '2027-01-31')).toThrow(RangeError);
+      expect(invalida).toEqual(snapshot);
+    }
+  });
+
   it('rejeita entrada sem recebimento, duplicada, inconsistente ou com metadado órfão', () => {
     const original = venda();
     const inconsistentes: Venda[] = [

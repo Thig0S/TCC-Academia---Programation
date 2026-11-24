@@ -10,6 +10,7 @@ import {
   selecionarParcelas,
 } from './pagamento.validacoes';
 import { prepararPagamentoHistorico } from '../../nucleo/demonstracao/preparar-pagamento-historico';
+import { criarDadosDemonstrativos } from '../../nucleo/demonstracao/dados-demonstrativos';
 
 const referencia = '2027-01-31';
 function venda(id = 'v1', dataReferencia = referencia, valorTotalCentavos = 100000): Venda {
@@ -27,8 +28,20 @@ function venda(id = 'v1', dataReferencia = referencia, valorTotalCentavos = 1000
   if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
   return resultado.valor;
 }
-function comando(v = venda(), indiceParcela = 1, data = referencia): ComandoPagamento {
-  return { vendaId: v.id, parcelaId: v.parcelas[indiceParcela].id, data, forma: 'Pix' };
+function comando(
+  v = venda(),
+  indiceParcela = 1,
+  data = referencia,
+  opcoes: { readonly valorCentavos?: number; readonly observacao?: string } = {},
+): ComandoPagamento {
+  return {
+    vendaId: v.id,
+    parcelaId: v.parcelas[indiceParcela].id,
+    data,
+    forma: 'Pix',
+    valorCentavos: opcoes.valorCentavos ?? v.parcelas[indiceParcela].valorCentavos,
+    observacao: opcoes.observacao ?? '',
+  };
 }
 function aceitar(vendas: readonly Venda[], c: ComandoPagamento, id = 'r1'): readonly Venda[] {
   const resultado = prepararPagamento(vendas, c, referencia, id);
@@ -40,15 +53,85 @@ function aceitar(vendas: readonly Venda[], c: ComandoPagamento, id = 'r1'): read
 describe('Pagamento individual sequencial', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('aceita somente a primeira pendente e deriva seu valor canônico em uma alocação', () => {
+  it('registra pagamento individual a valor-base, com origem explícita e uma alocação integral', () => {
     const original = venda('v1', referencia, 100003);
     const preparada = aceitar([original], comando(original));
     const recebimento = preparada[0].recebimentos[1];
+    expect(recebimento).toMatchObject({
+      origem: 'individual',
+      acrescimoCentavos: 0,
+      observacao: '',
+    });
     expect(recebimento.valorCentavos).toBe(original.parcelas[1].valorCentavos);
     expect(recebimento.alocacoes).toEqual([
       { parcelaId: original.parcelas[1].id, valorCentavos: original.parcelas[1].valorCentavos },
     ]);
     expect(original.recebimentos).toHaveLength(1);
+  });
+
+  it('reconcilia acréscimo em centavos sem alterar bases nem criar crédito residual', () => {
+    const original = venda('centavos', referencia, 100003);
+    const parcelaBase = original.parcelas[1].valorCentavos;
+    const valorRecebido = parcelaBase + 7;
+    const preparada = aceitar(
+      [original],
+      comando(original, 1, referencia, { valorCentavos: valorRecebido, observacao: 'ajuste 7c' }),
+    );
+    const recebimento = preparada[0].recebimentos[1];
+    expect(recebimento).toMatchObject({
+      origem: 'individual',
+      valorCentavos: valorRecebido,
+      acrescimoCentavos: 7,
+      observacao: 'ajuste 7c',
+      alocacoes: [{ parcelaId: original.parcelas[1].id, valorCentavos: valorRecebido }],
+    });
+    expect(preparada[0].parcelas).toEqual(original.parcelas);
+    expect(original.parcelas[1].valorCentavos).toBe(parcelaBase);
+
+    const projetada = calculos.projetarVenda(preparada[0], referencia);
+    const saldoBasePendente = original.parcelas
+      .slice(2)
+      .reduce((total, parcela) => total + parcela.valorCentavos, 0);
+    expect(projetada.valorTotalCentavos).toBe(100003);
+    expect(projetada.valorTotalEfetivoCentavos).toBe(100010);
+    expect(projetada.totalPagoCentavos).toBe(20000 + valorRecebido);
+    expect(projetada.saldoCentavos).toBe(saldoBasePendente);
+    expect(projetada.valorTotalEfetivoCentavos - projetada.totalPagoCentavos).toBe(
+      saldoBasePendente,
+    );
+  });
+
+  it('rejeita valor abaixo do base, centavos inseguros, overflow do total efetivo e nota longa sem mutar', () => {
+    const original = venda();
+    const valorBase = original.parcelas[1].valorCentavos;
+    const comandosInvalidos = [
+      comando(original, 1, referencia, { valorCentavos: valorBase - 1 }),
+      comando(original, 1, referencia, { valorCentavos: Number.MAX_SAFE_INTEGER + 1 }),
+      comando(original, 1, referencia, {
+        valorCentavos: Number.MAX_SAFE_INTEGER,
+      }),
+      comando(original, 1, referencia, { observacao: '123456789012345678901' }),
+    ];
+    for (const invalido of comandosInvalidos) {
+      const antes = structuredClone([original]);
+      expect(prepararPagamento([original], invalido, referencia, 'invalido').tipo).toBe(
+        'validacao',
+      );
+      expect([original]).toEqual(antes);
+    }
+  });
+
+  it('preserva seed, entradas e lotes sem origem individual ou acréscimo', () => {
+    const seed = criarDadosDemonstrativos(referencia);
+    for (const vendaSeed of seed) {
+      const projetada = calculos.projetarVenda(vendaSeed, referencia);
+      expect(projetada.valorTotalEfetivoCentavos).toBe(vendaSeed.valorTotalCentavos);
+      for (const recebimento of vendaSeed.recebimentos) {
+        expect(recebimento.origem).toBeUndefined();
+        expect(recebimento.acrescimoCentavos).toBeUndefined();
+        expect(recebimento.observacao).toBeUndefined();
+      }
+    }
   });
 
   it.each(FORMAS_PAGAMENTO)('aceita a primeira parcela pendente com %s', (forma) => {
@@ -135,7 +218,7 @@ describe('Pagamento individual sequencial', () => {
       data: referencia,
       forma: 'Pix',
     },
-    { vendaId: 'v1', parcelaId: 'p1', valorCentavos: 20000, data: referencia, forma: 'Pix' },
+    { vendaId: 'v1', parcelaId: 'p1', valorCentavos: '20000', data: referencia, forma: 'Pix' },
     { vendaId: 'v1', parcelaId: 'p1', data: referencia, forma: 'Pix', legado: true },
     { vendaId: 'v1', data: referencia, forma: 'Pix' },
   ])('rejeita comando legado, múltiplo ou malformado sem mutação: %j', (legado) => {
@@ -229,9 +312,13 @@ describe('Pagamento individual sequencial', () => {
     expect(resultado.tipo).toBe('sucesso');
     if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
     expect(resultado.valor[0].recebimentos.at(-2)).toEqual(registroHistorico);
-    expect(resultado.valor[0].recebimentos.at(-1)?.alocacoes).toEqual([
-      { parcelaId: proxima.id, valorCentavos: proxima.valorCentavos },
-    ]);
+    expect(resultado.valor[0].recebimentos.at(-1)).toMatchObject({
+      origem: 'individual',
+      acrescimoCentavos: 0,
+      observacao: '',
+      alocacoes: [{ parcelaId: proxima.id, valorCentavos: proxima.valorCentavos }],
+    });
+    expect(registroHistorico?.origem).toBeUndefined();
     expect(historico.valor).toEqual(antes);
     expect(calculos.projetarVenda(resultado.valor[0], referencia)).toMatchObject({
       totalPagoCentavos: 100003,
