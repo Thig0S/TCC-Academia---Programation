@@ -58,7 +58,54 @@ incluí-la. Em todas as transições, o recebimento de R$ 250,00 permaneceu no p
 somente o comportamento coberto pelo teste de serviço, não uma validação operacional.
 
 Verificação executada: `npm.cmd test -- --watch=false` — **379/379 testes em 31 arquivos**.
-As ações visuais e as seções navegáveis de Inativas/Prejuízo permanecem para a tarefa 1.3.
+As ações visuais e as seções navegáveis de Inativas/Prejuízo foram entregues na tarefa 1.3;
+o total acima registra a suíte executada ao concluir a tarefa 1.2.
+
+## Apply `feedback-luighi` — baixa individual com acréscimo — 24/11/2026
+
+O núcleo mantém `Venda.valorTotalCentavos` e os valores das parcelas como bases imutáveis.
+Cada baixa individual nova registra o valor efetivo na alocação e no recebimento, marca a
+origem como `individual` e grava o acréscimo (efetivo menos base) e a observação. Entradas
+e lotes do seed permanecem sem esse marcador e sem acréscimo; não foram reescritos. A
+projeção soma os acréscimos ao total efetivo e calcula o saldo como total efetivo menos o
+recebido, validando que o resultado continue exatamente igual à soma das parcelas-base
+pendentes, sem crédito residual. Valores não seguros, overflow, acréscimo inconsistente,
+alocação fora da sequência e observação acima de 20 caracteres são rejeitados antes da
+publicação.
+
+No modal, o valor-base aparece para conferência e preenche inicialmente o campo editável
+Valor recebido. A baixa continua integral e sequencial; valor inferior à base, data/forma
+inválidas ou nota longa bloqueiam a confirmação e associam o erro ao campo, mantendo o
+rascunho para correção/retry. A nota é opcional e limitada a 20 caracteres. “Checar juros
+do Crediloja!” aparece somente quando a parcela está atrasada; nenhum juro é calculado ou
+exigido, e não há integração com o Crediloja. O valor efetivo já está disponível na
+projeção do domínio; sua apresentação nos detalhes e relatórios será coberta pelas tarefas
+posteriores da Change. A correção de pagamentos individuais também permanece pendente das
+tarefas 3.1/3.2; entrada e lote histórico não são editáveis neste fluxo.
+
+Reconciliação sintética observada nos testes: em uma venda de R$ 100,00 dividida em três
+parcelas sem entrada, a primeira base de R$ 33,34 foi recebida por R$ 40,00, com acréscimo
+de R$ 6,66 e nota “juros externos”. A base contratual permaneceu R$ 100,00, o total
+efetivo projetado passou a R$ 106,66, o recebido ficou em R$ 40,00 e o saldo permaneceu
+R$ 66,66, igual às duas parcelas-base pendentes; a baixa não alterou seus valores. Outro
+teste recebeu R$ 0,07 acima da base em uma venda de R$ 1.000,03 e verificou total efetivo
+de R$ 1.000,10, sem saldo residual após quitar as demais bases. Esses resultados são
+evidência de testes automatizados com dados sintéticos, não de operação real ou aceite da
+ótica.
+
+Concordância conferida: o comportamento implementado corresponde ao PRD/RF-015/RN-025,
+à TDD/DEC-028/D2/D5 e aos cenários da Change `feedback-luighi` (tarefas 2.1/2.2). As
+restrições de juros, histórico e saldo-base foram preservadas.
+
+Verificações executadas em 24/11/2026: `npm.cmd test -- --watch=false` — **396/396
+testes em 32 arquivos**; `npm.cmd run build` — aprovado (bundle inicial de **310,31 kB**,
+transferência estimada **82,60 kB**); `prettier --check` de `frontend/README.md` —
+aprovado; e `git diff --check` — aprovado. A checagem Prettier que incluiu
+`docs/tdd/tdd.md` reportou diferenças de formatação; o TDD não foi reformatado
+integralmente para evitar alterações mais amplas que esta tarefa. Testes E2E específicos
+da baixa não foram executados nesta etapa; os testes de componente usam um dialog
+simulado e não comprovam top layer/inércia do navegador. Não houve cálculo de juros,
+integração externa ou avaliação operacional.
 
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
