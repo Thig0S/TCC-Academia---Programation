@@ -6,7 +6,7 @@ import { consultarPeriodo, ProjecaoVenda } from '../vendas/venda.calculos';
 export interface RecebimentoRelatorio {
   readonly id: string;
   readonly venda: ProjecaoVenda;
-  readonly origem: 'Entrada' | 'Lote';
+  readonly origem: 'Entrada' | 'Lote' | 'Individual';
   readonly data: string;
   readonly forma: string;
   readonly valorCentavos: number;
@@ -54,9 +54,12 @@ export function calcularRelatorio(
       .map((item) => ({
         id: `${venda.id}/recebimento/${item.id}`,
         venda,
-        origem: item.alocacoes.some((alocacao) => alocacao.parcelaId === parcelaEntradaId)
-          ? ('Entrada' as const)
-          : ('Lote' as const),
+        origem:
+          item.origem === 'individual'
+            ? ('Individual' as const)
+            : item.alocacoes.some((alocacao) => alocacao.parcelaId === parcelaEntradaId)
+              ? ('Entrada' as const)
+              : ('Lote' as const),
         data: item.data,
         forma: item.forma,
         valorCentavos: item.valorCentavos,

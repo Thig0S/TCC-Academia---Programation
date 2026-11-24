@@ -372,6 +372,111 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
   }
 });
 
+test('corrige pagamento individual com foco, validação e relatório nos dois temas', async ({
+  page,
+}) => {
+  for (const tema of ['dark', 'light'] as const) {
+    const nome = `Cliente DEMO correção ${tema}`;
+    await page.goto('/vendas/nova');
+    const raiz = page.locator('app-root');
+    if ((await raiz.getAttribute('data-tema')) !== tema) {
+      await page.getByRole('button', { name: /Tema (escuro|claro)/ }).click();
+    }
+    await expect(raiz).toHaveAttribute('data-tema', tema);
+    await preencherCadastro(page, nome);
+    await page.getByLabel('Data da venda', { exact: true }).fill('0001-01-01');
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+
+    const linhaParcela = page.locator('tbody tr').first();
+    const valorBase = await valorEmCentavos(linhaParcela.locator('td').nth(0));
+    const formatarCentavos = (centavos: number) =>
+      `${Math.floor(centavos / 100)},${String(centavos % 100).padStart(2, '0')}`;
+    await page.locator('[data-acao-pagar]').first().click();
+    const dialogPagamento = page.getByRole('dialog', { name: 'Pagar parcela' });
+    const referencia = await page.getByLabel('Data do pagamento').inputValue();
+    const data = new Date(`${referencia}T00:00:00.000Z`);
+    data.setUTCDate(0);
+    const mesAnterior = data.toISOString().slice(0, 10);
+    const valorInicial = valorBase + 100;
+    await page.getByLabel('Valor recebido').fill(formatarCentavos(valorInicial));
+    await page.getByLabel('Forma do pagamento').selectOption('Pix');
+    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+    await expect(dialogPagamento).toHaveCount(0);
+    const acionador = page.getByRole('button', {
+      name: `Corrigir pagamento da parcela 1 da venda de ${nome}`,
+    });
+    await expect(acionador).toBeVisible();
+    await expect(
+      page
+        .locator('dt')
+        .filter({ hasText: /^Total efetivo$/ })
+        .locator('+ dd'),
+    ).toContainText(formatarCentavos(10000 + 100));
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    const relatorio = page.locator('section[aria-labelledby="recebimentos-mensais"]');
+    const totalAntes = await valorEmCentavos(relatorio.locator(':scope > p strong'));
+    const linhaRelatorio = relatorio.locator('tbody tr').filter({ hasText: nome });
+    await expect(linhaRelatorio).toHaveCount(1);
+    await expect(linhaRelatorio.locator('td').nth(1)).toHaveText('Individual');
+    await expect(linhaRelatorio).toContainText(formatarCentavos(valorInicial));
+    await linhaRelatorio.getByRole('link', { name: nome }).click();
+    await expect(
+      page.getByRole('button', { name: new RegExp(`Corrigir pagamento da parcela 1`) }),
+    ).toBeVisible();
+
+    const abrirCorrecao = async () => {
+      await page.locator('[data-acao-corrigir]').click();
+      return page.getByRole('dialog', { name: 'Corrigir pagamento individual' });
+    };
+    let dialogCorrecao = await abrirCorrecao();
+    await expect(page.getByLabel('Data do pagamento')).toBeFocused();
+    await expect(page.getByLabel('Valor recebido')).toHaveValue(formatarCentavos(valorInicial));
+    await expect(page.getByLabel('Data do pagamento')).toHaveValue(referencia);
+    await expect(page.getByLabel('Forma do pagamento')).toHaveValue('Pix');
+    await expect(page.getByLabel(/Observação/)).toHaveValue('');
+    await page.keyboard.press('Escape');
+    await expect(dialogCorrecao).toHaveCount(0);
+    await expect(page.locator('[data-acao-corrigir]')).toBeFocused();
+
+    dialogCorrecao = await abrirCorrecao();
+    await page.getByLabel(/Observação/).fill('123456789012345678901');
+    await page.getByRole('button', { name: 'Confirmar correção' }).click();
+    await expect(page.locator('#erro-observacao-correcao')).toContainText('20 caracteres');
+    await expect(page.getByLabel(/Observação/)).toBeFocused();
+    await expect(dialogCorrecao).toBeVisible();
+
+    await page.getByLabel('Valor recebido').fill(formatarCentavos(valorBase - 1));
+    await page.getByLabel(/Observação/).fill('corrigido');
+    await page.getByRole('button', { name: 'Confirmar correção' }).click();
+    await expect(page.locator('#erro-valor-correcao')).toContainText('igual ou superior');
+    await expect(page.getByLabel('Valor recebido')).toBeFocused();
+
+    await page.getByLabel('Valor recebido').fill(formatarCentavos(valorBase + 50));
+    await page.getByLabel('Data do pagamento').fill(mesAnterior);
+    await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
+    await page.getByRole('button', { name: 'Confirmar correção' }).click();
+    await expect(dialogCorrecao).toHaveCount(0);
+    await expect(page.locator('main')).toContainText('Recebimento individual corrigido.');
+    await expect(page.locator('[data-acao-corrigir]')).toBeFocused();
+    await expect(page.locator('tbody tr').first()).toContainText(formatarCentavos(valorBase + 50));
+    await expect(page.locator('tbody tr').first()).toContainText(formatarCentavos(50));
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    const relatorioDepois = page.locator('section[aria-labelledby="recebimentos-mensais"]');
+    await expect(relatorioDepois.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
+    expect(await valorEmCentavos(relatorioDepois.locator(':scope > p strong'))).toBe(
+      totalAntes - valorInicial,
+    );
+  }
+});
+
 test('dialog nativo contém foco, cancela por botão/Escape e reabre limpo nos dois temas', async ({
   page,
 }) => {
