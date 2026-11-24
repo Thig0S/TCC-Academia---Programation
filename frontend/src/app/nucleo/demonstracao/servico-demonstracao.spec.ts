@@ -1,5 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { ComandoCadastro, Resultado } from '../../funcionalidades/vendas/venda.modelos';
+import {
+  ComandoCadastro,
+  ComandoMudancaStatus,
+  Resultado,
+  StatusAdministrativoVenda,
+} from '../../funcionalidades/vendas/venda.modelos';
 import { criarDadosDemonstrativos } from './dados-demonstrativos';
 import { PreparadorRecebimento } from './preparador-recebimento';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
@@ -89,6 +94,7 @@ describe('Fonte demonstrativa de sessão', () => {
             .filter((v) => dentro(v.dataVenda))
             .map((v) => ({
               id: v.id,
+              statusAdministrativo: v.statusAdministrativo,
               cliente: v.cliente,
               dataVenda: v.dataVenda,
               valorTotalCentavos: v.valorTotalCentavos,
@@ -175,6 +181,90 @@ describe('Fonte demonstrativa de sessão', () => {
     expect(v.id).toBe('sessao/venda/1');
     expect(v.cliente.descricao).toBeNull();
     expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/2');
+  });
+
+  it('aplica somente as transições administrativas permitidas e preserva o histórico', () => {
+    const fonte = iniciar();
+    const inicial = sucesso(fonte.cadastrarVenda(cadastro()));
+    expect(inicial.statusAdministrativo).toBe('Ativo');
+
+    const inativa = sucesso(fonte.alterarStatus({ vendaId: inicial.id, status: 'Inativo' }));
+    expect(inativa).toEqual({ ...inicial, statusAdministrativo: 'Inativo' });
+    const aposInativar = fonte.vendas();
+    expect(fonte.alterarStatus({ vendaId: inicial.id, status: 'Prejuízo' }).tipo).toBe(
+      'inelegibilidade',
+    );
+    expect(fonte.vendas()).toBe(aposInativar);
+
+    expect(
+      sucesso(fonte.alterarStatus({ vendaId: inicial.id, status: 'Inativo' })).statusAdministrativo,
+    ).toBe('Inativo');
+    expect(fonte.vendas()).toBe(aposInativar);
+
+    const reativada = sucesso(fonte.alterarStatus({ vendaId: inicial.id, status: 'Ativo' }));
+    expect(reativada.statusAdministrativo).toBe('Ativo');
+    const prejuizo = sucesso(fonte.alterarStatus({ vendaId: inicial.id, status: 'Prejuízo' }));
+    expect(prejuizo).toEqual({ ...inicial, statusAdministrativo: 'Prejuízo' });
+    const aposPrejuizo = fonte.vendas();
+    expect(fonte.alterarStatus({ vendaId: inicial.id, status: 'Inativo' }).tipo).toBe(
+      'inelegibilidade',
+    );
+    expect(fonte.vendas()).toBe(aposPrejuizo);
+
+    const reaberta = sucesso(fonte.alterarStatus({ vendaId: inicial.id, status: 'Ativo' }));
+    expect(reaberta).toEqual(inicial);
+    expect(reaberta.parcelas).toEqual(inicial.parcelas);
+    expect(reaberta.recebimentos).toEqual(inicial.recebimentos);
+  });
+
+  it('rejeita venda quitada como Prejuízo, status inválido e identificador ausente sem mutação', () => {
+    const fonte = iniciar();
+    const venda = sucesso(fonte.cadastrarVenda(cadastro()));
+    for (const parcela of venda.parcelas.slice(1)) {
+      sucesso(
+        fonte.registrarPagamento({
+          vendaId: venda.id,
+          parcelaId: parcela.id,
+          data: referencia,
+          forma: 'Pix',
+        }),
+      );
+    }
+    expect(sucesso(fonte.consultarVenda(venda.id)).saldoCentavos).toBe(0);
+    const antes = fonte.vendas();
+    expect(fonte.alterarStatus({ vendaId: venda.id, status: 'Prejuízo' }).tipo).toBe(
+      'inelegibilidade',
+    );
+    expect(
+      fonte.alterarStatus({
+        vendaId: venda.id,
+        status: 'Desconhecido' as StatusAdministrativoVenda,
+      }).tipo,
+    ).toBe('validacao');
+    expect(fonte.alterarStatus({ vendaId: 'ausente', status: 'Inativo' }).tipo).toBe(
+      'inexistencia',
+    );
+    expect(fonte.vendas()).toBe(antes);
+  });
+
+  it('preserva o estado e permite retry quando a publicação da mudança de status falha', () => {
+    const fonte = iniciar();
+    const venda = sucesso(fonte.cadastrarVenda(cadastro()));
+    const antes = fonte.vendas();
+    const snapshot = structuredClone(antes);
+    const copiar = vi.spyOn(globalThis, 'structuredClone').mockImplementationOnce(() => {
+      throw new Error('Falha simulada ao preparar publicação.');
+    });
+
+    expect(fonte.alterarStatus({ vendaId: venda.id, status: 'Inativo' }).tipo).toBe('falha');
+    expect(fonte.vendas()).toBe(antes);
+    expect(fonte.vendas()).toEqual(snapshot);
+    copiar.mockRestore();
+
+    expect(
+      sucesso(fonte.alterarStatus({ vendaId: venda.id, status: 'Inativo' })).statusAdministrativo,
+    ).toBe('Inativo');
+    expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/3');
   });
 
   it('publica pagamentos individuais, revalida repetição e reconcilia todas as projeções', () => {

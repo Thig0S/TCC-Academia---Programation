@@ -8,8 +8,16 @@ export interface DadosClienteVenda {
   readonly descricao: string | null;
 }
 
+export const STATUS_ADMINISTRATIVOS_VENDA = ['Ativo', 'Inativo', 'Prejuízo'] as const;
+export type StatusAdministrativoVenda = (typeof STATUS_ADMINISTRATIVOS_VENDA)[number];
+
+export function statusAdministrativoValido(valor: unknown): valor is StatusAdministrativoVenda {
+  return STATUS_ADMINISTRATIVOS_VENDA.some((status) => status === valor);
+}
+
 export interface Venda {
   readonly id: string;
+  readonly statusAdministrativo: StatusAdministrativoVenda;
   readonly cliente: DadosClienteVenda;
   readonly dataVenda: string;
   readonly valorTotalCentavos: number;
@@ -39,6 +47,11 @@ export interface ComandoCadastro {
 export interface ComandoEdicaoCliente {
   readonly vendaId: string;
   readonly cliente: ComandoCadastro['cliente'];
+}
+
+export interface ComandoMudancaStatus {
+  readonly vendaId: string;
+  readonly status: StatusAdministrativoVenda;
 }
 
 export type Resultado<T> =

@@ -11,6 +11,7 @@ function venda(
 ): ProjecaoVenda {
   return {
     id,
+    statusAdministrativo: 'Ativo',
     cliente: { nome, cpf, telefone, descricao: null },
     dataVenda,
     valorTotalCentavos: 10000,

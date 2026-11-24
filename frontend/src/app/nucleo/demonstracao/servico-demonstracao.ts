@@ -10,7 +10,9 @@ import {
 import {
   ComandoCadastro,
   ComandoEdicaoCliente,
+  ComandoMudancaStatus,
   Resultado,
+  statusAdministrativoValido,
   Venda,
 } from '../../funcionalidades/vendas/venda.modelos';
 import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes';
@@ -102,6 +104,68 @@ export class ServicoDemonstracao {
         atual.vendas.map((venda) => (venda.id === resultado.valor.id ? resultado.valor : venda)),
         resultado.valor.id,
         'Dados do cliente atualizados na venda demonstrativa.',
+      );
+    } catch (erro) {
+      return this.tratarFalha(erro);
+    }
+  }
+
+  alterarStatus(comando: ComandoMudancaStatus): Resultado<Venda> {
+    try {
+      const atual = this.estado();
+      const venda = atual.vendas.find((item) => item.id === comando.vendaId);
+      if (!venda) {
+        return {
+          tipo: 'inexistencia',
+          codigo: 'venda-inexistente',
+          mensagem: 'Venda demonstrativa não encontrada.',
+        };
+      }
+      if (!statusAdministrativoValido(comando.status)) {
+        return {
+          tipo: 'validacao',
+          codigo: 'status-administrativo-invalido',
+          mensagem: 'O status administrativo informado é inválido.',
+        };
+      }
+      if (venda.statusAdministrativo === comando.status) {
+        return congelar({
+          tipo: 'sucesso' as const,
+          valor: copiarCongelado(venda),
+          mensagem: 'A venda já possui esse status; nenhuma alteração foi necessária.',
+        });
+      }
+
+      const situacaoAtual = venda.statusAdministrativo;
+      const transicaoPermitida =
+        (situacaoAtual === 'Ativo' && comando.status === 'Inativo') ||
+        (situacaoAtual === 'Ativo' && comando.status === 'Prejuízo') ||
+        ((situacaoAtual === 'Inativo' || situacaoAtual === 'Prejuízo') &&
+          comando.status === 'Ativo');
+      if (!transicaoPermitida) {
+        return {
+          tipo: 'inelegibilidade',
+          codigo: 'transicao-status-inelegivel',
+          mensagem: 'Essa transição de status não é permitida.',
+        };
+      }
+
+      if (comando.status === 'Prejuízo') {
+        const projecao = projetarVendas([venda], this.referencia)[0];
+        if (projecao.saldoCentavos <= 0) {
+          return {
+            tipo: 'inelegibilidade',
+            codigo: 'prejuizo-sem-saldo',
+            mensagem: 'Somente uma venda com saldo em aberto pode ser marcada como Prejuízo.',
+          };
+        }
+      }
+
+      const atualizada = { ...venda, statusAdministrativo: comando.status };
+      return this.publicar(
+        atual.vendas.map((item) => (item.id === venda.id ? atualizada : item)),
+        venda.id,
+        `Status da venda atualizado para ${comando.status}.`,
       );
     } catch (erro) {
       return this.tratarFalha(erro);

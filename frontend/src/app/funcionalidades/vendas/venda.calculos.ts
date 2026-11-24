@@ -2,7 +2,7 @@ import { projetarParcela, ProjecaoParcela } from '../parcelas/parcela.calculos';
 import { formaAceita } from '../parcelas/pagamento.modelos';
 import { compararDatasCivis, limitesDoMes } from './data-civil';
 import { somarCentavos, subtrairCentavos, validarCentavos } from './dinheiro';
-import { Resultado, SituacaoVenda, Venda } from './venda.modelos';
+import { Resultado, SituacaoVenda, statusAdministrativoValido, Venda } from './venda.modelos';
 import { prepararCadastro } from './venda.validacoes';
 
 export interface ProjecaoVenda extends Venda {
@@ -27,6 +27,7 @@ function exigir(condicao: boolean, mensagem: string): void {
 
 /** Confere o histórico inteiro, não apenas o último comando. Sem efeitos colaterais. */
 export function validarVenda(venda: Venda, referencia: string): void {
+  exigir(statusAdministrativoValido(venda.statusAdministrativo), 'Status administrativo inválido.');
   const preparada = prepararCadastro(
     { ...venda, quantidadeParcelas: venda.parcelas.length },
     referencia,
@@ -93,11 +94,12 @@ export function validarVenda(venda: Venda, referencia: string): void {
     );
   }
   const pago = somarCentavos(venda.recebimentos.map((item) => item.valorCentavos));
+  const saldo = subtrairCentavos(venda.valorTotalCentavos, pago);
   exigir(
-    subtrairCentavos(venda.valorTotalCentavos, pago) ===
-      somarCentavos(venda.parcelas.slice(proxima).map((item) => item.valorCentavos)),
+    saldo === somarCentavos(venda.parcelas.slice(proxima).map((item) => item.valorCentavos)),
     'Saldo incompatível com as parcelas pendentes.',
   );
+  exigir(venda.statusAdministrativo !== 'Prejuízo' || saldo > 0, 'Prejuízo exige saldo em aberto.');
 }
 
 export function projetarVenda(venda: Venda, referencia: string): ProjecaoVenda {

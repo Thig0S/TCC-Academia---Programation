@@ -115,6 +115,23 @@ describe('Projeções financeiras puras', () => {
     expect(projetarVenda(venda('nova', '2027-03-31'), '2027-03-31').situacao).toBe('Em aberto');
   });
 
+  it('valida status administrativo e exige saldo para uma venda em Prejuízo', () => {
+    const ativa = venda();
+    expect(projetarVenda(ativa, '2027-03-31').statusAdministrativo).toBe('Ativo');
+    expect(() =>
+      projetarVenda(
+        { ...ativa, statusAdministrativo: 'Desconhecido' } as unknown as Venda,
+        '2027-03-31',
+      ),
+    ).toThrow('Status administrativo inválido.');
+    expect(() =>
+      projetarVenda(
+        { ...pagar(ativa, ativa.parcelas.length), statusAdministrativo: 'Prejuízo' },
+        '2027-03-31',
+      ),
+    ).toThrow('Prejuízo exige saldo em aberto.');
+  });
+
   it('reconcilia atraso no dia seguinte ao vencimento e mantém parcela paga fora do atraso', () => {
     const preparada = prepararCadastro(
       {
