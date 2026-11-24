@@ -26,11 +26,11 @@ A aplicação SHALL apresentar em Vendas somente Ativas com saldo positivo e em 
 
 ### Requirement: Status no cabeçalho e consulta de Inativas
 
-O detalhe SHALL indicar status administrativo textual e expor somente ações permitidas pela matriz de `dominio-vendas`, sem excluir registro. Vendas SHALL mostrar Ativas por padrão, com filtro para consultar Inativas; status SHALL não substituir o filtro financeiro de situação das Ativas.
+O detalhe SHALL indicar status administrativo textual e expor somente ações permitidas pela matriz de `dominio-vendas`, sem excluir registro. Vendas SHALL mostrar somente Ativas; Inativas SHALL ser consultáveis por coleção/rota própria e Prejuízo SHALL permanecer em seção/rota própria, sem seletor administrativo que as misture à lista normal. Status SHALL não substituir o filtro financeiro de situação das Ativas.
 
 #### Scenario: Inativar lançamento errado sem excluir
 - **WHEN** uma venda Ativa for inativada após confirmação
-- **THEN** SHALL sair da lista padrão e permanecer consultável por filtro de Inativas e pelo mesmo ID
+- **THEN** SHALL sair da lista padrão e permanecer consultável pela coleção/rota de Inativas e pelo mesmo ID
 - **AND** SHALL não existir ação de exclusão definitiva
 
 #### Scenario: Reativar venda Inativa
@@ -39,8 +39,8 @@ O detalhe SHALL indicar status administrativo textual e expor somente ações pe
 - **AND** SHALL preservar o mesmo ID, parcelas, recebimentos e situação financeira derivada
 
 #### Scenario: Manter filtros distintos
-- **WHEN** selecionar Inativas e retornar ao padrão Ativas
-- **THEN** a listagem SHALL filtrar pelo status escolhido, sem incluir Prejuízo ou mudar a situação financeira derivada
+- **WHEN** navegar entre as coleções próprias de Vendas Ativas, Inativas e Prejuízo
+- **THEN** Vendas SHALL listar somente Ativas, Inativas SHALL permanecer consultáveis em sua rota própria e Prejuízo SHALL permanecer separado, sem duplicação na lista normal
 - **AND** pesquisa e filtro financeiro SHALL continuar restritos à coleção elegível
 
 ### Requirement: Ordenação da lista antes da paginação
