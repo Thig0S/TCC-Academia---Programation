@@ -27,7 +27,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 ## 5. Relatórios de cobrança e Prejuízo
 
-- [ ] 5.1 Separar recebimentos mensais de todos os status e vendas/saldos/atrasos de Ativas; projetar primeiro vencimento, ordenar vencidas e grid de Prejuízo com soma só de contratos sem pagamento; testar entrada, pagamento parcial anterior de contrato, inativação/reativação e demais mudanças de status/data, valores efetivos e totais sem dupla contagem (D4; CA-037/038).
+- [x] 5.1 Separar recebimentos mensais de todos os status e vendas/saldos/atrasos de Ativas; projetar primeiro vencimento, ordenar vencidas e grid de Prejuízo com soma só de contratos sem pagamento; testar entrada, pagamento parcial anterior de contrato, inativação/reativação e demais mudanças de status/data, valores efetivos e totais sem dupla contagem (D4; CA-037/038).
 - [ ] 5.2 Atualizar títulos, CPF/telefone, data do primeiro vencimento, ordem das linhas, link por ID e grid de Prejuízo com indicação de itens não somados; testar vazios, identificação, acessibilidade, rolagem localizada, dois temas e viewports, documentando observações em `frontend/README.md` (D4/D5; CA-038). Não antecipar cartões, gráficos ou resumos da Change posterior `dashboard-relatorios`.
 
 ## 6. Verificação integrada e fechamento da Change

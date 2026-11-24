@@ -28,24 +28,33 @@ function venda(
     readonly entrada?: ProjecaoVenda['entrada'];
     readonly recebimentos?: readonly PagamentoDemonstrativo[];
     readonly parcelas?: readonly ProjecaoParcela[];
+    readonly statusAdministrativo?: ProjecaoVenda['statusAdministrativo'];
     readonly total?: number;
+    readonly totalEfetivo?: number;
     readonly saldo?: number;
   } = {},
 ): ProjecaoVenda {
   return {
     id,
-    statusAdministrativo: 'Ativo',
+    statusAdministrativo: opcoes.statusAdministrativo ?? 'Ativo',
     cliente: { nome: id, cpf: '90000000175', telefone: '00900000001', descricao: null },
     dataVenda,
     valorTotalCentavos: opcoes.total ?? 1000,
-    valorTotalEfetivoCentavos: opcoes.total ?? 1000,
+    valorTotalEfetivoCentavos: opcoes.totalEfetivo ?? opcoes.total ?? 1000,
     entrada: opcoes.entrada ?? null,
     recebimentos: opcoes.recebimentos ?? [],
     parcelas: opcoes.parcelas ?? [],
-    totalPagoCentavos: 0,
+    totalPagoCentavos: (opcoes.recebimentos ?? []).reduce(
+      (total, item) => total + item.valorCentavos,
+      0,
+    ),
     saldoCentavos: opcoes.saldo ?? 1000,
-    quantidadePaga: 0,
-    proximoVencimento: null,
+    quantidadePaga: (opcoes.parcelas ?? []).filter((item) => item.situacao === 'Paga').length,
+    proximoVencimento:
+      opcoes.parcelas
+        ?.filter((item) => item.situacao !== 'Paga')
+        .map((item) => item.vencimento)
+        .sort()[0] ?? null,
     situacao: (opcoes.saldo ?? 1000) === 0 ? 'Quitada' : 'Em aberto',
   };
 }
@@ -164,6 +173,201 @@ describe('Cálculos puros dos Relatórios', () => {
     expect(resultado.totalRecebidoCentavos).toBe(450);
   });
 
+  it('mantém recebimentos de todos os status e restringe vendas e posições às Ativas', () => {
+    const pagamentoComAcrescimo = {
+      ...recebimento('individual-ativo', '2027-03-10', 4000, 1, ['paga-ativa']),
+      origem: 'individual' as const,
+      acrescimoCentavos: 1000,
+      observacao: '',
+    };
+    const ativa = venda('ativa', '2027-03-05', {
+      total: 10000,
+      totalEfetivo: 11000,
+      saldo: 7000,
+      recebimentos: [pagamentoComAcrescimo],
+      parcelas: [
+        parcela('paga-ativa', 1, '2027-03-05', 'Paga', 3000),
+        parcela('atrasada-ativa', 2, '2027-02-01', 'Atrasado', 3000),
+        parcela('pendente-ativa', 3, '2027-04-01', 'Aberto', 4000),
+      ],
+    });
+    const inativa = venda('inativa', '2027-03-06', {
+      statusAdministrativo: 'Inativo',
+      total: 10000,
+      saldo: 8000,
+      recebimentos: [recebimento('recebido-inativa', '2027-03-11', 2000)],
+      parcelas: [
+        parcela('paga-inativa', 1, '2027-03-06', 'Paga', 2000),
+        parcela('atrasada-inativa', 2, '2027-02-02', 'Atrasado', 8000),
+      ],
+    });
+    const prejuizo = venda('prejuizo', '2027-03-07', {
+      statusAdministrativo: 'Prejuízo',
+      total: 9000,
+      saldo: 8000,
+      entrada: { data: '2027-03-07', forma: 'Dinheiro', valorCentavos: 1000 },
+      recebimentos: [recebimento('entrada-prejuizo', '2027-03-07', 1000, 1, ['paga-prejuizo'])],
+      parcelas: [
+        parcela('paga-prejuizo', 1, '2027-03-07', 'Paga', 1000),
+        parcela('atrasada-prejuizo', 2, '2027-02-03', 'Atrasado', 8000),
+      ],
+    });
+
+    const resultado = calcularRelatorio([ativa, inativa, prejuizo], '2027-03-31');
+
+    expect(resultado.recebimentos.map((item) => item.venda.id)).toEqual([
+      'ativa',
+      'inativa',
+      'prejuizo',
+    ]);
+    expect(resultado.totalRecebidoCentavos).toBe(7000);
+    expect(resultado.vendasDoMes.map((item) => item.id)).toEqual(['ativa']);
+    expect(resultado.totalVendasMesCentavos).toBe(11000);
+    expect(resultado.saldos.map((item) => item.venda.id)).toEqual(['ativa']);
+    expect(resultado.saldos[0]).toMatchObject({
+      saldoCentavos: 7000,
+      primeiroVencimentoPendente: '2027-02-01',
+    });
+    expect(resultado.parcelasAtrasadas.map((item) => [item.venda.id, item.parcela.id])).toEqual([
+      ['ativa', 'atrasada-ativa'],
+    ]);
+    expect(resultado.totalAtrasadoCentavos).toBe(3000);
+    expect(resultado.parcelasPrejuizo.map((item) => [item.venda.id, item.incluirNoTotal])).toEqual([
+      ['prejuizo', false],
+    ]);
+    expect(resultado.totalPrejuizoCentavos).toBe(0);
+
+    const reativada = calcularRelatorio(
+      [ativa, { ...inativa, statusAdministrativo: 'Ativo' }, prejuizo],
+      '2027-03-31',
+    );
+    expect(reativada.recebimentos.map((item) => item.id)).toEqual(
+      resultado.recebimentos.map((item) => item.id),
+    );
+    expect(reativada.totalRecebidoCentavos).toBe(resultado.totalRecebidoCentavos);
+    expect(reativada.vendasDoMes.map((item) => item.id)).toEqual(['ativa', 'inativa']);
+    expect(reativada.totalVendasMesCentavos).toBe(21000);
+    expect(reativada.totalEmAbertoCentavos).toBe(15000);
+  });
+
+  it('separa parcelas de Prejuízo com pagamentos anteriores sem somá-las ao total', () => {
+    const semPagamento = venda('sem-pagamento', '2027-01-01', {
+      statusAdministrativo: 'Prejuízo',
+      total: 1000,
+      saldo: 1000,
+      parcelas: [
+        parcela('sem-pagamento-1', 1, '2027-02-01', 'Atrasado', 300),
+        parcela('sem-pagamento-2', 2, '2027-03-01', 'Atrasado', 700),
+      ],
+    });
+    const comEntrada = venda('com-entrada', '2027-03-02', {
+      statusAdministrativo: 'Prejuízo',
+      total: 1000,
+      saldo: 800,
+      entrada: { data: '2027-03-02', forma: 'Pix', valorCentavos: 200 },
+      recebimentos: [recebimento('entrada', '2027-03-02', 200, 1, ['entrada-paga'])],
+      parcelas: [
+        parcela('entrada-paga', 1, '2027-03-02', 'Paga', 200),
+        parcela('entrada-pendente', 2, '2027-03-02', 'Atrasado', 800),
+      ],
+    });
+    const parcialmentePaga = venda('parcial', '2027-01-03', {
+      statusAdministrativo: 'Prejuízo',
+      total: 1000,
+      saldo: 600,
+      recebimentos: [recebimento('pagamento-parcial', '2027-02-03', 400, 1, ['parcial-paga'])],
+      parcelas: [
+        parcela('parcial-paga', 1, '2027-01-03', 'Paga', 400),
+        parcela('parcial-pendente', 2, '2027-03-03', 'Atrasado', 600),
+      ],
+    });
+
+    const resultado = calcularRelatorio([semPagamento, comEntrada, parcialmentePaga], '2027-03-31');
+
+    expect(
+      resultado.parcelasPrejuizo.map((item) => [
+        item.venda.id,
+        item.parcela.id,
+        item.incluirNoTotal,
+      ]),
+    ).toEqual([
+      ['sem-pagamento', 'sem-pagamento-1', true],
+      ['sem-pagamento', 'sem-pagamento-2', true],
+      ['com-entrada', 'entrada-pendente', false],
+      ['parcial', 'parcial-pendente', false],
+    ]);
+    expect(resultado.totalPrejuizoCentavos).toBe(1000);
+    expect(resultado.totalEmAbertoCentavos).toBe(0);
+    expect(resultado.totalAtrasadoCentavos).toBe(0);
+    expect(resultado.recebimentos.map((item) => item.venda.id)).toEqual(['com-entrada']);
+    expect(resultado.totalRecebidoCentavos).toBe(200);
+  });
+
+  it('ordena saldos pelo primeiro vencimento e parcelas atrasadas por vencimento estável', () => {
+    const primeiro = venda('primeiro-na-origem', '2027-01-01', {
+      saldo: 500,
+      parcelas: [
+        parcela('mais-distante', 2, '2027-04-20', 'Aberto', 300),
+        parcela('primeiro-pendente', 1, '2027-04-01', 'Atrasado', 200),
+        parcela('atrasada-mais-tarde', 3, '2027-04-20', 'Atrasado', 300),
+      ],
+    });
+    const empatada = venda('empatada', '2027-01-02', {
+      saldo: 200,
+      parcelas: [parcela('atrasada-empatada', 1, '2027-04-01', 'Atrasado', 200)],
+    });
+    const semVencimento = venda('sem-vencimento', '2027-01-03', { saldo: 100 });
+
+    const resultado = calcularRelatorio([primeiro, empatada, semVencimento], '2027-05-31');
+
+    expect(
+      resultado.saldos.map((item) => [item.venda.id, item.primeiroVencimentoPendente]),
+    ).toEqual([
+      ['primeiro-na-origem', '2027-04-01'],
+      ['empatada', '2027-04-01'],
+      ['sem-vencimento', null],
+    ]);
+    expect(resultado.parcelasAtrasadas.map((item) => [item.venda.id, item.parcela.id])).toEqual([
+      ['primeiro-na-origem', 'primeiro-pendente'],
+      ['empatada', 'atrasada-empatada'],
+      ['primeiro-na-origem', 'atrasada-mais-tarde'],
+    ]);
+  });
+
+  it('move o mesmo recebimento entre meses após alteração de data sem alterar status ou valor-base', () => {
+    const recebimentoAtual = recebimento('recebimento-estavel', '2027-03-31', 250);
+    const original = venda('movida', '2027-01-01', {
+      statusAdministrativo: 'Inativo',
+      recebimentos: [recebimentoAtual],
+      parcelas: [parcela('parcela', 1, '2027-01-01', 'Paga', 250)],
+      total: 1000,
+      totalEfetivo: 1000,
+      saldo: 750,
+    });
+    const corrigida = {
+      ...original,
+      statusAdministrativo: 'Ativo' as const,
+      recebimentos: [{ ...recebimentoAtual, data: '2027-04-01' }],
+    };
+
+    const marco = calcularRelatorio([original], '2027-03-31');
+    const abril = calcularRelatorio([corrigida], '2027-04-30');
+
+    expect(marco.recebimentos.map((item) => item.id)).toEqual([
+      'movida/recebimento/recebimento-estavel',
+    ]);
+    expect(marco.vendasDoMes).toHaveLength(0);
+    expect(marco.totalRecebidoCentavos).toBe(250);
+    expect(abril.recebimentos.map((item) => item.id)).toEqual([
+      'movida/recebimento/recebimento-estavel',
+    ]);
+    expect(abril.recebimentos[0].data).toBe('2027-04-01');
+    expect(abril.vendasDoMes.map((item) => item.id)).toEqual([]);
+    expect(abril.totalRecebidoCentavos).toBe(250);
+    expect(abril.totalVendasMesCentavos).toBe(0);
+    expect(corrigida.valorTotalCentavos).toBe(1000);
+  });
+
   it.each([
     ['2024-02-29', '2024-02-01', '2024-02-29'],
     ['0001-01-01', '0001-01-01', '0001-01-31'],
@@ -218,11 +422,13 @@ describe('Cálculos puros dos Relatórios', () => {
       vendasDoMes: [],
       saldos: [],
       parcelasAtrasadas: [],
+      parcelasPrejuizo: [],
       totalRecebidoCentavos: 0,
       quantidadeVendasMes: 0,
       totalVendasMesCentavos: 0,
       totalEmAbertoCentavos: 0,
       totalAtrasadoCentavos: 0,
+      totalPrejuizoCentavos: 0,
     });
 
     const excesso = [

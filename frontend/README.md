@@ -168,6 +168,33 @@ Os testes E2E foram direcionados às rotas e transições administrativas; a su�
 completa e a fixture separada de paginação extensa não foram executadas nesta tarefa.
 Nenhum desses testes sintéticos constitui aceite operacional.
 
+## Apply `feedback-luighi` — projeções de Relatórios por status — 24/11/2026
+
+Os cálculos agora preservam Recebimentos no mês de todos os status pela data efetiva,
+enquanto Vendas no mês, posição em aberto e parcelas vencidas consideram somente vendas
+Ativas. O total vendido usa o total efetivo com acréscimos aceitos; o saldo permanece
+baseado nas parcelas pendentes. A posição calcula o primeiro vencimento pendente e ordena
+por essa data; parcelas vencidas também ficam em ordem crescente, com empates estáveis.
+Há projeção separada das parcelas pendentes em Prejuízo: todas as linhas são mantidas,
+mas só parcelas de contratos sem entrada ou qualquer recebimento compõem o total separado.
+A apresentação desse grid, os novos títulos e os campos de identificação pertencem à
+tarefa 5.2, ainda pendente.
+
+Os testes de cálculo e componente de Relatórios passaram **17/17** antes da regressão
+completa. Cobriram recebimentos históricos com contrato Inativo/Prejuízo, reativação sem
+duplicar recebimentos, venda mensal com acréscimo e total efetivo, entrada, contrato em
+Prejuízo com pagamento parcial anterior versus sem pagamentos, saldo/atraso apenas Ativos,
+ordenação e desempate, recebimento que muda de mês mantendo o mesmo ID, limites civis e
+overflow. Os cenários de projeção usam dados sintéticos; a mudança de status foi exercitada
+por novas projeções no teste de cálculo e por atualização da fonte reativa no teste de
+componente. Não constituem aceite operacional.
+
+Verificações executadas em 24/11/2026: `npm.cmd test -- --watch=false` — **415/415
+testes em 33 arquivos**; `npm.cmd run build` — aprovado (bundle inicial de **314,08 kB**,
+transferência estimada **83,15 kB**); Prettier dos arquivos de cálculo e testes — aprovado;
+e `openspec validate feedback-luighi --strict` — aprovado. A interface do relatório e sua
+regressão E2E visual/responsiva serão verificadas na tarefa 5.2 e na regressão integrada.
+
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
 O seed inicial agora usa 12 nomes completos sintéticos distintos e 12 totais também

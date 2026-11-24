@@ -15,11 +15,18 @@ export interface RecebimentoRelatorio {
 export interface SaldoRelatorio {
   readonly venda: ProjecaoVenda;
   readonly saldoCentavos: number;
+  readonly primeiroVencimentoPendente: string | null;
 }
 
 export interface ParcelaAtrasadaRelatorio {
   readonly venda: ProjecaoVenda;
   readonly parcela: ProjecaoParcela;
+}
+
+export interface ParcelaPrejuizoRelatorio {
+  readonly venda: ProjecaoVenda;
+  readonly parcela: ProjecaoParcela;
+  readonly incluirNoTotal: boolean;
 }
 
 export interface DadosRelatorio {
@@ -29,11 +36,13 @@ export interface DadosRelatorio {
   readonly vendasDoMes: readonly ProjecaoVenda[];
   readonly saldos: readonly SaldoRelatorio[];
   readonly parcelasAtrasadas: readonly ParcelaAtrasadaRelatorio[];
+  readonly parcelasPrejuizo: readonly ParcelaPrejuizoRelatorio[];
   readonly totalRecebidoCentavos: number;
   readonly quantidadeVendasMes: number;
   readonly totalVendasMesCentavos: number;
   readonly totalEmAbertoCentavos: number;
   readonly totalAtrasadoCentavos: number;
+  readonly totalPrejuizoCentavos: number;
 }
 
 /** Deriva análises mensais e posições da referência sem alterar as projeções de origem. */
@@ -73,15 +82,40 @@ export function calcularRelatorio(
     throw new RangeError('O detalhamento de recebimentos diverge da consulta do período.');
   }
 
-  const vendasDoMes = vendas.filter((venda) => noMes(venda.dataVenda));
-  const saldos = vendas
+  const ativas = vendas.filter((venda) => venda.statusAdministrativo === 'Ativo');
+  const vendasDoMes = ativas.filter((venda) => noMes(venda.dataVenda));
+  const saldos = ativas
     .filter((venda) => venda.saldoCentavos > 0)
-    .map((venda) => ({ venda, saldoCentavos: venda.saldoCentavos }));
-  const parcelasAtrasadas = vendas.flatMap((venda) =>
-    venda.parcelas
-      .filter((parcela) => parcela.situacao === 'Atrasado')
-      .map((parcela) => ({ venda, parcela })),
-  );
+    .map((venda) => ({
+      venda,
+      saldoCentavos: venda.saldoCentavos,
+      primeiroVencimentoPendente:
+        venda.parcelas
+          .filter((parcela) => parcela.situacao !== 'Paga')
+          .map((parcela) => parcela.vencimento)
+          .sort(compararDatasCivis)[0] ?? null,
+    }))
+    .sort((a, b) => {
+      if (a.primeiroVencimentoPendente === null)
+        return b.primeiroVencimentoPendente === null ? 0 : 1;
+      if (b.primeiroVencimentoPendente === null) return -1;
+      return compararDatasCivis(a.primeiroVencimentoPendente, b.primeiroVencimentoPendente);
+    });
+  const parcelasAtrasadas = ativas
+    .flatMap((venda) =>
+      venda.parcelas
+        .filter((parcela) => parcela.situacao === 'Atrasado')
+        .map((parcela) => ({ venda, parcela })),
+    )
+    .sort((a, b) => compararDatasCivis(a.parcela.vencimento, b.parcela.vencimento));
+  const parcelasPrejuizo = vendas
+    .filter((venda) => venda.statusAdministrativo === 'Prejuízo')
+    .flatMap((venda) => {
+      const incluirNoTotal = venda.entrada === null && venda.recebimentos.length === 0;
+      return venda.parcelas
+        .filter((parcela) => parcela.situacao !== 'Paga')
+        .map((parcela) => ({ venda, parcela, incluirNoTotal }));
+    });
 
   return {
     inicioMes,
@@ -92,10 +126,18 @@ export function calcularRelatorio(
     parcelasAtrasadas,
     totalRecebidoCentavos,
     quantidadeVendasMes: vendasDoMes.length,
-    totalVendasMesCentavos: somarCentavos(vendasDoMes.map((venda) => venda.valorTotalCentavos)),
+    totalVendasMesCentavos: somarCentavos(
+      vendasDoMes.map((venda) => venda.valorTotalEfetivoCentavos),
+    ),
     totalEmAbertoCentavos: somarCentavos(saldos.map((item) => item.saldoCentavos)),
     totalAtrasadoCentavos: somarCentavos(
       parcelasAtrasadas.map((item) => item.parcela.valorCentavos),
+    ),
+    parcelasPrejuizo,
+    totalPrejuizoCentavos: somarCentavos(
+      parcelasPrejuizo
+        .filter((item) => item.incluirNoTotal)
+        .map((item) => item.parcela.valorCentavos),
     ),
   };
 }
