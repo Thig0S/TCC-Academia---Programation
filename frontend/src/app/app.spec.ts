@@ -46,6 +46,16 @@ describe('Estrutura navegável', () => {
     expect(pagina.querySelector('.modulo-ativo > a')?.textContent).toContain('Vendas');
   });
 
+  it.each([
+    ['/vendas/inativas', 'Inativas'],
+    ['/vendas/prejuizo', 'Prejuízo'],
+  ])('fornece acesso lateral direto à coleção %s', async (rota, nome) => {
+    const { pagina } = await renderizar(rota);
+    const atual = pagina.querySelector('app-barra-navegacao [aria-current="page"]');
+    expect(atual?.textContent?.trim()).toBe(nome);
+    expect(pagina.querySelector('.modulo-ativo > a')?.textContent).toContain('Vendas');
+  });
+
   it('alterna o tema pelo botão com indicação textual e programática', async () => {
     const { fixture, pagina } = await renderizar();
     const botao = pagina.querySelector<HTMLButtonElement>('button')!;

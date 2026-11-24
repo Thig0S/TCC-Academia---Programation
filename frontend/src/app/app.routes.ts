@@ -19,6 +19,24 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'vendas/inativas',
+    title: `Vendas inativas | ${produto}`,
+    data: { statusAdministrativo: 'Inativo' },
+    loadComponent: () =>
+      import('./funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas').then(
+        (m) => m.ListarVendasAdministrativas,
+      ),
+  },
+  {
+    path: 'vendas/prejuizo',
+    title: `Vendas em Prejuízo | ${produto}`,
+    data: { statusAdministrativo: 'Prejuízo' },
+    loadComponent: () =>
+      import('./funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas').then(
+        (m) => m.ListarVendasAdministrativas,
+      ),
+  },
+  {
     path: 'vendas',
     title: `Vendas | ${produto}`,
     loadComponent: () =>

@@ -68,8 +68,10 @@ describe('DetalhesVenda', () => {
       );
       expect(linha?.textContent).toContain(parcela.formaPagamento ?? 'Não informada');
     }
-    expect(pagina.querySelector('a[routerLink="/vendas"]')).not.toBeNull();
+    expect(pagina.querySelector('a[href="/vendas"]')).not.toBeNull();
     expect(pagina.querySelector('a[routerLink="/vendas/quitadas"]')).not.toBeNull();
+    expect(pagina.querySelector('a[routerLink="/vendas/inativas"]')).not.toBeNull();
+    expect(pagina.querySelector('a[routerLink="/vendas/prejuizo"]')).not.toBeNull();
     expect(pagina.querySelectorAll('form, input').length).toBe(0);
     expect(pagina.querySelector('[data-acao-pagar]')).not.toBeNull();
     expect(pagina.querySelector('[data-acao-receber]')).toBeNull();
@@ -340,5 +342,145 @@ describe('DetalhesVenda', () => {
     await harness.navigateByUrl('/vendas/inexistente');
     expect(harness.routeNativeElement?.textContent).toContain('Venda não encontrada');
     expect(harness.routeNativeElement?.textContent).not.toContain(segunda.cliente.nome);
+  });
+
+  it('confirma status, cancela sem mutação, restaura foco e reabre pela coleção correta', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastrada = servico.cadastrarVenda({
+      cliente: { nome: 'Cliente transição visual', cpf: '90000000175', telefone: '00900000001' },
+      dataVenda: servico.referencia,
+      valorTotalCentavos: 40000,
+      quantidadeParcelas: 4,
+      entrada: null,
+    });
+    if (cadastrada.tipo !== 'sucesso') throw new Error(cadastrada.mensagem);
+    const venda = cadastrada.valor;
+    const harness = await RouterTestingHarness.create(urlPara(venda.id));
+    const pagina = () => harness.routeNativeElement!;
+    const confirmar = async () => {
+      const botao = pagina().querySelector<HTMLButtonElement>('dialog [data-foco-inicial]')!;
+      botao.click();
+      await harness.fixture.whenStable();
+    };
+    const abrirConfirmacao = async (status: string) => {
+      const botao = pagina().querySelector<HTMLButtonElement>(`[data-acao-status="${status}"]`)!;
+      botao.click();
+      await harness.fixture.whenStable();
+      return botao;
+    };
+
+    expect(pagina().textContent).toContain('Ativo');
+    expect(pagina().querySelectorAll('[data-acao-status]')).toHaveLength(2);
+    const acionadorInativar = await abrirConfirmacao('Inativo');
+    const dialog = pagina().querySelector<HTMLDialogElement>('dialog')!;
+    expect(dialog.open).toBe(true);
+    expect(document.activeElement).toBe(dialog.querySelector('[data-foco-inicial]'));
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Ativo' },
+    });
+    [...dialog.querySelectorAll<HTMLButtonElement>('button')]
+      .find((botao) => botao.textContent?.includes('Cancelar'))!
+      .click();
+    await harness.fixture.whenStable();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Ativo' },
+    });
+    expect(document.activeElement).toBe(acionadorInativar);
+
+    await abrirConfirmacao('Inativo');
+    await confirmar();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Inativo' },
+    });
+    expect(pagina().querySelector('[data-acao-status="Prejuízo"]')).toBeNull();
+    expect(pagina().querySelector('[data-acao-pagar]')).toBeNull();
+    expect(document.activeElement).toBe(pagina().querySelector('#titulo-status-administrativo'));
+    expect(
+      pagina()
+        .querySelector<HTMLAnchorElement>('nav[aria-label="Retornos de Vendas"] a')
+        ?.getAttribute('href'),
+    ).toBe('/vendas/inativas');
+
+    await abrirConfirmacao('Ativo');
+    await confirmar();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Ativo' },
+    });
+    expect(
+      pagina()
+        .querySelector<HTMLAnchorElement>('nav[aria-label="Retornos de Vendas"] a')
+        ?.getAttribute('href'),
+    ).toBe('/vendas');
+
+    await abrirConfirmacao('Prejuízo');
+    await confirmar();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Prejuízo' },
+    });
+    expect(pagina().querySelector('[data-acao-status="Inativo"]')).toBeNull();
+    expect(pagina().querySelectorAll('[data-acao-status="Ativo"]')).toHaveLength(1);
+    expect(pagina().querySelector('[data-acao-pagar]')).toBeNull();
+
+    await abrirConfirmacao('Ativo');
+    await confirmar();
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Ativo' },
+    });
+    expect(
+      pagina()
+        .querySelector<HTMLAnchorElement>('nav[aria-label="Retornos de Vendas"] a')
+        ?.getAttribute('href'),
+    ).toBe('/vendas');
+  });
+
+  it('retorna venda Ativa quitada à coleção Quitadas depois de reativar', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastrada = servico.cadastrarVenda({
+      cliente: { nome: 'Cliente reativado quitado', cpf: '90000000175', telefone: '00900000001' },
+      dataVenda: servico.referencia,
+      valorTotalCentavos: 10000,
+      quantidadeParcelas: 1,
+      entrada: null,
+    });
+    if (cadastrada.tipo !== 'sucesso') throw new Error(cadastrada.mensagem);
+    const venda = cadastrada.valor;
+    expect(
+      servico.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: venda.parcelas[0].id,
+        data: servico.referencia,
+        forma: 'Pix',
+      }).tipo,
+    ).toBe('sucesso');
+    const harness = await RouterTestingHarness.create(urlPara(venda.id));
+    const pagina = () => harness.routeNativeElement!;
+
+    expect(pagina().querySelector('[data-acao-status="Prejuízo"]')).toBeNull();
+    expect(pagina().querySelector('[data-acao-pagar]')).toBeNull();
+    pagina().querySelector<HTMLButtonElement>('[data-acao-status="Inativo"]')!.click();
+    await harness.fixture.whenStable();
+    pagina().querySelector<HTMLButtonElement>('dialog [data-foco-inicial]')!.click();
+    await harness.fixture.whenStable();
+
+    pagina().querySelector<HTMLButtonElement>('[data-acao-status="Ativo"]')!.click();
+    await harness.fixture.whenStable();
+    pagina().querySelector<HTMLButtonElement>('dialog [data-foco-inicial]')!.click();
+    await harness.fixture.whenStable();
+
+    expect(servico.consultarVenda(venda.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { statusAdministrativo: 'Ativo', saldoCentavos: 0 },
+    });
+    expect(
+      pagina()
+        .querySelector<HTMLAnchorElement>('nav[aria-label="Retornos de Vendas"] a')
+        ?.getAttribute('href'),
+    ).toBe('/vendas/quitadas');
   });
 });
