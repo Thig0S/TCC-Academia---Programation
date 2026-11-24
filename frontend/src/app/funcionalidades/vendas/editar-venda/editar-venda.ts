@@ -96,7 +96,11 @@ export class EditarVenda {
         ? ['/vendas']
         : this.origem === 'quitadas'
           ? ['/vendas/quitadas']
-          : ['/vendas', this.id()];
+          : this.origem === 'inativas'
+            ? ['/vendas/inativas']
+            : this.origem === 'prejuizo'
+              ? ['/vendas/prejuizo']
+              : ['/vendas', this.id()];
     void this.router.navigate(destino);
   }
 }

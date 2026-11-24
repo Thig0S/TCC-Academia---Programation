@@ -8,10 +8,12 @@ import {
   Injector,
   linkedSignal,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SeloSituacao } from '../../../compartilhado/componentes/selo-situacao/selo-situacao';
+import { Modal } from '../../../compartilhado/componentes/modal/modal';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
@@ -20,10 +22,11 @@ import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formular
 import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar-pagamento';
 import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
 import { ProjecaoVenda } from '../venda.calculos';
+import { StatusAdministrativoVenda } from '../venda.modelos';
 
 @Component({
   selector: 'app-detalhes-venda',
-  imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento],
+  imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento, Modal],
   templateUrl: './detalhes-venda.html',
   styleUrl: './detalhes-venda.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +43,13 @@ export class DetalhesVenda {
     computation: () => null,
   });
   protected readonly mensagemRecebimento = signal('');
+  protected readonly mensagemStatus = signal('');
+  protected readonly erroStatus = signal('');
+  protected readonly statusAlvo = signal<StatusAdministrativoVenda | null>(null);
+  private readonly statusAcionador = signal<StatusAdministrativoVenda | null>(null);
+  private readonly statusConfirmado = signal(false);
+  private readonly modalStatus = viewChild(Modal);
+  private readonly alertaStatus = viewChild<ElementRef<HTMLElement>>('alertaStatus');
   private readonly focoProxima = signal(false);
   private readonly acionadorPagamento = signal<string | null>(null);
   protected readonly restaurarFoco = () => {
@@ -70,8 +80,91 @@ export class DetalhesVenda {
     this.parcelaPagamento.set(parcelaId);
   }
 
+  protected abrirConfirmacaoStatus(status: StatusAdministrativoVenda): void {
+    this.statusAcionador.set(status);
+    this.statusConfirmado.set(false);
+    this.erroStatus.set('');
+    this.statusAlvo.set(status);
+  }
+
+  protected textoConfirmacaoStatus(status: StatusAdministrativoVenda): string {
+    switch (status) {
+      case 'Inativo':
+        return 'A venda deixará as coleções operacionais. Parcelas, recebimentos e histórico serão preservados.';
+      case 'Prejuízo':
+        return 'A venda passará para a seção Prejuízo e deixará as coleções operacionais. Os recebimentos já feitos serão preservados.';
+      case 'Ativo':
+        return 'A venda voltará à coleção ativa correspondente ao saldo, sem alterar parcelas ou recebimentos.';
+    }
+  }
+
+  protected confirmarMudancaStatus(): void {
+    const status = this.statusAlvo();
+    const consulta = this.consulta();
+    if (status === null || consulta?.tipo !== 'sucesso') return;
+    try {
+      const resultado = this.servico.alterarStatus({ vendaId: consulta.valor.id, status });
+      if (resultado.tipo !== 'sucesso') {
+        this.erroStatus.set(resultado.mensagem);
+        afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
+          injector: this.injector,
+        });
+        return;
+      }
+      this.statusConfirmado.set(true);
+      this.mensagemStatus.set(resultado.mensagem);
+      this.modalStatus()?.fechar();
+    } catch {
+      this.erroStatus.set('Não foi possível atualizar o status. Tente novamente.');
+      afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
+        injector: this.injector,
+      });
+    }
+  }
+
+  protected cancelarConfirmacaoStatus(): void {
+    this.modalStatus()?.fechar();
+  }
+
+  protected fecharConfirmacaoStatus(): void {
+    this.statusAlvo.set(null);
+    this.erroStatus.set('');
+  }
+
+  protected readonly restaurarFocoStatus = () => {
+    afterNextRender(
+      () => {
+        const host = this.elemento.nativeElement;
+        const destino = this.statusConfirmado()
+          ? null
+          : [...host.querySelectorAll<HTMLButtonElement>('[data-acao-status]')].find(
+              (botao) => botao.dataset['acaoStatus'] === this.statusAcionador(),
+            );
+        (destino ?? host.querySelector<HTMLElement>('#titulo-status-administrativo'))?.focus();
+        this.statusConfirmado.set(false);
+      },
+      { injector: this.injector },
+    );
+  };
+
+  protected rotaRetorno(venda: ProjecaoVenda): readonly string[] {
+    if (venda.statusAdministrativo === 'Inativo') return ['/vendas/inativas'];
+    if (venda.statusAdministrativo === 'Prejuízo') return ['/vendas/prejuizo'];
+    return venda.saldoCentavos > 0 ? ['/vendas'] : ['/vendas/quitadas'];
+  }
+
+  protected textoRetorno(venda: ProjecaoVenda): string {
+    if (venda.statusAdministrativo === 'Inativo') return 'Voltar para Vendas inativas';
+    if (venda.statusAdministrativo === 'Prejuízo') return 'Voltar para Prejuízo';
+    return venda.saldoCentavos > 0 ? 'Voltar para Vendas' : 'Voltar para Quitadas';
+  }
+
   protected primeiraPendente(venda: ProjecaoVenda, parcela: ProjecaoParcela): boolean {
     return venda.parcelas.find((item) => item.situacao !== 'Paga')?.id === parcela.id;
+  }
+
+  protected podePagar(venda: ProjecaoVenda): boolean {
+    return venda.statusAdministrativo === 'Ativo';
   }
 
   protected parcelaAlvo(venda: ProjecaoVenda): ProjecaoParcela | null {

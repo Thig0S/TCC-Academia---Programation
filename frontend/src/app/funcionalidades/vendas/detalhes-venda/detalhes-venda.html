@@ -17,13 +17,23 @@
         {{ mensagemRecebimento() }}
       </p>
     }
+    @if (mensagemStatus()) {
+      <p
+        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+        role="status"
+      >
+        {{ mensagemStatus() }}
+      </p>
+    }
     <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
       <p class="mb-0 text-text-muted">
         Referência da demonstração: {{ formatarDataCivil(referencia) }}
       </p>
       <nav aria-label="Retornos de Vendas" class="flex flex-wrap items-center gap-3">
-        <a routerLink="/vendas">Voltar para Vendas</a>
+        <a [routerLink]="rotaRetorno(resultado.valor)">{{ textoRetorno(resultado.valor) }}</a>
         <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+        <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+        <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
         <a
           [routerLink]="['/vendas', resultado.valor.id, 'editar']"
           [state]="{ origemEdicao: 'detalhe' }"
@@ -115,6 +125,64 @@
         </section>
       </section>
     </div>
+
+    <section
+      class="mb-2 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+      aria-labelledby="titulo-status-administrativo"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2
+            id="titulo-status-administrativo"
+            class="mb-1 text-lg font-semibold tracking-tight"
+            tabindex="-1"
+          >
+            Status administrativo
+          </h2>
+          <p class="mb-0 font-semibold">{{ resultado.valor.statusAdministrativo }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          @if (resultado.valor.statusAdministrativo === 'Ativo') {
+            <button
+              type="button"
+              class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              data-acao-status="Inativo"
+              (click)="abrirConfirmacaoStatus('Inativo')"
+            >
+              Inativar venda
+            </button>
+            @if (resultado.valor.saldoCentavos > 0) {
+              <button
+                type="button"
+                class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                data-acao-status="Prejuízo"
+                (click)="abrirConfirmacaoStatus('Prejuízo')"
+              >
+                Marcar como Prejuízo
+              </button>
+            }
+          } @else if (resultado.valor.statusAdministrativo === 'Inativo') {
+            <button
+              type="button"
+              class="rounded-lg border-[1px] border-control-border bg-action px-3 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              data-acao-status="Ativo"
+              (click)="abrirConfirmacaoStatus('Ativo')"
+            >
+              Reativar venda
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="rounded-lg border-[1px] border-control-border bg-action px-3 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+              data-acao-status="Ativo"
+              (click)="abrirConfirmacaoStatus('Ativo')"
+            >
+              Reabrir venda
+            </button>
+          }
+        </div>
+      </div>
+    </section>
 
     <section
       class="parcelas-detalhe overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
@@ -227,7 +295,7 @@
                   {{ parcela.formaPagamento ?? 'Não informada' }}
                 </td>
                 <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  @if (parcela.situacao !== 'Paga') {
+                  @if (parcela.situacao !== 'Paga' && podePagar(resultado.valor)) {
                     @if (primeiraPendente(resultado.valor, parcela)) {
                       <button
                         type="button"
@@ -246,6 +314,8 @@
                     } @else {
                       <span>Aguardando parcela anterior</span>
                     }
+                  } @else if (parcela.situacao !== 'Paga') {
+                    <span>Venda fora das cobranças ativas</span>
                   } @else {
                     <span aria-hidden="true">—</span>
                   }
@@ -266,6 +336,42 @@
         />
       }
     }
+    @if (statusAlvo(); as status) {
+      <app-modal
+        titulo="Confirmar mudança de status"
+        [restaurarFoco]="restaurarFocoStatus"
+        (fechado)="fecharConfirmacaoStatus()"
+      >
+        <p class="mb-3 text-text-muted">{{ textoConfirmacaoStatus(status) }}</p>
+        @if (erroStatus()) {
+          <p
+            #alertaStatus
+            class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+            role="alert"
+            tabindex="-1"
+          >
+            {{ erroStatus() }}
+          </p>
+        }
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            data-foco-inicial
+            (click)="confirmarMudancaStatus()"
+          >
+            Confirmar mudança
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            (click)="cancelarConfirmacaoStatus()"
+          >
+            Cancelar
+          </button>
+        </div>
+      </app-modal>
+    }
   } @else {
     <app-cabecalho titulo="Venda não encontrada" />
     <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
@@ -274,6 +380,8 @@
     <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
       <a routerLink="/vendas">Voltar para Vendas</a>
       <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+      <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+      <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
     </nav>
   }
 } @else {
@@ -284,5 +392,7 @@
   <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
     <a routerLink="/vendas">Voltar para Vendas</a>
     <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+    <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+    <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
   </nav>
 }

@@ -6,7 +6,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 - [x] 1.1 Adicionar status Ativo inicial à venda canônica e permitir somente Ativo→Inativo, Ativo→Prejuízo com saldo aberto, Inativo→Ativo e Prejuízo→Ativo; rejeitar transição direta entre Inativo e Prejuízo e tratar status repetido como no-op idempotente. Testar venda quitada inelegível a Prejuízo, caminhos inválidos, repetição, ausência, falha e preservação de parcelas/recebimentos (D1; CA-036).
 - [x] 1.2 Separar projeções de Ativas abertas/quitadas, Inativas e Prejuízo e manter recebimentos históricos de qualquer status nos períodos; testar indicadores/saldos/atrasos/contagens antes e depois de cada transição, incluindo reativação de Inativa e Prejuízo, sem duplicar recebimentos, e documentar a reconciliação observada (D1/D4; CA-036/038).
-- [ ] 1.3 Adicionar status e ações permitidas de marcar/inativar/reativar/reabrir no detalhe e acesso às seções/filtro de Inativas e Prejuízo; testar navegação por ID, coleções exclusivas, ausência de transições diretas não permitidas, confirmações, foco, vazio e retorno à coleção Ativa correspondente ao saldo nos dois temas (D1/D5; CA-036).
+- [x] 1.3 Adicionar status e ações permitidas de marcar/inativar/reativar/reabrir no detalhe e acesso às seções/filtro de Inativas e Prejuízo; testar navegação por ID, coleções exclusivas, ausência de transições diretas não permitidas, confirmações, foco, vazio e retorno à coleção Ativa correspondente ao saldo nos dois temas (D1/D5; CA-036).
 
 ## 2. Pagamento manual e acréscimo
 
