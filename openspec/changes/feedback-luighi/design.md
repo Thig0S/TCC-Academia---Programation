@@ -14,7 +14,7 @@ Ver `proposal.md` e PRD/FON-017, TDD/DEC-028. O frontend usa Angular/Signals e `
 
 ### D1 — Status canônico separado do financeiro
 
-Adicionar à venda status administrativo explícito (Ativo por padrão); situação Quitada/Atrasada/Próximos dias/Em aberto continua função pura das parcelas. Comandos de status validam ID, transições e saldo e publicam uma versão completa do estado. `abertas`/`quitadas` mostram só Ativas; Inativas são consultadas por filtro próprio; Prejuízo tem seção própria, com reabertura para Ativo. Detalhe continua endereçável por ID e expõe ações elegíveis. Preferir status em `Venda` a derivá-lo do atraso, porque marcar prejuízo é decisão humana; não reutilizar `SituacaoVenda` para dois conceitos. Não apagar registros ou efetuar baixa ao mudar status.
+Adicionar à venda status administrativo explícito (Ativo por padrão); situação Quitada/Atrasada/Próximos dias/Em aberto continua função pura das parcelas. A matriz permitida é Ativo→Inativo, Ativo→Prejuízo somente com saldo aberto, Inativo→Ativo e Prejuízo→Ativo; transição direta Inativo↔Prejuízo é rejeitada. Solicitar o status atual novamente é um no-op idempotente, sem nova mutação ou efeitos duplicados. Comandos de status validam ID, transições e saldo e publicam uma versão completa do estado somente quando houver mudança aceita. `abertas`/`quitadas` mostram só Ativas; Inativas são consultadas por filtro próprio; Prejuízo tem seção própria. Detalhe continua endereçável por ID e expõe somente ações elegíveis. Preferir status em `Venda` a derivá-lo do atraso, porque marcar prejuízo é decisão humana; não reutilizar `SituacaoVenda` para dois conceitos. Não apagar registros ou efetuar baixa ao mudar status.
 
 ### D2 — Valores-base imutáveis e valores efetivos derivados
 

@@ -4,9 +4,9 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 ## 1. Status administrativo e universos
 
-- [ ] 1.1 Adicionar status Ativo inicial à venda canônica e transições validadas Inativo/Prejuízo/Ativo com ID estável, sem exclusão; testar venda quitada inelegível a Prejuízo, repetição, ausência, falha e preservação de parcelas/recebimentos (D1; CA-036).
-- [ ] 1.2 Separar projeções de Ativas abertas/quitadas, Inativas e Prejuízo e manter recebimentos históricos de qualquer status nos períodos; testar indicadores/saldos/atrasos/contagens antes e depois de cada transição e documentar a reconciliação observada (D1/D4; CA-036/038).
-- [ ] 1.3 Adicionar status e ações de marcar/inativar/reabrir no detalhe e acesso às seções/filtro de Inativas e Prejuízo; testar navegação por ID, coleções exclusivas, confirmações, foco, vazio e retorno de Prejuízo para Ativo nos dois temas (D1/D5; CA-036).
+- [ ] 1.1 Adicionar status Ativo inicial à venda canônica e permitir somente Ativo→Inativo, Ativo→Prejuízo com saldo aberto, Inativo→Ativo e Prejuízo→Ativo; rejeitar transição direta entre Inativo e Prejuízo e tratar status repetido como no-op idempotente. Testar venda quitada inelegível a Prejuízo, caminhos inválidos, repetição, ausência, falha e preservação de parcelas/recebimentos (D1; CA-036).
+- [ ] 1.2 Separar projeções de Ativas abertas/quitadas, Inativas e Prejuízo e manter recebimentos históricos de qualquer status nos períodos; testar indicadores/saldos/atrasos/contagens antes e depois de cada transição, incluindo reativação de Inativa e Prejuízo, sem duplicar recebimentos, e documentar a reconciliação observada (D1/D4; CA-036/038).
+- [ ] 1.3 Adicionar status e ações permitidas de marcar/inativar/reativar/reabrir no detalhe e acesso às seções/filtro de Inativas e Prejuízo; testar navegação por ID, coleções exclusivas, ausência de transições diretas não permitidas, confirmações, foco, vazio e retorno à coleção Ativa correspondente ao saldo nos dois temas (D1/D5; CA-036).
 
 ## 2. Pagamento manual e acréscimo
 
@@ -27,7 +27,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 ## 5. Relatórios de cobrança e Prejuízo
 
-- [ ] 5.1 Separar recebimentos mensais de todos os status e vendas/saldos/atrasos de Ativas; projetar primeiro vencimento, ordenar vencidas e grid de Prejuízo com soma só de contratos sem pagamento; testar entrada, pagamento parcial anterior de contrato, mudanças de status/data, valores efetivos e totais sem dupla contagem (D4; CA-037/038).
+- [ ] 5.1 Separar recebimentos mensais de todos os status e vendas/saldos/atrasos de Ativas; projetar primeiro vencimento, ordenar vencidas e grid de Prejuízo com soma só de contratos sem pagamento; testar entrada, pagamento parcial anterior de contrato, inativação/reativação e demais mudanças de status/data, valores efetivos e totais sem dupla contagem (D4; CA-037/038).
 - [ ] 5.2 Atualizar títulos, CPF/telefone, data do primeiro vencimento, ordem das linhas, link por ID e grid de Prejuízo com indicação de itens não somados; testar vazios, identificação, acessibilidade, rolagem localizada, dois temas e viewports, documentando observações em `frontend/README.md` (D4/D5; CA-038). Não antecipar cartões, gráficos ou resumos da Change posterior `dashboard-relatorios`.
 
 ## 6. Verificação integrada e fechamento da Change

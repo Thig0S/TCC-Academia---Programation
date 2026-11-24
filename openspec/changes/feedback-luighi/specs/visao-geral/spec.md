@@ -40,3 +40,8 @@ Visão Geral SHALL apresentar somente Ativas: até cinco vendas recentes por dat
 #### Scenario: Reabrir venda com saldo aberto
 - **WHEN** venda Prejuízo for reaberta como Ativa
 - **THEN** SHALL voltar aos resumos elegíveis e aos saldos operacionais, sem criar nova venda nem alterar pagamentos
+
+#### Scenario: Reativar venda Inativa nos indicadores
+- **WHEN** uma venda Inativa com saldo aberto for reativada como Ativa
+- **THEN** SHALL voltar aos indicadores e resumos operacionais elegíveis conforme saldo e vencimentos
+- **AND** recebimentos já registrados SHALL continuar contabilizados uma única vez no mês de sua data efetiva
