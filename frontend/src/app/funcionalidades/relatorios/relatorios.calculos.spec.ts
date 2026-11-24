@@ -131,6 +131,39 @@ describe('Cálculos puros dos Relatórios', () => {
     expect(resultado.totalRecebidoCentavos).toBe(60000);
   });
 
+  it('identifica pagamentos individuais sem reclassificar entradas ou lotes legados', () => {
+    const individual = {
+      ...recebimento('individual', '2027-03-15', 150, 1, ['parcela-individual']),
+      origem: 'individual' as const,
+      acrescimoCentavos: 50,
+      observacao: 'ajuste',
+    };
+    const movimento = venda('origens', '2027-03-01', {
+      entrada: { data: '2027-03-01', forma: 'Pix', valorCentavos: 100 },
+      parcelas: [
+        parcela('entrada', 1, '2027-03-01', 'Paga', 100),
+        parcela('parcela-individual', 2, '2027-04-01', 'Paga', 100),
+        parcela('parcela-lote-1', 3, '2027-05-01', 'Paga', 100),
+        parcela('parcela-lote-2', 4, '2027-06-01', 'Paga', 100),
+      ],
+      recebimentos: [
+        recebimento('entrada', '2027-03-01', 100, 1, ['entrada']),
+        individual,
+        recebimento('lote', '2027-03-20', 200, 2, ['parcela-lote-1', 'parcela-lote-2']),
+      ],
+    });
+
+    const resultado = calcularRelatorio([movimento], '2027-03-31');
+    expect(
+      resultado.recebimentos.map(({ origem, valorCentavos }) => [origem, valorCentavos]),
+    ).toEqual([
+      ['Entrada', 100],
+      ['Individual', 150],
+      ['Lote', 200],
+    ]);
+    expect(resultado.totalRecebidoCentavos).toBe(450);
+  });
+
   it.each([
     ['2024-02-29', '2024-02-01', '2024-02-29'],
     ['0001-01-01', '0001-01-01', '0001-01-31'],

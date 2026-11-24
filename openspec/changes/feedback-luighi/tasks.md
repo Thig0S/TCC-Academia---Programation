@@ -17,7 +17,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 ## 3. Correção de pagamento individual
 
 - [x] 3.1 Implementar correção por ID do mesmo recebimento individual para valor >= base, data válida, forma aceita e nota <= 20, sem alterar entrada/lote; testar substituição sem ID novo, mudança de mês, saldo/base, duplicidade, obsolescência, falha e retry (D3; CA-037).
-- [ ] 3.2 Expor edição apenas na parcela paga elegível com valores atuais e confirmação/cancelamento; testar foco/Escape, erros associados, limite de nota, venda/recebimento não elegível, acessibilidade e conciliação com Relatórios nos dois temas (D3/D5; CA-037).
+- [x] 3.2 Expor edição apenas na parcela paga elegível com valores atuais e confirmação/cancelamento; testar foco/Escape, erros associados, limite de nota, venda/recebimento não elegível, acessibilidade e conciliação com Relatórios nos dois temas (D3/D5; CA-037).
 - [ ] 3.3 Atualizar documentação de correção e histórico em `frontend/README.md` com resultados efetivos dos testes do grupo, sem descrever lote ou entrada como editáveis.
 
 ## 4. Ordenação e consulta

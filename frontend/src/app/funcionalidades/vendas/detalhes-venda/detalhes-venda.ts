@@ -20,13 +20,18 @@ import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalh
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
 import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar-pagamento';
+import { CorrigirPagamento } from '../../parcelas/corrigir-pagamento/corrigir-pagamento';
 import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
 import { ProjecaoVenda } from '../venda.calculos';
 import { StatusAdministrativoVenda } from '../venda.modelos';
+import {
+  PagamentoDemonstrativo,
+  PagamentoIndividualDemonstrativo,
+} from '../../parcelas/pagamento.modelos';
 
 @Component({
   selector: 'app-detalhes-venda',
-  imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento, Modal],
+  imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento, CorrigirPagamento, Modal],
   templateUrl: './detalhes-venda.html',
   styleUrl: './detalhes-venda.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,7 +47,12 @@ export class DetalhesVenda {
     source: () => this.id().get('id'),
     computation: () => null,
   });
+  protected readonly recebimentoCorrecao = linkedSignal<string | null, string | null>({
+    source: () => this.id().get('id'),
+    computation: () => null,
+  });
   protected readonly mensagemRecebimento = signal('');
+  protected readonly mensagemCorrecao = signal('');
   protected readonly mensagemStatus = signal('');
   protected readonly erroStatus = signal('');
   protected readonly statusAlvo = signal<StatusAdministrativoVenda | null>(null);
@@ -52,6 +62,7 @@ export class DetalhesVenda {
   private readonly alertaStatus = viewChild<ElementRef<HTMLElement>>('alertaStatus');
   private readonly focoProxima = signal(false);
   private readonly acionadorPagamento = signal<string | null>(null);
+  private readonly acionadorCorrecao = signal<string | null>(null);
   protected readonly restaurarFoco = () => {
     afterNextRender(
       () => {
@@ -62,6 +73,19 @@ export class DetalhesVenda {
           : acoes.find((acao) => acao.dataset['acaoPagar'] === this.acionadorPagamento());
         (destino ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
         this.focoProxima.set(false);
+      },
+      { injector: this.injector },
+    );
+  };
+  protected readonly restaurarFocoCorrecao = () => {
+    afterNextRender(
+      () => {
+        const host = this.elemento.nativeElement;
+        const id = this.acionadorCorrecao();
+        const destino = [...host.querySelectorAll<HTMLElement>('[data-acao-corrigir]')].find(
+          (botao) => botao.dataset['acaoCorrigir'] === id,
+        );
+        (destino ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
       },
       { injector: this.injector },
     );
@@ -78,6 +102,17 @@ export class DetalhesVenda {
     this.mensagemRecebimento.set('');
     this.acionadorPagamento.set(parcelaId);
     this.parcelaPagamento.set(parcelaId);
+  }
+
+  protected abrirCorrecao(recebimentoId: string): void {
+    this.mensagemCorrecao.set('');
+    this.acionadorCorrecao.set(recebimentoId);
+    this.recebimentoCorrecao.set(recebimentoId);
+  }
+
+  protected fecharCorrecao(mensagem: string | null): void {
+    this.recebimentoCorrecao.set(null);
+    if (mensagem) this.mensagemCorrecao.set(mensagem);
   }
 
   protected abrirConfirmacaoStatus(status: StatusAdministrativoVenda): void {
@@ -170,6 +205,50 @@ export class DetalhesVenda {
   protected parcelaAlvo(venda: ProjecaoVenda): ProjecaoParcela | null {
     const id = this.parcelaPagamento();
     return id ? (venda.parcelas.find((parcela) => parcela.id === id) ?? null) : null;
+  }
+
+  protected pagamentoDaParcela(
+    venda: ProjecaoVenda,
+    parcela: ProjecaoParcela,
+  ): PagamentoDemonstrativo | null {
+    return (
+      venda.recebimentos.find((recebimento) =>
+        recebimento.alocacoes.some((alocacao) => alocacao.parcelaId === parcela.id),
+      ) ?? null
+    );
+  }
+
+  protected pagamentoIndividual(
+    venda: ProjecaoVenda,
+    parcela: ProjecaoParcela,
+  ): PagamentoIndividualDemonstrativo | null {
+    const pagamento = this.pagamentoDaParcela(venda, parcela);
+    return pagamento?.origem === 'individual' ? pagamento : null;
+  }
+
+  protected valorAlocado(
+    pagamento: PagamentoDemonstrativo | null,
+    parcela: ProjecaoParcela,
+  ): number | null {
+    return (
+      pagamento?.alocacoes.find((alocacao) => alocacao.parcelaId === parcela.id)?.valorCentavos ??
+      null
+    );
+  }
+
+  protected pagamentoAlvo(venda: ProjecaoVenda): PagamentoIndividualDemonstrativo | null {
+    const id = this.recebimentoCorrecao();
+    if (!id || venda.statusAdministrativo !== 'Ativo') return null;
+    const pagamento = venda.recebimentos.find((item) => item.id === id);
+    return pagamento?.origem === 'individual' ? pagamento : null;
+  }
+
+  protected parcelaDoPagamento(
+    venda: ProjecaoVenda,
+    pagamento: PagamentoIndividualDemonstrativo,
+  ): ProjecaoParcela | null {
+    const parcelaId = pagamento.alocacoes[0]?.parcelaId;
+    return parcelaId ? (venda.parcelas.find((item) => item.id === parcelaId) ?? null) : null;
   }
 
   protected readonly consulta = computed(() => {

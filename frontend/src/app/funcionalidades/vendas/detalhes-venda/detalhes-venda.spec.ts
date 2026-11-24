@@ -7,6 +7,8 @@ import { projetarVenda } from '../venda.calculos';
 import { prepararCadastro } from '../venda.validacoes';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
+import { calcularRelatorio } from '../../relatorios/relatorios.calculos';
+import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
 
 describe('DetalhesVenda', () => {
   const showOriginal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
@@ -74,6 +76,7 @@ describe('DetalhesVenda', () => {
     expect(pagina.querySelector('a[routerLink="/vendas/prejuizo"]')).not.toBeNull();
     expect(pagina.querySelectorAll('form, input').length).toBe(0);
     expect(pagina.querySelector('[data-acao-pagar]')).not.toBeNull();
+    expect(pagina.querySelectorAll('[data-acao-corrigir]')).toHaveLength(0);
     expect(pagina.querySelector('[data-acao-receber]')).toBeNull();
     expect(servico.consultarVenda(venda.id)).toEqual({
       tipo: 'sucesso',
@@ -242,6 +245,156 @@ describe('DetalhesVenda', () => {
       tipo: 'sucesso',
       valor: { totalPagoCentavos: 100000, saldoCentavos: 0, quantidadePaga: 10 },
     });
+  });
+
+  it('corrige somente pagamento individual com retry de campo, cancelamento/Escape e conciliação mensal', async () => {
+    TestBed.overrideProvider(REFERENCIA_DEMONSTRACAO, { useValue: '2027-01-31' });
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const cadastrada = servico.cadastrarVenda({
+      cliente: { nome: 'Cliente correção acessível', cpf: '90000000175', telefone: '00900000001' },
+      dataVenda: '2026-12-01',
+      valorTotalCentavos: 100000,
+      quantidadeParcelas: 4,
+      entrada: { valorCentavos: 20000, data: '2026-12-01', forma: 'Pix' },
+    });
+    if (cadastrada.tipo !== 'sucesso') throw new Error(cadastrada.mensagem);
+    const venda = cadastrada.valor;
+    const parcela = venda.parcelas[1];
+    const valorInicial = parcela.valorCentavos + 100;
+    const registrada = servico.registrarPagamento({
+      vendaId: venda.id,
+      parcelaId: parcela.id,
+      data: '2027-01-15',
+      forma: 'Pix',
+      valorCentavos: valorInicial,
+      observacao: 'antes',
+    });
+    if (registrada.tipo !== 'sucesso') throw new Error(registrada.mensagem);
+    const pagamento = registrada.valor.recebimentos.at(-1)!;
+    const antesDaCorrecao = servico.consultarVenda(venda.id);
+    if (antesDaCorrecao.tipo !== 'sucesso') throw new Error(antesDaCorrecao.mensagem);
+    const relatorioAntes = calcularRelatorio(servico.vendas(), servico.referencia);
+    expect(relatorioAntes.recebimentos.some((item) => item.id.endsWith(pagamento.id))).toBe(true);
+
+    const harness = await RouterTestingHarness.create(urlPara(venda.id));
+    const pagina = () => harness.routeNativeElement!;
+    const acionador = pagina().querySelector<HTMLButtonElement>(
+      `[data-acao-corrigir="${pagamento.id}"]`,
+    )!;
+    expect(pagina().querySelectorAll('[data-acao-corrigir]')).toHaveLength(1);
+    expect(acionador.getAttribute('aria-label')).toContain('parcela 2');
+    expect(acionador.getAttribute('aria-label')).toContain(venda.cliente.nome);
+    expect(pagina().textContent).toContain('Total efetivo');
+    expect(pagina().textContent).toContain(formatarDinheiro(100100));
+    expect(pagina().textContent).toContain('Valor recebido');
+
+    const valorTexto = (centavos: number) =>
+      `${Math.floor(centavos / 100)},${String(centavos % 100).padStart(2, '0')}`;
+    const alterar = async (seletor: string, valor: string) => {
+      const controle = pagina().querySelector<HTMLInputElement | HTMLSelectElement>(seletor)!;
+      controle.value = valor;
+      controle.dispatchEvent(new Event('input', { bubbles: true }));
+      controle.dispatchEvent(new Event('change', { bubbles: true }));
+      await harness.fixture.whenStable();
+    };
+    const abrir = async () => {
+      pagina().querySelector<HTMLButtonElement>(`[data-acao-corrigir="${pagamento.id}"]`)!.click();
+      await harness.fixture.whenStable();
+      return pagina().querySelector<HTMLDialogElement>('dialog')!;
+    };
+    const beforeCancel = structuredClone(servico.vendas());
+    let dialog = await abrir();
+    expect(dialog.textContent).toContain('Valor recebido atual');
+    expect(dialog.textContent).toContain(formatarDinheiro(valorInicial));
+    expect(dialog.querySelector<HTMLInputElement>('#valor-correcao')!.value).toBe(
+      valorTexto(valorInicial),
+    );
+    expect(dialog.querySelector<HTMLInputElement>('#data-correcao')!.value).toBe('2027-01-15');
+    expect(dialog.querySelector<HTMLSelectElement>('#forma-correcao')!.value).toBe('Pix');
+    expect(dialog.querySelector<HTMLInputElement>('#observacao-correcao')!.value).toBe('antes');
+    expect(document.activeElement).toBe(dialog.querySelector('#data-correcao'));
+    dialog.querySelector<HTMLButtonElement>('button[type="button"]:last-child')!.click();
+    await harness.fixture.whenStable();
+    expect(servico.vendas()).toEqual(beforeCancel);
+    expect(document.activeElement).toBe(acionador);
+
+    dialog = await abrir();
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await harness.fixture.whenStable();
+    expect(servico.vendas()).toEqual(beforeCancel);
+    expect(document.activeElement).toBe(acionador);
+
+    dialog = await abrir();
+    await alterar('#observacao-correcao', '123456789012345678901');
+    dialog
+      .querySelector<HTMLFormElement>('form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await harness.fixture.whenStable();
+    expect(dialog.open).toBe(true);
+    expect(dialog.querySelector('#erro-observacao-correcao')?.textContent).toContain(
+      '20 caracteres',
+    );
+    expect(document.activeElement).toBe(dialog.querySelector('#observacao-correcao'));
+    expect(servico.vendas()).toEqual(beforeCancel);
+
+    await alterar('#valor-correcao', valorTexto(parcela.valorCentavos - 1));
+    await alterar('#observacao-correcao', 'corrigido');
+    dialog
+      .querySelector<HTMLFormElement>('form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await harness.fixture.whenStable();
+    expect(dialog.open).toBe(true);
+    expect(dialog.querySelector('#erro-valor-correcao')?.textContent).toContain(
+      'igual ou superior',
+    );
+    expect(document.activeElement).toBe(dialog.querySelector('#valor-correcao'));
+    expect(servico.vendas()).toEqual(beforeCancel);
+
+    await alterar('#valor-correcao', valorTexto(parcela.valorCentavos + 50));
+    await alterar('#data-correcao', '2026-12-31');
+    await alterar('#forma-correcao', 'Dinheiro');
+    dialog
+      .querySelector<HTMLFormElement>('form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await harness.fixture.whenStable();
+
+    const projetada = servico.consultarVenda(venda.id);
+    expect(projetada).toMatchObject({
+      tipo: 'sucesso',
+      valor: {
+        valorTotalCentavos: 100000,
+        valorTotalEfetivoCentavos: antesDaCorrecao.valor.valorTotalEfetivoCentavos - 50,
+        totalPagoCentavos: antesDaCorrecao.valor.totalPagoCentavos - 50,
+        saldoCentavos: antesDaCorrecao.valor.saldoCentavos,
+      },
+    });
+    if (projetada.tipo !== 'sucesso') throw new Error(projetada.mensagem);
+    expect(projetada.valor.recebimentos.filter((item) => item.id === pagamento.id)).toHaveLength(1);
+    expect(projetada.valor.recebimentos.find((item) => item.id === pagamento.id)).toMatchObject({
+      id: pagamento.id,
+      data: '2026-12-31',
+      forma: 'Dinheiro',
+      valorCentavos: parcela.valorCentavos + 50,
+      acrescimoCentavos: 50,
+      observacao: 'corrigido',
+    });
+    const relatorioDepois = calcularRelatorio(servico.vendas(), servico.referencia);
+    expect(relatorioDepois.totalRecebidoCentavos).toBe(
+      relatorioAntes.totalRecebidoCentavos - valorInicial,
+    );
+    expect(relatorioDepois.recebimentos.some((item) => item.id.endsWith(pagamento.id))).toBe(false);
+    expect(servico.consultarPeriodo('2026-12-01', '2026-12-31')).toMatchObject({
+      tipo: 'sucesso',
+      valor: { recebidosCentavos: expect.any(Number) },
+    });
+    expect(pagina().textContent).toContain('Recebimento individual corrigido.');
+    expect(document.activeElement).toBe(
+      pagina().querySelector(`[data-acao-corrigir="${pagamento.id}"]`),
+    );
+    expect(pagina().querySelector(`[data-acao-corrigir="${pagamento.id}"]`)).not.toBeNull();
+    expect(servico.alterarStatus({ vendaId: venda.id, status: 'Inativo' }).tipo).toBe('sucesso');
+    await harness.fixture.whenStable();
+    expect(pagina().querySelectorAll('[data-acao-corrigir]')).toHaveLength(0);
   });
 
   it('faz round-trip de um ID de venda da sessão sem alterar o identificador', async () => {

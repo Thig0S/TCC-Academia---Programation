@@ -8,7 +8,7 @@ Relatórios SHALL apresentar Recebimentos no mês de todos os status por data ef
 
 #### Scenario: Conferir recebimentos sem dupla contagem
 - **WHEN** o mês contiver entrada e lote de várias parcelas, inclusive de venda de outro mês
-- **THEN** SHALL listar entrada e lote uma vez cada, com origem, venda, data, forma, valor e soma exata em BRL
+- **THEN** SHALL listar entrada, pagamento individual e lote histórico uma vez cada, com origem identificada, venda, data, forma, valor e soma exata em BRL
 - **AND** SHALL incluir primeiro e último dia do mês e excluir recebimentos externos
 - **AND** SHALL não somar alocações ou valor separado da entrada novamente nem confundir vencimento e data efetiva
 - **AND** a linha de origem Entrada SHALL corresponder à parcela 1 Paga no detalhe

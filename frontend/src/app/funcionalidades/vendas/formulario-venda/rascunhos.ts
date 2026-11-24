@@ -1,4 +1,9 @@
-import { ComandoPagamento, formaAceita } from '../../parcelas/pagamento.modelos';
+import {
+  ComandoCorrecaoPagamento,
+  ComandoPagamento,
+  formaAceita,
+  PagamentoIndividualDemonstrativo,
+} from '../../parcelas/pagamento.modelos';
 import { selecionarParcelas } from '../../parcelas/pagamento.validacoes';
 import { adicionarMeses, compararDatasCivis } from '../data-civil';
 import { interpretarDinheiro } from '../dinheiro';
@@ -86,6 +91,19 @@ export function inteiroPositivo(texto: string): number | null {
 
 export function iniciarRecebimento(referencia: string): RascunhoRecebimento {
   return { data: referencia, forma: '', valorRecebido: '', observacao: '' };
+}
+
+export function iniciarEdicaoRecebimento(
+  pagamento: PagamentoIndividualDemonstrativo,
+): RascunhoRecebimento {
+  return {
+    data: pagamento.data,
+    forma: pagamento.forma,
+    valorRecebido: `${Math.floor(pagamento.valorCentavos / 100)},${String(
+      pagamento.valorCentavos % 100,
+    ).padStart(2, '0')}`,
+    observacao: pagamento.observacao,
+  };
 }
 
 function erroData(data: string, inicio: string | null, fim: string): string | null {
@@ -211,6 +229,61 @@ export function converterRecebimento(
       data: rascunho.data,
       forma: rascunho.forma,
       valorCentavos: valorRecebido,
+      observacao: rascunho.observacao,
+    },
+  };
+}
+
+export function converterEdicaoRecebimento(
+  rascunho: RascunhoRecebimento,
+  venda: Venda,
+  recebimentoId: string,
+  referencia: string,
+): Conversao<ComandoCorrecaoPagamento, RascunhoRecebimento> {
+  const erros: ErrosCampos<RascunhoRecebimento> = {};
+  const data = erroData(rascunho.data, venda.dataVenda, referencia);
+  if (data) erros.data = data;
+  if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione uma forma aceita.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
+
+  let resumo: string | null = null;
+  let pagamento: PagamentoIndividualDemonstrativo | null = null;
+  let valorBase: number | null = null;
+  try {
+    const atual = venda.recebimentos.find((item) => item.id === recebimentoId);
+    if (
+      venda.statusAdministrativo !== 'Ativo' ||
+      !atual ||
+      atual.origem !== 'individual' ||
+      atual.alocacoes.length !== 1
+    ) {
+      resumo = 'Este recebimento não está disponível para correção nesta venda.';
+    } else {
+      const parcela = venda.parcelas.find((item) => item.id === atual.alocacoes[0].parcelaId);
+      if (!parcela) resumo = 'Não foi possível localizar a parcela deste recebimento.';
+      else {
+        pagamento = atual;
+        valorBase = parcela.valorCentavos;
+      }
+    }
+  } catch {
+    resumo = 'Não foi possível conferir o recebimento. Feche e revise a venda.';
+  }
+
+  if (valorRecebido !== null && valorBase !== null && valorRecebido < valorBase)
+    erros.valorRecebido = 'O valor corrigido deve ser igual ou superior ao valor-base da parcela.';
+  if (Object.keys(erros).length || resumo || valorRecebido === null || !pagamento)
+    return { tipo: 'invalido', erros, resumo };
+  return {
+    tipo: 'sucesso',
+    comando: {
+      vendaId: venda.id,
+      recebimentoId: pagamento.id,
+      valorCentavos: valorRecebido,
+      data: rascunho.data,
+      forma: rascunho.forma,
       observacao: rascunho.observacao,
     },
   };

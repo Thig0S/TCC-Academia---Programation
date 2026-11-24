@@ -1,0 +1,117 @@
+<app-modal
+  titulo="Corrigir pagamento individual"
+  [restaurarFoco]="restaurarFoco()"
+  (fechado)="fechar()"
+>
+  <p class="mb-3 text-text-muted">
+    A correção substitui este recebimento mantendo sua identidade e o vínculo com a parcela.
+    Entradas e recebimentos históricos em lote não podem ser editados.
+  </p>
+  <dl
+    class="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg border border-border bg-surface-muted p-3"
+  >
+    <dt>Cliente</dt>
+    <dd>{{ venda().cliente.nome }}</dd>
+    <dt>Parcela</dt>
+    <dd>{{ parcela().numero }} de {{ venda().parcelas.length }}</dd>
+    <dt>Valor-base</dt>
+    <dd>{{ formatarDinheiro(parcela().valorCentavos) }}</dd>
+    <dt>Valor recebido atual</dt>
+    <dd>{{ formatarDinheiro(pagamento().valorCentavos) }}</dd>
+    <dt>Acréscimo atual</dt>
+    <dd>{{ formatarDinheiro(pagamento().acrescimoCentavos) }}</dd>
+    <dt>Data atual</dt>
+    <dd>{{ formatarDataCivil(pagamento().data) }}</dd>
+    <dt>Forma atual</dt>
+    <dd>{{ pagamento().forma }}</dd>
+    <dt>Observação atual</dt>
+    <dd>{{ pagamento().observacao || 'Sem observação' }}</dd>
+  </dl>
+  <form novalidate (submit)="confirmar($event)">
+    <div class="mb-3">
+      <label for="valor-correcao" class="mb-1 block text-sm font-semibold">Valor recebido</label>
+      <input
+        id="valor-correcao"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        [formField]="campos.valorRecebido"
+        aria-describedby="erro-valor-correcao orientacao-valor-correcao"
+      />
+      <app-erro-campo id="erro-valor-correcao" [campo]="campos.valorRecebido" />
+      <p id="orientacao-valor-correcao" class="mb-0 mt-1 text-sm text-text-muted">
+        Informe ao menos o valor-base. O sistema não calcula juros.
+      </p>
+    </div>
+    <div class="mb-3">
+      <label for="data-correcao" class="mb-1 block text-sm font-semibold">Data do pagamento</label>
+      <input
+        id="data-correcao"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 dark:[color-scheme:dark]"
+        type="date"
+        data-foco-inicial
+        [formField]="campos.data"
+        aria-describedby="erro-data-correcao"
+      />
+      <app-erro-campo id="erro-data-correcao" [campo]="campos.data" />
+    </div>
+    <div class="mb-3">
+      <label for="forma-correcao" class="mb-1 block text-sm font-semibold"
+        >Forma do pagamento</label
+      >
+      <select
+        id="forma-correcao"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        [formField]="campos.forma"
+        aria-describedby="erro-forma-correcao"
+      >
+        <option value="">Selecione</option>
+        @for (forma of formas; track forma) {
+          <option [value]="forma">{{ forma }}</option>
+        }
+      </select>
+      <app-erro-campo id="erro-forma-correcao" [campo]="campos.forma" />
+    </div>
+    <div class="mb-3">
+      <label for="observacao-correcao" class="mb-1 block text-sm font-semibold">
+        Observação <span class="font-normal text-text-muted">(opcional, até 20 caracteres)</span>
+      </label>
+      <input
+        id="observacao-correcao"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        type="text"
+        autocomplete="off"
+        [formField]="campos.observacao"
+        aria-describedby="erro-observacao-correcao"
+      />
+      <app-erro-campo id="erro-observacao-correcao" [campo]="campos.observacao" />
+    </div>
+    @if (mensagem()) {
+      <p
+        #alerta
+        class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+        role="alert"
+        tabindex="-1"
+      >
+        {{ mensagem() }}
+      </p>
+    }
+    <div class="flex flex-wrap gap-3">
+      <button
+        type="submit"
+        class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="campos().submitting() || concluido()"
+      >
+        Confirmar correção
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="cancelar()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+</app-modal>
