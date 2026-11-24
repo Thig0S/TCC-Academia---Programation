@@ -177,8 +177,8 @@ baseado nas parcelas pendentes. A posição calcula o primeiro vencimento penden
 por essa data; parcelas vencidas também ficam em ordem crescente, com empates estáveis.
 Há projeção separada das parcelas pendentes em Prejuízo: todas as linhas são mantidas,
 mas só parcelas de contratos sem entrada ou qualquer recebimento compõem o total separado.
-A apresentação desse grid, os novos títulos e os campos de identificação pertencem à
-tarefa 5.2, ainda pendente.
+O grid e sua apresentação com identificação e linhas excluídas do total foram concluídos na
+tarefa 5.2, conforme verificações abaixo.
 
 Os testes de cálculo e componente de Relatórios passaram **17/17** antes da regressão
 completa. Cobriram recebimentos históricos com contrato Inativo/Prejuízo, reativação sem
@@ -193,7 +193,35 @@ Verificações executadas em 24/11/2026: `npm.cmd test -- --watch=false` — **4
 testes em 33 arquivos**; `npm.cmd run build` — aprovado (bundle inicial de **314,08 kB**,
 transferência estimada **83,15 kB**); Prettier dos arquivos de cálculo e testes — aprovado;
 e `openspec validate feedback-luighi --strict` — aprovado. A interface do relatório e sua
-regressão E2E visual/responsiva serão verificadas na tarefa 5.2 e na regressão integrada.
+regressão E2E visual/responsiva foram verificadas na tarefa 5.2.
+
+## Apply `feedback-luighi` — apresentação dos relatórios de cobrança — 24/11/2026
+
+Os relatórios identificam recebimentos, vendas, parcelas em aberto e parcelas vencidas
+com títulos e tabelas próprias. Posição em aberto e atraso exibem CPF/telefone; a primeira
+também apresenta o primeiro vencimento pendente. Posição e vencidas permanecem em ordem
+crescente de vencimento, conforme as projeções da tarefa 5.1. Links de cliente levam à venda
+por ID e anunciam o nome e o ID. O grid de Prejuízo lista somente parcelas pendentes,
+apresenta CPF/telefone, parcela e vencimento, e marca explicitamente se cada linha entra na
+soma ou fica fora por existir recebimento anterior. O total separado inclui somente as
+parcelas pendentes de vendas sem entrada ou outro pagamento.
+
+As regiões de tabela têm nomes acessíveis distintos das seções que as contêm, foco por
+teclado e instrução associada para percorrer colunas com as setas. A largura excedente é
+rolada localmente; o E2E também verifica que o documento não ganha overflow horizontal.
+Estados vazios não criam tabelas fantasma. Não foram incluídos cartões, gráficos ou
+indicadores do dashboard da Change posterior `dashboard-relatorios`.
+
+Verificações direcionadas em 24/11/2026: testes de cálculo, apresentação e conteúdo —
+**21/21** em três arquivos. E2E direcionado — **10/10 execuções** nos dois projetos Chromium,
+cobrindo o grid Prejuízo com/sem recebimentos anteriores, soma reconciliada com as linhas
+incluídas, IDs, identificação, ordenação, rolagem local, ausência de overflow global e os
+temas escuro/claro em 1366×768 e 390×844; também verificou reconciliação entre cadastro,
+recebimentos, vendas, Visão Geral e relatório. Prettier dos arquivos desta tarefa,
+`git diff --check` e
+`openspec validate feedback-luighi --strict` — aprovados. São evidências sintéticas do
+protótipo, não aceite operacional. Regressão unitária e E2E completas, fixture independente
+de paginação, build integrado e zoom nativo de 200% ficam para as tarefas 6.1/6.2.
 
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 

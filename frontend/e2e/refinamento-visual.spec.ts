@@ -161,19 +161,26 @@ test('alinha valores das quatro tabelas de Relatórios sem mudar densidade', asy
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     const regioes = [
-      'Recebimentos do mês',
+      'Recebimentos no mês',
       'Vendas do mês',
-      'Posição em aberto',
+      'Parcelas em aberto',
       'Parcelas vencidas',
     ];
     const colunas: Record<string, string> = {
-      'Recebimentos do mês': 'Valor',
-      'Vendas do mês': 'Valor total',
-      'Posição em aberto': 'Saldo',
+      'Recebimentos no mês': 'Valor',
+      'Vendas do mês': 'Valor total efetivo',
+      'Parcelas em aberto': 'Saldo',
       'Parcelas vencidas': 'Valor',
     };
     for (const nome of regioes) {
-      const tabela = page.getByRole('region', { name: nome }).getByRole('table');
+      const nomeTabela =
+        {
+          'Recebimentos no mês': 'Tabela de recebimentos no mês',
+          'Vendas do mês': 'Tabela de vendas do mês',
+          'Parcelas em aberto': 'Tabela de parcelas em aberto',
+          'Parcelas vencidas': 'Tabela de parcelas vencidas',
+        }[nome] ?? nome;
+      const tabela = page.getByRole('region', { name: nomeTabela }).getByRole('table');
       await expect(tabela.locator('xpath=../..')).toHaveCSS('border-radius', '12px');
       const cabecalhoMonetario = tabela.getByRole('columnheader', { name: colunas[nome] });
       const celulaMonetaria = tabela

@@ -32,12 +32,15 @@ function venda(
   id: string,
   dataVenda = '2027-03-01',
   options: {
+    readonly cliente?: Partial<ProjecaoVenda['cliente']>;
     readonly entrada?: ProjecaoVenda['entrada'];
     readonly recebimentos?: readonly PagamentoDemonstrativo[];
     readonly parcelas?: readonly ProjecaoParcela[];
     readonly saldo?: number;
     readonly statusAdministrativo?: ProjecaoVenda['statusAdministrativo'];
     readonly situacao?: ProjecaoVenda['situacao'];
+    readonly total?: number;
+    readonly totalEfetivo?: number;
   } = {},
 ): ProjecaoVenda {
   return {
@@ -48,10 +51,11 @@ function venda(
       cpf: '90000000175',
       telefone: '00900000001',
       descricao: null,
+      ...options.cliente,
     },
     dataVenda,
-    valorTotalCentavos: 1000,
-    valorTotalEfetivoCentavos: 1000,
+    valorTotalCentavos: options.total ?? 1000,
+    valorTotalEfetivoCentavos: options.totalEfetivo ?? options.total ?? 1000,
     entrada: options.entrada ?? null,
     recebimentos: options.recebimentos ?? [],
     parcelas: options.parcelas ?? [],
@@ -104,8 +108,11 @@ describe('Relatórios', () => {
     expect(conteudo).toContain('Referência: 31/03/2027');
     expect(conteudo).toContain('Nenhum recebimento neste mês.');
     expect(conteudo).toContain('Nenhuma venda cadastrada neste mês.');
-    expect(conteudo).toContain('Nenhum saldo em aberto nesta referência.');
+    expect(conteudo).toContain('Nenhuma parcela em aberto nesta referência.');
     expect(conteudo).toContain('Nenhuma parcela vencida nesta referência.');
+    expect(conteudo).toContain('Nenhuma parcela pendente em contratos em Prejuízo.');
+    expect(conteudo).toContain('Recebimentos no mês');
+    expect(conteudo).toContain('Parcelas em aberto');
     expect(conteudo).toContain('R$ 0,00');
     expect(pagina.querySelectorAll('table')).toHaveLength(0);
     expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
@@ -159,10 +166,12 @@ describe('Relatórios', () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
 
-    const recebimentos = pagina.querySelector('[aria-label="Recebimentos do mês"] table')!;
-    const tabelaVendas = pagina.querySelector('[aria-label="Vendas do mês"] table')!;
-    const saldos = pagina.querySelector('[aria-label="Posição em aberto"] table')!;
-    const atrasadas = pagina.querySelector('[aria-label="Parcelas vencidas"] table')!;
+    const recebimentos = pagina.querySelector(
+      '[aria-label="Tabela de recebimentos no mês"] table',
+    )!;
+    const tabelaVendas = pagina.querySelector('[aria-label="Tabela de vendas do mês"] table')!;
+    const saldos = pagina.querySelector('[aria-label="Tabela de parcelas em aberto"] table')!;
+    const atrasadas = pagina.querySelector('[aria-label="Tabela de parcelas vencidas"] table')!;
     expect(recebimentos.querySelectorAll('tbody tr')).toHaveLength(7);
     expect(tabelaVendas.querySelectorAll('tbody tr')).toHaveLength(6);
     expect(saldos.querySelectorAll('tbody tr')).toHaveLength(7);
@@ -172,6 +181,11 @@ describe('Relatórios', () => {
     expect(tabelaVendas.textContent).not.toContain('Cliente venda/com/barras');
     expect(saldos.textContent).toContain('Cliente venda/com/barras');
     expect(atrasadas.textContent).toContain('Cliente venda/com/barras');
+    expect(saldos.textContent).toContain('90000000175');
+    expect(saldos.textContent).toContain('00900000001');
+    expect(saldos.textContent).toContain('30/03/2027');
+    expect(saldos.querySelectorAll('thead th')).toHaveLength(6);
+    expect(atrasadas.querySelectorAll('thead th')).toHaveLength(6);
     expect(texto(pagina)).toContain('6 vendas');
 
     const link = recebimentos.querySelector<HTMLAnchorElement>('tbody a')!;
@@ -179,6 +193,122 @@ describe('Relatórios', () => {
     expect(link.getAttribute('href')).toBe(
       router.serializeUrl(router.createUrlTree(['/vendas', id])),
     );
+  });
+
+  it('apresenta identificação, vencimentos ordenados e Prejuízo com exclusões explícitas do total', async () => {
+    const ativaProxima = venda('ativa-proxima', '2027-03-01', {
+      cliente: { nome: 'Cliente Alfa', cpf: '111.111.111-11', telefone: '(11) 90000-0001' },
+      parcelas: [parcela('proxima-atrasada', 1, '2027-03-10', 'Atrasado', 1000)],
+      saldo: 1000,
+    });
+    const ativaEmpatada = venda('ativa-empatada', '2027-03-02', {
+      cliente: { nome: 'Cliente Beta', cpf: '222.222.222-22', telefone: '(22) 90000-0002' },
+      parcelas: [parcela('empatada-atrasada', 1, '2027-03-10', 'Atrasado', 1000)],
+      saldo: 1000,
+    });
+    const ativaMaisDistante = venda('ativa-distante', '2027-03-03', {
+      cliente: { nome: 'Cliente Gama', cpf: '333.333.333-33', telefone: '(33) 90000-0003' },
+      recebimentos: [pagamento('pagamento-individual', '2027-03-15', 300, 'paga-base')],
+      parcelas: [
+        parcela('paga-base', 1, '2027-03-03', 'Paga', 200),
+        parcela('atrasada-distante', 2, '2027-03-20', 'Atrasado', 300),
+        parcela('pendente-distante', 3, '2027-04-10', 'Aberto', 500),
+      ],
+      saldo: 800,
+      total: 1000,
+      totalEfetivo: 1100,
+    });
+    const prejuizoSemPagamento = venda('prejuizo-sem-pagamento', '2027-02-01', {
+      statusAdministrativo: 'Prejuízo',
+      cliente: { nome: 'Cliente Delta', cpf: '444.444.444-44', telefone: '(44) 90000-0004' },
+      parcelas: [
+        parcela('prejuizo-base-1', 1, '2027-02-01', 'Atrasado', 400),
+        parcela('prejuizo-base-2', 2, '2027-03-01', 'Atrasado', 600),
+      ],
+      saldo: 1000,
+    });
+    const prejuizoComEntrada = venda('prejuizo-com-entrada', '2027-02-02', {
+      statusAdministrativo: 'Prejuízo',
+      cliente: { nome: 'Cliente Épsilon', cpf: '555.555.555-55', telefone: '(55) 90000-0005' },
+      entrada: { data: '2027-02-02', forma: 'Pix', valorCentavos: 200 },
+      recebimentos: [pagamento('entrada-prejuizo', '2027-02-02', 200, 'entrada-paga')],
+      parcelas: [
+        parcela('entrada-paga', 1, '2027-02-02', 'Paga', 200),
+        parcela('pendente-entrada', 2, '2027-03-02', 'Atrasado', 800),
+      ],
+      saldo: 800,
+    });
+    vendas.set([
+      ativaMaisDistante,
+      ativaProxima,
+      ativaEmpatada,
+      prejuizoSemPagamento,
+      prejuizoComEntrada,
+    ]);
+
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = harness.routeNativeElement!;
+    const tabela = (nome: string) => pagina.querySelector(`[aria-label="${nome}"] table`)!;
+    const linhasPorTexto = (seletor: string) => [
+      ...pagina.querySelectorAll<HTMLTableRowElement>(`${seletor} tbody tr`),
+    ];
+    const linhasSaldo = linhasPorTexto('[aria-label="Tabela de parcelas em aberto"]');
+
+    expect(linhasSaldo.map((linha) => linha.cells[1].textContent?.trim())).toEqual([
+      'Cliente Alfa',
+      'Cliente Beta',
+      'Cliente Gama',
+    ]);
+    expect(linhasSaldo.map((linha) => linha.cells[4].textContent?.trim())).toEqual([
+      '10/03/2027',
+      '10/03/2027',
+      '20/03/2027',
+    ]);
+    expect(linhasSaldo[0].textContent).toContain('111.111.111-11');
+    expect(linhasSaldo[0].textContent).toContain('(11) 90000-0001');
+    const router = TestBed.inject(Router);
+    expect(linhasSaldo[0].querySelector('a')?.getAttribute('href')).toBe(
+      router.serializeUrl(router.createUrlTree(['/vendas', 'ativa-proxima'])),
+    );
+    expect(linhasSaldo[0].querySelector('a')?.getAttribute('aria-label')).toContain(
+      'ativa-proxima',
+    );
+
+    const linhasAtrasadas = linhasPorTexto('[aria-label="Tabela de parcelas vencidas"]');
+    expect(linhasAtrasadas.map((linha) => linha.cells[4].textContent?.trim())).toEqual([
+      '10/03/2027',
+      '10/03/2027',
+      '20/03/2027',
+    ]);
+    expect(linhasAtrasadas.every((linha) => linha.cells.length === 6)).toBe(true);
+
+    const secaoPrejuizo = pagina.querySelector('[aria-labelledby="prejuizo-relatorio"]')!;
+    const tabelaPrejuizo = pagina.querySelector(
+      '[aria-label="Tabela de parcelas em Prejuízo"] table',
+    )!;
+    const linhasPrejuizo = [...tabelaPrejuizo.querySelectorAll<HTMLTableRowElement>('tbody tr')];
+    expect(linhasPrejuizo).toHaveLength(3);
+    expect(linhasPrejuizo[0].cells[7].textContent).toContain('Incluída no total');
+    expect(linhasPrejuizo[1].cells[7].textContent).toContain('Incluída no total');
+    expect(linhasPrejuizo[2].cells[7].textContent).toContain('Fora do total: recebimento anterior');
+    expect(texto(secaoPrejuizo.querySelector('strong')!)).toContain('R$ 10,00');
+    expect(linhasPrejuizo[2].querySelector('a')?.getAttribute('href')).toBe(
+      router.serializeUrl(router.createUrlTree(['/vendas', 'prejuizo-com-entrada'])),
+    );
+
+    const regiao = pagina.querySelector('[aria-label="Tabela de parcelas em aberto"]')!;
+    expect(regiao.getAttribute('tabindex')).toBe('0');
+    expect(regiao.getAttribute('aria-describedby')).toBe('orientacao-saldos-relatorio');
+    expect(pagina.querySelector('#orientacao-saldos-relatorio')?.textContent).toContain(
+      'setas do teclado',
+    );
+    expect(tabela('Tabela de vendas do mês').querySelector('thead')?.textContent).toContain(
+      'Valor total efetivo',
+    );
+    const vendaComAcrescimo = [
+      ...tabela('Tabela de vendas do mês').querySelectorAll('tbody tr'),
+    ].find((linha) => linha.textContent?.includes('Cliente Gama'));
+    expect(texto(vendaComAcrescimo!)).toContain('R$ 11,00');
   });
 
   it('recalcula após publicação recebida e edição, sem mudar valores ao apenas consultar', async () => {
@@ -230,23 +360,23 @@ describe('Relatórios', () => {
     const pagina = () => harness.routeNativeElement!;
     const tabela = (nome: string) => pagina().querySelector(`[aria-label="${nome}"] table`);
 
-    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Vendas do mês')).toBeNull();
-    expect(tabela('Posição em aberto')).toBeNull();
+    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Tabela de vendas do mês')).toBeNull();
+    expect(tabela('Tabela de parcelas em aberto')).toBeNull();
     expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
 
     vendas.set([{ ...inativa, statusAdministrativo: 'Ativo' }]);
     harness.detectChanges();
-    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Vendas do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Posição em aberto')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Tabela de vendas do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Tabela de parcelas em aberto')?.querySelectorAll('tbody tr')).toHaveLength(1);
     expect(texto(pagina())).toContain('R$ 2,00');
 
     vendas.set([{ ...inativa, statusAdministrativo: 'Prejuízo' }]);
     harness.detectChanges();
-    expect(tabela('Recebimentos do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Vendas do mês')).toBeNull();
-    expect(tabela('Posição em aberto')).toBeNull();
+    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(tabela('Tabela de vendas do mês')).toBeNull();
+    expect(tabela('Tabela de parcelas em aberto')).toBeNull();
     expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
     expect(texto(pagina())).toContain('R$ 2,00');
   });

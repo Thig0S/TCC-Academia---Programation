@@ -997,7 +997,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
   await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
   const vendasDoMes = page.locator('section[aria-labelledby="vendas-mensais"]');
   const recebimentosDoMes = page.locator('section[aria-labelledby="recebimentos-mensais"]');
-  const posicaoEmAberto = page.locator('section[aria-labelledby="posicao-aberta"]');
+  const posicaoEmAberto = page.locator('section[aria-labelledby="parcelas-abertas"]');
   const parcelasVencidas = page.locator('section[aria-labelledby="parcelas-vencidas"]');
   const vendasIniciais = await vendasDoMes.locator(':scope > p').innerText();
   const quantidadeInicial = Number(vendasIniciais.match(/(\d+) vendas?/)?.[1]);
@@ -1094,12 +1094,16 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
     .click();
   await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
   await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
-  while ((await page.locator('[data-acao-pagar]').count()) > 0) {
-    await page.locator('[data-acao-pagar]').first().click();
+  const acoesPagar = page.locator('[data-acao-pagar]');
+  for (let pagamentosRestantes = 3; pagamentosRestantes > 0; pagamentosRestantes--) {
+    // Só a próxima parcela pendente pode ser paga; aguarda cada publicação antes do passo seguinte.
+    await expect(acoesPagar).toHaveCount(1);
+    await acoesPagar.first().click();
     const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
     await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
     await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
     await expect(dialog).toHaveCount(0);
+    await expect(acoesPagar).toHaveCount(pagamentosRestantes > 1 ? 1 : 0);
   }
   await expect(
     page
