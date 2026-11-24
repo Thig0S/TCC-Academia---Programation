@@ -14,6 +14,11 @@ import { PaginacaoVendas } from '../componentes/paginacao-vendas/paginacao-venda
 import { formatarDataCivil } from '../data-civil';
 import { buscarVendas, FiltroSituacaoVenda } from '../venda.busca';
 import {
+  CriterioOrdenacaoVenda,
+  CRITERIOS_ORDENACAO_VENDAS,
+  ordenarVendas,
+} from '../venda.ordenacao';
+import {
   limitarPagina,
   obterFaixaPaginacao,
   obterPagina,
@@ -33,11 +38,16 @@ export class ListarVendas {
   protected readonly formatarDataCivil = formatarDataCivil;
   protected readonly termo = signal('');
   protected readonly situacao = signal<FiltroSituacaoVenda>('Todas');
-  protected readonly resultados = computed(() =>
+  protected readonly ordenacao = signal<CriterioOrdenacaoVenda>('original');
+  protected readonly criteriosOrdenacao = CRITERIOS_ORDENACAO_VENDAS;
+  private readonly filtrados = computed(() =>
     buscarVendas(this.vendas(), this.termo(), this.situacao()),
   );
+  protected readonly resultados = computed(() => ordenarVendas(this.filtrados(), this.ordenacao()));
   protected readonly totalPaginas = computed(() => obterTotalPaginas(this.resultados().length));
-  private readonly chaveCriterios = computed(() => JSON.stringify([this.termo(), this.situacao()]));
+  private readonly chaveCriterios = computed(() =>
+    JSON.stringify([this.termo(), this.situacao(), this.ordenacao()]),
+  );
   private readonly origemPagina = computed(() => ({
     chaveCriterios: this.chaveCriterios(),
     totalPaginas: this.totalPaginas(),
@@ -65,6 +75,10 @@ export class ListarVendas {
 
   protected atualizarSituacao(evento: Event): void {
     this.situacao.set((evento.target as HTMLSelectElement).value as FiltroSituacaoVenda);
+  }
+
+  protected atualizarOrdenacao(evento: Event): void {
+    this.ordenacao.set((evento.target as HTMLSelectElement).value as CriterioOrdenacaoVenda);
   }
 
   protected limparPesquisa(campo: HTMLInputElement): void {

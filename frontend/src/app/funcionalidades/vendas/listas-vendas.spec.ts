@@ -134,6 +134,98 @@ describe('Listas de vendas', () => {
     expect(tabela()).toHaveLength(10);
   });
 
+  it('ordena após busca e situação, reseta página e pagina a coleção ordenada sem duplicatas', async () => {
+    const servico = TestBed.inject(ServicoDemonstracao);
+    const criadas = [];
+    for (let indice = 0; indice < 21; indice++) {
+      const resultado = servico.cadastrarVenda({
+        cliente: {
+          nome: `Cliente ordenar ${String(21 - indice).padStart(2, '0')}`,
+          cpf: '90000000175',
+          telefone: '00900000001',
+        },
+        dataVenda: servico.referencia,
+        valorTotalCentavos: 10000,
+        quantidadeParcelas: 1,
+        entrada: null,
+      });
+      if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
+      criadas.push(resultado.valor);
+    }
+
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = harness.routeNativeElement!;
+    const linhas = () =>
+      [...pagina.querySelectorAll('tbody th')].map((item) => item.textContent!.trim());
+    const busca = pagina.querySelector<HTMLInputElement>('#busca-vendas')!;
+    busca.value = 'Cliente ordenar';
+    busca.dispatchEvent(new Event('input', { bubbles: true }));
+    const situacao = pagina.querySelector<HTMLSelectElement>('#situacao-vendas')!;
+    situacao.value = 'Em aberto';
+    situacao.dispatchEvent(new Event('change', { bubbles: true }));
+    await harness.fixture.whenStable();
+
+    const ordenacao = pagina.querySelector<HTMLSelectElement>('#ordenacao-vendas')!;
+    ordenacao.value = 'cliente';
+    ordenacao.dispatchEvent(new Event('change', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(ordenacao.value).toBe('cliente');
+    expect(situacao.value).toBe('Em aberto');
+    expect(pagina.querySelector('[role="status"]')?.textContent).toContain('21 vendas encontradas');
+    expect(linhas()).toHaveLength(10);
+    expect(linhas()[0]).toContain('Cliente ordenar 01');
+    expect(pagina.querySelector('[aria-label="Faixa de resultados"]')?.textContent).toContain(
+      '1–10 de 21 vendas',
+    );
+
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('2');
+    ordenacao.value = 'data-venda';
+    ordenacao.dispatchEvent(new Event('change', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('1');
+    expect(linhas()[0]).toContain('Cliente ordenar 21');
+    expect(busca.value).toBe('Cliente ordenar');
+    expect(situacao.value).toBe('Em aberto');
+
+    ordenacao.value = 'vencimento';
+    ordenacao.dispatchEvent(new Event('change', { bubbles: true }));
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('1');
+    const percurso = [...linhas()];
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    percurso.push(...linhas());
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(linhas()).toHaveLength(1);
+    percurso.push(...linhas());
+    expect(new Set(percurso).size).toBe(21);
+    expect(percurso).toHaveLength(21);
+
+    pagina.querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('3');
+    for (const venda of criadas.slice(0, 11)) {
+      expect(
+        servico.registrarPagamento({
+          vendaId: venda.id,
+          parcelaId: venda.parcelas[0].id,
+          data: servico.referencia,
+          forma: 'Pix',
+        }).tipo,
+      ).toBe('sucesso');
+    }
+    await harness.fixture.whenStable();
+    expect(pagina.querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(pagina.querySelector('[aria-current="page"]')).toBeNull();
+    expect(pagina.querySelector('[aria-label="Faixa de resultados"]')?.textContent).toContain(
+      '1–10 de 10 vendas',
+    );
+    expect(pagina.querySelector('nav[aria-label="Paginação de vendas"]')).toBeNull();
+  });
+
   it('não exibe cartões globais e preserva os derivados internos', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const resumoInicial = servico.resumo();
