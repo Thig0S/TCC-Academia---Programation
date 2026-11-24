@@ -6,6 +6,7 @@ import {
   StatusAdministrativoVenda,
 } from '../../funcionalidades/vendas/venda.modelos';
 import { criarDadosDemonstrativos } from './dados-demonstrativos';
+import { PreparadorCorrecaoPagamento } from './preparador-correcao-pagamento';
 import { PreparadorRecebimento } from './preparador-recebimento';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
 import { ServicoDemonstracao } from './servico-demonstracao';
@@ -469,6 +470,129 @@ describe('Fonte demonstrativa de sessão', () => {
       saldoCentavos: 0,
       situacao: 'Quitada',
     });
+  });
+
+  it('corrige o mesmo recebimento, move o mês, preserva saldo/base e não aloca novo ID', () => {
+    const fonte = iniciar();
+    const venda = sucesso(
+      fonte.cadastrarVenda({
+        ...cadastro(),
+        dataVenda: '2026-12-01',
+        entrada: { valorCentavos: 20000, data: '2026-12-01', forma: 'Pix' },
+      }),
+    );
+    const parcela = venda.parcelas[1];
+    const pagamentoInicial = sucesso(
+      fonte.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: parcela.id,
+        data: '2027-01-15',
+        forma: 'Cartão de crédito',
+        valorCentavos: parcela.valorCentavos + 100,
+        observacao: 'antes',
+      }),
+    );
+    const pagamento = pagamentoInicial.recebimentos.at(-1)!;
+    const janeiroAntes = sucesso(
+      fonte.consultarPeriodo('2027-01-01', '2027-01-31'),
+    ).recebidosCentavos;
+    const dezembroAntes = sucesso(
+      fonte.consultarPeriodo('2026-12-01', '2026-12-31'),
+    ).recebidosCentavos;
+    const projecaoAntes = sucesso(fonte.consultarVenda(venda.id));
+    const comando = {
+      vendaId: venda.id,
+      recebimentoId: pagamento.id,
+      valorCentavos: parcela.valorCentavos + 50,
+      data: '2026-12-31',
+      forma: 'Dinheiro',
+      observacao: 'depois',
+    };
+
+    sucesso(fonte.corrigirPagamento(comando));
+    const corrigida = sucesso(fonte.consultarVenda(venda.id));
+    expect(corrigida.recebimentos).toHaveLength(pagamentoInicial.recebimentos.length);
+    expect(corrigida.recebimentos.map((item) => item.id)).toEqual(
+      pagamentoInicial.recebimentos.map((item) => item.id),
+    );
+    expect(corrigida.recebimentos.find((item) => item.id === pagamento.id)).toMatchObject({
+      id: pagamento.id,
+      data: '2026-12-31',
+      forma: 'Dinheiro',
+      valorCentavos: parcela.valorCentavos + 50,
+      acrescimoCentavos: 50,
+      observacao: 'depois',
+      alocacoes: [{ parcelaId: parcela.id, valorCentavos: parcela.valorCentavos + 50 }],
+    });
+    expect(corrigida.parcelas.map((item) => item.valorCentavos)).toEqual(
+      pagamentoInicial.parcelas.map((item) => item.valorCentavos),
+    );
+    expect(corrigida).toMatchObject({
+      valorTotalCentavos: projecaoAntes.valorTotalCentavos,
+      valorTotalEfetivoCentavos: projecaoAntes.valorTotalEfetivoCentavos - 50,
+      totalPagoCentavos: projecaoAntes.totalPagoCentavos - 50,
+      saldoCentavos: projecaoAntes.saldoCentavos,
+    });
+    expect(sucesso(fonte.consultarPeriodo('2027-01-01', '2027-01-31')).recebidosCentavos).toBe(
+      janeiroAntes - pagamento.valorCentavos,
+    );
+    expect(sucesso(fonte.consultarPeriodo('2026-12-01', '2026-12-31')).recebidosCentavos).toBe(
+      dezembroAntes + parcela.valorCentavos + 50,
+    );
+
+    sucesso(fonte.corrigirPagamento(comando));
+    expect(sucesso(fonte.consultarVenda(venda.id)).recebimentos).toHaveLength(
+      pagamentoInicial.recebimentos.length,
+    );
+    const pagamentoSeguinte = sucesso(
+      fonte.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: venda.parcelas[2].id,
+        data: referencia,
+        forma: 'Pix',
+      }),
+    ).recebimentos.at(-1)!;
+    expect(pagamentoSeguinte.id).toBe('sessao/recebimento/3');
+  });
+
+  it('preserva venda e contador após falha de correção e aceita retry pelo mesmo ID', () => {
+    const fonte = iniciar();
+    const venda = sucesso(fonte.cadastrarVenda(cadastro()));
+    const pagamento = sucesso(
+      fonte.registrarPagamento({
+        vendaId: venda.id,
+        parcelaId: venda.parcelas[1].id,
+        data: referencia,
+        forma: 'Pix',
+      }),
+    ).recebimentos.at(-1)!;
+    const preparador = TestBed.inject(PreparadorCorrecaoPagamento);
+    const validar = vi.spyOn(preparador, 'validarConjunto').mockImplementationOnce(() => {
+      throw new Error('falha final controlada');
+    });
+    const antes = fonte.vendas();
+    const snapshot = structuredClone(antes);
+    const comando = {
+      vendaId: venda.id,
+      recebimentoId: pagamento.id,
+      valorCentavos: pagamento.valorCentavos + 25,
+      data: referencia,
+      forma: 'Dinheiro',
+      observacao: 'retry',
+    };
+
+    expect(fonte.corrigirPagamento(comando).tipo).toBe('falha');
+    expect(fonte.vendas()).toBe(antes);
+    expect(fonte.vendas()).toEqual(snapshot);
+    expect(validar).toHaveBeenCalledTimes(1);
+    const retry = sucesso(fonte.corrigirPagamento(comando));
+    expect(retry.recebimentos).toHaveLength(venda.recebimentos.length + 1);
+    expect(retry.recebimentos.find((item) => item.id === pagamento.id)).toMatchObject({
+      id: pagamento.id,
+      valorCentavos: pagamento.valorCentavos + 25,
+      observacao: 'retry',
+    });
+    expect(sucesso(fonte.cadastrarVenda(cadastro())).id).toBe('sessao/venda/3');
   });
 
   it.each(['alocação', 'final'] as const)(

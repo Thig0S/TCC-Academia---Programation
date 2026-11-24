@@ -1,5 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { ComandoPagamento } from '../../funcionalidades/parcelas/pagamento.modelos';
+import {
+  ComandoCorrecaoPagamento,
+  ComandoPagamento,
+} from '../../funcionalidades/parcelas/pagamento.modelos';
 import {
   consultarPeriodo,
   projetarVendas,
@@ -19,6 +22,7 @@ import { prepararCadastro } from '../../funcionalidades/vendas/venda.validacoes'
 import { criarDadosDemonstrativos } from './dados-demonstrativos';
 import { EstadoDemonstracao } from './demonstracao.modelos';
 import { PreparadorRecebimento } from './preparador-recebimento';
+import { PreparadorCorrecaoPagamento } from './preparador-correcao-pagamento';
 import { PreparadorEdicaoCliente } from './preparador-edicao-cliente';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
 
@@ -37,6 +41,7 @@ function copiarCongelado<T>(valor: T): T {
 @Injectable({ providedIn: 'root' })
 export class ServicoDemonstracao {
   private readonly preparador = inject(PreparadorRecebimento);
+  private readonly preparadorCorrecao = inject(PreparadorCorrecaoPagamento);
   private readonly preparadorEdicao = inject(PreparadorEdicaoCliente);
   readonly referencia = inject(REFERENCIA_DEMONSTRACAO);
   private readonly estado = signal<EstadoDemonstracao>(
@@ -195,10 +200,36 @@ export class ServicoDemonstracao {
     }
   }
 
-  private publicar(vendas: readonly Venda[], id: string, mensagem: string): Resultado<Venda> {
+  corrigirPagamento(comando: ComandoCorrecaoPagamento): Resultado<Venda> {
+    try {
+      const atual = this.estado();
+      const resultado = this.preparadorCorrecao.preparar(
+        atual.vendas,
+        structuredClone(comando),
+        this.referencia,
+      );
+      if (resultado.tipo !== 'sucesso') return resultado;
+      return this.publicar(
+        resultado.valor,
+        comando.vendaId,
+        'Recebimento individual corrigido.',
+        false,
+      );
+    } catch (erro) {
+      return this.tratarFalha(erro);
+    }
+  }
+
+  private publicar(
+    vendas: readonly Venda[],
+    id: string,
+    mensagem: string,
+    consumirIdentificador = true,
+  ): Resultado<Venda> {
     projetarVendas(vendas, this.referencia);
-    const proximoId = this.estado().proximoId + 1;
-    if (!Number.isSafeInteger(proximoId)) throw new RangeError('Identificadores locais esgotados.');
+    const proximoId = consumirIdentificador ? this.estado().proximoId + 1 : this.estado().proximoId;
+    if (consumirIdentificador && !Number.isSafeInteger(proximoId))
+      throw new RangeError('Identificadores locais esgotados.');
     const preparado = copiarCongelado({ referencia: this.referencia, vendas, proximoId });
     const venda = preparado.vendas.find((item) => item.id === id);
     if (!venda) throw new Error('Venda ausente no conjunto preparado.');

@@ -3,9 +3,11 @@ import { PreparadorRecebimento } from '../../nucleo/demonstracao/preparador-rece
 import * as calculos from '../vendas/venda.calculos';
 import { Venda } from '../vendas/venda.modelos';
 import { prepararCadastro } from '../vendas/venda.validacoes';
-import { ComandoPagamento, FORMAS_PAGAMENTO } from './pagamento.modelos';
+import { ComandoCorrecaoPagamento, ComandoPagamento, FORMAS_PAGAMENTO } from './pagamento.modelos';
 import {
+  OperacoesPreparacaoCorrecaoPagamento,
   OperacoesPreparacaoRecebimento,
+  prepararCorrecaoPagamento,
   prepararPagamento,
   selecionarParcelas,
 } from './pagamento.validacoes';
@@ -48,6 +50,21 @@ function aceitar(vendas: readonly Venda[], c: ComandoPagamento, id = 'r1'): read
   expect(resultado.tipo).toBe('sucesso');
   if (resultado.tipo !== 'sucesso') throw new Error(resultado.mensagem);
   return resultado.valor;
+}
+
+function correcao(
+  vendaId: string,
+  recebimentoId: string,
+  opcoes: Partial<Omit<ComandoCorrecaoPagamento, 'vendaId' | 'recebimentoId'>> = {},
+): ComandoCorrecaoPagamento {
+  return {
+    vendaId,
+    recebimentoId,
+    valorCentavos: opcoes.valorCentavos ?? 20100,
+    data: opcoes.data ?? referencia,
+    forma: opcoes.forma ?? 'Dinheiro',
+    observacao: opcoes.observacao ?? 'corrigido',
+  };
 }
 
 describe('Pagamento individual sequencial', () => {
@@ -341,5 +358,211 @@ describe('Pagamento individual sequencial', () => {
   it('mantém as operações injetáveis do preparador para a próxima tarefa de atomicidade', () => {
     const preparador = TestBed.inject(PreparadorRecebimento);
     expect(preparador.preparar([venda()], comando(), referencia, 'r1').tipo).toBe('sucesso');
+  });
+});
+
+describe('Correção individual por identidade estável', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('substitui valor, data, forma e nota no mesmo ID/alocação e move a competência', () => {
+    const referenciaCorrecao = '2027-03-31';
+    const original = venda('venda-correcao', referenciaCorrecao, 100003);
+    const base = original.parcelas[1].valorCentavos;
+    const pago = prepararPagamento(
+      [original],
+      comando(original, 1, '2027-01-31', {
+        valorCentavos: base + 100,
+        observacao: 'antes',
+      }),
+      referenciaCorrecao,
+      'pagamento-estavel',
+    );
+    expect(pago.tipo).toBe('sucesso');
+    if (pago.tipo !== 'sucesso') throw new Error(pago.mensagem);
+    const vendaPaga = pago.valor[0];
+    const recebimentoOriginal = vendaPaga.recebimentos.at(-1)!;
+    const janeiroAntes = calculos.consultarPeriodo([vendaPaga], '2027-01-01', '2027-01-31');
+    const fevereiroAntes = calculos.consultarPeriodo([vendaPaga], '2027-02-01', '2027-02-28');
+    expect(janeiroAntes.tipo).toBe('sucesso');
+    expect(fevereiroAntes.tipo).toBe('sucesso');
+
+    const comandoCorrecao = correcao(vendaPaga.id, recebimentoOriginal.id, {
+      valorCentavos: base + 50,
+      data: '2027-02-15',
+      forma: 'Pix',
+      observacao: 'depois',
+    });
+    const preparada = prepararCorrecaoPagamento([vendaPaga], comandoCorrecao, referenciaCorrecao);
+    expect(preparada.tipo).toBe('sucesso');
+    if (preparada.tipo !== 'sucesso') throw new Error(preparada.mensagem);
+    const corrigida = preparada.valor[0];
+    const recebimentoCorrigido = corrigida.recebimentos.at(-1)!;
+    expect(corrigida.recebimentos).toHaveLength(vendaPaga.recebimentos.length);
+    expect(recebimentoCorrigido).toMatchObject({
+      id: recebimentoOriginal.id,
+      origem: 'individual',
+      data: '2027-02-15',
+      forma: 'Pix',
+      valorCentavos: base + 50,
+      acrescimoCentavos: 50,
+      observacao: 'depois',
+      alocacoes: [{ parcelaId: original.parcelas[1].id, valorCentavos: base + 50 }],
+    });
+    expect(corrigida.parcelas).toEqual(vendaPaga.parcelas);
+    expect(corrigida.valorTotalCentavos).toBe(original.valorTotalCentavos);
+    expect(calculos.projetarVenda(corrigida, referenciaCorrecao)).toMatchObject({
+      valorTotalEfetivoCentavos: original.valorTotalCentavos + 50,
+      totalPagoCentavos:
+        calculos.projetarVenda(vendaPaga, referenciaCorrecao).totalPagoCentavos - 50,
+      saldoCentavos: calculos.projetarVenda(vendaPaga, referenciaCorrecao).saldoCentavos,
+    });
+    expect(vendaPaga.recebimentos.at(-1)).toEqual(recebimentoOriginal);
+
+    const janeiroDepois = calculos.consultarPeriodo([corrigida], '2027-01-01', '2027-01-31');
+    const fevereiroDepois = calculos.consultarPeriodo([corrigida], '2027-02-01', '2027-02-28');
+    if (
+      janeiroAntes.tipo !== 'sucesso' ||
+      janeiroDepois.tipo !== 'sucesso' ||
+      fevereiroAntes.tipo !== 'sucesso' ||
+      fevereiroDepois.tipo !== 'sucesso'
+    )
+      throw new Error('O período civil deveria ser válido.');
+    expect(janeiroAntes.valor.recebidosCentavos - janeiroDepois.valor.recebidosCentavos).toBe(
+      recebimentoOriginal.valorCentavos,
+    );
+    expect(fevereiroDepois.valor.recebidosCentavos - fevereiroAntes.valor.recebidosCentavos).toBe(
+      base + 50,
+    );
+  });
+
+  it('rejeita valor/data/forma/nota inválidos, venda não ativa e ID obsoleto sem mutação', () => {
+    const original = venda('venda-correcao');
+    const vendaPaga = aceitar(
+      [original],
+      comando(original, 1, referencia, { valorCentavos: 20100 }),
+    )[0];
+    const pagamento = vendaPaga.recebimentos.at(-1)!;
+    const invalidas = [
+      correcao(vendaPaga.id, pagamento.id, { valorCentavos: 19999 }),
+      correcao(vendaPaga.id, pagamento.id, { valorCentavos: Number.MAX_SAFE_INTEGER }),
+      correcao(vendaPaga.id, pagamento.id, { data: '2026-12-31' }),
+      correcao(vendaPaga.id, pagamento.id, { data: '2027-02-01' }),
+      correcao(vendaPaga.id, pagamento.id, { data: '2027-02-29' }),
+      correcao(vendaPaga.id, pagamento.id, { forma: 'Transferência' }),
+      correcao(vendaPaga.id, pagamento.id, { observacao: '123456789012345678901' }),
+    ];
+    for (const comandoInvalido of invalidas) {
+      const snapshot = structuredClone([vendaPaga]);
+      expect(prepararCorrecaoPagamento([vendaPaga], comandoInvalido, referencia).tipo).toBe(
+        'validacao',
+      );
+      expect([vendaPaga]).toEqual(snapshot);
+    }
+
+    expect(
+      prepararCorrecaoPagamento(
+        [vendaPaga],
+        correcao(vendaPaga.id, 'pagamento-removido'),
+        referencia,
+      ),
+    ).toMatchObject({ tipo: 'inexistencia', codigo: 'recebimento-inexistente' });
+    const outraVenda = venda('outra-venda');
+    const vendaOutraPaga = aceitar(
+      [outraVenda],
+      comando(outraVenda),
+      'pagamento-de-outra-venda',
+    )[0];
+    const pagamentoDeOutraVenda = vendaOutraPaga.recebimentos.at(-1)!;
+    expect(
+      prepararCorrecaoPagamento(
+        [vendaPaga, vendaOutraPaga],
+        correcao(vendaPaga.id, pagamentoDeOutraVenda.id),
+        referencia,
+      ),
+    ).toMatchObject({
+      tipo: 'inelegibilidade',
+      codigo: 'recebimento-de-outra-venda',
+    });
+    const inativa = { ...vendaPaga, statusAdministrativo: 'Inativo' as const };
+    expect(
+      prepararCorrecaoPagamento([inativa], correcao(inativa.id, pagamento.id), referencia),
+    ).toMatchObject({ tipo: 'inelegibilidade', codigo: 'venda-nao-ativa' });
+    expect(vendaPaga.recebimentos.at(-1)).toEqual(pagamento);
+  });
+
+  it('não corrige entrada nem lote histórico e não duplica pagamento ao repetir o comando', () => {
+    const original = venda('venda-historica');
+    const pagoIndividual = aceitar([original], comando(original, 1), 'individual-1')[0];
+    const pagamento = pagoIndividual.recebimentos.at(-1)!;
+    const pedido = correcao(pagoIndividual.id, pagamento.id, {
+      valorCentavos: pagamento.valorCentavos,
+    });
+    const umaVez = prepararCorrecaoPagamento([pagoIndividual], pedido, referencia);
+    expect(umaVez.tipo).toBe('sucesso');
+    if (umaVez.tipo !== 'sucesso') throw new Error(umaVez.mensagem);
+    const repetida = prepararCorrecaoPagamento(umaVez.valor, pedido, referencia);
+    expect(repetida.tipo).toBe('sucesso');
+    if (repetida.tipo !== 'sucesso') throw new Error(repetida.mensagem);
+    expect(repetida.valor[0].recebimentos).toHaveLength(pagoIndividual.recebimentos.length);
+    expect(repetida.valor[0].recebimentos.map((item) => item.id)).toEqual(
+      pagoIndividual.recebimentos.map((item) => item.id),
+    );
+
+    const originalLote = venda('venda-com-historico');
+    const parcelasLote = originalLote.parcelas.slice(1, 3);
+    const historico = prepararPagamentoHistorico(
+      [originalLote],
+      {
+        vendaId: originalLote.id,
+        parcelaIds: parcelasLote.map((parcela) => parcela.id),
+        valorCentavos: parcelasLote.reduce((total, parcela) => total + parcela.valorCentavos, 0),
+        data: referencia,
+        forma: 'Pix',
+      },
+      referencia,
+      'lote-historico',
+    );
+    expect(historico.tipo).toBe('sucesso');
+    if (historico.tipo !== 'sucesso') throw new Error(historico.mensagem);
+    for (const legado of historico.valor[0].recebimentos) {
+      expect(
+        prepararCorrecaoPagamento(
+          historico.valor,
+          correcao(originalLote.id, legado.id, { valorCentavos: legado.valorCentavos }),
+          referencia,
+        ),
+      ).toMatchObject({
+        tipo: 'inelegibilidade',
+        codigo: 'recebimento-historico-nao-editavel',
+      });
+    }
+
+    const seed = criarDadosDemonstrativos(referencia);
+    for (const vendaSeed of seed) {
+      for (const legado of vendaSeed.recebimentos) {
+        expect(legado.origem).toBeUndefined();
+      }
+    }
+  });
+
+  it('preserva conjunto em falha final e permite retry válido', () => {
+    const original = venda('venda-retry');
+    const vendaPaga = aceitar([original], comando(original, 1), 'pagamento-retry')[0];
+    const pagamento = vendaPaga.recebimentos.at(-1)!;
+    const vendas = [vendaPaga];
+    const antes = structuredClone(vendas);
+    const operacoes: OperacoesPreparacaoCorrecaoPagamento = {
+      validarConjunto: vi.fn(() => {
+        throw new Error('falha de projeção controlada');
+      }),
+    };
+    const pedido = correcao(vendaPaga.id, pagamento.id, {
+      valorCentavos: pagamento.valorCentavos + 25,
+    });
+    expect(prepararCorrecaoPagamento(vendas, pedido, referencia, operacoes).tipo).toBe('falha');
+    expect(vendas).toEqual(antes);
+    expect(operacoes.validarConjunto).toHaveBeenCalledTimes(1);
+    expect(prepararCorrecaoPagamento(vendas, pedido, referencia).tipo).toBe('sucesso');
+    expect(vendas).toEqual(antes);
   });
 });
