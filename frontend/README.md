@@ -40,6 +40,25 @@ O teste E2E `npm run test:e2e -- --grep "logo local"` não iniciou: o endereço 
 `127.0.0.1:4200` já estava ocupado. O servidor existente foi preservado e não reutilizado;
 portanto esse teste não é contado como aprovado. A resolução no subcaminho é verificada
 pela regressão unitária e pela presença do arquivo no build local.
+## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
+
+As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
+Prejuízo são expostas separadamente no serviço. Total em aberto, atraso e quantidade
+operacional contam apenas Ativas. Recebimentos mensais e consultas por período continuam
+incluindo valores efetivamente pagos por vendas de qualquer status, sem reclassificar ou
+duplicar o histórico.
+
+Reconciliação observada em teste: uma venda sem entrada, de R$ 1.000,00 em quatro
+parcelas, teve a primeira parcela de R$ 250,00 recebida em 15/01/2027. Com três parcelas
+pendentes vencidas, o saldo e o atraso operacionais eram R$ 750,00. Ao passar por
+Inativo→Ativo e Prejuízo→Ativo, as coleções e esses indicadores saíram/voltaram conforme
+o status; enquanto fora de Ativo, saldo, atraso e contagem operacional deixaram de
+incluí-la. Em todas as transições, o recebimento de R$ 250,00 permaneceu no período de
+15/01/2027 uma única vez, e ID, parcelas e histórico foram preservados. Isso documenta
+somente o comportamento coberto pelo teste de serviço, não uma validação operacional.
+
+Verificação executada: `npm.cmd test -- --watch=false` — **379/379 testes em 31 arquivos**.
+As ações visuais e as seções navegáveis de Inativas/Prejuízo permanecem para a tarefa 1.3.
 
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
