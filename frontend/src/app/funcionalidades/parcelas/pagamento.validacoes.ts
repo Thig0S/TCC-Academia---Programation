@@ -2,17 +2,22 @@ import { compararDatasCivis } from '../vendas/data-civil';
 import { validarCentavos } from '../vendas/dinheiro';
 import { projetarVendas, validarVenda } from '../vendas/venda.calculos';
 import { Resultado, Venda } from '../vendas/venda.modelos';
-import { AlocacaoPagamento, ComandoPagamento, formaAceita } from './pagamento.modelos';
+import {
+  AlocacaoPagamento,
+  ComandoPagamento,
+  formaAceita,
+  PagamentoIndividualDemonstrativo,
+} from './pagamento.modelos';
 import { prepararAlocacao } from './parcela.calculos';
 import { Parcela } from './parcela.modelos';
 
 export interface OperacoesPreparacaoRecebimento {
-  readonly alocar: (parcela: Parcela) => AlocacaoPagamento;
+  readonly alocar: (parcela: Parcela, valorCentavos?: number) => AlocacaoPagamento;
   readonly validarConjunto: (vendas: readonly Venda[], referencia: string) => void;
 }
 
 const operacoesPadrao: OperacoesPreparacaoRecebimento = {
-  alocar: prepararAlocacao,
+  alocar: (parcela, valorCentavos) => prepararAlocacao(parcela, valorCentavos),
   validarConjunto: (vendas, referencia) => {
     projetarVendas(vendas, referencia);
   },
@@ -62,20 +67,25 @@ export function prepararPagamento(
   operacoes: OperacoesPreparacaoRecebimento = operacoesPadrao,
 ): Resultado<readonly Venda[]> {
   try {
-    const campos = ['vendaId', 'parcelaId', 'data', 'forma'];
+    const camposRequeridos = ['vendaId', 'parcelaId', 'data', 'forma'];
+    const camposOpcionais = ['valorCentavos', 'observacao'];
     if (
       !comando ||
       typeof comando !== 'object' ||
-      Object.keys(comando).length !== campos.length ||
-      !campos.every((campo) => Object.hasOwn(comando, campo)) ||
-      campos.some(
+      Object.keys(comando).some(
+        (campo) => !camposRequeridos.includes(campo) && !camposOpcionais.includes(campo),
+      ) ||
+      !camposRequeridos.every((campo) => Object.hasOwn(comando, campo)) ||
+      camposRequeridos.some(
         (campo) => typeof (comando as unknown as Record<string, unknown>)[campo] !== 'string',
-      )
+      ) ||
+      (Object.hasOwn(comando, 'valorCentavos') && typeof comando.valorCentavos !== 'number') ||
+      (Object.hasOwn(comando, 'observacao') && typeof comando.observacao !== 'string')
     )
       return {
         tipo: 'validacao',
         codigo: 'comando-pagamento-invalido',
-        mensagem: 'Informe somente a venda, parcela, data e forma do pagamento.',
+        mensagem: 'Informe somente a venda, parcela, data, forma, valor e observação do pagamento.',
       };
     const venda = vendas.find((item) => item.id === comando.vendaId);
     if (!venda)
@@ -87,12 +97,28 @@ export function prepararPagamento(
     const elegivel = selecionarParcelas(venda, [comando.parcelaId], referencia);
     if (elegivel.tipo !== 'sucesso') return elegivel;
     const parcela = elegivel.valor[0];
-    const valor = validarCentavos(parcela.valorCentavos);
-    if (!Number.isSafeInteger(valor) || valor <= 0) {
+    const valorBase = validarCentavos(parcela.valorCentavos);
+    if (!Number.isSafeInteger(valorBase) || valorBase <= 0) {
       return {
         tipo: 'validacao',
         codigo: 'valor-parcela-invalido',
         mensagem: 'A parcela não possui um valor integral válido.',
+      };
+    }
+    const valor = validarCentavos(comando.valorCentavos ?? valorBase);
+    if (valor < valorBase) {
+      return {
+        tipo: 'validacao',
+        codigo: 'valor-recebido-inferior-ao-base',
+        mensagem: 'O valor recebido deve ser igual ou superior ao valor-base da parcela.',
+      };
+    }
+    const observacao = comando.observacao ?? '';
+    if (Array.from(observacao).length > 20) {
+      return {
+        tipo: 'validacao',
+        codigo: 'observacao-longa-demais',
+        mensagem: 'A observação deve ter no máximo 20 caracteres.',
       };
     }
     if (
@@ -106,12 +132,16 @@ export function prepararPagamento(
         mensagem: 'Informe uma forma aceita e data entre a venda e a referência da sessão.',
       };
     }
-    const recebimento = {
+    const acrescimoCentavos = valor - valorBase;
+    const recebimento: PagamentoIndividualDemonstrativo = {
       id: recebimentoId,
       data: comando.data,
       forma: comando.forma,
       valorCentavos: valor,
-      alocacoes: [operacoes.alocar(parcela)],
+      origem: 'individual',
+      acrescimoCentavos,
+      observacao,
+      alocacoes: [operacoes.alocar(parcela, valor)],
     };
     const preparadas = vendas.map((item) =>
       item.id === venda.id ? { ...item, recebimentos: [...item.recebimentos, recebimento] } : item,

@@ -50,6 +50,7 @@ function venda(
     },
     dataVenda,
     valorTotalCentavos: 1000,
+    valorTotalEfetivoCentavos: 1000,
     entrada: options.entrada ?? null,
     recebimentos: options.recebimentos ?? [],
     parcelas: options.parcelas ?? [],

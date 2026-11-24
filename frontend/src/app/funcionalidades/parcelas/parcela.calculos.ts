@@ -9,8 +9,11 @@ export interface ProjecaoParcela extends Parcela {
   readonly formaPagamento: FormaPagamento | null;
 }
 
-export function prepararAlocacao(parcela: Parcela): AlocacaoPagamento {
-  return { parcelaId: parcela.id, valorCentavos: validarCentavos(parcela.valorCentavos) };
+export function prepararAlocacao(
+  parcela: Parcela,
+  valorCentavos = parcela.valorCentavos,
+): AlocacaoPagamento {
+  return { parcelaId: parcela.id, valorCentavos: validarCentavos(valorCentavos) };
 }
 
 export function projetarParcela(

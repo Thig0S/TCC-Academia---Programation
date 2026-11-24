@@ -18,6 +18,7 @@ function venda(
     cliente: { nome: id, cpf: '90000000175', telefone: '00900000001', descricao: null },
     dataVenda,
     valorTotalCentavos: 10000,
+    valorTotalEfetivoCentavos: 10000,
     entrada: null,
     parcelas,
     recebimentos: [],

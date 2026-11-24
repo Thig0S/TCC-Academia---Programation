@@ -12,8 +12,8 @@ import { Resultado, Venda } from '../../funcionalidades/vendas/venda.modelos';
 /** Fronteira sem estado; publicação e identificadores pertencem à sessão. */
 @Injectable({ providedIn: 'root' })
 export class PreparadorRecebimento {
-  alocar(parcela: Parcela): AlocacaoPagamento {
-    return prepararAlocacao(parcela);
+  alocar(parcela: Parcela, valorCentavos?: number): AlocacaoPagamento {
+    return prepararAlocacao(parcela, valorCentavos);
   }
 
   validarConjunto(vendas: readonly Venda[], referencia: string): void {
@@ -27,7 +27,7 @@ export class PreparadorRecebimento {
     recebimentoId: string,
   ): Resultado<readonly Venda[]> {
     return prepararPagamento(vendas, comando, referencia, recebimentoId, {
-      alocar: (parcela) => this.alocar(parcela),
+      alocar: (parcela, valorCentavos) => this.alocar(parcela, valorCentavos),
       validarConjunto: (conjunto, data) => this.validarConjunto(conjunto, data),
     });
   }
