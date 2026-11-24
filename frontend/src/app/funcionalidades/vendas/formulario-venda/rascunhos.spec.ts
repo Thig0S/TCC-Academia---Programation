@@ -29,7 +29,7 @@ function venda(): Venda {
   return previa;
 }
 function recebimento(): RascunhoRecebimento {
-  return iniciarRecebimento(referencia);
+  return { ...iniciarRecebimento(referencia), valorRecebido: '33,34' };
 }
 
 describe('Adaptadores puros de rascunhos', () => {
@@ -259,6 +259,8 @@ describe('Adaptadores puros de rascunhos', () => {
         parcelaId,
         data: referencia,
         forma: 'Pix',
+        valorCentavos: 3334,
+        observacao: '',
       });
     }
     expect(atual).toEqual(antes);
@@ -278,7 +280,7 @@ describe('Adaptadores puros de rascunhos', () => {
       expect(resultado.erros.data).toBeTruthy();
       expect(resultado.erros.forma).toBeTruthy();
       expect(resultado.erros).not.toHaveProperty('quantidade');
-      expect(resultado.erros).not.toHaveProperty('valor');
+      expect(resultado.erros).not.toHaveProperty('valorRecebido');
     }
   });
 
@@ -290,24 +292,76 @@ describe('Adaptadores puros de rascunhos', () => {
       if (resultado.tipo === 'invalido') {
         expect(resultado.resumo).toBeTruthy();
         expect(resultado.erros).not.toHaveProperty('quantidade');
-        expect(resultado.erros).not.toHaveProperty('valor');
+        expect(resultado.erros).not.toHaveProperty('valorRecebido');
       }
     }
   });
 
+  it('converte valor efetivo e observação, rejeitando valor abaixo da base e nota longa', () => {
+    const atual = venda();
+    const parcelaId = atual.parcelas[0].id;
+    const manual = converterRecebimento(
+      {
+        ...recebimento(),
+        forma: 'Pix',
+        valorRecebido: '40,00',
+        observacao: '12345678901234567890',
+      },
+      atual,
+      parcelaId,
+      referencia,
+    );
+    expect(manual).toMatchObject({
+      tipo: 'sucesso',
+      comando: { valorCentavos: 4000, observacao: '12345678901234567890' },
+    });
+
+    const abaixoDoBase = converterRecebimento(
+      { ...recebimento(), forma: 'Pix', valorRecebido: '33,33' },
+      atual,
+      parcelaId,
+      referencia,
+    );
+    expect(abaixoDoBase).toMatchObject({
+      tipo: 'invalido',
+      erros: { valorRecebido: expect.stringContaining('igual ou superior') },
+    });
+
+    const notaLonga = converterRecebimento(
+      { ...recebimento(), forma: 'Pix', observacao: '123456789012345678901' },
+      atual,
+      parcelaId,
+      referencia,
+    );
+    expect(notaLonga).toMatchObject({
+      tipo: 'invalido',
+      erros: { observacao: expect.stringContaining('20 caracteres') },
+    });
+  });
+
   it('usa data fixa de referência como inicial e aceita as bordas do intervalo venda–referência', () => {
-    expect(iniciarRecebimento(referencia)).toEqual({ data: referencia, forma: '' });
+    expect(iniciarRecebimento(referencia)).toEqual({
+      data: referencia,
+      forma: '',
+      valorRecebido: '',
+      observacao: '',
+    });
     const atual = prepararPrevia({ ...cadastro(), dataVenda: '2027-01-01' }, referencia)!;
     for (const data of ['2027-01-01', referencia])
       expect(
-        converterRecebimento({ data, forma: 'Pix' }, atual, atual.parcelas[0].id, referencia).tipo,
+        converterRecebimento(
+          { ...recebimento(), data, forma: 'Pix' },
+          atual,
+          atual.parcelas[0].id,
+          referencia,
+        ).tipo,
       ).toBe('sucesso');
   });
 
   it.each(['', 'Transferência'])('rejeita forma ausente/desconhecida %s', (forma) => {
     const atual = prepararPrevia({ ...cadastro(), dataVenda: '2027-01-01' }, referencia)!;
     const resultado = converterRecebimento(
-      { data: referencia, forma },
+      { ...recebimento(), data: referencia, forma },
       atual,
       atual.parcelas[0].id,
       referencia,

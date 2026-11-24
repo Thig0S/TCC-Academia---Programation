@@ -38,18 +38,18 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
     else Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
   });
 
-  async function abrir(comEntrada = false) {
+  async function abrir(comEntrada = false, dataVenda = '2027-01-01') {
     const fonte = TestBed.inject(ServicoDemonstracao);
     const cadastro = fonte.cadastrarVenda({
       cliente: { nome: 'Cliente DEMO recebimento', cpf: '90000000175', telefone: '0012345678' },
-      dataVenda: '2027-01-01',
+      dataVenda,
       valorTotalCentavos: 10000,
       quantidadeParcelas: 3,
       entrada: comEntrada ? { valorCentavos: 2000, data: '2027-01-01', forma: 'Dinheiro' } : null,
     });
     if (cadastro.tipo !== 'sucesso') throw new Error(cadastro.mensagem);
     const alvo = cadastro.valor;
-    const harness = await RouterTestingHarness.create('/vendas/sessao%2Fvenda%2F1');
+    const harness = await RouterTestingHarness.create(`/vendas/${encodeURIComponent(alvo.id)}`);
     harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-acao-pagar]')!.click();
     await harness.fixture.whenStable();
     const preencher = async (id: string, valor: string) => {
@@ -104,7 +104,11 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
     expect(pagina.querySelector<HTMLSelectElement>('#forma-recebimento')!.value).toBe('');
     expect(pagina.querySelector('dialog')!.textContent).toContain('Parcela');
     expect(pagina.querySelector('dialog')!.textContent).toContain('33,34');
-    expect(pagina.querySelector('#valor-recebimento')).toBeNull();
+    expect(pagina.querySelector('dialog')!.textContent).toContain('Valor-base');
+    expect(pagina.querySelector<HTMLInputElement>('#valor-recebimento')!.value).toBe('33,34');
+    expect(pagina.querySelector<HTMLInputElement>('#observacao-recebimento')!.value).toBe('');
+    expect(pagina.querySelector('dialog')!.textContent).not.toContain('Checar juros do Crediloja!');
+    expect(document.activeElement).toBe(pagina.querySelector('#data-recebimento'));
     expect(pagina.querySelector('#quantidade-recebimento')).toBeNull();
   });
 
@@ -117,7 +121,10 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
     const pagina = harness.routeNativeElement!;
     expect(pagina.querySelector('#erro-data-recebimento')!.textContent).toContain('anterior');
     expect(pagina.querySelector('#erro-forma-recebimento')!.textContent).toContain('Selecione');
-    expect(pagina.querySelector('#erro-valor-recebimento')).toBeNull();
+    expect(pagina.querySelector('#erro-valor-recebimento')?.textContent ?? '').not.toContain(
+      'Informe',
+    );
+    expect(pagina.querySelector('#erro-observacao-recebimento')?.textContent ?? '').toBe('');
     expect(pagina.querySelector('#erro-quantidade-recebimento')).toBeNull();
     expect(document.activeElement).toBe(
       pagina.querySelector<HTMLInputElement>('#data-recebimento'),
@@ -140,6 +147,8 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
       parcelaId: alvo.parcelas[0].id,
       data: fonte.referencia,
       forma: 'Pix',
+      valorCentavos: alvo.parcelas[0].valorCentavos,
+      observacao: '',
     });
     expect(harness.routeNativeElement!.querySelector('dialog')).toBeNull();
     expect(fonte.resumo().totalEmAbertoCentavos).toBe(resumo.totalEmAbertoCentavos - 3334);
@@ -174,12 +183,100 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
     expect(fonte.resumo().recebidoNoMesCentavos).toBe(resumo.recebidoNoMesCentavos + 10000);
   });
 
+  it('aceita acréscimo e observação, concilia os totais e conserva os valores-base', async () => {
+    const { harness, fonte, alvo, preencher, enviar } = await abrir();
+    await preencher('valor-recebimento', '40,00');
+    await preencher('observacao-recebimento', 'juros externos');
+    await preencher('forma-recebimento', 'Pix');
+    enviar();
+    await harness.fixture.whenStable();
+
+    const consulta = fonte.consultarVenda(alvo.id);
+    expect(consulta).toMatchObject({
+      tipo: 'sucesso',
+      valor: {
+        valorTotalCentavos: 10000,
+        valorTotalEfetivoCentavos: 10666,
+        totalPagoCentavos: 4000,
+        saldoCentavos: 6666,
+      },
+    });
+    if (consulta.tipo !== 'sucesso') throw new Error(consulta.mensagem);
+    expect(consulta.valor.parcelas.map((item) => item.valorCentavos)).toEqual(
+      alvo.parcelas.map((item) => item.valorCentavos),
+    );
+    expect(consulta.valor.recebimentos.at(-1)).toMatchObject({
+      origem: 'individual',
+      valorCentavos: 4000,
+      acrescimoCentavos: 666,
+      observacao: 'juros externos',
+      alocacoes: [{ parcelaId: alvo.parcelas[0].id, valorCentavos: 4000 }],
+    });
+  });
+
+  it('associa valor abaixo do base ao campo e mantém rascunho/estado para correção', async () => {
+    const { harness, fonte, alvo, preencher, enviar } = await abrir();
+    const antes = structuredClone(fonte.vendas());
+    await preencher('valor-recebimento', '33,33');
+    await preencher('forma-recebimento', 'Pix');
+    enviar();
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    expect(pagina.querySelector('#erro-valor-recebimento')?.textContent).toContain(
+      'igual ou superior',
+    );
+    expect(document.activeElement).toBe(pagina.querySelector('#valor-recebimento'));
+    expect(pagina.querySelector('dialog')!.open).toBe(true);
+    expect(pagina.querySelector<HTMLInputElement>('#valor-recebimento')!.value).toBe('33,33');
+    expect(fonte.consultarVenda(alvo.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { totalPagoCentavos: 0 },
+    });
+    expect(fonte.vendas()).toEqual(antes);
+  });
+
+  it('associa observação acima de 20 caracteres ao campo e bloqueia a confirmação', async () => {
+    const { harness, fonte, alvo, preencher, enviar } = await abrir();
+    const antes = structuredClone(fonte.vendas());
+    await preencher('observacao-recebimento', '123456789012345678901');
+    await preencher('forma-recebimento', 'Pix');
+    enviar();
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    expect(pagina.querySelector('#erro-observacao-recebimento')?.textContent).toContain(
+      '20 caracteres',
+    );
+    expect(document.activeElement).toBe(pagina.querySelector('#observacao-recebimento'));
+    expect(pagina.querySelector('dialog')!.open).toBe(true);
+    expect(fonte.vendas()).toEqual(antes);
+    expect(fonte.consultarVenda(alvo.id)).toMatchObject({
+      tipo: 'sucesso',
+      valor: { totalPagoCentavos: 0 },
+    });
+  });
+
+  it('não avisa sobre juros para parcela não atrasada', async () => {
+    const { harness } = await abrir();
+    expect(harness.routeNativeElement!.textContent).not.toContain('Checar juros do Crediloja!');
+  });
+
+  it('avisa sobre juros apenas para parcela atrasada, sem calcular ou exigir acréscimo', async () => {
+    const { harness } = await abrir(false, '2026-12-01');
+    expect(harness.routeNativeElement!.textContent).toContain('Checar juros do Crediloja!');
+    expect(
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('#valor-recebimento')!.value,
+    ).toBe('33,34');
+    expect(harness.routeNativeElement!.querySelector('dialog')!.open).toBe(true);
+  });
+
   it.each(['resultado', 'excecao'])(
     'preserva modal/rascunho/estado e permite retry em %s',
     async (modo) => {
       const { harness, fonte, preencher, enviar } = await abrir();
       const antes = structuredClone(fonte.vendas());
       await preencher('data-recebimento', '2027-01-30');
+      await preencher('valor-recebimento', '35,00');
+      await preencher('observacao-recebimento', 'retry preservado');
       await preencher('forma-recebimento', 'Pix');
       const comando = vi.spyOn(fonte, 'registrarPagamento');
       if (modo === 'resultado')
@@ -200,6 +297,10 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
         /Falha controlada|Não foi possível/,
       );
       expect(pagina.querySelector<HTMLInputElement>('#data-recebimento')!.value).toBe('2027-01-30');
+      expect(pagina.querySelector<HTMLInputElement>('#valor-recebimento')!.value).toBe('35,00');
+      expect(pagina.querySelector<HTMLInputElement>('#observacao-recebimento')!.value).toBe(
+        'retry preservado',
+      );
       expect(pagina.querySelector<HTMLSelectElement>('#forma-recebimento')!.value).toBe('Pix');
       expect(pagina.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(
         false,
@@ -243,6 +344,8 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
     async (modo) => {
       const { harness, fonte, preencher } = await abrir();
       const antes = structuredClone(fonte.vendas());
+      await preencher('valor-recebimento', '40,00');
+      await preencher('observacao-recebimento', 'rascunho descartado');
       await preencher('forma-recebimento', 'Pix');
       const dialog = harness.routeNativeElement!.querySelector('dialog')!;
       if (modo === 'desmonte') await harness.navigateByUrl('/vendas');

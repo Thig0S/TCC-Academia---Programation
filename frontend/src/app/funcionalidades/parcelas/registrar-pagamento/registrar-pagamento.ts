@@ -7,6 +7,7 @@ import {
   inject,
   Injector,
   input,
+  OnInit,
   output,
   signal,
   viewChild,
@@ -32,7 +33,7 @@ import { ProjecaoParcela } from '../parcela.calculos';
   templateUrl: './registrar-pagamento.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegistrarPagamento {
+export class RegistrarPagamento implements OnInit {
   readonly venda = input.required<ProjecaoVenda>();
   readonly parcela = input.required<ProjecaoParcela>();
   readonly restaurarFoco = input.required<() => void>();
@@ -52,7 +53,7 @@ export class RegistrarPagamento {
     );
   });
   protected readonly campos = form(this.rascunho, (p) => {
-    for (const chave of ['data', 'forma'] as const) {
+    for (const chave of ['data', 'forma', 'valorRecebido', 'observacao'] as const) {
       validate(p[chave], () => {
         const resultado = this.conversao();
         const message = resultado.tipo === 'invalido' ? resultado.erros[chave] : null;
@@ -74,6 +75,18 @@ export class RegistrarPagamento {
   protected readonly formatarDinheiro = formatarDinheiro;
   protected readonly formatarDataCivil = formatarDataCivil;
   private sucesso: string | null = null;
+
+  ngOnInit(): void {
+    const base = this.parcela().valorCentavos;
+    this.rascunho.update((atual) => ({
+      ...atual,
+      valorRecebido: this.formatarCampoDinheiro(base),
+    }));
+  }
+
+  private formatarCampoDinheiro(valorCentavos: number): string {
+    return `${Math.floor(valorCentavos / 100)},${String(valorCentavos % 100).padStart(2, '0')}`;
+  }
 
   protected async confirmar(evento: Event): Promise<void> {
     evento.preventDefault();
