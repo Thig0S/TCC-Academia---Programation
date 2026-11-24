@@ -23,7 +23,7 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 ## 4. Ordenação e consulta
 
 - [x] 4.1 Ordenar Vendas por cliente, data da venda e primeiro vencimento pendente após busca/filtros e antes de paginar; testar empates por ID, vencimento ausente, mudança de critério para página 1, coleção reduzida e dez itens por página (D4; CA-038).
-- [ ] 4.2 Integrar controles de ordenação e filtro administrativo sem duplicar Prejuízo na listagem normal; testar teclado, estados vazios, responsividade e registro de resultados em `frontend/README.md` (D1/D5; CA-036/038).
+- [ ] 4.2 Integrar o controle de ordenação à navegação existente entre coleções Ativas, Inativas e Prejuízo, mantendo rotas separadas e sem seletor que duplique Prejuízo na lista normal; testar teclado, estados vazios, responsividade e registrar resultados em `frontend/README.md` (D1/D5; CA-036/038).
 
 ## 5. Relatórios de cobrança e Prejuízo
 
