@@ -38,9 +38,9 @@ describe('Conteúdo honesto da demonstração', () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
     expect(pagina.textContent).toContain('Análise mensal');
-    expect(pagina.textContent).toContain('Recebimentos do mês');
+    expect(pagina.textContent).toContain('Recebimentos no mês');
     expect(pagina.textContent).toContain('Vendas do mês');
-    expect(pagina.textContent).toContain('Posição em aberto');
+    expect(pagina.textContent).toContain('Parcelas em aberto');
     expect(pagina.textContent).toContain('Parcelas vencidas');
     expect(pagina.querySelectorAll('table')).toHaveLength(4);
     expect(pagina.querySelectorAll('button')).toHaveLength(1);

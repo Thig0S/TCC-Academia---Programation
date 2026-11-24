@@ -78,9 +78,9 @@ test('Visão Geral e Relatórios apresentam as consultas financeiras definidas',
     /Mês civil de \d{2}\/\d{2}\/\d{4} a \d{2}\/\d{2}\/\d{4}/,
   );
   for (const secao of [
-    'Recebimentos do mês',
+    'Recebimentos no mês',
     'Vendas do mês',
-    'Posição em aberto',
+    'Parcelas em aberto',
     'Parcelas vencidas',
   ]) {
     await expect(page.getByRole('heading', { name: secao })).toBeVisible();
@@ -121,13 +121,25 @@ test('Exportar relatório anuncia indisponibilidade sem download, rede ou mutaç
 
 test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', async ({ page }) => {
   await page.goto('/relatorios');
-  const secoes = ['Recebimentos do mês', 'Vendas do mês', 'Posição em aberto', 'Parcelas vencidas'];
+  const secoes = [
+    'Recebimentos no mês',
+    'Vendas do mês',
+    'Parcelas em aberto',
+    'Parcelas vencidas',
+  ];
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
     await expect(page.locator('main table')).toHaveCount(4);
     for (const nome of secoes) {
-      const regiao = page.locator(`[role="region"][aria-label="${nome}"]`);
+      const nomeTabela =
+        {
+          'Recebimentos no mês': 'Tabela de recebimentos no mês',
+          'Vendas do mês': 'Tabela de vendas do mês',
+          'Parcelas em aberto': 'Tabela de parcelas em aberto',
+          'Parcelas vencidas': 'Tabela de parcelas vencidas',
+        }[nome] ?? nome;
+      const regiao = page.locator(`[role="region"][aria-label="${nomeTabela}"]`);
       await expect(regiao).toHaveAttribute('tabindex', '0');
       await expect(regiao.getByRole('table')).toBeVisible();
       await expect(regiao.getByRole('rowgroup').nth(1).getByRole('row').first()).toBeVisible();
@@ -139,10 +151,10 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
           (th) =>
             th.textContent?.trim() ===
             {
-              'Recebimentos do mês': 'Valor',
-              'Vendas do mês': 'Valor total',
-              'Posição em aberto': 'Saldo',
-              'Parcelas vencidas': 'Valor',
+              'Tabela de recebimentos no mês': 'Valor',
+              'Tabela de vendas do mês': 'Valor total efetivo',
+              'Tabela de parcelas em aberto': 'Saldo',
+              'Tabela de parcelas vencidas': 'Valor',
             }[elemento.closest('[aria-label]')!.getAttribute('aria-label')!],
         );
         const thMonetario = getComputedStyle(
@@ -947,8 +959,8 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
     await page.goto(rota);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     if (rota === '/relatorios') {
-      await expect(page.getByRole('main')).toContainText('Recebimentos do mês');
-      await expect(page.getByRole('main')).toContainText('Posição em aberto');
+      await expect(page.getByRole('main')).toContainText('Recebimentos no mês');
+      await expect(page.getByRole('main')).toContainText('Parcelas em aberto');
       await expect(page.locator('main table')).toHaveCount(4);
     } else {
       await expect(page.getByRole('main')).toContainText('Total em aberto');
