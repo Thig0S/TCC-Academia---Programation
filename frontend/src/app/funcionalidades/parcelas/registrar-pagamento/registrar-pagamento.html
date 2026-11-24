@@ -12,10 +12,34 @@
     <dd>{{ parcela().numero }} de {{ venda().parcelas.length }}</dd>
     <dt>Vencimento</dt>
     <dd>{{ formatarDataCivil(parcela().vencimento) }}</dd>
-    <dt>Valor</dt>
+    <dt>Valor-base</dt>
     <dd class="font-semibold tabular-nums">{{ formatarDinheiro(parcela().valorCentavos) }}</dd>
   </dl>
+  @if (parcela().situacao === 'Atrasado') {
+    <p
+      class="mb-3 rounded-lg border border-warning-badge bg-warning-badge px-3 py-2 font-semibold text-warning-badge-text"
+      role="note"
+    >
+      Checar juros do Crediloja!
+    </p>
+  }
   <form novalidate (submit)="confirmar($event)">
+    <div class="mb-3">
+      <label for="valor-recebimento" class="mb-1 block text-sm font-semibold">Valor recebido</label>
+      <input
+        id="valor-recebimento"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        [formField]="campos.valorRecebido"
+        aria-describedby="erro-valor-recebimento orientacao-valor-recebimento"
+      />
+      <app-erro-campo id="erro-valor-recebimento" [campo]="campos.valorRecebido" />
+      <p id="orientacao-valor-recebimento" class="mb-0 mt-1 text-sm text-text-muted">
+        Informe ao menos o valor-base. Acréscimos são informados, não calculados pelo sistema.
+      </p>
+    </div>
     <div class="mb-3">
       <label for="data-recebimento" class="mb-1 block text-sm font-semibold"
         >Data do pagamento</label
@@ -46,6 +70,20 @@
         }
       </select>
       <app-erro-campo id="erro-forma-recebimento" [campo]="campos.forma" />
+    </div>
+    <div class="mb-3">
+      <label for="observacao-recebimento" class="mb-1 block text-sm font-semibold"
+        >Observação <span class="font-normal text-text-muted">(opcional, até 20 caracteres)</span>
+      </label>
+      <input
+        id="observacao-recebimento"
+        class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        type="text"
+        autocomplete="off"
+        [formField]="campos.observacao"
+        aria-describedby="erro-observacao-recebimento"
+      />
+      <app-erro-campo id="erro-observacao-recebimento" [campo]="campos.observacao" />
     </div>
     @if (mensagem()) {
       <p

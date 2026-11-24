@@ -26,6 +26,8 @@ export interface RascunhoCadastro extends RascunhoCliente {
 export interface RascunhoRecebimento {
   data: string;
   forma: string;
+  valorRecebido: string;
+  observacao: string;
 }
 
 export type ErrosCampos<T> = Partial<Record<keyof T, string>>;
@@ -83,7 +85,7 @@ export function inteiroPositivo(texto: string): number | null {
 }
 
 export function iniciarRecebimento(referencia: string): RascunhoRecebimento {
-  return { data: referencia, forma: '' };
+  return { data: referencia, forma: '', valorRecebido: '', observacao: '' };
 }
 
 function erroData(data: string, inicio: string | null, fim: string): string | null {
@@ -185,14 +187,22 @@ export function converterRecebimento(
   const data = erroData(rascunho.data, venda.dataVenda, referencia);
   if (data) erros.data = data;
   if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione a forma do recebimento.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
   let resumo: string | null = null;
+  let valorBase: number | null = null;
   try {
     const selecao = selecionarParcelas(venda, [parcelaId], referencia);
     if (selecao.tipo !== 'sucesso') resumo = selecao.mensagem;
+    else valorBase = selecao.valor[0].valorCentavos;
   } catch {
     resumo = 'Não foi possível conferir a parcela. Feche e revise a venda.';
   }
-  if (Object.keys(erros).length || resumo) return { tipo: 'invalido', erros, resumo };
+  if (valorRecebido !== null && valorBase !== null && valorRecebido < valorBase)
+    erros.valorRecebido = 'O valor recebido deve ser igual ou superior ao valor-base da parcela.';
+  if (Object.keys(erros).length || resumo || valorRecebido === null)
+    return { tipo: 'invalido', erros, resumo };
   return {
     tipo: 'sucesso',
     comando: {
@@ -200,6 +210,8 @@ export function converterRecebimento(
       parcelaId,
       data: rascunho.data,
       forma: rascunho.forma,
+      valorCentavos: valorRecebido,
+      observacao: rascunho.observacao,
     },
   };
 }

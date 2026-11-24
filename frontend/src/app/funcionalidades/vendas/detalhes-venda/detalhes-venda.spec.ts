@@ -208,7 +208,7 @@ describe('DetalhesVenda', () => {
       acao.click();
       await harness.fixture.whenStable();
       expect(pagina().querySelector('dialog')?.textContent).toContain(`Parcela${numero}`);
-      expect(pagina().querySelector('#valor-recebimento')).toBeNull();
+      expect(pagina().querySelector<HTMLInputElement>('#valor-recebimento')?.value).toBe('100,00');
       expect(pagina().querySelector('#quantidade-recebimento')).toBeNull();
       const data = pagina().querySelector<HTMLInputElement>('#data-recebimento')!;
       data.value = servico.referencia;
