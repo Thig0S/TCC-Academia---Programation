@@ -26,7 +26,7 @@ Expor comando específico para correção somente de recebimento individual iden
 
 ### D4 — Universos antes das projeções
 
-Projetar vendas da sessão uma vez, filtrar Ativas para saldos, atraso, vendas mensais e resumos da Visão Geral; calcular recebimentos mensais a partir de **todas** as vendas, mesmo Inativas/Prejuízo. Projeção separada de Prejuízo mostra parcelas pendentes de cada contrato e soma apenas quando não existir nenhum recebimento, inclusive entrada. Calcular primeiro vencimento pendente por venda e ordenar com comparador civil e desempate estável; a listagem aplica filtro administrativo/financeiro e busca, ordenação, depois paginação. Nunca usar valor recebido com juros como critério de saldo contratual. Alternativa de filtrar a fonte inteira por status antes do relatório rejeitada: apagaria pagamentos históricos realizados.
+Projetar vendas da sessão uma vez, filtrar Ativas para saldos, atraso, vendas mensais e resumos da Visão Geral; calcular recebimentos mensais a partir de **todas** as vendas, mesmo Inativas/Prejuízo. Projeção separada de Prejuízo mostra parcelas pendentes de cada contrato e soma apenas quando não existir nenhum recebimento, inclusive entrada. Calcular primeiro vencimento pendente por venda; ordenar cliente A–Z, data de venda crescente e vencimento pendente crescente, com ID crescente como desempate e vencimentos ausentes ao final. A listagem aplica filtro administrativo/financeiro e busca, ordenação, depois paginação; mudar a ordenação volta à página 1. Nunca usar valor recebido com juros como critério de saldo contratual. Alternativa de filtrar a fonte inteira por status antes do relatório rejeitada: apagaria pagamentos históricos realizados.
 
 ### D5 — UI e verificação
 

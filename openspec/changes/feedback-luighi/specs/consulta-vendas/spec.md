@@ -45,10 +45,10 @@ O detalhe SHALL indicar status administrativo textual e expor somente ações pe
 
 ### Requirement: Ordenação da lista antes da paginação
 
-Vendas SHALL ordenar a coleção consultável por cliente, data da venda ou primeiro vencimento pendente antes de mostrar até dez itens por página. Empates SHALL ter ordem estável por ID, e venda sem pendência SHALL vir depois das demais por vencimento. Trocar ordenação SHALL voltar à primeira página.
+Vendas SHALL ordenar a coleção consultável por cliente A–Z, data da venda crescente (mais antiga primeiro) ou primeiro vencimento pendente crescente (mais próximo primeiro), antes de mostrar até dez itens por página. Empates SHALL ter ordem estável por ID crescente, e venda sem pendência SHALL vir depois das demais por vencimento. Trocar ordenação SHALL voltar à primeira página.
 
 #### Scenario: Ordenar e paginar após buscar
-- **WHEN** a coleção filtrada tiver mais de dez vendas e a pessoa ordenar por cliente, data ou vencimento
+- **WHEN** a coleção filtrada tiver mais de dez vendas e a pessoa ordenar por cliente A–Z, data crescente ou vencimento crescente
 - **THEN** cada venda SHALL aparecer uma vez no percurso paginado na ordem escolhida, sem mudar a fonte
 - **AND** mudar ordenação SHALL selecionar a primeira página e preservar os filtros vigentes
 
