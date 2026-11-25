@@ -645,13 +645,13 @@ test('edita nome e descrição extensos, anuncia erro e preserva finanças nos d
   }
 });
 
-test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewports', async ({
-  page,
-}, testInfo) => {
-  for (const largura of [390, 767, 768, 1024, 1366]) {
-    const altura = largura === 1366 ? 768 : 844;
-    await page.setViewportSize({ width: largura, height: altura });
-    for (const tema of ['dark', 'light']) {
+for (const largura of [390, 767, 768, 1024, 1366]) {
+  for (const tema of ['dark', 'light']) {
+    test(`edição e recebimento preservam foco, conteúdo e rolagem em ${largura}px/${tema}`, async ({
+      page,
+    }, testInfo) => {
+      const altura = largura === 1366 ? 768 : 844;
+      await page.setViewportSize({ width: largura, height: altura });
       await page.goto('/vendas/nova');
       if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
       await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
@@ -783,9 +783,9 @@ test('edição e recebimento mantêm textos, erros e rolagem na matriz de viewpo
       );
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
-    }
+    });
   }
-});
+}
 
 test('cadastra sem entrada/descrição uma única vez com Enter repetido e descarta no reload', async ({
   page,
