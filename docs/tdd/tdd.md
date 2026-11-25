@@ -1,5 +1,103 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-033 — Fundação C# da fase 001 do backend (25/11/2026)
+
+**Base:** PRD/FON-036/RF-021/022/CA-044/045 e FON-035. Planejamento da Change
+`fase-001-backend`, em `feature/fase-001-backend`; nenhum código C# criado. Revisa a
+exclusão de backend de DEC-001 somente para uma API técnica independente. Não altera
+o estado demonstrativo nem aprova persistência, regras financeiras ou desktop.
+
+**Ambiente observado:** `dotnet --info` informou SDK 10.0.103 e runtimes .NET e
+ASP.NET Core 10.0.3, Windows x64. Não existem solução C#, `global.json` ou projetos
+.NET versionados. Esses números são a baseline local, não alegação de versão mais
+recente ou recomendação de produção. O único workflow observado publica Angular no
+Pages; não deve ser alterado nesta fase.
+
+**Estrutura planejada:** `backend/VendasEmAberto.slnx`, `backend/global.json`,
+`backend/Directory.Build.props`, `.editorconfig`, `.gitignore` e `README.md` locais;
+projetos em `backend/src/VendasEmAberto.{Api,Aplicacao,Dominio,Infraestrutura}/` e
+`backend/tests/VendasEmAberto.{UnitTests,IntegrationTests}/`. Evitar arquivos de
+exemplo `Class1`, previsão do tempo, entidades vazias ou serviços de negócio
+simulados. Class libraries podem não ter tipos até as próximas fases.
+
+**Referências:** Dominio não referencia outros projetos; Aplicacao → Dominio;
+Infraestrutura → Aplicacao e Dominio; Api → Aplicacao e Infraestrutura, como ponto
+de composição. Não adicionar EF, bibliotecas de mediação/mapeamento, autenticação
+ou referências Angular. A estrutura prepara fronteiras, não regras financeiras.
+
+**SDK e dependências:** todos os projetos em `net10.0`, nullable e implicit usings
+habilitados, sem `LangVersion=preview`. `global.json` dentro de `backend/` seleciona
+SDK 10.0.103 como baseline, `rollForward=latestPatch`, `allowPrerelease=false` e
+runner `Microsoft.Testing.Platform`. Executar comandos a partir de `backend/` para
+que a resolução do SDK use esse arquivo. Testes usam **MSTest.Sdk 4.5.3**, versão
+exata no projeto, sem xUnit/NUnit ou runner VSTest paralelo; integração referencia
+**Microsoft.AspNetCore.Mvc.Testing 10.0.3**. Metadados dessas duas versões foram
+consultados no NuGet, não restaurados nem compilados. Gerar e versionar
+`packages.lock.json` aplicáveis, usar restauração em modo bloqueado e registrar
+versões efetivas do SDK, runner e dependências. Analisar vulnerabilidades/suporte
+no apply antes de consolidar a base; se for necessário trocar a baseline, revisar
+esta decisão e os artefatos SDD antes do código afetado. Não usar versões flutuantes.
+
+**API técnica:** Minimal API ASP.NET Core com `AddHealthChecks`/`MapHealthChecks`
+em `/health`, resposta padrão 200 `text/plain`, corpo `Healthy`, sem checks de
+banco ou serviços externos. Não instalar OpenAPI/Swagger, CORS, HTTPS de
+desenvolvimento, cookies, Identity ou JWT. HTTP é restrito ao loopback neste
+recorte sem dados; não é o protocolo de produção do desktop. Rota desconhecida
+retorna 404. Exceções inesperadas usam Problem Details genérico, sem expor stack
+trace/configuração inclusive em Development; não criar endpoint público de erro
+para testes. Logs técnicos no console, sem leitura de dados da planilha.
+
+**Inicialização:** endereço IPv4 `127.0.0.1`, porta padrão 5070, alterável por
+`Backend:Porta`/`Backend__Porta` (inteiro 1024–65535). Não usar 4200/4300 da interface.
+Aplicar binding explícito e validar/rejeitar configurações de endpoint conflitantes
+que tentem abrir interfaces externas, inclusive `--urls`, `ASPNETCORE_URLS` e
+`Kestrel:Endpoints`. Não confiar somente em `launchSettings.json`. Porta ocupada ou
+configuração inválida encerra com erro claro e código não zero, sem escolher porta
+silenciosamente. Ctrl+C encerra o host e libera a porta. Isso não implementa token
+de IPC, sidecar ou gerenciamento de processos Tauri.
+
+**Testes obrigatórios em MSTest:** UnitTests cobre validação de porta/configuração,
+inclusive entradas inválidas e tentativas de binding externo, sem regras fictícias
+do domínio. IntegrationTests usa `WebApplicationFactory` para `/health`, 404,
+ausência de desafio de login/CORS permissivo, erro genérico e inicialização com
+configuração inválida. Habilitar acesso ao entry point pelo mecanismo suportado
+no pacote fixado, sem duplicar declaração gerada de `Program`; preservar o contrato
+do host real. Exceção pode ser provocada só por composição exclusiva de teste,
+nunca por rota publicada. Rejeição de configuração deve ser testada também na
+validação da aplicação, não apenas nas particularidades do TestServer.
+
+**Roadmap obrigatório:** (1) revisar PRD/TDD e proposta/spec/design/tasks e aguardar
+apply explícito; (2) criar solução/configuração/camadas e restaurar/compilar;
+(3) implementar inicialização, disponibilidade e erro técnico com MSTest e testes
+de integração; (4) documentar comandos, ignorar saídas apenas no escopo de backend
+e registrar verificação de formatação, dependências e smoke real; (5) build e
+testes unitários do frontend, revisão do diff e PR único ao concluir toda a Change.
+Cada entrega coerente deve ter seus testes, documentação e commit próprio; não
+abrir PR apenas por estes artefatos. Não incluir a mudança alheia em `.gitignore`.
+
+**Estratégia de verificação planejada:** a partir de `backend/`, `dotnet restore
+VendasEmAberto.slnx --locked-mode`, `dotnet build VendasEmAberto.slnx -c Release
+--no-restore`, `dotnet test --solution VendasEmAberto.slnx -c Release --no-build` e
+`dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore`; confirmar
+descoberta não vazia dos dois projetos de testes. Fazer smoke em processo Kestrel
+real, conferir socket loopback e HTTP, conflito de porta, configuração externa
+rejeitada e encerramento, sempre limpando apenas processos iniciados pelo teste.
+Em `frontend/`, build e testes unitários, sem servidor/backend integrado. E2E e
+testes de dados financeiros não são obrigatórios neste recorte sem alteração da
+interface; documentar explicitamente os não executados.
+
+**Evidências desta proposta:** inspeção de arquivos, SDK e documentação corrente
+de .NET, ASP.NET Core e MSTest via Context7 e metadados NuGet. Não houve restore,
+build, teste, inicialização da API, alteração de ferramentas ou prova de
+compatibilidade dos pacotes nesta revisão. Instalação e restore inicial podem
+precisar de rede; execução da API já preparada não depende da internet. Ambiente
+offline de desenvolvimento sem cache NuGet não é prometido.
+
+**Validação documental em 25/11/2026:** `openspec validate fase-001-backend
+--strict` aprovado; `git diff --check` sem erros de whitespace, com avisos de
+conversão LF/CRLF. Os quatro artefatos de planejamento existem e foram revisados;
+isso não comprova implementação ou conclusão das tarefas do apply.
+
 ## Restrição de acesso da evolução local — 25/11/2026
 
 **Base:** PRD/FON-035. Público confirmado: uma equipe específica da loja, em um
