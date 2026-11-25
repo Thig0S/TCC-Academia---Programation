@@ -3,7 +3,7 @@ using VendasEmAberto.Dominio.Valores;
 
 namespace VendasEmAberto.Dominio.Vendas;
 
-public sealed class ConjuntoVendas
+public sealed partial class ConjuntoVendas
 {
     public IReadOnlyList<Venda> Vendas { get; }
 

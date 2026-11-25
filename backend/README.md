@@ -148,6 +148,22 @@ insegura em estados não operacionais, cadastro/baixa/correção localmente vál
 globalmente inválidos, rejeição sem publicação parcial, descarte de preparação e
 propagação de falha técnica.
 
+`ConjuntoVendas.Projetar(referencia)` devolve projeções de todas as vendas e
+coleções separadas: Abertas e Quitadas contêm somente Ativas; Inativas e Prejuízos
+ficam em coleções próprias. `TotalEmAberto`, `ValoresEmAtraso` e
+`VendasCadastradas` consideram somente Ativas, enquanto `RecebidoNoMes` agrega os
+movimentos civis do mês da referência em todos os status. A consulta reusa as
+projeções puras de venda e não altera as raízes nem a ordem original.
+
+`ConjuntoVendas.ConsultarPeriodo(inicio, fim)` recebe `DateOnly`, exige intervalo
+ordenado e inclui integralmente as duas datas-limite. Soma recebimentos de todos os
+status por data efetiva e devolve as vendas cuja data de cadastro está no período;
+essa consulta de eventos não reconstrói posição histórica. A falha por intervalo
+invertido é `Validacao/periodo-invalido`. Consultas vazias retornam coleções vazias e
+totais zero, e as coleções devolvidas são somente leitura. Os casos CON-007–CON-011
+registram vazio, bordas inclusivas, universo dos status, totais operacionais,
+reativação e intervalo inválido.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
