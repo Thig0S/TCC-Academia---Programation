@@ -37,14 +37,20 @@ describe('Conteúdo honesto da demonstração', () => {
   it('apresenta análises do mês e posições atuais completas em Relatórios', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
-    expect(pagina.textContent).toContain('Análise mensal');
+    expect(pagina.textContent).toContain('Movimentação do mês');
     expect(pagina.textContent).toContain('Recebimentos no mês');
     expect(pagina.textContent).toContain('Vendas do mês');
     expect(pagina.textContent).toContain('Parcelas em aberto');
     expect(pagina.textContent).toContain('Parcelas vencidas');
-    expect(pagina.querySelectorAll('table')).toHaveLength(4);
-    expect(pagina.querySelectorAll('button')).toHaveLength(1);
-    expect(pagina.querySelectorAll('select, canvas, form, input, textarea').length).toBe(0);
+    expect(pagina.querySelectorAll('table')).toHaveLength(5);
+    expect(pagina.querySelectorAll('details')).toHaveLength(5);
+    expect(
+      [...pagina.querySelectorAll<HTMLDetailsElement>('details')].every((item) => !item.open),
+    ).toBe(true);
+    expect(pagina.querySelectorAll('button')).toHaveLength(2);
+    expect(pagina.querySelectorAll('select')).toHaveLength(1);
+    expect(pagina.querySelectorAll('input[type="number"]')).toHaveLength(1);
+    expect(pagina.querySelectorAll('canvas, form, textarea').length).toBe(0);
     expect(pagina.querySelector('[aria-label="Indicadores financeiros globais"]')).toBeNull();
     expect(pagina.textContent).not.toContain('Conteúdo ainda não disponível');
   });

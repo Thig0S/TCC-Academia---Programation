@@ -409,7 +409,8 @@ test('corrige pagamento individual com foco, validação e relatório nos dois t
       .getByRole('navigation', { name: 'Navegação principal' })
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
-    const relatorio = page.locator('section[aria-labelledby="recebimentos-mensais"]');
+    const relatorio = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+    await relatorio.locator('summary').click();
     const totalRecebidoAntes = relatorio
       .locator('p')
       .filter({ hasText: 'Total recebido:' })
@@ -466,9 +467,10 @@ test('corrige pagamento individual com foco, validação e relatório nos dois t
       .getByRole('navigation', { name: 'Navegação principal' })
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
-    const relatorioDepois = page.locator('section[aria-labelledby="recebimentos-mensais"]');
+    const relatorioDepois = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+    await relatorioDepois.locator('summary').click();
     await expect(relatorioDepois.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
-    expect(await valorEmCentavos(relatorioDepois.locator(':scope > p strong'))).toBe(
+    expect(await valorEmCentavos(relatorioDepois.locator('summary strong'))).toBe(
       totalAntes - valorInicial,
     );
   }
@@ -1002,14 +1004,14 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
     await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-    const vendasDoMes = page.locator('section[aria-labelledby="vendas-mensais"]');
-    const recebimentosDoMes = page.locator('section[aria-labelledby="recebimentos-mensais"]');
-    const posicaoEmAberto = page.locator('section[aria-labelledby="parcelas-abertas"]');
-    const parcelasVencidas = page.locator('section[aria-labelledby="parcelas-vencidas"]');
-    const vendasIniciais = await vendasDoMes.locator(':scope > p').innerText();
+    const vendasDoMes = page.locator('details[aria-labelledby="vendas-mensais"]');
+    const recebimentosDoMes = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+    const posicaoEmAberto = page.locator('details[aria-labelledby="parcelas-abertas"]');
+    const parcelasVencidas = page.locator('details[aria-labelledby="parcelas-vencidas"]');
+    const vendasIniciais = await vendasDoMes.locator('summary p').innerText();
     const quantidadeInicial = Number(vendasIniciais.match(/(\d+) vendas?/)?.[1]);
-    const totalVendidoInicial = await valorEmCentavos(vendasDoMes.locator(':scope > p'));
-    const recebimentoInicial = await valorEmCentavos(recebimentosDoMes.locator(':scope > p'));
+    const totalVendidoInicial = await valorEmCentavos(vendasDoMes.locator('summary p'));
+    const recebimentoInicial = await valorEmCentavos(recebimentosDoMes.locator('summary p'));
 
     await page
       .getByRole('navigation', { name: 'Navegação principal' })
@@ -1067,14 +1069,16 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
     await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-    expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
+    await recebimentosDoMes.locator('summary').click();
+    await vendasDoMes.locator('summary').click();
+    expect(await valorEmCentavos(recebimentosDoMes.locator('summary p'))).toBe(
       recebimentoInicial + 20000,
     );
-    expect(await valorEmCentavos(vendasDoMes.locator(':scope > p'))).toBe(
+    expect(await valorEmCentavos(vendasDoMes.locator('summary p'))).toBe(
       totalVendidoInicial + 100000,
     );
     expect(
-      Number((await vendasDoMes.locator(':scope > p').innerText()).match(/(\d+) vendas?/)?.[1]),
+      Number((await vendasDoMes.locator('summary p').innerText()).match(/(\d+) vendas?/)?.[1]),
     ).toBe(quantidadeInicial + 1);
     await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
     await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
@@ -1143,7 +1147,10 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
     await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-    expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
+    for (const detalhes of [recebimentosDoMes, vendasDoMes, posicaoEmAberto, parcelasVencidas]) {
+      await detalhes.locator('summary').click();
+    }
+    expect(await valorEmCentavos(recebimentosDoMes.locator('summary p'))).toBe(
       recebimentoInicial + 100000,
     );
     await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(4);
@@ -1183,11 +1190,13 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .getByRole('navigation', { name: 'Navegação principal' })
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
+    await vendasDoMes.locator('summary').click();
     await expect(
       vendasDoMes.locator('tbody tr').filter({ hasText: `${nome} editado` }),
     ).toHaveCount(1);
 
     await page.reload();
+    await vendasDoMes.locator('summary').click();
     await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
     await page
       .getByRole('navigation', { name: 'Navegação principal' })

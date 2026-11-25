@@ -166,35 +166,48 @@ test('alinha valores das quatro tabelas de Relatórios sem mudar densidade', asy
       'Parcelas em aberto',
       'Parcelas vencidas',
     ];
+    const vazios: Record<string, string> = {
+      'Recebimentos no mês': 'Nenhum recebimento neste mês.',
+      'Vendas do mês': 'Nenhuma venda cadastrada neste mês.',
+      'Parcelas em aberto': 'Nenhuma parcela em aberto nesta referência.',
+      'Parcelas vencidas': 'Nenhuma parcela vencida nesta referência.',
+    };
     const colunas: Record<string, string> = {
       'Recebimentos no mês': 'Valor',
       'Vendas do mês': 'Valor total efetivo',
       'Parcelas em aberto': 'Saldo',
       'Parcelas vencidas': 'Valor',
     };
-    for (const nome of regioes) {
-      const nomeTabela =
-        {
-          'Recebimentos no mês': 'Tabela de recebimentos no mês',
-          'Vendas do mês': 'Tabela de vendas do mês',
-          'Parcelas em aberto': 'Tabela de parcelas em aberto',
-          'Parcelas vencidas': 'Tabela de parcelas vencidas',
-        }[nome] ?? nome;
-      const tabela = page.getByRole('region', { name: nomeTabela }).getByRole('table');
-      await expect(tabela.locator('xpath=../..')).toHaveCSS('border-radius', '12px');
-      const cabecalhoMonetario = tabela.getByRole('columnheader', { name: colunas[nome] });
-      const celulaMonetaria = tabela
-        .locator('tbody tr')
-        .first()
-        .locator('td')
-        .nth(
-          await cabecalhoMonetario.evaluate((elemento) =>
-            [...elemento.parentElement!.children].indexOf(elemento),
-          ),
+    for (const [indice, nome] of regioes.entries()) {
+      const detalhe = page.locator('main details').nth(indice);
+      await detalhe.evaluate((elemento: HTMLDetailsElement) => {
+        elemento.open = true;
+      });
+      await expect(detalhe).toHaveJSProperty('open', true);
+      await expect(detalhe).toHaveCSS('border-radius', '12px');
+      const tabela = detalhe.locator('table');
+      if ((await tabela.count()) === 0) {
+        await expect(detalhe.getByText(vazios[nome], { exact: true })).toBeVisible();
+        continue;
+      }
+      const alinhamento = await tabela.evaluate((elemento, nomeColuna) => {
+        const cabecalhos = [...elemento.querySelectorAll('thead th')];
+        const indice = cabecalhos.findIndex(
+          (cabecalho) => cabecalho.textContent?.trim() === nomeColuna,
         );
-      await expect(cabecalhoMonetario).toHaveCSS('text-align', 'right');
-      await expect(celulaMonetaria).toHaveCSS('text-align', 'right');
-      await expect(celulaMonetaria).toHaveCSS('font-variant-numeric', /tabular-nums/);
+        const celula = elemento.querySelectorAll('tbody tr:first-child td')[indice];
+        if (indice < 0 || !celula) {
+          throw new Error(`Coluna monetária ausente ou sem linhas: ${nomeColuna}`);
+        }
+        return {
+          cabecalho: getComputedStyle(cabecalhos[indice]).textAlign,
+          celula: getComputedStyle(celula).textAlign,
+          algarismos: getComputedStyle(celula).fontVariantNumeric,
+        };
+      }, colunas[nome]);
+      expect(alinhamento.cabecalho).toBe('right');
+      expect(alinhamento.celula).toBe('right');
+      expect(alinhamento.algarismos).toContain('tabular-nums');
       await expect(tabela).toHaveCSS('font-size', '18px');
       await expect(tabela).toHaveCSS('line-height', '20px');
       await expect(tabela.locator('thead th').first()).toHaveCSS('padding-top', '8px');

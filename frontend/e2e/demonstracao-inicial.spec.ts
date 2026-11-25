@@ -69,7 +69,8 @@ test('Visão Geral e Relatórios apresentam as consultas financeiras definidas',
     await expect(secao.getByRole('link')).toHaveCount(5);
     await expect(secao).toContainText('Até 5');
   }
-  await expect(page.locator('form, input, select, textarea, table')).toHaveCount(0);
+  await expect(page.locator('form, textarea, canvas')).toHaveCount(0);
+  await expect(page.locator('main table')).toHaveCount(0);
   await expect(page.getByRole('main').locator('button')).toHaveCount(0);
 
   await page.goto('/relatorios');
@@ -83,12 +84,21 @@ test('Visão Geral e Relatórios apresentam as consultas financeiras definidas',
     'Parcelas em aberto',
     'Parcelas vencidas',
   ]) {
-    await expect(page.getByRole('heading', { name: secao })).toBeVisible();
+    await expect(
+      page.locator('main details summary').getByRole('heading', { name: secao }),
+    ).toBeVisible();
   }
-  await expect(page.locator('main table')).toHaveCount(4);
+  const detalhes = page.locator('main details');
+  await expect(detalhes).toHaveCount(5);
+  for (let indice = 0; indice < 5; indice++) {
+    await expect(detalhes.nth(indice)).toHaveJSProperty('open', false);
+  }
+  await expect(page.locator('main table')).toHaveCount(5);
+  await expect(page.locator('main details[open] table')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Exportar relatório' })).toBeVisible();
   await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
-  await expect(page.locator('form, input, select, textarea, canvas')).toHaveCount(0);
+  await expect(page.locator('form, textarea, canvas')).toHaveCount(0);
+  await expect(page.locator('main input[type="number"], main select')).toHaveCount(2);
 });
 
 test('Exportar relatório anuncia indisponibilidade sem download, rede ou mutação', async ({
@@ -119,7 +129,7 @@ test('Exportar relatório anuncia indisponibilidade sem download, rede ou mutaç
   expect(downloads).toEqual([]);
 });
 
-test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', async ({ page }) => {
+test('Relatórios mantém tabelas completas nos dois temas e viewports', async ({ page }) => {
   await page.goto('/relatorios');
   const secoes = [
     'Recebimentos no mês',
@@ -130,8 +140,13 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
   for (const tema of ['dark', 'light']) {
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
-    await expect(page.locator('main table')).toHaveCount(4);
+    const detalhes = page.locator('main details');
+    await expect(detalhes).toHaveCount(5);
+    await expect(page.locator('main table')).toHaveCount(5);
+    await expect(page.locator('main details[open] table')).toHaveCount(0);
     for (const nome of secoes) {
+      const indice = secoes.indexOf(nome);
+      await detalhes.nth(indice).locator('summary').click();
       const nomeTabela =
         {
           'Recebimentos no mês': 'Tabela de recebimentos no mês',
@@ -190,10 +205,14 @@ test('Relatórios mantém quatro tabelas completas nos dois temas e viewports', 
         'auto',
       );
     }
+    await expect(page.locator('main table')).toHaveCount(5);
     await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
+    for (let indice = 0; indice < 4; indice++) {
+      await detalhes.nth(indice).locator('summary').click();
+    }
   }
 });
 
@@ -961,7 +980,9 @@ test('mantém o overflow contido e permite alcançar tabela, ações e detalhe p
     if (rota === '/relatorios') {
       await expect(page.getByRole('main')).toContainText('Recebimentos no mês');
       await expect(page.getByRole('main')).toContainText('Parcelas em aberto');
-      await expect(page.locator('main table')).toHaveCount(4);
+      await expect(page.locator('main details')).toHaveCount(5);
+      await expect(page.locator('main table')).toHaveCount(5);
+      await expect(page.locator('main details[open] table')).toHaveCount(0);
     } else {
       await expect(page.getByRole('main')).toContainText('Total em aberto');
       await expect(page.getByRole('main')).toContainText('Até 5');
