@@ -1,0 +1,9 @@
+{
+  "rota": "/relatorios",
+  "tema": "dark",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "cenário": "relatorios"
+}

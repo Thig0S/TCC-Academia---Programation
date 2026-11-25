@@ -148,6 +148,43 @@ Chromium (1366×768 e 390×844) aprovados. A execução usou servidor isolado na
 4303 porque a porta 4200 continuava ocupada; nenhum processo preexistente foi encerrado.
 O cenário usa somente dados sintéticos, não demonstra operação real ou aceite da ótica.
 
+### Comparação visual antes/depois — tarefa 6.2
+
+As quatro capturas finais estão em `evidencias/dashboard-relatorios/final/` e foram
+comparadas com os PNGs equivalentes de `evidencias/dashboard-relatorios/baseline/`:
+1366×768 e 390×844, nos temas escuro e claro. A baseline tinha documento de
+1366×1773 no desktop e 390×2466 no celular; as imagens finais em página completa
+medem 1366×2737 e 390×3694, respectivamente. O aumento vertical é intencional: inclui
+seletor e período aplicado, dois cartões mensais, gráfico/tabela diária, três cartões
+de posição atual e cinco detalhes inicialmente recolhidos. Os PNGs finais mostram a
+composição completa; a tabela diária contém todos os 30 dias do mês de referência.
+
+Na comparação, títulos, totais e grupos distinguem movimentação mensal da posição
+fixa; o tema claro/escuro mantém as superfícies e cores existentes. Em celular os
+cartões empilham, a tabela diária preserva datas/valores e o gráfico usa rolagem local;
+seu eixo e pontos ficam mais densos na largura estreita, diferença intencional para
+manter todos os dias sem overflow global. A tabela equivalente continua disponível
+sem depender do gráfico. As tabelas dos detalhes mantêm tipografia de 18 px/20 px e
+rolagem horizontal localizada, conforme estilos computados verificados no E2E.
+
+Verificações visuais executadas em 25/11/2026:
+
+- `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts
+  e2e/demonstracao-inicial.spec.ts --grep "Relatórios mantém|confere contraste de textos"`
+  — **4/4** (dois testes em Chromium 1366×768 e 390×844; ambos percorrem temas claro
+  e escuro). Contraste mínimo medido nos textos de Relatórios: **6,57:1** no escuro e
+  **5,64:1** no claro; ambos acima de 4,5:1. Os testes também confirmaram cinco
+  tabelas, expansão e leitura, 18 px/20 px, padding vigente, foco no controle de
+  exportação com outline sólido de 3 px e contraste de borda/foco ≥3:1, e ausência
+  de overflow horizontal global. A rolagem das regiões de tabela é local.
+- O E2E de teclado dos detalhes registrado na tarefa 5.1 passou **1/1**: Enter/Espaço,
+  duas expansões simultâneas, foco e abertura preservados ao aplicar mês. Esses dados
+  são sintéticos; automação e comparação de capturas não representam aceite visual ou
+  operacional.
+- Zoom nativo de **200% não verificado**: o Chromium headless usado nesta execução não
+  fornece controle de zoom nativo. Não foi substituído por CSS nem inferido dos
+  viewports; a verificação manual permanece como limitação.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
