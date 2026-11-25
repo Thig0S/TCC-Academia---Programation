@@ -182,7 +182,11 @@ test('mede consultas, relatórios e texto extenso nos cinco limites responsivos'
         .getByRole('navigation', { name: 'Navegação principal' })
         .getByRole('link', { name: 'Relatórios', exact: true })
         .click();
-      await expect(page.locator('main table')).toHaveCount(4);
+      const detalhesRelatorios = page.locator('main details');
+      for (let indice = 0; indice < 4; indice++) {
+        await detalhesRelatorios.nth(indice).locator('summary').click();
+      }
+      await expect(page.locator('main table')).toHaveCount(5);
       larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(larguraDocumento, `relatorios/${tema}/${largura}`).toBeLessThanOrEqual(largura);
       const regioes = await page

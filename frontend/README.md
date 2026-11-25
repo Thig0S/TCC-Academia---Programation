@@ -110,6 +110,25 @@ simultâneas, foco no summary e abertura após aplicar mês. Prettier direcionad
 `git diff --check` passaram. O teste é de browser automatizado com dados sintéticos;
 não representa auditoria de leitor de tela ou aceite operacional.
 
+### Compatibilidade dos testes com detalhes fechados — tarefa 5.2
+
+Os testes de Relatórios agora abrem os `details` antes de examinar tabelas de cobrança,
+preservando as verificações de linhas, IDs, CPF/telefone, vencimentos, ordenação,
+Prejuízo, foco e rolagem local. As expectativas distinguem a tabela diária, única fora
+dos detalhes, das cinco tabelas de relatório que permanecem no DOM mesmo recolhidas.
+Os testes visuais também verificam os estados vazios quando não há tabela de dados.
+
+Verificações em 25/11/2026: testes de componente `relatorios.spec.ts` e
+`conteudo.spec.ts` — **14/14**; E2E direcionado de demonstração, cobrança, refinamento
+visual e fluxos integrados de vendas — **116/116** nos projetos Chromium 1366×768 e
+390×844; fixture responsiva de paginação/relatórios — **2/2**. A porta padrão 4200
+estava ocupada e foi preservada; a suíte principal usou configuração existente na
+porta isolada 4303. A primeira tentativa da fixture em paralelo coincidiu com outra
+execução Playwright e produziu erro de arquivo de trace ausente; sua execução isolada
+posterior passou 2/2. Não foram alteradas asserções financeiras para acomodar a UI.
+Prettier direcionado e `git diff --check` — aprovados. Os dados são sintéticos; os
+resultados automatizados não constituem aceite operacional.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
@@ -150,6 +169,7 @@ O teste E2E `npm run test:e2e -- --grep "logo local"` não iniciou: o endereço 
 `127.0.0.1:4200` já estava ocupado. O servidor existente foi preservado e não reutilizado;
 portanto esse teste não é contado como aprovado. A resolução no subcaminho é verificada
 pela regressão unitária e pela presença do arquivo no build local.
+
 ## Apply `harmonizar-consultas-colecoes` — estilo das buscas — 24/11/2026
 
 Os campos de busca e botões Limpar pesquisa em Quitadas, Inativas e Prejuízo agora
@@ -4306,6 +4326,7 @@ As capturas e sidecars gerados estão localmente em `frontend/test-results/` e n
 versionados; documentam execução automatizada, não substituem zoom nativo ou aceite
 visual. Não houve inspeção manual de zoom nesta tarefa. O resultado do grupo não
 representa a regressão integrada nem a conclusão da Change.
+
 ## Apply `empilhar-links-sidebar` — coleções em linhas verticais — 24/11/2026
 
 Quitadas, Inativas e Prejuízo agora estão agrupadas em um contêiner flexível

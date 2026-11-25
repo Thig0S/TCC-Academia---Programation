@@ -78,6 +78,11 @@ for (const tema of ['dark', 'light'] as const) {
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
 
+    const detalhes = page.locator('main details');
+    for (let indice = 0; indice < 5; indice++) {
+      await detalhes.nth(indice).locator('summary').click();
+    }
+
     for (const titulo of [
       'Recebimentos no mês',
       'Vendas do mês',
@@ -85,7 +90,7 @@ for (const tema of ['dark', 'light'] as const) {
       'Parcelas vencidas',
       'Prejuízo',
     ]) {
-      await expect(page.getByRole('heading', { name: titulo, exact: true })).toBeVisible();
+      await expect(page.locator('details > summary').filter({ hasText: titulo })).toBeVisible();
     }
 
     const abertas = page.getByRole('region', { name: 'Tabela de parcelas em aberto' });
@@ -110,7 +115,7 @@ for (const tema of ['dark', 'light'] as const) {
     await expect(prejuizo.getByRole('columnheader', { name: 'CPF' })).toBeVisible();
     await expect(prejuizo.getByRole('columnheader', { name: 'Telefone' })).toBeVisible();
 
-    const vendasMensais = page.locator('section[aria-labelledby="vendas-mensais"]');
+    const vendasMensais = page.locator('details[aria-labelledby="vendas-mensais"]');
     await expect(vendasMensais).not.toContainText('Lucas Santos');
     await expect(vendasMensais).not.toContainText('Marina Costa');
     await expect(abertas).not.toContainText('Lucas Santos');
@@ -124,8 +129,7 @@ for (const tema of ['dark', 'light'] as const) {
     const somaIncluida = incluidoEmCentavos.reduce((soma, valor) => soma + paraCentavos(valor), 0);
     const totalPrejuizo = await paraCentavos(
       await page
-        .locator('section[aria-labelledby="prejuizo-relatorio"] > p')
-        .first()
+        .locator('details[aria-labelledby="prejuizo-relatorio"] summary')
         .locator('strong')
         .innerText(),
     );
