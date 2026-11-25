@@ -2,7 +2,7 @@
 
 ## Context
 
-Ver `proposal.md`, PRD/FON-036/037/RF-021/022/CA-044/045 e TDD/DEC-033/034. A inspeção
+Ver `proposal.md`, PRD/FON-036/037/038/RF-021/022/CA-044/045 e TDD/DEC-033/034/035. A inspeção
 encontrou somente `frontend/` como aplicação, `app.config.ts` sem cliente HTTP de
 dados e workflow exclusivo de Pages. `ServicoDemonstracao` mantém o estado em
 memória; a nova API não será seu substituto nesta fase.
@@ -87,9 +87,9 @@ Habilitar lockfiles NuGet aplicáveis e versioná-los, incluindo resolução tra
 O MSBuild SDK MSTest tem versão exata própria, não substituída pelo lockfile NuGet.
 Restauração inicial gera locks; depois usar `--locked-mode`. Não adicionar
 ferramentas dotnet globais ou dependências de ORM, DI externo, FluentAssertions,
-mediador, mapeador ou cobertura nesta fase. MediatR é o padrão futuro documentado
-em D7, não uma dependência desta base técnica. A checagem de formato usa o comando
-do SDK e o `.editorconfig` local.
+mediador, biblioteca de resultados, mapeador ou cobertura nesta fase. MediatR e
+FluentResults são padrões futuros documentados em D7/D8, não dependências desta
+base técnica. A checagem de formato usa o comando do SDK e o `.editorconfig` local.
 
 Alternativa de versões flutuantes rejeitada por dificultar repetição. Não declarar
 a baseline observada como o patch atual de segurança nem como pacote pronto para
@@ -248,6 +248,68 @@ adoção posterior, não bloqueio da fase 001 que não usa o pacote.
 Alternativas de serviços amplos ou eliminação das camadas não foram adotadas;
 esta revisão refina a organização dos casos futuros sem mudar o escopo executável.
 
+### D8 — FluentResults interno e adaptação HTTP na API
+
+Decisão confirmada pelo solicitante: PRD/FON-038 e TDD/DEC-035. Futuras requisições
+MediatR usam `IRequest<Result>` ou `IRequest<Result<TResposta>>`; handlers retornam
+FluentResults para sucesso e falhas esperadas do caso de uso. Não criar wrapper
+paralelo que apenas replique `Result`. Saída da aplicação não depende de HTTP nem
+expõe entidades de persistência como contrato público.
+
+Fluxo de retorno:
+
+```text
+Handler (Aplicacao)
+  Result / Result<TResposta>
+          |
+          v
+Adaptacao compartilhada (Api)
+  sucesso --> DTO e status conforme endpoint
+  falha   --> Problem Details e status por categoria
+```
+
+Erros internos são tipados/categorizados, com códigos estáveis, mensagens públicas
+seguras e campo quando aplicável. A categoria, não a mensagem, determina o status.
+Mapeamento aprovado: validação 400; inexistência 404; conflito 409; regra de
+negócio/inelegibilidade 422. Sucesso usa DTO com 200, 201 para criação ou 204 sem
+corpo conforme o contrato do endpoint, não por inferência automática do tipo
+`Result`. Mensagens públicas são pt-BR. Listas vazias ou valor nulo não significam
+recurso inexistente sem essa decisão do caso de uso.
+
+A API seleciona somente dados públicos e os transforma; não retorna `Result`,
+`Reasons`, lista interna de `Errors`, exceções ou metadados arbitrários no JSON.
+Falhas esperadas usam Problem Details (com erros de campo quando pertinentes),
+não um envelope próprio para todos os sucessos. Aplicacao não referencia
+ASP.NET Core/ProblemDetails/status HTTP; Dominio não depende de FluentResults.
+Concentrar a política de tradução na API, sem repetir switch de mensagens em cada
+endpoint. O formato detalhado das extensões públicas/códigos deve ser especificado
+na Change dos primeiros endpoints, antes de sua implementação.
+
+Agregação de validações deve preservar erros de campo. Não escolher status pelo
+primeiro erro de uma lista heterogênea: se uma funcionalidade precisar de múltiplas
+categorias, sua especificação define a classificação/prevalência antes do código.
+Categoria desconhecida não vira automaticamente 400/422; resposta 500 genérica.
+Não ler `Value` quando `IsFailed` indicar falha nem tratar todas as exceções como
+resultados esperados. Erros inesperados seguem D4 (500 sem detalhes); cancelamento
+permanece cancelamento, não inelegibilidade. Resultado de falha não garante por si
+só que não houve gravação: transações/idempotência serão parte dos casos futuros.
+
+**Limite desta fase:** documentar o padrão no README a ser entregue, sem instalar
+FluentResults, extensões ASP.NET, mapper, erros/DTOs de exemplo ou integração
+MediatR. `/health` permanece nativo, sem alterações na spec de execução local ou
+em seus testes previstos. Versão fixa, licença, compatibilidade e contrato público
+detalhado serão resolvidos antes da primeira Change de adoção efetiva.
+
+**Verificação futura:** MSTest para handlers (tipos/códigos/sucesso/falha) e
+integração API (DTO/status, 400/404/409/422, erro desconhecido 500, erros por campo,
+ausência de tipos internos/dados sensíveis, vazio/nulo/cancelamento). Não criar
+testes artificiais nesta base apenas para alegar o padrão implementado.
+
+Alternativas rejeitadas: serializar FluentResults no HTTP, decidir status pelo texto
+da mensagem, exceções como fluxo normal de falhas esperadas e dependência HTTP em
+Aplicacao. A biblioteca oferece extensões ASP.NET, mas a escolha atual não autoriza
+instalá-las; a adaptação futura ficará na API com os recursos do ASP.NET Core.
+
 ## Risks / Trade-offs
 
 - [Baseline não representar patch de segurança atual] → validar avisos/suporte no
@@ -270,6 +332,9 @@ esta revisão refina a organização dos casos futuros sem mudar o escopo execut
 - [Confundir decisão arquitetural com instalação autorizada] → D7 é documental;
   não instalar MediatR ou criar handlers na base. Resolver versão/licença antes da
   Change que efetivamente utilizar o pacote.
+- [Vazar resultados internos ou classificar toda falha como erro de entrada] → D8
+  separa FluentResults interno de DTO/Problem Details; traduções explícitas e 500
+  genérico para falhas inesperadas, sem instalar adaptador nesta fase.
 
 ## Migration Plan
 

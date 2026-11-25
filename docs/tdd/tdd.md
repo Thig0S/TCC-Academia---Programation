@@ -1,5 +1,76 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-035 — FluentResults na fronteira Aplicacao → API (25/11/2026)
+
+**Base:** PRD/FON-038 e padrão MediatR/CQRS/Vertical Slices de DEC-034. O
+solicitante aprovou o mapeamento abaixo e a atualização apenas documental da
+`fase-001-backend`. Não ampliar dependências ou comportamento executável de DEC-033.
+
+**Contrato interno futuro:** handlers de aplicação retornam `Result` para sucesso
+sem valor e `Result<TResposta>` quando produzem dados, usando FluentResults.
+Requisições MediatR correspondem a `IRequest<Result>` ou
+`IRequest<Result<TResposta>>`. `TResposta` representa saída do caso de uso, não
+entidade persistente ou objeto HTTP. Erros esperados têm categoria tipada e código
+estável, mensagem pública segura e campo associado quando pertinente. A API nunca
+decide status por comparação de mensagem. Não criar um segundo wrapper de resultado
+que apenas replique a biblioteca.
+
+**Separação de responsabilidades:** Aplicacao usa FluentResults sem depender de
+ASP.NET Core, `IResult`, `IActionResult`, status HTTP ou ProblemDetails. A API traduz
+o resultado em DTO/status de sucesso ou Problem Details para falhas esperadas,
+por adaptação compartilhada para evitar políticas divergentes entre endpoints.
+Dominio continua independente de MediatR, FluentResults e HTTP; Infraestrutura não
+produz respostas HTTP. Não serializar `Result`, `Reasons`, `Errors`, causas internas
+ou metadados arbitrários diretamente. Expor apenas informações públicas
+explicitamente selecionadas, sem stack trace, chaves, dados pessoais ou exceções.
+
+| Categoria interna | Resposta HTTP futura |
+| --- | --- |
+| Sucesso com representação | DTO e status do contrato do endpoint, normalmente 200 |
+| Criação de recurso | 201 e representação/localização quando definidos no endpoint |
+| Sucesso sem corpo | 204 quando definido no endpoint |
+| Validação de entrada | 400, Problem Details com erros por campo quando aplicável |
+| Recurso inexistente | 404, Problem Details |
+| Conflito de estado/concorrência | 409, Problem Details |
+| Regra de negócio/inelegibilidade | 422, Problem Details |
+| Falha não classificada ou exceção inesperada | 500 genérico, sem detalhes internos |
+
+Mensagens públicas em pt-BR e códigos estáveis; o status e o corpo precisam ser
+coerentes. A presença de valor nulo ou lista vazia não implica automaticamente 404;
+o caso de uso distingue ausência de recurso de consulta sem resultados. Não acessar
+`Value` em resultado falho. Agregar erros de validação compatíveis sem escolher
+status pelo primeiro item de uma lista; resultados com categorias diferentes
+exigem política explícita no contrato da funcionalidade antes da implementação.
+
+**Exceções e cancelamento:** falhas esperadas de negócio são resultados, não fluxo
+normal por exceções. Falhas técnicas inesperadas permanecem no tratamento global
+genérico e no diagnóstico interno, não são convertidas indiscriminadamente em
+`Result.Fail(ex.Message)` ou 400/422. Preservar cancelamento e não classificá-lo
+como erro de negócio. FluentResults não fornece atomicidade, rollback ou
+idempotência; suas garantias dependerão dos casos de uso futuros.
+
+**Integração técnica posterior:** antes da primeira adoção, selecionar/fixar versão,
+verificar compatibilidade e licença e especificar categorias/códigos públicos e
+contratos dos endpoints afetados. Adaptação HTTP fica na API usando os recursos
+do ASP.NET Core; a adoção de FluentResults não autoriza automaticamente instalar
+`FluentResults.Extensions.AspNetCore` ou outras extensões. Não criar mapper, DTOs
+de erro ou handlers artificiais nesta fase para demonstrar o padrão.
+
+**Testes futuros em MSTest:** verificar sucesso/falha dos handlers, categorias e
+códigos, Query sem mutação e integridade em falhas esperadas; na API, testar o
+mapeamento 400/404/409/422, sucesso segundo o endpoint, 500 para erro desconhecido,
+erros de campo e ausência de vazamento/serialização de tipos internos. Manter testes
+de cancelamento e de resultados vazios/nulos conforme o contrato da funcionalidade.
+
+**Roadmap e verificação:** nesta Change, revisar PRD → TDD → proposal/design/tasks
+e incluir o padrão no README a ser entregue no apply; preservar `/health`,
+especificação de execução local e todas as tarefas executáveis. Em Change posterior,
+fechar versão/contratos antes de implementar FluentResults e sua tradução HTTP.
+Fonte consultada: documentação FluentResults via Context7 sobre resultados,
+erros/metadados e não serialização direta em ações HTTP, e documentação ASP.NET
+Core sobre Problem Details. Revisão documental não é teste de compatibilidade ou
+implementação do adaptador.
+
 ## DEC-034 — MediatR, CQRS e Vertical Slices na aplicação (25/11/2026)
 
 **Base:** PRD/FON-037 e confirmação de revisão exclusivamente documental da Change
