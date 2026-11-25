@@ -32,9 +32,9 @@ Base: PRD/FON-017/RF-013–016/RN-025–026/CA-036–038, TDD/DEC-028, `proposal
 
 ## 6. Verificação integrada e fechamento da Change
 
-- [ ] 6.1 Executar regressão unitária/componentes, E2E da aplicação e fixture de paginação, builds, formatação e `openspec validate feedback-luighi --strict`; registrar comandos, resultados e limitações reais, inclusive casos de referência de calendário/centavos e sessão recriada (CA-036–038).
-- [ ] 6.2 Conferir fluxos combinados de status, pagamento com acréscimo, edição, filtros, relatórios e indicadores em 1366×768/390×844, dois temas e zoom nativo 200% quando efetivamente verificável; registrar evidências/falhas sem reaproveitar como nova evidência relato de outra Change.
-- [ ] 6.3 Conciliar PRD/TDD/SDD, tarefas e `frontend/README.md` apenas com implementações/verificações reais; conferir diff restrito e critérios CA-036–038, sem alegar homologação, aprovação da ótica ou merge.
+- [x] 6.1 Executar regressão unitária/componentes, E2E da aplicação e fixture de paginação, builds, formatação e `openspec validate feedback-luighi --strict`; registrar comandos, resultados e limitações reais, inclusive casos de referência de calendário/centavos e sessão recriada (CA-036–038).
+- [x] 6.2 Conferir fluxos combinados de status, pagamento com acréscimo, edição, filtros, relatórios e indicadores em 1366×768/390×844, dois temas e zoom nativo 200% quando efetivamente verificável; registrar evidências/falhas sem reaproveitar como nova evidência relato de outra Change.
+- [x] 6.3 Conciliar PRD/TDD/SDD, tarefas e `frontend/README.md` apenas com implementações/verificações reais; conferir diff restrito e critérios CA-036–038, sem alegar homologação, aprovação da ótica ou merge.
 
 ## Workflow follow-up
 

@@ -6,6 +6,33 @@ Definir o comportamento financeiro demonstrativo de vendas e parcelas, permitind
 
 ## Requirements
 
+### Requirement: Status administrativo independente da situação financeira
+
+Cada venda SHALL ter status Ativo, Inativo ou Prejuízo, inicialmente Ativo, independente da situação financeira derivada. As únicas transições permitidas SHALL ser Ativo→Inativo, Ativo→Prejuízo com saldo aberto, Inativo→Ativo e Prejuízo→Ativo. Transição direta Inativo↔Prejuízo SHALL ser rejeitada; solicitar o status atual novamente SHALL ser aceito como no-op idempotente, sem mutação.
+
+#### Scenario: Marcar e reabrir prejuízo
+- **WHEN** uma venda Ativa com parcelas pendentes for marcada Prejuízo e depois reaberta
+- **THEN** SHALL passar de Ativo para Prejuízo e retornar a Ativo preservando ID, parcelas, vencimentos e recebimentos
+- **AND** a situação de atraso ou quitação SHALL continuar derivada, sem inferir Prejuízo automaticamente
+
+#### Scenario: Reativar venda Inativa
+- **WHEN** uma venda Inativa for reativada
+- **THEN** SHALL voltar a Ativo e à coleção normal correspondente ao saldo, preservando o mesmo ID
+- **AND** parcelas, recebimentos e valores SHALL permanecer inalterados
+
+#### Scenario: Rejeitar transição direta entre Inativo e Prejuízo
+- **WHEN** for solicitada transição direta Inativo→Prejuízo ou Prejuízo→Inativo
+- **THEN** SHALL rejeitar a solicitação sem alterar status, parcelas, recebimentos ou projeções
+
+#### Scenario: Repetir o status atual
+- **WHEN** for solicitado novamente o status administrativo que a venda já possui
+- **THEN** SHALL aceitar a solicitação como no-op idempotente
+- **AND** SHALL preservar integralmente o registro e não duplicar efeitos nas projeções
+
+#### Scenario: Recusar prejuízo em venda quitada
+- **WHEN** a venda não tiver parcelas pendentes e a pessoa solicitar Prejuízo
+- **THEN** SHALL rejeitar a mudança sem alterar o registro
+
 ### Requirement: Dados de cliente vinculados à venda
 
 O domínio SHALL manter identificadores estáveis para vendas e parcelas e dados de cliente próprios de cada venda, com nome, CPF e telefone obrigatórios e descrição opcional. Cadastro e edição SHALL validar CPF e telefone conforme os requisitos de identificação. SHALL não exigir cadastro mestre, unicidade de CPF ou consulta externa de identificação.
@@ -88,6 +115,15 @@ Após cadastro, a edição SHALL permitir somente nome, CPF, telefone e descriç
 - **THEN** a parcela 1 SHALL manter R$ 500,00, seguida de seis de R$ 166,67 e três de R$ 166,66
 - **AND** SHALL conservar R$ 2.000,00 no total, sem redistribuir centavos para a entrada
 
+### Requirement: Total efetivo com acréscimo externo
+
+O valor-base da venda e de cada parcela SHALL permanecer imutável. Para pagamento individual, valor efetivo SHALL ser ao menos o valor-base da parcela; total efetivo da venda SHALL somar os acréscimos aceitos ao total-base, sem calcular juros ou gerar crédito residual.
+
+#### Scenario: Receber com acréscimo
+- **WHEN** uma parcela-base de R$ 100,00 for paga por R$ 110,00
+- **THEN** SHALL registrar acréscimo de R$ 10,00, aumentar o total efetivo da venda em R$ 10,00 e o recebido em R$ 110,00
+- **AND** parcelas futuras e seus valores-base SHALL permanecer inalterados
+
 ### Requirement: Datas civis e vencimentos mensais
 
  O domínio SHALL tratar datas como dias civis válidos de 0001-01-01 a 9999-12-31 no calendário gregoriano. Venda SHALL não ser futura à referência. A entrada SHALL vencer e ser paga na data da venda; a primeira pendente SHALL vencer no mês seguinte, no dia original ou último dia do mês se inexistente. SHALL preservar o dia-base nos meses posteriores e rejeitar datas irrepresentáveis, considerando somente a quantidade de futuras.
@@ -127,7 +163,7 @@ Após cadastro, a edição SHALL permitir somente nome, CPF, telefone e descriç
 
 ### Requirement: Classificação derivada de parcelas e vendas
 
-Uma parcela SHALL ser Paga quando liquidada; pendente anterior à referência SHALL ser Atrasado; entre referência e +7 dias inclusive, Próximos dias; depois, Aberto. Uma venda SHALL ser Quitada se saldo zero; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto.
+Uma parcela SHALL ser Paga quando liquidada; pendente anterior à referência SHALL ser Atrasado; entre referência e +7 dias inclusive, Próximos dias; depois, Aberto. Uma venda SHALL ser Quitada se não houver pendentes; senão Atrasada se houver atraso; senão Próximos dias se houver parcela nessa janela; senão Em aberto. Status administrativo SHALL ser independente dessas situações.
 
 #### Scenario: Cobrir bordas de vencimento e precedência
 - **WHEN** classificar parcelas pendentes vencendo ontem, hoje, em +7 e em +8 dias
@@ -136,28 +172,39 @@ Uma parcela SHALL ser Paga quando liquidada; pendente anterior à referência SH
 - **AND** uma venda com atraso e parcela próxima SHALL ser Atrasada
 
 #### Scenario: Separar abertas de quitadas
-- **WHEN** consultar vendas com saldo positivo e vendas com saldo zero
-- **THEN** a projeção de abertas SHALL incluir todas as de saldo positivo, mesmo Atrasadas ou Próximos dias
-- **AND** quitadas SHALL aparecer somente na projeção de quitadas, preservando dados e parcelas
+- **WHEN** consultar vendas Ativas com saldo positivo e vendas Ativas com saldo zero
+- **THEN** a projeção normal de abertas SHALL incluir somente Ativas de saldo positivo, mesmo Atrasadas ou Próximos dias
+- **AND** Ativas quitadas SHALL aparecer somente na projeção de quitadas, preservando dados e parcelas
+- **AND** Inativas e Prejuízo SHALL conservar sua situação financeira no detalhe, mas permanecer fora das duas coleções normais
 
 ### Requirement: Saldos e próximo vencimento reconciliáveis
 
- O domínio SHALL derivar total pago dos recebimentos aceitos, incluindo uma vez o da entrada, e nunca somar novamente entrada ou alocações. Saldo SHALL ser total menos pago e igualar a soma das pendentes. Quantidade paga SHALL contar todas as parcelas liquidadas, inclusive a entrada. Próximo vencimento SHALL ser a menor data pendente, inclusive vencida, ou ausência explícita sem pendências.
+O domínio SHALL derivar total pago dos recebimentos efetivos aceitos, incluindo uma vez o da entrada e nunca somando novamente entrada ou alocações. Saldo SHALL igualar a soma dos valores-base pendentes e ao total efetivo menos o pago. Quantidade paga SHALL contar parcelas liquidadas, inclusive entrada. Próximo vencimento SHALL ser a menor data pendente, inclusive vencida, ou ausência explícita sem pendências.
 
 #### Scenario: Liquidar duas parcelas com entrada prévia
 - **WHEN** uma venda de R$ 2.000,00 em 10x, entrada de R$ 200,00 já paga, receber as parcelas 2 e 3 num lote de R$ 400,00
 - **THEN** SHALL resultar em pago R$ 600,00, saldo R$ 1.400,00 e 3/10 pagas
 - **AND** SHALL contar o lote uma única vez e usar a parcela 4 como próximo vencimento
 
+#### Scenario: Corrigir acréscimo sem alterar saldo-base
+- **WHEN** corrigir pagamento de R$ 110,00 para R$ 105,00 em parcela-base de R$ 100,00
+- **THEN** o total efetivo SHALL reduzir R$ 5,00, o recebido SHALL reduzir R$ 5,00 e o saldo das demais pendentes SHALL permanecer igual
+- **AND** a identidade da parcela e do pagamento SHALL permanecer estável
+
 ### Requirement: Resumos globais e períodos civis explícitos
 
- As projeções SHALL somar saldos no total em aberto, somente pendentes vencidas no atraso e recebimentos aceitos por data efetiva no mês civil, incluindo a entrada uma vez. SHALL contar todas as vendas, inclusive quitadas. Busca e filtros SHALL não alterar resumos. Períodos SHALL ser civis inclusivos, com vendas pela data da venda; entrada ou alocações SHALL não ser somadas novamente ao recebimento.
+As projeções SHALL somar saldos e atrasos apenas de Ativas e contar vendas Ativas, inclusive quitadas, nos indicadores operacionais e períodos de vendas. Recebimentos aceitos de qualquer status SHALL permanecer no mês da data efetiva, incluindo a entrada uma vez. Busca/filtros SHALL não alterar resumos. Períodos SHALL ser civis inclusivos; alocações e entrada SHALL não ser somadas novamente ao pagamento.
 
 #### Scenario: Conciliar mês e universos
 - **WHEN** consultar mês com entrada no primeiro dia, lote no último, recebimentos fora do mês e vendas quitadas
 - **THEN** SHALL incluir as duas bordas nos recebimentos e excluir os valores externos ao período
-- **AND** SHALL contar quitadas entre cadastradas, não incluir futuras ou entrada paga nos valores em atraso e não alterar totais ao filtrar listas
+- **AND** SHALL contar Ativas quitadas entre cadastradas, não incluir futuras ou entrada paga nos valores em atraso e não alterar totais ao filtrar listas
 - **AND** a entrada SHALL contribuir uma vez, mesmo visível no resumo e na tabela de parcelas
+
+#### Scenario: Preservar recebimento histórico após inativar
+- **WHEN** uma venda com pagamento no mês for inativada ou marcada Prejuízo
+- **THEN** saldo, atraso, contagem e valor de vendas operacionais SHALL excluir a venda
+- **AND** recebimento efetivamente registrado SHALL continuar incluído uma vez no mês de sua data, sem estorno fictício
 
 #### Scenario: Consultar coleção vazia e intervalo inválido
 - **WHEN** consultar projeções sem vendas

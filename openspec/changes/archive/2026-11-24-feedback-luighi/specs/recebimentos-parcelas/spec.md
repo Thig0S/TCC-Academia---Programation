@@ -24,7 +24,7 @@ O detalhe de venda Ativa SHALL oferecer Pagar somente na primeira parcela penden
 - **WHEN** abrir pagamento de parcela com vencimento anterior à referência da sessão
 - **THEN** SHALL exibir “Checar juros do Crediloja!” sem calcular nem exigir acréscimo
 
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Corrigir pagamento individual sem substituição da parcela
 
