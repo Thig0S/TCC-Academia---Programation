@@ -2,15 +2,17 @@
 
 ## Why
 
-A apresentação tabular de Relatórios dificulta perceber rapidamente movimentação, posição em aberto e cobranças prioritárias. Um painel visual contextual melhora a leitura sem eliminar a conferência detalhada dos registros.
+A apresentação tabular de Relatórios dificulta perceber rapidamente movimentação financeira e pendências de cobrança. O dashboard deve equilibrar essas leituras, permitir consultar outro mês e preservar a conferência integral dos registros, sem sugerir reconstrução histórica da dívida.
 
 ## What Changes
 
-- **BREAKING:** transformar a apresentação inicial da aba Relatórios em dashboard, preservando as tabelas completas abaixo do painel ou em seções expansíveis acessíveis.
-- Destacar cinco indicadores contextuais: recebimentos e vendas no mês da sessão, saldo de Ativas em aberto, vencidas Ativas e prejuízo elegível; não duplicar a faixa de quatro indicadores globais da Visão Geral.
-- Exibir três gráficos com alternativas textuais: recebimentos por dia efetivo do mês, saldo Ativo versus prejuízo elegível e parcelas vencidas Ativas por data de vencimento na posição atual.
-- Oferecer resumos de cobrança por cliente com CPF, telefone, primeiro vencimento, valor/situação e link por ID à venda, sem truncar as seções detalhadas.
-- Não alterar regras financeiras, status, filtros de Vendas, cálculo de juros, período fixo, exportação ou persistência.
+- **BREAKING:** substituir a apresentação inicial das cinco tabelas por dashboard com detalhes expansíveis independentes, inicialmente recolhidos, mantendo títulos/totais visíveis e acesso a todas as linhas.
+- Permitir escolher mês/ano para vendas e recebimentos, inicialmente no mês da referência; não alterar a referência fixa nem as posições atuais de saldo, atraso e Prejuízo.
+- Agrupar dois cartões em “Movimentação do mês” e três em “Posição atual”, com rótulos de período/universo e explicação de que vencidas integram o saldo aberto e Prejuízo tem total restrito.
+- Apresentar um gráfico de barras de recebimentos por dia efetivo do mês selecionado, com valores diários equivalentes em tabela acessível e estados zero/vazio.
+- Preservar identidade atual, temas, tipografia das tabelas, CPF/telefone, primeiro vencimento, ordenação, links por ID e indicação de Prejuízo fora do total.
+- Revisão confirmada em 25/11: retirar os dois outros gráficos e resumos adicionais por cliente do plano anterior. Cobrança será consultada nas tabelas expansíveis.
+- Fora do escopo: regras financeiras novas, comparação de períodos, posição histórica de dívida/status, outros filtros, shell/Visão Geral, novas bibliotecas, exportação real, backend ou persistência.
 
 ## Capabilities
 
@@ -20,8 +22,10 @@ Nenhuma.
 
 ### Modified Capabilities
 
-- `relatorios-financeiros`: apresentação em dashboard, gráficos e resumos acessíveis sobre os mesmos dados das tabelas integrais da Change anterior.
+- `relatorios-financeiros`: seleção mensal, cinco cartões contextuais, gráfico diário acessível e cinco detalhes expansíveis sobre as projeções existentes.
 
 ## Impact
 
-PRD/FON-018/RF-017/CA-039, TDD/DEC-029. Impacta projeções/apresentação de `frontend/src/app/funcionalidades/relatorios/` e testes dessa funcionalidade, sem alterar contratos financeiros ou Visão Geral. **Dependência bloqueante:** `feedback-luighi` deve estar implementada, verificada e integrada na `main` antes de atualizar esta branch para a `main` integrada e iniciar o apply; esta proposta foi criada isoladamente a partir da `main` atualizada, não contém arquivos nem implementação da Change anterior. Um PR separado só após concluir esta Change e suas verificações. Sem código nesta etapa.
+PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032; preservar RF-016/RN-025/026. Afeta cálculos, componente/template e testes em `frontend/src/app/funcionalidades/relatorios/`, E2E de Relatórios e seletores dependentes da apresentação antiga, além da documentação de evidências. Nenhuma nova dependência ou API de dados.
+
+Reutiliza a change existente e a branch `feature/dashboard-relatorios`, agora conciliada com a `main` que contém `feedback-luighi`. O plano antigo usava RF-017/CA-039/DEC-029 em colisão com outras changes integradas; o mapeamento histórico está registrado no PRD. Planejamento somente, com todas as tarefas de implementação pendentes. Revisar os artefatos antes de solicitar apply; PR único somente após entregar e verificar todo o escopo, sem merge automático.
