@@ -72,18 +72,35 @@ test('empilha destinos administrativos em ordem nos dois temas', async ({ page }
     }
     await expect(raiz).toHaveAttribute('data-tema', tema);
 
-    const links = [
-      navegacao.getByRole('link', { name: 'Quitadas', exact: true }),
-      navegacao.getByRole('link', { name: 'Inativas', exact: true }),
-      navegacao.getByRole('link', { name: 'Prejuízo', exact: true }),
-    ];
+    const rotulos = ['Quitadas', 'Inativas', 'Prejuízo'] as const;
+    const links = rotulos.map((rotulo) =>
+      navegacao.getByRole('link', { name: rotulo, exact: true }),
+    );
+    for (const [indice, link] of links.entries()) {
+      const icone = link.locator('svg');
+      await expect(icone).toHaveCount(1);
+      await expect(icone).toHaveAttribute('aria-hidden', 'true');
+      await expect(icone).toHaveAttribute('focusable', 'false');
+      const caixaLink = await link.boundingBox();
+      const caixaIcone = await icone.boundingBox();
+      const caixaRotulo = await link.getByText(rotulos[indice], { exact: true }).boundingBox();
+      expect(caixaLink).not.toBeNull();
+      expect(caixaIcone).not.toBeNull();
+      expect(caixaRotulo).not.toBeNull();
+      expect(
+        Math.abs(caixaIcone!.y + caixaIcone!.height / 2 - (caixaLink!.y + caixaLink!.height / 2)),
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(caixaRotulo!.y + caixaRotulo!.height / 2 - (caixaLink!.y + caixaLink!.height / 2)),
+      ).toBeLessThanOrEqual(2);
+    }
     const caixas = await Promise.all(links.map((link) => link.boundingBox()));
     expect(caixas.every((caixa) => caixa !== null)).toBe(true);
     const [quitadas, inativas, prejuizo] = caixas;
     expect(quitadas!.y).toBeLessThan(inativas!.y);
     expect(inativas!.y).toBeLessThan(prejuizo!.y);
-    expect(quitadas!.height).toBeLessThanOrEqual(inativas!.y - quitadas!.y);
-    expect(inativas!.height).toBeLessThanOrEqual(prejuizo!.y - inativas!.y);
+    expect(inativas!.y - (quitadas!.y + quitadas!.height)).toBeGreaterThanOrEqual(7);
+    expect(prejuizo!.y - (inativas!.y + inativas!.height)).toBeGreaterThanOrEqual(7);
     await verificarSemOverflowHorizontal(page);
   }
 });

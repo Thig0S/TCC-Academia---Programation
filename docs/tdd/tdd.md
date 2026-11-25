@@ -50,7 +50,7 @@ apply autorizada.
 
 **Escolha técnica:** usar `gap-2` (8 px) no contêiner vertical sem remover o espaçamento existente entre módulo e grupo. Incluir SVGs inline pequenos e decorativos nos links: check em círculo para Quitadas, pausa/arquivo para Inativas e triângulo de alerta para Prejuízo. Os SVGs recebem `aria-hidden="true"` e `focusable="false"`; os nomes acessíveis continuam sendo somente os rótulos visíveis. Não adicionar dependências nem mudar destino, ordem, estilos de ativo ou sequência de foco.
 
-**Verificação planejada:** E2E deve conferir gap geométrico perceptível e ordem, presença/ocultação acessível dos SVGs, rótulos dos links, temas claro/escuro e viewports desktop/mobile; preservar os testes existentes de teclado e rota atual.
+**Verificação realizada:** suíte E2E de navegação serial passou 4/4 nos viewports Chromium 1366×768 e 390×844; testes geométricos incluíram gap mínimo de 7 px, alinhamento dos ícones, rótulos acessíveis e atributos decorativos nos dois temas. Suíte unitária passou 416/416 em 33 arquivos, build, Prettier direcionado, `git diff --check` e validação estrita OpenSpec passaram. Uma falha isolada numa execução E2E paralela foi reproduzida como transitória: a repetição isolada e a suíte serial passaram. Evidências em `frontend/README.md`.
 
 ## DEC-028 — Feedback de Luighi: status, pagamentos e relatórios (24/11/2026)
 
@@ -1232,7 +1232,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-027 | Pagamento individual | Comando com parcela única e valor derivado; histórico em lote compatível; modal data/forma e ações sequenciais | Implementação técnica na Change `simplificar-pagamento-parcelas`; regressão automatizada verificada; zoom nativo 200% e aceite da ótica pendentes | DEC-004/007/010/015/016/022/026; PRD 1.19/RN-016/CA-024; FON-029/030; evidências em `frontend/README.md` |
 | DEC-028 | Feedback de Luighi | Status administrativo, recebimento efetivo/correção e universos de relatórios | Implementada na branch `feature/feedback-luighi`; Change arquivada e PR #30 aberto | PRD/FON-017, RF-013–016, CA-036–038; evidências em `frontend/README.md` |
 | DEC-029 | Navegação das coleções administrativas | Quitadas, Inativas e Prejuízo em coluna vertical, uma por linha, sob Vendas | Implementada e verificada na Change `empilhar-links-sidebar`; `format:check` global limitado por falha preexistente no README | PRD/FON-031, RF-013/CA-039; evidências em `frontend/README.md` |
-| DEC-030 | Espaçamento e ícones das coleções | `gap-2`, check, pausa/arquivo e alerta decorativos | Planejada na Change `empilhar-links-sidebar`; implementação pendente | PRD/FON-032/CA-040; OpenSpec `empilhar-links-sidebar` |
+| DEC-030 | Espaçamento e ícones das coleções | `gap-2`, check, pausa/arquivo e alerta decorativos | Implementada e verificada na Change `empilhar-links-sidebar`; suíte E2E serial, unitários e build aprovados | PRD/FON-032/CA-040; evidências em `frontend/README.md` |
 
 ### DEC-023 — Remoção do aviso global e limpeza conjunta
 
