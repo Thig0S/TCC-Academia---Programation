@@ -34,6 +34,19 @@ Referências consultadas em 25/11/2026:
 
 ## Estado de verificação
 
+### Contrato de resultados do domínio
+
+O domínio representa operações esperadas com `ResultadoDominio<T>`: `Sucesso`
+contém o valor e `Falha` contém um `ErroDominio` com categoria (`Validacao`,
+`Inexistencia`, `Conflito` ou `RegraNegocio`), código estável, mensagem pública em
+pt-BR e campo opcional. A variante de falha não possui propriedade de valor. O
+contrato não referencia HTTP, FluentResults ou outro pacote de produção. A suíte
+UnitTests referencia diretamente o projeto Dominio, além da referência Api mantida
+para os testes técnicos.
+
+Os casos iniciais RES-001/RES-002 e sua rastreabilidade estão em
+`tests/VendasEmAberto.UnitTests/Dominio/catalogo-paridade.md`.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a

@@ -7,6 +7,7 @@
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
     <ProjectReference Include="..\..\src\VendasEmAberto.Api\VendasEmAberto.Api.csproj" />
+    <ProjectReference Include="..\..\src\VendasEmAberto.Dominio\VendasEmAberto.Dominio.csproj" />
   </ItemGroup>
 
 </Project>
