@@ -32,7 +32,7 @@ Executar builds/testes sequencialmente para não disputar saídas intermediária
 
 - [x] 4.1 Implementar baixa na primeira pendente da Ativa com referência e ID explícitos; testar antecipação, quatro formas, data nas duas bordas, valor-base/maior/menor, origem Individual, salto, parcela paga/entrada, ID em uso e repetição sem deslocar alvo. Verificar base 10.000 recebida 11.000 sem alterar saldo futuro, código/campo e ausência de mutação em falhas; atualizar catálogo/README e executar MSTest.
 - [x] 4.2 Aplicar observação opcional com até 20 escalares Unicode, normalizando ausência; testar 20 e 21, pares UTF-16 e preservação do conteúdo no recebimento. Registrar contagem compatível com frontend no catálogo/README e executar MSTest sem depender de string.Length como contagem.
-- [ ] 4.3 Implementar correção do mesmo Individual de Ativa, inclusive quitada, preservando IDs e base; testar 11.000→10.500 sobre base 10.000, alteração de mês/data/forma/nota, repetição sem registro extra, limite Unicode e mínimo-base. Recusar entrada/lote/inexistente/de outra venda e Inativa/Prejuízo; conferir estado original e outros registros íntegros em MSTest e atualizar catálogo/README.
+- [x] 4.3 Implementar correção do mesmo Individual de Ativa, inclusive quitada, preservando IDs e base; usar vendas conhecidas apenas para distinguir ID de outra venda/inexistente e retornar a raiz corrigida. Testar 11.000→10.500 sobre base 10.000, alteração de mês/data/forma/nota, repetição sem registro extra, limite Unicode e mínimo-base. Recusar entrada/lote/inexistente/de outra venda e Inativa/Prejuízo; conferir estado original e outros registros íntegros em MSTest e atualizar catálogo/README.
 
 ## 5. Situação administrativa — DOM-05
 

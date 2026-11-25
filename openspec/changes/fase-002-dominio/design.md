@@ -149,6 +149,9 @@ pagamentos; data corrigida move o movimento de mês. Repetir baixa falha sem ava
 alvo; repetir status é no-op; correção não gera registro adicional. Status segue
 matriz já confirmada, sem exclusão ou estorno. Descartar resultado/cancelar antes
 de chamar não altera origem; não criar I/O ou CancellationToken artificial.
+Para distinguir recebimento de outra venda de um ID inexistente, a correção recebe
+o conjunto de vendas conhecidas somente como contexto de localização e retorna a
+raiz corrigida; validação/aceitação do conjunto candidato continua no DOM-06.
 
 ### D6 — Projeções puras e catálogo de paridade
 

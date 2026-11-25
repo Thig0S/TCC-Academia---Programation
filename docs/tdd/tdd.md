@@ -81,6 +81,9 @@ UTF-16; usar contagem por Rune para paridade com `Array.from`). Correção só e
 Individual de venda Ativa, inclusive financeiramente quitada, preserva identidade
 e alocação e substitui valor/data/forma/nota. Não impor cronologia adicional entre
 pagamentos que o produto não exige. Repetir baixa recusa, sem avançar alvo.
+Para distinguir recebimento de outra venda de um ID inexistente, a correção recebe
+o conjunto de vendas conhecidas apenas como contexto de localização e devolve somente
+a raiz corrigida; validação e aceitação do conjunto candidato permanecem em DOM-06.
 
 Mudança administrativa respeita Ativo→Inativo, Ativo→Prejuizo com saldo, e retorno
 de ambos a Ativo; sem Inativo↔Prejuizo, exclusão ou estorno. Mesmo status é no-op.
