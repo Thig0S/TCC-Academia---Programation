@@ -208,7 +208,8 @@ Verificações executadas em `frontend/`:
   e em 390×844 porque o foco não foi movido para CPF após erro de validação
   (`e2e/formularios-vendas.spec.ts:675`). Esse fluxo pertence à edição de cliente,
   fora do escopo do dashboard; não foram alteradas expectativas nem código dessa área.
-  A regressão E2E ampla da aplicação permanece bloqueada, sem aprovação alegada.
+  Naquele ponto, a regressão E2E ampla permanecia bloqueada; o reteste autorizado está
+  registrado a seguir.
 - **Reteste após autorização em 25/11/2026:** a matriz foi repartida em dez testes
   independentes (cinco larguras × dois temas), sem retirar asserções. Os dez casos
   passaram em Chromium serialmente; cada um verificou erro associado e foco no CPF,
@@ -218,8 +219,7 @@ Verificações executadas em `frontend/`:
   **10/10**. O foco é fornecido pelo `onInvalid`/`focusBoundControl()` já existente e
   recomendado na documentação atual do Angular; a falha histórica não se reproduziu
   nos retestes, portanto não foi introduzida uma alteração especulativa no formulário.
-  A suíte E2E completa da aplicação e as demais verificações de 6.3 ainda precisam
-  concluir antes de liberar a regressão ampla.
+  A suíte completa foi executada posteriormente, conforme resultado abaixo.
 - `npm.cmd run test:e2e:paginacao-fixture` — **24/24** aprovados nos projetos Chromium
   1366×768 e 390×844; inclui limites de coleção, temas, overflow, teclado, tipografia e
   layout responsivo. Aviso esperado de prebundling não usado com otimização de scripts.
@@ -229,9 +229,22 @@ Verificações executadas em `frontend/`:
   trata-se de formatação preexistente no documento, sem reformatá-lo integralmente.
   Os JSONs das capturas finais e `tasks.md` passam no Prettier direcionado.
 
-A tarefa 6.3 continua **aberta**: a suíte E2E completa da aplicação não concluiu com
-sucesso, e o `format:check` global permanece bloqueado pela formatação preexistente do
-README. Os resultados não equivalem a homologação, operação real ou aceite da ótica.
+**Conclusão da regressão após autorização — 25/11/2026:** `npm.cmd test --
+--watch=false` passou **430/430** em 33 arquivos; `npm.cmd run build` passou sem
+alterar budgets; `npm.cmd run test:e2e:paginacao-fixture` passou **24/24**; e
+`npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --workers=1`
+passou **156/156** em 7 minutos, nos projetos 1366×768 e 390×844. Assim, o bloqueio
+anterior da regressão E2E foi removido sem mudanças em budgets, retries ou assertions.
+`openspec validate dashboard-relatorios --strict` e `git diff --check` passaram. A
+checagem global `npm.cmd run format:check` continua falhando apenas no README por
+formatação já pendente antes desta alteração; Prettier direcionado ao E2E e às tarefas
+alteradas passa. A formatação integral desse README não foi incluída para evitar um
+diff amplo fora da correção E2E. A tarefa 6.3 permanece pendente até resolver essa
+checagem ou receber decisão explícita sobre o bloqueio preexistente.
+
+A tarefa 6.3 continua **aberta somente pela checagem global de formato** no README. A
+suíte E2E completa concluiu com sucesso; os resultados não equivalem a homologação,
+operação real ou aceite da ótica.
 
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
