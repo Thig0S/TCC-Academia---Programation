@@ -2,12 +2,15 @@
 
 ## Context
 
-Ver `proposal.md`, PRD/FON-036/037/038/RF-021/022/CA-044/045 e TDD/DEC-033/034/035. A inspeção
+Ver `proposal.md`, PRD/FON-036/037/038/039/RF-021/022/CA-044/045 e TDD/DEC-033/034/035/036. A inspeção
 encontrou somente `frontend/` como aplicação, `app.config.ts` sem cliente HTTP de
 dados e workflow exclusivo de Pages. `ServicoDemonstracao` mantém o estado em
 memória; a nova API não será seu substituto nesta fase.
 
-`dotnet --info` informou SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64. Não há
+`dotnet --info` informou SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64. Após
+advisories de 10/11/2026 e decisão do solicitante, PRD/FON-039 e TDD/DEC-036
+revisaram a baseline para SDK 10.0.404 e runtime/Mvc.Testing 10.0.15; o SDK novo
+ainda não foi instalado nem executado neste host. Não há
 solução C# ou configuração de SDK versionada. PRD/FON-035 confirma equipe única,
 uso local offline e ausência de autenticação de usuários. O inventário da planilha
 expõe ambiguidades de migração, mas nenhum dado será lido pelo backend desta fase.
@@ -69,7 +72,7 @@ em `backend/`. Preservar `.gitignore` alheio da raiz; ignorar `bin/`, `obj/`,
 ### D2 — Baseline .NET 10 e dependências fixadas
 
 Usar `net10.0`, nullable e implicit usings, sem preview. Seleção em
-`backend/global.json`: SDK 10.0.103, `rollForward=latestPatch`,
+`backend/global.json`: SDK 10.0.404, `rollForward=latestPatch`,
 `allowPrerelease=false`; o comando precisa partir de `backend/`. A política aceita
 patch instalado posterior na mesma feature band, não SDK major/feature novo.
 Quem tiver somente outra feature band recebe instrução explícita de instalar a
@@ -77,10 +80,14 @@ baseline ou propor atualização documentada, em vez de depender da resolução
 implícita. Registrar o SDK efetivamente usado.
 
 Fixar MSTest.Sdk 4.5.3 em ambos os projetos de testes; IntegrationTests também
-referencia Microsoft.AspNetCore.Mvc.Testing 10.0.3. Os metadados NuGet dessas versões
-foram consultados, mas isso não prova execução local nem ausência de
-vulnerabilidades. No apply, analisar suporte e avisos antes de consolidar as
-versões; se exigir substituição, revisar primeiro DEC-033 e os artefatos afetados.
+referencia Microsoft.AspNetCore.Mvc.Testing 10.0.15. A baseline 10.0.15 é o patch
+oficial de segurança consultado em 25/11/2026; versões até 10.0.14 aparecem como
+afetadas em advisories ASP.NET Core de 10/11/2026. SDK 10.0.404 é o SDK atual
+consultado na mesma data, da feature band 10.0.400. Os metadados das versões foram
+consultados, mas restore/build e auditoria completa de transitivas não foram
+executados. No início do apply, confirmar disponibilidade, compatibilidade e
+advisories novamente; se houver patch necessário, revisar PRD/TDD/SDD antes de
+consolidar as versões.
 Não instalar SDK nem atualizar pacotes durante a proposta.
 
 Habilitar lockfiles NuGet aplicáveis e versioná-los, incluindo resolução transitiva.

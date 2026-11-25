@@ -11,8 +11,10 @@ financeiras na primeira entrega.
 
 - Planejar e, somente em apply autorizado, criar a solução .NET 10 em `backend/`,
   com API, aplicação, domínio e infraestrutura e dependências direcionadas.
-- Fixar ambiente e dependências, prever restore/build/formatação reproduzíveis e
-  documentação dos comandos de desenvolvimento sem dependência de IDE.
+- Fixar ambiente e dependências na baseline revisada pelo PRD/FON-039 e TDD/DEC-036
+  (SDK .NET 10.0.404, servicing/runtime 10.0.15, sujeito à confirmação de patches
+  e advisories no apply); prever restore/build/formatação reproduzíveis e
+  documentação dos comandos sem dependência de IDE.
 - Adotar **MSTest** para testes unitários e de integração do backend, por decisão
   explícita do solicitante; preservar Vitest/Playwright do frontend.
 - Documentar o padrão futuro de Aplicacao: **MediatR + CQRS + Vertical Slice
@@ -61,8 +63,10 @@ frontend independente, sem chamadas de dados ou persistência. A API não será 
   de autenticação. Internet pode ser necessária no restore, não na execução do
   host já preparado. MediatR e FluentResults são padrões documentados para
   funcionalidades futuras, não dependências a restaurar/configurar nesta fase.
-- Baseline observada: SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64; compatibilidade
-  dos pacotes e execução dos comandos ainda não foram comprovadas.
+- Ambiente observado: SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64. A baseline
+  planejada foi revisada para SDK 10.0.404 e ASP.NET Core/Mvc.Testing 10.0.15 por
+  advisories (FON-039/DEC-036); o SDK exigido não está instalado neste host e
+  compatibilidade/execução dos comandos ainda não foram comprovadas.
 - Esta entrega é planejamento. Nenhum projeto foi gerado, pacote restaurado ou
   teste de aplicação executado. PR único somente após a implementação autorizada
   e todas as verificações da Change; o planejamento pronto não antecipa o PR.

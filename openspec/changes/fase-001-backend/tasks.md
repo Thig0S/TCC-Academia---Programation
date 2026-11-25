@@ -1,6 +1,6 @@
 # Tasks
 
-Base: PRD/FON-036/037/038/RF-021/022/CA-044/045, FON-035 e TDD/DEC-033/034/035; contrato em
+Base: PRD/FON-036/037/038/039/RF-021/022/CA-044/045, FON-035 e TDD/DEC-033/034/035/036; contrato em
 `specs/execucao-backend-local/spec.md`, decisões D1–D8 em `design.md`.
 Todas as caixas estão pendentes: esta Change foi somente planejada. Iniciar apenas
 após revisão dos artefatos e pedido explícito de apply. Não implementar fases de
@@ -14,7 +14,7 @@ pacote, extensões ou mapper nesta fase, nem alterar o contrato de `/health`.
 
 ## 1. Solução e ambiente reproduzível
 
-- [ ] 1.1 Confirmar, no início do apply, SDK 10.0.103 com política latestPatch e disponibilidade/suporte das versões exatas MSTest.Sdk 4.5.3 e Microsoft.AspNetCore.Mvc.Testing 10.0.3; verificar com `dotnet --info`, metadados e avisos de suporte/segurança, registrando no README. Se exigir troca de baseline, revisar PRD/TDD/SDD antes do código afetado, sem substituição silenciosa de framework de testes.
+- [ ] 1.1 Confirmar, no início do apply, SDK .NET 10.0.404 com política latestPatch e disponibilidade/suporte das versões exatas MSTest.Sdk 4.5.3 e Microsoft.AspNetCore.Mvc.Testing 10.0.15 (runtime do target 10.0.15); verificar `dotnet --info` a partir de `backend/`, seleção efetiva do global.json, metadados NuGet e advisories/suporte atuais. O SDK 10.0.404 não está instalado neste host: não declarar seleção confirmada até que a versão exigida ou patch da mesma feature band esteja disponível. Registrar no README a baseline exigida, ambiente observado e evidências; se um patch mais novo/advisory exigir revisão, atualizar PRD/TDD/SDD antes do código afetado, sem troca silenciosa de MSTest.
 - [ ] 1.2 Criar `backend/VendasEmAberto.slnx`, os quatro projetos de produção e os dois projetos MSTest em `src/` e `tests/`, conforme D1; conferir arquivos e referências com inspeção dos projetos/solução e `dotnet build`, sem Class1, WeatherForecast, entidades ou regras financeiras.
 - [ ] 1.3 Adicionar configurações locais de SDK/runner, nullable/implicit usings, formatação e exclusões em `backend/` conforme D2/D3; habilitar lockfiles, gerar a resolução e executar `dotnet restore VendasEmAberto.slnx --locked-mode` e build Release. Verificar que SDK/runner foram selecionados a partir de `backend/`, lockfiles aplicáveis estão versionados e `.gitignore` da raiz permanece fora do staging.
 - [ ] 1.4 Documentar em `backend/README.md` pré-requisitos, camadas, versões efetivas e comandos de restore/build/format, distinguindo acesso inicial a pacotes de execução offline; registrar MediatR/CQRS/Vertical Slices (DEC-034/D7) e FluentResults (DEC-035/D8) como padrões futuros, com Command/Query e Handler por caso de uso, Result interno e tradução na API para DTO/status ou Problem Details (400/404/409/422; inesperadas 500 genérico). Conferir contra D1/D7/D8: sem instalação de pacotes/DI/mapper ou slices de exemplo, sem serialização direta do resultado e mantendo `/health` nativo. Indicar versão/licença e contratos como pré-requisitos da adoção posterior, preservar MSTest e verificar comandos como escritos e dependências sem EF/SQLite, login ou ferramentas globais. Consolidar este grupo em commit próprio após build e revisão do diff, sem declarar testes vazios como aprovados.
