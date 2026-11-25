@@ -129,6 +129,25 @@ posterior passou 2/2. Não foram alteradas asserções financeiras para acomodar
 Prettier direcionado e `git diff --check` — aprovados. Os dados são sintéticos; os
 resultados automatizados não constituem aceite operacional.
 
+### Cenário integrado do relatório — tarefa 6.1
+
+O novo E2E cria uma venda sintética de R$ 100,00 no mês anterior, registra recebimento
+individual com acréscimo e corrige a data para outro mês sem substituir o movimento.
+Confere o total e as linhas mensais, soma diária reconciliada com o cartão de
+recebimentos e independência das três posições ao trocar o período. Em seguida percorre
+Ativo→Inativo→Ativo→Prejuízo→Ativo: o recebimento permanece, Vendas do mês acompanha o
+status, linhas pagas de Prejuízo ficam fora do total elegível e as posições atuais saem
+e retornam conforme a situação operacional. A recarga descarta a sessão e restaura os
+indicadores iniciais. Durante as consultas, o cenário não observou requisições fetch/XHR
+nem downloads.
+
+Verificação em 25/11/2026: `npx.cmd playwright test
+--config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep
+"concilia correção mensal, status, posições atuais" --workers=1` — **2/2** projetos
+Chromium (1366×768 e 390×844) aprovados. A execução usou servidor isolado na porta
+4303 porque a porta 4200 continuava ocupada; nenhum processo preexistente foi encerrado.
+O cenário usa somente dados sintéticos, não demonstra operação real ou aceite da ótica.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por

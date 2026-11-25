@@ -1206,6 +1206,245 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
   }
 });
 
+test('concilia correção mensal, status, posições atuais e descarte da sessão no Relatório', async ({
+  page,
+}) => {
+  const nome = 'Cliente DEMO ciclo completo de Relatórios';
+  const requisicoes: string[] = [];
+  const downloads: string[] = [];
+  page.on('request', (requisicao) => {
+    if (['fetch', 'xhr'].includes(requisicao.resourceType())) requisicoes.push(requisicao.url());
+  });
+  page.on('download', (download) => downloads.push(download.suggestedFilename()));
+
+  await page.goto('/visao-geral');
+  const indicadoresIniciais = await indicadoresVisaoGeral(page);
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+
+  const seletorMes = page.locator('#mes-relatorio');
+  const campoAno = page.locator('#ano-relatorio');
+  const nomesMeses = [
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ];
+  const aplicarMes = async (mes: number, ano: number) => {
+    await seletorMes.selectOption({ label: nomesMeses[mes - 1] });
+    await campoAno.fill(String(ano));
+    await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
+    await expect(page.getByRole('main')).toContainText(
+      `Mês civil de 01/${String(mes).padStart(2, '0')}/${String(ano).padStart(4, '0')}`,
+    );
+  };
+  const mesReferencia =
+    nomesMeses.indexOf((await seletorMes.locator('option:checked').innerText()).trim()) + 1;
+  const anoReferencia = Number(await campoAno.inputValue());
+  const recebimentos = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+  const saldoAtual = page.locator('[aria-label="Totais da posição atual"] article');
+  const totalMesReferencia = await valorEmCentavos(recebimentos.locator('summary strong'));
+  const prejuizoInicial = await valorEmCentavos(saldoAtual.nth(2).locator('p').first());
+
+  const mesAnterior = mesReferencia === 1 ? 12 : mesReferencia - 1;
+  const anoAnterior = mesReferencia === 1 ? anoReferencia - 1 : anoReferencia;
+  await aplicarMes(mesAnterior, anoAnterior);
+  const totalMesAnteriorInicial = await valorEmCentavos(recebimentos.locator('summary strong'));
+  const vendasMesAnterior = page.locator('details[aria-labelledby="vendas-mensais"]');
+  const resumoVendasInicial = await vendasMesAnterior.locator('summary p').innerText();
+  const totalVendasMesAnteriorInicial = await valorEmCentavos(
+    vendasMesAnterior.locator('summary strong'),
+  );
+  const quantidadeVendasMesAnteriorInicial = Number(
+    resumoVendasInicial.match(/(\d+) vendas?/)?.[1],
+  );
+
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Vendas', exact: true })
+    .click();
+  await page.getByRole('link', { name: 'Nova venda', exact: true }).click();
+  await preencherCadastro(page, nome);
+  await page
+    .getByLabel('Data da venda', { exact: true })
+    .fill(`${anoAnterior}-${String(mesAnterior).padStart(2, '0')}-01`);
+  await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+
+  const linhaParcela = page.locator('tbody tr').first();
+  const valorBase = await valorEmCentavos(linhaParcela.locator('td').nth(0));
+  const formatarCentavos = (centavos: number) =>
+    `${Math.floor(centavos / 100)},${String(centavos % 100).padStart(2, '0')}`;
+  await page.locator('[data-acao-pagar]').first().click();
+  const dataDoPagamento = await page.getByLabel('Data do pagamento').inputValue();
+  const dataAnterior = new Date(`${dataDoPagamento}T00:00:00.000Z`);
+  dataAnterior.setUTCDate(0);
+  const dataCorrigida = dataAnterior.toISOString().slice(0, 10);
+  const valorComAcrescimo = valorBase + 100;
+  await page.getByLabel('Valor recebido').fill(formatarCentavos(valorComAcrescimo));
+  await page.getByLabel('Forma do pagamento').selectOption('Pix');
+  await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+  await expect(page.getByRole('dialog', { name: 'Pagar parcela' })).toHaveCount(0);
+
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+  const recebimentosReferencia = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+  await recebimentosReferencia.locator('summary').click();
+  await expect(recebimentosReferencia.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+  const posicaoComVenda = await saldoAtual.allInnerTexts();
+  expect(await valorEmCentavos(recebimentosReferencia.locator('summary strong'))).toBe(
+    totalMesReferencia + valorComAcrescimo,
+  );
+
+  await recebimentosReferencia
+    .locator('tbody tr')
+    .filter({ hasText: nome })
+    .getByRole('link')
+    .click();
+  await page.locator('[data-acao-corrigir]').click();
+  await page.getByLabel('Valor recebido').fill(formatarCentavos(valorBase + 50));
+  await page.getByLabel('Data do pagamento').fill(dataCorrigida);
+  await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
+  await page.getByRole('button', { name: 'Confirmar correção' }).click();
+  await expect(page.getByRole('dialog', { name: 'Corrigir pagamento individual' })).toHaveCount(0);
+
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+  const recibosMesAnterior = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+  const vendasMesAnteriorAtualizadas = page.locator('details[aria-labelledby="vendas-mensais"]');
+  await aplicarMes(mesAnterior, anoAnterior);
+  await recibosMesAnterior.locator('summary').click();
+  const linhaCorrigida = recibosMesAnterior.locator('tbody tr').filter({ hasText: nome });
+  await expect(linhaCorrigida).toHaveCount(1);
+  await expect(linhaCorrigida).toContainText('Individual');
+  await expect(linhaCorrigida).toContainText(formatarCentavos(valorBase + 50));
+  expect(await valorEmCentavos(recibosMesAnterior.locator('summary strong'))).toBe(
+    totalMesAnteriorInicial + valorBase + 50,
+  );
+  await vendasMesAnteriorAtualizadas.locator('summary').click();
+  await expect(
+    vendasMesAnteriorAtualizadas.locator('tbody tr').filter({ hasText: nome }),
+  ).toHaveCount(1);
+  expect(await valorEmCentavos(vendasMesAnteriorAtualizadas.locator('summary strong'))).toBe(
+    totalVendasMesAnteriorInicial + 10050,
+  );
+  expect(
+    Number(
+      (await vendasMesAnteriorAtualizadas.locator('summary p').innerText()).match(
+        /(\d+) vendas?/,
+      )?.[1],
+    ),
+  ).toBe(quantidadeVendasMesAnteriorInicial + 1);
+  expect(await saldoAtual.allInnerTexts()).toEqual(posicaoComVenda);
+  const graficoDiario = page.getByRole('region', {
+    name: 'Tabela diária equivalente de recebimentos',
+  });
+  const somaDiaria = await graficoDiario.locator('tbody tr').evaluateAll((linhas) =>
+    linhas.reduce((soma, linha) => {
+      const valor = linha
+        .querySelectorAll('td')[2]
+        .textContent?.match(/R\$\s*([\d.]+,[\d]{2})/)?.[1];
+      if (!valor) throw new Error('Valor diário BRL ausente');
+      return soma + Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
+    }, 0),
+  );
+  expect(somaDiaria).toBe(await valorEmCentavos(recibosMesAnterior.locator('summary strong')));
+
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Vendas', exact: true })
+    .click();
+  await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
+  const confirmarStatus = async (acao: string) => {
+    await page.getByRole('button', { name: acao, exact: true }).click();
+    const dialogo = page.getByRole('dialog', { name: 'Confirmar mudança de status' });
+    await dialogo.getByRole('button', { name: 'Confirmar mudança' }).click();
+    await expect(dialogo).toBeHidden();
+  };
+  await confirmarStatus('Inativar venda');
+  await expect(
+    page.locator('section[aria-labelledby="titulo-status-administrativo"]'),
+  ).toContainText('Inativo');
+
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+  await aplicarMes(mesAnterior, anoAnterior);
+  const inativaRecebimentos = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+  const inativaVendas = page.locator('details[aria-labelledby="vendas-mensais"]');
+  await inativaRecebimentos.locator('summary').click();
+  await inativaVendas.locator('summary').click();
+  await expect(inativaRecebimentos.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+  await expect(inativaVendas.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
+  const posicaoInativa = await saldoAtual.allInnerTexts();
+  expect(posicaoInativa).not.toEqual(posicaoComVenda);
+
+  await inativaRecebimentos.locator('tbody tr').filter({ hasText: nome }).getByRole('link').click();
+  await confirmarStatus('Reativar venda');
+  await confirmarStatus('Marcar como Prejuízo');
+  await expect(
+    page.locator('section[aria-labelledby="titulo-status-administrativo"]'),
+  ).toContainText('Prejuízo');
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+  await aplicarMes(mesAnterior, anoAnterior);
+  const prejuizoRecebimentos = page.locator('details[aria-labelledby="recebimentos-mensais"]');
+  const prejuizo = page.locator('details[aria-labelledby="prejuizo-relatorio"]');
+  await prejuizoRecebimentos.locator('summary').click();
+  await prejuizo.locator('summary').click();
+  await expect(prejuizoRecebimentos.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+  const parcelasPrejuizo = prejuizo.locator('tbody tr').filter({ hasText: nome });
+  await expect(parcelasPrejuizo).toHaveCount(2);
+  for (const parcela of await parcelasPrejuizo.all()) {
+    await expect(parcela).toContainText('Fora do total: recebimento anterior');
+  }
+  expect(await valorEmCentavos(saldoAtual.nth(2).locator('p').first())).toBe(prejuizoInicial);
+
+  await prejuizoRecebimentos
+    .locator('tbody tr')
+    .filter({ hasText: nome })
+    .getByRole('link')
+    .click();
+  await confirmarStatus('Reabrir venda');
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Relatórios', exact: true })
+    .click();
+  await aplicarMes(mesAnterior, anoAnterior);
+  expect(await saldoAtual.allInnerTexts()).toEqual(posicaoComVenda);
+  const reativadaVendas = page.locator('details[aria-labelledby="vendas-mensais"]');
+  await reativadaVendas.locator('summary').click();
+  await expect(reativadaVendas.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+  expect(await valorEmCentavos(reativadaVendas.locator('summary strong'))).toBe(
+    totalVendasMesAnteriorInicial + 10050,
+  );
+  expect(requisicoes).toEqual([]);
+  expect(downloads).toEqual([]);
+
+  await page.reload();
+  await page
+    .getByRole('navigation', { name: 'Navegação principal' })
+    .getByRole('link', { name: 'Visão Geral', exact: true })
+    .click();
+  expect(await indicadoresVisaoGeral(page)).toEqual(indicadoresIniciais);
+});
+
 test('revela erros por campo e foco, invalida prévia e cancela sem efeito nos dois temas', async ({
   page,
 }) => {
