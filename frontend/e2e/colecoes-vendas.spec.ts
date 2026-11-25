@@ -31,20 +31,16 @@ test('navega por teclado entre coleções separadas e mantém controles responsi
   await expect(page.getByText('Não há vendas inativas.')).toBeVisible();
   await verificarSemOverflowHorizontal(page);
 
-  const colecoes = page.getByRole('navigation', { name: 'Coleções de vendas' });
-  const vendasAbertas = colecoes.getByRole('link', { name: 'Vendas em aberto', exact: true });
-  await vendasAbertas.focus();
-  await page.keyboard.press('Tab');
-  await expect(colecoes.getByRole('link', { name: 'Quitadas', exact: true })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(colecoes.getByRole('link', { name: 'Inativas', exact: true })).toBeFocused();
-  await page.keyboard.press('Tab');
-  const prejuizoColecoes = colecoes.getByRole('link', { name: 'Prejuízo', exact: true });
-  await expect(prejuizoColecoes).toBeFocused();
+  await expect(inativasPrincipal).toHaveAttribute('aria-current', 'page');
+  const prejuizoPrincipal = navegacaoPrincipal.getByRole('link', {
+    name: 'Prejuízo',
+    exact: true,
+  });
+  await prejuizoPrincipal.focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/vendas\/prejuizo$/);
   await expect(page.getByText('Não há vendas em Prejuízo.')).toBeVisible();
-  await expect(prejuizoColecoes).toHaveAttribute('aria-current', 'page');
+  await expect(prejuizoPrincipal).toHaveAttribute('aria-current', 'page');
   await verificarSemOverflowHorizontal(page);
 
   await page

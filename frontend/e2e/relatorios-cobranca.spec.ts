@@ -37,8 +37,8 @@ for (const tema of ['dark', 'light'] as const) {
 
     await marcarComoPrejuizo(page, 'Lucas Santos', 'seed/venda/2');
     await page
-      .getByRole('navigation', { name: 'Coleções de vendas' })
-      .getByRole('link', { name: 'Vendas em aberto', exact: true })
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true })
       .click();
     await marcarComoPrejuizo(page, 'Marina Costa', 'seed/venda/3');
     await page
