@@ -80,6 +80,14 @@ Com entrada, a quantidade solicitada inclui a entrada como parcela 1; ela vence 
 saldo ocorre apenas nas parcelas futuras. Entrada zero, integral, sem parcela futura,
 com data divergente ou forma desconhecida é rejeitada antes de publicar a venda.
 
+O histórico reconstruído distingue `Entrada`, `Individual` e `HistoricoLote` por
+origem explícita. A fábrica `Venda.Reconstruir` valida o parcelamento-base,
+identidades, vínculos, sequência, datas, formas, metadados individuais e reconciliação
+financeira antes de criar a raiz. Ela existe para estados sintéticos completos de
+consulta/teste; não importa planilhas/dados reais e não oferece comando para registrar
+novas baixas em lote. O catálogo documenta lotes de uma e várias parcelas e as falhas
+de reconstrução correspondentes.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a

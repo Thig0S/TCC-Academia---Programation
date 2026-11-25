@@ -3,7 +3,7 @@ using VendasEmAberto.Dominio.Valores;
 
 namespace VendasEmAberto.Dominio.Vendas;
 
-public sealed class Venda
+public sealed partial class Venda
 {
     public string Id { get; }
 
