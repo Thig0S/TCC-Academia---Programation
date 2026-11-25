@@ -118,7 +118,93 @@ describe('Relatórios', () => {
     expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
       0,
     );
-    expect(pagina.querySelectorAll('select, canvas')).toHaveLength(0);
+    expect(pagina.querySelectorAll('select')).toHaveLength(1);
+    expect(pagina.querySelectorAll('input[type="number"]')).toHaveLength(1);
+    expect(pagina.querySelectorAll('canvas')).toHaveLength(0);
+  });
+
+  it('aplica mês localmente, preserva posições e mantém foco e resultado em seleção inválida', async () => {
+    const ativa = venda('movimento', '2027-03-01', {
+      recebimentos: [pagamento('marco', '2027-03-20', 350)],
+      parcelas: [parcela('pendente', 1, '2027-02-01', 'Atrasado', 650)],
+      saldo: 650,
+    });
+    vendas.set([ativa]);
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = harness.routeNativeElement!;
+    const seletorMes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    const campoAno = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
+    const aplicar = pagina.querySelector<HTMLButtonElement>('button')!;
+    const posicaoAntes = pagina.querySelector(
+      '[aria-label="Tabela de parcelas vencidas"]',
+    )!.textContent;
+    const urlAntes = TestBed.inject(Router).url;
+    const armazenamentoAntes = [localStorage.length, sessionStorage.length];
+
+    seletorMes.value = '6';
+    seletorMes.dispatchEvent(new Event('change'));
+    campoAno.value = '2027';
+    campoAno.dispatchEvent(new Event('input'));
+    aplicar.focus();
+    aplicar.click();
+    harness.detectChanges();
+
+    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+    expect(texto(pagina)).toContain('Nenhum recebimento neste mês.');
+    expect(texto(pagina)).toContain('Nenhuma venda cadastrada neste mês.');
+    expect(pagina.querySelector('[aria-label="Tabela de parcelas vencidas"]')!.textContent).toBe(
+      posicaoAntes,
+    );
+    expect(aplicar).toBe(document.activeElement);
+    expect(TestBed.inject(Router).url).toBe(urlAntes);
+    expect([localStorage.length, sessionStorage.length]).toEqual(armazenamentoAntes);
+
+    for (const ano of ['', '0', '10000', '2027.5']) {
+      campoAno.value = ano;
+      campoAno.dispatchEvent(new Event('input'));
+      aplicar.focus();
+      aplicar.click();
+      harness.detectChanges();
+      expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
+        'Informe um mês e um ano inteiro entre 1 e 9999.',
+      );
+      expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+      expect(aplicar).toBe(document.activeElement);
+    }
+
+    seletorMes.value = '';
+    seletorMes.dispatchEvent(new Event('change'));
+    aplicar.focus();
+    aplicar.click();
+    harness.detectChanges();
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
+      'Informe um mês e um ano inteiro entre 1 e 9999.',
+    );
+    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+  });
+
+  it('reinicia a seleção mensal ao recriar a página sem persistir preferência', async () => {
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const seletor = () =>
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    const ano = () =>
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('#ano-relatorio')!;
+    const aplicar = () => harness.routeNativeElement!.querySelector<HTMLButtonElement>('button')!;
+    expect(seletor().value).toBe('3');
+
+    seletor().value = '12';
+    seletor().dispatchEvent(new Event('change'));
+    ano().value = '2028';
+    ano().dispatchEvent(new Event('input'));
+    aplicar().click();
+    harness.detectChanges();
+    expect(texto(harness.routeNativeElement!)).toContain('01/12/2028 a 31/12/2028');
+
+    await harness.navigateByUrl('/configuracoes');
+    await harness.navigateByUrl('/relatorios');
+    expect(seletor().value).toBe('3');
+    expect(ano().value).toBe('2027');
+    expect(texto(harness.routeNativeElement!)).toContain('01/03/2027 a 31/03/2027');
   });
 
   it('apresenta todas as linhas, preserva IDs opacos e distingue movimentos mensais da posição', async () => {
@@ -384,7 +470,9 @@ describe('Relatórios', () => {
   it('explica a exportação indisponível e anuncia a ação sem gerar arquivo', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
-    const botao = pagina.querySelector<HTMLButtonElement>('button')!;
+    const botao = pagina.querySelector<HTMLButtonElement>(
+      'button[aria-describedby="indisponibilidade-exportacao"]',
+    )!;
     expect(botao.textContent).toContain('Exportar relatório');
     expect(botao.getAttribute('aria-describedby')).toBe('indisponibilidade-exportacao');
     expect(pagina.querySelector('#indisponibilidade-exportacao')?.textContent).toContain(

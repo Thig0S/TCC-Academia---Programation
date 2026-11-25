@@ -46,6 +46,20 @@ Verificação em 25/11/2026: a mesma suíte focada de cálculo passou **19/19**;
 direcionado e `git diff --check` passaram. A igualdade série/total/tabela é verificada
 por testes sintéticos; integração visual será verificada nas tarefas posteriores.
 
+### Seleção mensal local — tarefa 3.1
+
+A página inicia com o mês da referência, separa os rascunhos de mês/ano do sinal
+aplicado e atualiza apenas os movimentos quando **Aplicar** recebe mês e ano inteiros
+válidos entre 0001 e 9999. Seleção vazia, decimal ou fora dos limites anuncia erro
+associado aos campos e conserva o último período e seus dados. A posição atual e o
+foco no botão são mantidos; navegar para fora e recriar Relatórios restaura a
+referência. Não há mudança de URL, localStorage ou sessionStorage.
+
+Verificação em 25/11/2026: `npm.cmd test -- --watch=false
+--include="src/app/funcionalidades/relatorios/relatorios.spec.ts"` — **8/8 testes
+aprovados**; Prettier direcionado e `git diff --check` — aprovados. Os testes usam
+RouterTestingHarness e dados sintéticos; não são aceite operacional.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
