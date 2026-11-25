@@ -1,5 +1,156 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-037 — Domínio C# completo e independente (25/11/2026)
+
+### Contexto, origem e situação
+
+Base: PRD/FON-040/RF-023/CA-046–048 e regras financeiras vigentes. Escopo e
+contrato técnico confirmados pelo solicitante no Harness; implementação **não
+iniciada**. Esta revisão prepara `fase-002-dominio`, sem autorizar apply. Reutiliza
+DEC-033–036, sem adotar ainda as bibliotecas de DEC-034/035.
+
+**Avaliação da fase 001:** `backend/src/` tem quatro projetos; Dominio, Aplicacao e
+Infraestrutura não possuem tipos de negócio. `Program.cs` valida endpoints antes
+do host, fixa loopback, expõe health check e configura falhas genéricas.
+`ConfiguracaoBackendTests.cs` cobre porta e sobrescritas; `FalhasTecnicasTests.cs`
+injeta falha apenas em composição de teste. `backend/README.md` registra 24 testes
+aprovados, restore bloqueado/build/formatação e smoke real, não repetidos aqui.
+Base adequada ao próximo incremento, não backend operacional. O preâmbulo de tasks
+e DEC-033 ainda descrevem planejamento e ambiente inicial; prevalecem as evidências
+do README para o estado entregue. UnitTests referencia apenas Api hoje: adicionar
+referência **direta** a Dominio no apply, preservando testes técnicos e sem exigir
+ASP.NET para executar os casos puros. Não corrigir indiscriminadamente a fase 001.
+
+### Arquitetura, estrutura e alternativas
+
+Implementar em `backend/src/VendasEmAberto.Dominio/`, organizado em `Valores/`,
+`Vendas/`, `Recebimentos/` e `Projecoes/`, com testes correspondentes em
+`backend/tests/VendasEmAberto.UnitTests/Dominio/`. Caminhos são proposta, não pastas
+criadas. Preservar grafo existente: Aplicacao → Dominio; Infraestrutura → Aplicacao
+e Dominio; Api → Aplicacao e Infraestrutura. Dominio sem referências de projeto,
+pacotes de produção, DI, serviços externos, HTTP ou relógio. Não criar slices,
+repositórios, eventos genéricos ou abstrações vazias para demonstrar arquitetura.
+
+Alternativas: portar funções sem fronteira de agregado foi rejeitado por permitir
+estados inválidos; agregado mutável foi preterido pela atomicidade mais simples de
+testar; decimal/double ou ampliar para todo long foi preterido pela paridade exata
+com TypeScript. Adotar FluentResults no domínio foi rejeitado pela fronteira
+confirmada; o pequeno resultado **de domínio** não substitui nem replica Reasons,
+metadados ou composição da biblioteca futura da Aplicacao.
+
+### Estado e contratos internos
+
+- `Dinheiro`: valor em centavos `long` entre 0 e 9.007.199.254.740.991, validado
+  também nas somas/subtrações e resultados agregados. Totais de venda positivos,
+  parcelas ao menos um centavo; operações verificadas, sem arredondamento oculto.
+- Datas `DateOnly` gregorianas 0001–9999; referência explícita em cada operação
+  dependente de tempo. Caso haja entrada textual, parse exato ISO com cultura
+  invariável; apresentação BRL/data pertence a consumidores, não à entidade.
+  Calcular cada vencimento da **data original**, nunca encadear o mês anterior
+  ajustado. Validar último mês antes de gerar a coleção; janela de +7 por diferença
+  de dias, sem `AddDays(7)` que transborde em 9999-12-31.
+- Identificadores opacos string não vazia fornecidos pelo chamador, únicos no
+  conjunto para vendas, parcelas e recebimentos. Gerar IDs não é responsabilidade
+  do domínio; não impor formato GUID, extrair CPF ou gerar identidade aleatória.
+- `DadosClienteVenda` imutável, nome aparado, CPF/telefone normalizados apenas com
+  formatação permitida e validação local atual; descrição ausente vira ausência
+  explícita. Sem lista DDD, unicidade de CPF, +55 ou consulta de titularidade.
+- `Venda` é raiz com parcelas e recebimentos/alocações protegidos: cópias defensivas
+  e coleções realmente não mutáveis; `IReadOnlyList` sozinho não é garantia. Não
+  expor setters/`with` públicos que burlem invariantes; validar caminhos de criação
+  e reconstrução. Valores-base, IDs e calendário não mudam na edição de cliente.
+- Origem explícita Entrada, Individual ou HistoricoLote; entrada liquida parcela 1
+  uma vez, individual aloca valor efetivo a uma parcela, lote conserva soma-base
+  de um prefixo. Reconstrução interna valida histórico sintético completo, inclusive
+  identidade, sequência, datas e somas; não recalcula legado real nem oferece novo
+  comando de lote. Forma enum restrita a Dinheiro, Pix, CartaoDebito, CartaoCredito.
+- Retorno de domínio mínimo, discriminando sucesso e falha, valor disponível só
+  no sucesso e erro tipado com código estável/mensagem pública pt-BR/campo opcional.
+  Categorias Validacao, Inexistencia, Conflito e RegraNegocio, **sem** status HTTP.
+  Não converter falha técnica inesperada em erro de negócio ou capturar tudo.
+  Aplicacao futura traduzirá para FluentResults; sem implementá-la agora.
+
+### Fluxos e falhas
+
+Cadastro valida identificação, referência, total, entrada, quantidade e alcance do
+calendário antes de materializar parcelas; distribui resto nas primeiras futuras,
+gera estado Ativo e reconcilia entrada/recebimento. Pagamento só em Ativa e primeira
+pendente, inclusive futura, exige ID novo, valor ≥ base, data entre venda/referência,
+forma permitida e observação de até 20 **valores escalares Unicode** (não unidades
+UTF-16; usar contagem por Rune para paridade com `Array.from`). Correção só em
+Individual de venda Ativa, inclusive financeiramente quitada, preserva identidade
+e alocação e substitui valor/data/forma/nota. Não impor cronologia adicional entre
+pagamentos que o produto não exige. Repetir baixa recusa, sem avançar alvo.
+
+Mudança administrativa respeita Ativo→Inativo, Ativo→Prejuizo com saldo, e retorno
+de ambos a Ativo; sem Inativo↔Prejuizo, exclusão ou estorno. Mesmo status é no-op.
+Cada operação prepara novo agregado e valida antes de devolvê-lo; validar conjunto
+antes de aceitar versão candidata quando houver outras vendas. Falha no conjunto
+devolve erro e não entrega candidato como sucesso. Descartar resultado não afeta
+origem. Sem promessa de transação de banco, deduplicação de transporte, controle
+de concorrência, auditoria persistente ou cancelamento de I/O inexistente.
+
+Projeções puras derivam situação, próximo vencimento, base, acréscimo, efetivo,
+pago e saldo; efetivo = base + acréscimos, saldo = bases pendentes = efetivo − pago.
+No conjunto, validar unicidade global e somas inclusive de vendas não visíveis.
+Separar abertas/quitadas Ativas, Inativas e Prejuizo. Períodos inclusivos e relatório
+mensal têm recebimentos de todos os status; vendas e posição operacional só Ativas.
+Prejuízo mostra todas suas pendências, totaliza apenas contratos sem recebimentos,
+inclusive sem entrada. Série diária completa reconcilia o mês, sem alterar posição
+na referência. Meses vazios são válidos; posição histórica não é reconstruída.
+
+### Roadmap de implementação — obrigatório
+
+Todos os marcos abaixo estão **planejados e não implementados**; execução somente
+após revisão dos artefatos e novo apply explícito. Cada entrega inclui MSTest,
+documentação/tarefa e commit próprio; um único PR ao concluir toda a Change.
+
+| Marco | Entrega e dependência | Critério verificável |
+| --- | --- | --- |
+| DOM-01 | Tipos, falhas, identificação e datas; depende de revisão | Limites seguros, CPF/telefone, calendário extremo e Unicode testados |
+| DOM-02 | Cadastro, raiz, entrada e reconstrução; depende DOM-01 | Distribuição exata, IDs únicos, coleções protegidas, histórico inválido rejeitado |
+| DOM-03 | Edição do cliente; depende DOM-02 | Só quatro campos, sem propagação e sem alterar finanças |
+| DOM-04 | Baixa e correção individuais; depende DOM-02 | Sequência, acréscimo, mesma identidade e falha sem mutação testados |
+| DOM-05 | Status; depende DOM-02 | Matriz completa, no-op e preservação histórica testados |
+| DOM-06 | Projeções de venda/conjunto/período/mês; depende DOM-04/05 | Reconciliação, universos, série diária e overflow agregado testados |
+| DOM-07 | Catálogo de paridade, regressão e evidências; depende todos | CA-046–048, restore/build/test/format e não regressão documentados |
+
+DOM-03/04/05 podem ser desenvolvidos independentemente após DOM-02, sem executar
+builds concorrentes na mesma saída (a fase 001 registrou conflito de DLL). Não há
+decisões de produto bloqueantes neste recorte; pendências de importação/licenças
+não o bloqueiam porque não são consumidas. Próximas Changes poderão tratar slices
+(resolver versão/licença MediatR/FluentResults), persistência e IPC, cada qual com
+PRD/TDD/SDD e autorização próprios; não são tarefas de fechamento desta fase.
+
+### Verificação, fontes e limitações
+
+CA-046–048: catálogo sintético com entradas e saídas explícitas, ligado a cenários
+das specs atuais e testes TypeScript, convertido em MSTest sem chamar Node/Angular
+em runtime. Cobrir sucessos/falhas, extremos de valor/calendário, sem mutação,
+isolamento de coleções e soma insegura no conjunto. Não considerar paridade simples
+comparação de contagem de testes. Repetir comandos existentes de DEC-033, em
+`backend/`, sem mudar baseline DEC-036; adicionar referência direta a Dominio nos
+testes. Inspecionar grafo/pacotes; executar suítes técnicas e smoke health/loopback,
+build/unitários frontend com API desligada. E2E visual não aplicável sem alteração
+de interface; acessibilidade não é alterada. Sem benchmark/meta nova ou dados reais.
+
+Fontes locais inspecionadas em 25/11/2026: `backend/README.md`, projetos, Program,
+configuração e testes da fase 001; `venda.validacoes.ts`, `venda.calculos.ts`,
+`dinheiro.ts`, `data-civil.ts`, `identificacao.validacoes.ts`,
+`pagamento.validacoes.ts` e `relatorios.calculos.ts` nas funcionalidades frontend;
+specs `dominio-vendas`/`recebimentos-parcelas`. A spec de recebimentos contém regras
+genéricas históricas de lote e fluxo visual individual atual: preservar lotes apenas
+na reconstrução/consulta; não ampliar o comando novo nem editar specs da UI.
+
+Fonte externa consultada via Context7 `/dotnet/docs`, guia oficial
+`https://learn.microsoft.com/dotnet/standard/datetime/how-to-use-dateonly-timeonly`,
+em 25/11/2026: DateOnly é imutável, sem fuso e abrange 0001–9999. Não se adiciona
+biblioteca de datas. Riscos principais: coleções aparentemente imutáveis, perda do
+dia-base, dupla contagem e UTF-16 divergente; mitigar com testes explícitos em cada
+marco. Evidência desta revisão é inspeção e planejamento, não nova execução de
+build, teste ou auditoria. Rastreabilidade: FON-040 → RF-023 → DEC-037 →
+`openspec/changes/fase-002-dominio/` → CA-046–048. Histórico anterior preservado.
+
 ## DEC-036 — Atualização da baseline .NET 10 por segurança (25/11/2026)
 
 **Base:** PRD/FON-039 e autorização do solicitante durante o apply de
