@@ -48,8 +48,10 @@ A API foi iniciada como processo real, sem launch profile: listener padrão `507
 alternativo `5073` observados somente em `127.0.0.1`; porta alternativa foi liberada
 após `CTRL_BREAK_EVENT`/encerramento normal. Porta `5074` ocupada causou falha na
 instância nova sem interromper o listener proprietário; configuração de porta `1023`
-falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 1 teste
-aprovado, 0 falhas e 0 ignorados, verificando `/health` via `WebApplicationFactory`.
+falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 4 testes
+aprovados, 0 falhas e 0 ignorados; cobre `/health`, 404 sem autenticação ou
+redirecionamento, ausência de CORS permissivo e inexistência de rotas de
+template/OpenAPI.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução

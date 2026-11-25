@@ -1,6 +1,0 @@
-@VendasEmAberto.Api_HostAddress = http://localhost:5153
-
-GET {{VendasEmAberto.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
