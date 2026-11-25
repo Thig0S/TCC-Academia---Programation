@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
 using System.Net;
 
 namespace VendasEmAberto.IntegrationTests;
@@ -38,6 +39,23 @@ public sealed class RotasNaoImplementadasTests
 
             Assert.AreEqual(HttpStatusCode.NotFound, resposta.StatusCode, rota);
         }
+    }
+
+    [TestMethod]
+    [DataRow("Development")]
+    [DataRow("Production")]
+    public async Task RotaDeFalhaUsadaPelosTestes_NaoExisteNoHost(string ambiente)
+    {
+        using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment(ambiente));
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        using var resposta = await client.GetAsync("/__test/failure");
+
+        Assert.AreEqual(HttpStatusCode.NotFound, resposta.StatusCode);
     }
 
     [TestMethod]
