@@ -66,12 +66,66 @@
   }
 </section>
 
-<section class="mb-6" aria-labelledby="periodo-relatorio">
-  <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal aplicada</h2>
+<section class="mb-4" aria-labelledby="periodo-relatorio">
+  <h2 id="periodo-relatorio" class="mb-1 text-xl font-semibold">Movimentação do mês</h2>
   <p class="mb-0 text-text-muted">
     Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
     {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
   </p>
+</section>
+
+<section class="mb-6" aria-label="Totais da movimentação do mês">
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+      <h3 class="mb-2 text-base font-semibold">Recebimentos no mês</h3>
+      <p class="m-0 text-2xl font-semibold tabular-nums text-success">
+        {{ formatarDinheiro(relatorio.totalRecebidoCentavos) }}
+      </p>
+      <p class="mt-1 mb-0 text-sm text-text-muted">Pagamentos efetivos de todos os status.</p>
+    </article>
+    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+      <h3 class="mb-2 text-base font-semibold">Vendas no mês</h3>
+      <p class="m-0 text-2xl font-semibold tabular-nums text-text">
+        {{ formatarDinheiro(relatorio.totalVendasMesCentavos) }}
+      </p>
+      <p class="mt-1 mb-0 text-sm text-text-muted">
+        {{ relatorio.quantidadeVendasMes }} vendas Ativas.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="mb-4" aria-labelledby="posicao-atual-relatorio">
+  <h2 id="posicao-atual-relatorio" class="mb-1 text-xl font-semibold">Posição atual</h2>
+  <p class="mb-0 text-text-muted">Referência fixa: {{ formatarDataCivil(referencia) }}.</p>
+</section>
+
+<section class="mb-6" aria-label="Totais da posição atual">
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+      <h3 class="mb-2 text-base font-semibold">Parcelas em aberto</h3>
+      <p class="m-0 text-2xl font-semibold tabular-nums text-text">
+        {{ formatarDinheiro(relatorio.totalEmAbertoCentavos) }}
+      </p>
+      <p class="mt-1 mb-0 text-sm text-text-muted">Somente contratos Ativos.</p>
+    </article>
+    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+      <h3 class="mb-2 text-base font-semibold">Parcelas vencidas</h3>
+      <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
+        {{ formatarDinheiro(relatorio.totalAtrasadoCentavos) }}
+      </p>
+      <p class="mt-1 mb-0 text-sm text-text-muted">Já incluídas no saldo em aberto.</p>
+    </article>
+    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+      <h3 class="mb-2 text-base font-semibold">Prejuízo elegível</h3>
+      <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
+        {{ formatarDinheiro(relatorio.totalPrejuizoCentavos) }}
+      </p>
+      <p class="mt-1 mb-0 text-sm text-text-muted">
+        Pendências de contratos sem recebimentos; total separado dos Ativos.
+      </p>
+    </article>
+  </div>
 </section>
 
 <section

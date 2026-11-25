@@ -183,6 +183,73 @@ describe('Relatórios', () => {
     expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
   });
 
+  it('apresenta cinco totais reconciliados e explica universos sobrepostos', async () => {
+    const ativa = venda('ativa', '2027-03-05', {
+      total: 1000,
+      totalEfetivo: 1100,
+      saldo: 700,
+      recebimentos: [pagamento('recebido-ativo', '2027-03-10', 400)],
+      parcelas: [
+        parcela('paga', 1, '2027-03-05', 'Paga', 300),
+        parcela('atrasada', 2, '2027-02-01', 'Atrasado', 200),
+        parcela('aberta', 3, '2027-04-01', 'Aberto', 500),
+      ],
+    });
+    const inativa = venda('inativa', '2027-03-06', {
+      statusAdministrativo: 'Inativo',
+      recebimentos: [pagamento('recebido-inativo', '2027-03-11', 250)],
+    });
+    const prejuizoElegivel = venda('prejuizo-elegivel', '2027-01-01', {
+      statusAdministrativo: 'Prejuízo',
+      parcelas: [parcela('pendente-elegivel', 1, '2027-02-01', 'Atrasado', 600)],
+    });
+    const prejuizoComRecebimento = venda('prejuizo-recebido', '2027-01-02', {
+      statusAdministrativo: 'Prejuízo',
+      recebimentos: [pagamento('recebimento-anterior', '2027-02-01', 200)],
+      parcelas: [parcela('pendente-nao-elegivel', 2, '2027-02-02', 'Atrasado', 300)],
+    });
+    vendas.set([ativa, inativa, prejuizoElegivel, prejuizoComRecebimento]);
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = harness.routeNativeElement!;
+    const mensal = pagina.querySelector('[aria-label="Totais da movimentação do mês"]')!;
+    const posicao = pagina.querySelector('[aria-label="Totais da posição atual"]')!;
+
+    expect(texto(mensal)).toContain('R$ 6,50');
+    expect(texto(mensal)).toContain('R$ 11,00');
+    expect(texto(mensal)).toContain('1 vendas Ativas');
+    expect(texto(posicao)).toContain('R$ 7,00');
+    expect(texto(posicao)).toContain('R$ 2,00');
+    expect(texto(posicao)).toContain('R$ 6,00');
+    expect(texto(posicao)).toContain('Já incluídas no saldo em aberto.');
+    expect(texto(posicao)).toContain('Pendências de contratos sem recebimentos');
+    expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
+      0,
+    );
+
+    vendas.set([]);
+    harness.detectChanges();
+    expect(texto(mensal)).toContain('R$ 0,00');
+    expect(texto(mensal)).toContain('0 vendas Ativas');
+    expect(texto(posicao)).toContain('R$ 0,00');
+
+    vendas.set([
+      {
+        ...ativa,
+        statusAdministrativo: 'Inativo',
+        recebimentos: [pagamento('ajustado', '2027-03-10', 500)],
+      },
+      { ...inativa, statusAdministrativo: 'Ativo' },
+      prejuizoElegivel,
+    ]);
+    harness.detectChanges();
+    expect(texto(mensal)).toContain('R$ 7,50');
+    expect(texto(mensal)).toContain('1 vendas Ativas');
+    expect(texto(mensal)).toContain('R$ 10,00');
+    expect(texto(posicao)).toContain('R$ 10,00');
+    expect(texto(posicao)).toContain('R$ 0,00');
+    expect(texto(posicao)).toContain('R$ 6,00');
+  });
+
   it('reinicia a seleção mensal ao recriar a página sem persistir preferência', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
     const seletor = () =>

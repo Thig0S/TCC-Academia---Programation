@@ -16,7 +16,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 ## 3. Seleção e cartões contextuais
 
 - [x] 3.1 Implementar rascunhos de mês/ano, sinal de seleção aplicada e ação Aplicar local à página, com erro associado/anunciável; testar seleção inválida/vazia preservando último resultado, ano decimal/fora dos limites, atualização mensal sem mudar posição, foco e restauração ao recriar a página, sem URL/storage. Registrar resultados em `frontend/README.md` (D2; CA-042).
-- [ ] 3.2 Apresentar dois cartões mensais e três de posição atual com quantidade de vendas, intervalo/referência e explicações sobre sobreposição de vencidas e restrição do total de Prejuízo; testar cinco totais, zeros, mudanças de status/pagamento e ausência de faixa global duplicada. Verificar identidade atual e empilhamento em temas/viewports e documentar no commit da apresentação (D4; CA-042/043).
+- [x] 3.2 Apresentar dois cartões mensais e três de posição atual com quantidade de vendas, intervalo/referência e explicações sobre sobreposição de vencidas e restrição do total de Prejuízo; testar cinco totais, zeros, mudanças de status/pagamento e ausência de faixa global duplicada. Verificar identidade atual e empilhamento em temas/viewports e documentar no commit da apresentação (D4; CA-042/043).
 
 ## 4. Gráfico diário acessível
 
