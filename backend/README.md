@@ -68,6 +68,13 @@ vazia é representada por `null`. `FormaPagamento` restringe as operações a di
 Pix, cartão de débito ou cartão de crédito e possui validação explícita de valores de
 enum desconhecidos.
 
+`Venda` é a raiz imutável do agregado: conserva identificadores fornecidos pelo
+chamador, cliente, data civil, total-base, status e coleções defensivas de parcelas
+e recebimentos. O cadastro sem entrada verifica total positivo, uma unidade mínima
+de centavo por parcela, data não futura, alcance do calendário e unicidade local de
+IDs antes de publicar o agregado. A distribuição do resto prioriza as primeiras
+parcelas. Cada parcela e alocação é imutável; nenhuma operação gera IDs.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a

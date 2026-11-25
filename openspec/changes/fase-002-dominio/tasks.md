@@ -20,7 +20,7 @@ Executar builds/testes sequencialmente para não disputar saídas intermediária
 
 ## 2. Agregado, cadastro, entrada e histórico — DOM-02
 
-- [ ] 2.1 Implementar raiz e coleções protegidas com IDs fornecidos, criação validada e cadastro sem entrada; testar mínimo de um centavo, N=1, 10.000/3, futuras maiores que saldo, total inválido, IDs vazios/duplicados e data futura. Testar tentativas de mutação por aliases de entrada/saída; atualizar catálogo/README com invariantes e executar MSTest antes do commit.
+- [x] 2.1 Implementar raiz e coleções protegidas com IDs fornecidos, criação validada e cadastro sem entrada; testar mínimo de um centavo, N=1, 10.000/3, futuras maiores que saldo, total inválido, IDs vazios/duplicados e data futura. Testar tentativas de mutação por aliases de entrada/saída; atualizar catálogo/README com invariantes e executar MSTest antes do commit.
 - [ ] 2.2 Implementar entrada como parcela 1 paga nas N parcelas; testar 200.000/10 com entrada 50.000, mínimo total 2/entrada 1/N=2, N=1 inválido, entrada zero/integral/sem forma ou data distinta, novembro/9999 com única futura. Conferir soma-base, recebido único e saldo sem duplicação em MSTest e documentar no catálogo/README.
 - [ ] 2.3 Implementar reconstrução integralmente validada com origens explícitas Entrada/Individual/HistoricoLote; testar lote de uma e várias parcelas, entrada 20.000+lote 40.000 na venda 200.000/10, sequência, vínculo, soma, data/forma e IDs inválidos. Verificar rejeição integral e proteção de alocações; documentar catálogo/README e ausência de comando público de nova baixa em lote/importação.
 
