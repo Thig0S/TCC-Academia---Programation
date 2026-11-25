@@ -13,6 +13,19 @@ Não publicar a planilha, nomes, dados de contato, valores por cliente, capturas
 transcrições de registros. Testes futuros devem usar dados sintéticos. A regra de
 ignore não equivale a criptografia, controle de acesso ou backup.
 
+## Equipe usuária e acesso
+
+Conforme PRD/FON-035, o uso operacional previsto é por uma única equipe específica
+da loja, em um computador offline, **sem autenticação de usuários**. Não estão
+previstos login, contas individuais, senhas ou perfis de permissão, inclusive na
+evolução local. Atendimento e gestão descrevem tarefas, não níveis de acesso.
+
+A necessidade de auth e o público operacional estão definidos; não são pendências
+da importação. A escolha de quem confere dados e autoriza a migração é uma
+responsabilidade de negócio, sem exigir cadastro dessa pessoa no aplicativo.
+Ausência de login não dispensa proteção dos arquivos e backups ou comunicação
+local protegida, nem permite comprovar autoria individual dos lançamentos.
+
 ## Inventário observado
 
 | Aba | Dimensão declarada | Linhas XML presentes | Observações estruturais |
@@ -81,6 +94,8 @@ como registro financeiro.
 7. Como interpretar conteúdo auxiliar, mesclagens e eventuais significados de cores?
    A semântica visual não foi validada com a loja.
 8. Quem confere os totais, resolve pendências e autoriza o corte operacional?
+   Trata-se de responsabilidade de conferência/aceite, não de autenticação ou
+   definição de perfis no aplicativo, já dispensados por FON-035.
 
 Essas perguntas registram bloqueios, não solicitam nem presumem respostas nesta
 mudança. O cenário informado para a evolução é um computador offline; banco,
@@ -112,5 +127,6 @@ físicos, fórmulas e mesclagens. Nenhum arquivo auxiliar com dados foi criado.
 Não houve recálculo em Excel, validação integral de datas, deduplicação, contagem
 de contratos, conciliação monetária, homologação com a loja, implementação de
 importador ou gravação em banco. A inspeção estrutural não constitui validação
-contábil. Não foi criada nova Change OpenSpec porque esta entrega apenas cataloga
-a fonte e referencia documentos existentes, sem alterar capacidades do sistema.
+contábil. Não foi criada nova Change OpenSpec porque esta entrega cataloga a fonte
+e registra a clarificação de público e ausência de autenticação no planejamento,
+sem alterar capacidades implementadas ou especificações vigentes do sistema.

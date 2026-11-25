@@ -1,5 +1,33 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## Restrição de acesso da evolução local — 25/11/2026
+
+**Base:** PRD/FON-035. Público confirmado: uma equipe específica da loja, em um
+computador offline, sem autenticação de usuários. O desenho futuro não deve incluir
+subsistema de contas, login/logout, senhas, recuperação de acesso, sessões de
+usuário ou autorização por papéis. Atendimento e gestão são contextos de uso, não
+roles técnicas. Essa definição não fica bloqueada por PEN-014, que trata de
+avaliação e aceite, nem pela escolha de quem confere a importação.
+
+**Limites técnicos:** a ausência de autenticação de pessoas não autoriza expor uma
+API na rede ou remover proteções da comunicação entre os processos locais. Caso o
+backend local seja aprovado, seu isolamento e a validação das chamadas entre
+processos devem ser especificados no desenho próprio, sem exigir login da equipe.
+Proteção dos arquivos pelo sistema operacional, acesso aos backups e recuperação
+continuam necessários; não afirmar que o uso offline impede acesso indevido.
+
+**Auditoria futura:** registros de alterações podem preservar operação, instante,
+origem e valores anteriores/posteriores conforme escopo a aprovar, mas não podem
+atribuir identidade autenticada a um integrante sem mecanismo de identificação.
+Não adicionar contas apenas para preencher um campo de autor nem registrar o
+rótulo estático “Administrador” como prova de autoria individual.
+
+**Roadmap e verificação:** levar FON-035 como restrição à futura proposta de backend,
+mantendo fora do escopo gestão de usuários e autenticação. Conferir coerência com o
+PRD e inventário antes dessa proposta; reavaliar se houver mudança para rede,
+acesso remoto ou outras equipes. Nenhuma capacidade OpenSpec foi alterada nesta
+clarificação documental e nenhum controle de segurança foi implementado ou testado.
+
 ## Estudo estrutural da planilha local — 25/11/2026
 
 **Base:** PRD/FON-034 e [inventário da fonte](../planilha-loja/README.md).
@@ -33,8 +61,9 @@ implementação foi executada nesta revisão.
 
 **Verificação desta mudança documental:** conferir referências, inventário e
 ausência de registros pessoais nos três arquivos alterados. SDD novo não se aplica
-à mera catalogação de uma fonte: as capabilities existentes permanecem inalteradas;
-não criar Change vazia nem tratar este registro como contrato executável de migração.
+à catalogação da fonte e à clarificação de público sem autenticação: as capabilities
+existentes permanecem inalteradas; não criar Change vazia nem tratar este registro
+como contrato executável de migração.
 
 ## DEC-032 — Dashboard contextual de Relatórios (revisão de 25/11/2026)
 
