@@ -24,9 +24,11 @@ test('matriz integrada sem overflow horizontal nos destinos e no modal', async (
         await page.goto(rota);
         if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
         await expect(page.locator('app-root')).toHaveAttribute('data-tema', tema);
-        await expect(
-          page.getByRole('heading', { level: 1, name: titulo, exact: true }),
-        ).toBeVisible();
+        const tituloVisivel =
+          rota === '/vendas/quitadas'
+            ? page.getByRole('heading', { level: 2, name: titulo, exact: true })
+            : page.getByRole('heading', { level: 1, name: titulo, exact: true });
+        await expect(tituloVisivel).toBeVisible();
         const larguraDocumento = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(larguraDocumento, `${rota}/${tema}/${largura}px`).toBeLessThanOrEqual(largura);
         medidas.push({

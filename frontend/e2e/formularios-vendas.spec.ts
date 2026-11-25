@@ -1160,7 +1160,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
       .getByRole('navigation', { name: 'Navegação principal' })
       .getByRole('link', { name: 'Quitadas', exact: true })
       .click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Vendas quitadas' })).toBeVisible();
     await page
       .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
       .fill(nome);

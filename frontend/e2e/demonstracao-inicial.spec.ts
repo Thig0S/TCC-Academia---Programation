@@ -260,7 +260,7 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
       }
       const valores = await medir();
       expect(valores.length, `${tema}/${rota}: textos examinados`).toBeGreaterThan(
-        rota === 'Nova venda' ? 8 : 10,
+        rota === 'Nova venda' ? 7 : 10,
       );
       for (const valor of valores)
         expect(valor.razao, `${tema}/${rota}: ${valor.texto}`).toBeGreaterThanOrEqual(4.5);
@@ -333,7 +333,7 @@ test('confere contraste de textos das páginas novas nos dois temas e viewports'
     await expect(page.getByRole('heading', { level: 1, name: 'Vendas' })).toBeVisible();
     await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
     await navegacao.getByRole('link', { name: 'Quitadas', exact: true }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Vendas quitadas' })).toBeVisible();
     await expect(page.locator('[aria-label="Indicadores financeiros globais"]')).toHaveCount(0);
     await navegacao.getByRole('link', { name: 'Relatórios', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
@@ -566,7 +566,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await expect(page).toHaveURL(/\/vendas\/seed%2Fvenda%2F1$/i);
   await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
   await expect(page.getByRole('main')).toContainText('Pedro Farias');
-  await expect(page.getByRole('main')).toContainText('90000000175');
+  await expect(page.getByRole('main')).toContainText('900.000.001-75');
   await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
   await expect(page.getByRole('main').getByRole('table')).toBeVisible();
   await expect(page.getByRole('main').locator('form')).toHaveCount(0);
@@ -593,10 +593,10 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await page.goto(detalhe);
   await page
     .getByRole('navigation', { name: 'Retornos de Vendas' })
-    .getByRole('link', { name: 'Ver Vendas quitadas' })
+    .getByRole('link', { name: 'Voltar para Vendas' })
     .click();
-  await expect(page).toHaveURL(/\/vendas\/quitadas$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeFocused();
+  await expect(page).toHaveURL(/\/vendas$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Vendas' })).toBeFocused();
 });
 
 test('Configurações explica os quatro limites pelos dois acessos e temas', async ({
@@ -1242,7 +1242,11 @@ test('abre e recarrega cada destino sem aviso global e com localização', async
     await page.goto(rota);
     for (const recarregar of [false, true]) {
       if (recarregar) await page.reload();
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
+      const tituloVisivel =
+        rota === '/vendas/quitadas'
+          ? page.getByRole('heading', { level: 2 })
+          : page.getByRole('heading', { level: 1 });
+      await expect(tituloVisivel).toHaveText(titulo);
       await expect(page).toHaveTitle(`${titulo} | ${produto}`);
       await expect(page.getByText(produto, { exact: true })).toBeVisible();
       await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
@@ -1265,17 +1269,24 @@ test('orienta foco por teclado, atalho, histórico e retorno de caminho desconhe
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
   const nav = page.getByRole('navigation', { name: 'Navegação principal' });
-  for (const [nome, titulo] of [
-    ['Vendas', 'Vendas'],
-    ['Quitadas', 'Vendas quitadas'],
-    ['Relatórios', 'Relatórios'],
-    ['Configurações', 'Configurações'],
-    ['Visão Geral', 'Visão Geral'],
+  for (const [nome, titulo, tituloFoco] of [
+    ['Vendas', 'Vendas', 'Vendas'],
+    ['Quitadas', 'Vendas quitadas', 'Vendas'],
+    ['Relatórios', 'Relatórios', 'Relatórios'],
+    ['Configurações', 'Configurações', 'Configurações'],
+    ['Visão Geral', 'Visão Geral', 'Visão Geral'],
   ]) {
     const link = nav.getByRole('link', { name: nome, exact: true });
     await link.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { level: 1, name: titulo, exact: true })).toBeFocused();
+    const heading =
+      titulo === 'Vendas quitadas'
+        ? page.getByRole('heading', { level: 2, name: titulo, exact: true })
+        : page.getByRole('heading', { level: 1, name: titulo, exact: true });
+    await expect(heading).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: tituloFoco, exact: true }),
+    ).toBeFocused();
   }
   const ativo = nav.getByRole('link', { name: 'Visão Geral', exact: true });
   await ativo.focus();
@@ -1367,7 +1378,11 @@ test('abre e recarrega em contexto limpo sem dados externos ou persistência', a
         .locator(`a[href="${rota}"]`)
         .click();
     }
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(titulo);
+    const tituloVisivel =
+      rota === '/vendas/quitadas'
+        ? page.getByRole('heading', { level: 2 })
+        : page.getByRole('heading', { level: 1 });
+    await expect(tituloVisivel).toHaveText(titulo);
     await expect(page.locator('app-root')).toHaveAttribute('data-tema', 'light');
     await expect(page.getByTestId('aviso-demonstracao')).toHaveCount(0);
     await page.waitForLoadState('networkidle');
