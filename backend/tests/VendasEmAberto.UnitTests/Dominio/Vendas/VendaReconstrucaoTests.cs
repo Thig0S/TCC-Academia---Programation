@@ -98,6 +98,26 @@ public sealed class VendaReconstrucaoTests
     }
 
     [TestMethod]
+    public void Reconstruir_RejeitaAlocacaoIndividualDiferenteDoValorEfetivo()
+    {
+        var individualInconsistente = new DadosReconstrucaoRecebimento(
+            "individual-inconsistente",
+            new DateOnly(2027, 2, 1),
+            FormaPagamento.Pix,
+            DinheiroValido(11_000),
+            OrigemRecebimento.Individual,
+            DinheiroValido(1_000),
+            "nota",
+            [new("parcela-1", DinheiroValido(10_000))]);
+        var falha = ObterFalha(Venda.Reconstruir(
+            CriarDadosSemEntrada() with { Recebimentos = [individualInconsistente] },
+            Referencia));
+
+        Assert.AreEqual("historico-invalido", falha.Erro.Codigo);
+        Assert.AreEqual("recebimentos", falha.Erro.Campo);
+    }
+
+    [TestMethod]
     public void Reconstruir_RejeitaDataFormaEIdentificadoresInvalidos()
     {
         var dados = CriarDadosComEntradaELote();
