@@ -209,6 +209,17 @@ Verificações executadas em `frontend/`:
   (`e2e/formularios-vendas.spec.ts:675`). Esse fluxo pertence à edição de cliente,
   fora do escopo do dashboard; não foram alteradas expectativas nem código dessa área.
   A regressão E2E ampla da aplicação permanece bloqueada, sem aprovação alegada.
+- **Reteste após autorização em 25/11/2026:** a matriz foi repartida em dez testes
+  independentes (cinco larguras × dois temas), sem retirar asserções. Os dez casos
+  passaram em Chromium serialmente; cada um verificou erro associado e foco no CPF,
+  contraste ≥4,5:1, ausência de overflow global, navegação por teclado no recebimento,
+  rolagem e preservação dos dados financeiros. `ng test --no-watch
+  --include=src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts` passou
+  **10/10**. O foco é fornecido pelo `onInvalid`/`focusBoundControl()` já existente e
+  recomendado na documentação atual do Angular; a falha histórica não se reproduziu
+  nos retestes, portanto não foi introduzida uma alteração especulativa no formulário.
+  A suíte E2E completa da aplicação e as demais verificações de 6.3 ainda precisam
+  concluir antes de liberar a regressão ampla.
 - `npm.cmd run test:e2e:paginacao-fixture` — **24/24** aprovados nos projetos Chromium
   1366×768 e 390×844; inclui limites de coleção, temas, overflow, teclado, tipografia e
   layout responsivo. Aviso esperado de prebundling não usado com otimização de scripts.
