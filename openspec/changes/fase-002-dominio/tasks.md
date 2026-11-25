@@ -1,9 +1,10 @@
 # Tasks
 
 Base: PRD/FON-040/RF-023/CA-046–048 → TDD/DEC-037 → `proposal.md`,
-`specs/dominio-vendas/spec.md` e `design.md`/D1–D6. Todas as tarefas estão pendentes;
-esta solicitação autoriza somente planejamento. Começar apenas após revisão dos
-artefatos e novo pedido explícito de apply. Sem decisões bloqueantes no recorte.
+`specs/dominio-vendas/spec.md` e `design.md`/D1–D6. O planejamento foi revisado e o
+apply foi explicitamente autorizado; registrar cada tarefa como concluída somente
+após implementar seu escopo e executar as verificações aplicáveis. Sem decisões
+bloqueantes conhecidas no recorte.
 
 Convenção de entrega: cada funcionalidade coerente leva código, MSTest, atualização
 do catálogo de paridade e do README/tarefa, verificação direcionada e commit próprio
@@ -41,7 +42,7 @@ Executar builds/testes sequencialmente para não disputar saídas intermediária
 ## 6. Projeções, conjunto e períodos — DOM-06
 
 - [x] 6.1 Implementar projeções puras de parcela/venda com base, acréscimo, efetivo, recebido, saldo, pagas/N e próximo vencimento; testar identidade saldo=bases pendentes=efetivo−pago, precedência e ontem/hoje/+7/+8, MaxValue, quitação e ausência de próximo vencimento. Incluir entrada/lote/correção e consulta sem mutação em MSTest, catálogo e README.
-- [ ] 6.2 Implementar validação/aceitação pura do conjunto candidato com unicidade global e somas seguras antes de sucesso; testar colisões entre tipos/vendas, soma insegura em venda oculta, cadastro/baixa/correção localmente válidos mas globalmente inválidos e preservação integral do conjunto anterior. Verificar que candidato rejeitado não é publicado, incluindo descarte e falha técnica sem classificação comercial; documentar fronteira no catálogo/README e executar MSTest.
+- [x] 6.2 Implementar validação/aceitação pura do conjunto candidato com unicidade global e somas seguras antes de sucesso; testar colisões entre tipos/vendas, soma insegura em venda oculta, cadastro/baixa/correção localmente válidos mas globalmente inválidos e preservação integral do conjunto anterior. Verificar que candidato rejeitado não é publicado, incluindo descarte e falha técnica sem classificação comercial; documentar fronteira no catálogo/README e executar MSTest.
 - [ ] 6.3 Implementar separação de abertas/quitadas Ativas, Inativas e Prejuízo, resumos globais e períodos civis inclusivos; testar vazios, intervalo invertido, bordas do período, reativação, recebimentos de todos os status e totais operacionais só Ativas. Conferir consulta sem efeitos colaterais e soma exata no catálogo/README e MSTest.
 - [ ] 6.4 Implementar relatório mensal puro com mês opcional, série diária, posições e Prejuízo separado; testar mês padrão/selecionado/vazio, 28–31 dias, bissexto, dezembro/janeiro e extremos, soma diária=mensal, correção entre meses, entrada/lote sem duplicar, Prejuízo com/sem pagamentos, ordenação estável das posições e invariância da posição/referência ao trocar mês. Registrar casos e resultados no catálogo/README, sem componentes UI, e executar MSTest.
 
