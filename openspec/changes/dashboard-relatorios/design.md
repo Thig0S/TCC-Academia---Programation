@@ -6,9 +6,9 @@ Ver `proposal.md`, PRD/FON-018/RF-018–020/CA-042–043 e TDD/DEC-032. Após co
 
 ## Goals / Non-Goals
 
-**Goals:** separar o eixo mensal do eixo de posição atual; derivar cartões, gráfico e detalhes da mesma projeção; usar primitivas locais e HTML semântico, sem nova contabilidade ou dependência. O design é necessário para resolver a separação temporal, seleção inválida, acessibilidade gráfica e expansão sem perda de foco.
+**Goals:** separar o eixo mensal do eixo de posição atual; derivar cartões, gráfico e detalhes da mesma projeção; usar primitivas locais e HTML semântico, sem nova contabilidade ou dependência. O design é necessário para resolver a separação temporal, seleção inválida, acessibilidade gráfica, expansão sem perda de foco e o bloqueio de foco no primeiro campo inválido da edição de cliente identificado na regressão integrada.
 
-**Non-Goals:** reimplementar feedback/status/pagamentos, reconstruir dívida ou status históricos, prever recebimentos, comparar meses, criar outros gráficos/resumos, persistir preferências, alterar navegação, Visão Geral ou tabelas de outros módulos.
+**Non-Goals:** reimplementar feedback/status/pagamentos, alterar os campos editáveis de cliente ou dados financeiros, reconstruir dívida ou status históricos, prever recebimentos, comparar meses, criar outros gráficos/resumos, persistir preferências, alterar navegação, Visão Geral ou tabelas de outros módulos.
 
 ## Decisions
 
@@ -54,6 +54,10 @@ Renderizar barras SVG locais não interativas, escala começando em zero, eixo d
 
 Usar cinco `details` com `summary` nomeado, título e total (quantidade também em Vendas), inicialmente fechados e sem agrupamento exclusivo. Reutilizar tabelas, regiões de rolagem, legendas, links e mensagens existentes no conteúdo expandido. Manter nós/identidades de cada seção estáveis ao aplicar mês, preservando abertura e foco no controle acionado. Não inserir controles interativos dentro do summary. A semântica nativa fornece estado e teclado; testes devem verificar Enter/Espaço, foco visível e abertura simultânea. Não criar rotas extras, resumos truncados ou botões de cobrança. Preservar exportação ilustrativa e sua mensagem anunciável, sem download. Alternativas de accordion exclusivo e tabelas sempre abertas foram rejeitadas na conversa.
 
+### D7 — Foco de erro na regressão integrada de formulários
+
+A regressão da aplicação revelou um bloqueio no fluxo existente de edição de cliente: após envio com CPF inválido, o erro é apresentado, mas o foco não permanece no CPF no Chromium móvel; a mesma matriz, que percorre cinco larguras e dois temas, também excede 30 s no caso desktop. A edição já usa Signal Forms `submit`/`onInvalid` e `focusBoundControl()` conforme o padrão documentado pelo Angular. Antes de escolher uma correção, identificar no browser qual campo aparece primeiro em `errorSummary`, qual controle está ligado a esse campo e o elemento realmente focado após o erro renderizar. Preservar rascunho, erro associado, identidade e dados financeiros. O teste pode ser repartido por viewport/tema ou preparado para evitar setup redundante, mas deve conservar todas as combinações e asserções de foco, contraste, rolagem e preservação financeira; não remover cenários nem elevar timeout sem evidência. Reexecutar a suíte da aplicação serialmente e distinguindo o limite de execução do Harness dos timeouts próprios dos testes.
+
 ## Risks / Trade-offs
 
 - [Mês escolhido parecer reconstrução de dívida/status] → separar os grupos, preservar referência e indicar que posições/status são atuais; mês anterior não é snapshot contábil.
@@ -63,10 +67,11 @@ Usar cinco `details` com `summary` nomeado, título e total (quantidade também 
 - [Seleção invalidar o resultado ou perder abertura] → rascunho separado de seleção aplicada, mensagem acessível e seções estáveis.
 - [Testes antigos exigirem apresentação superada] → abrir expansões e ajustar só expectativas de ausência de seletor/layout; preservar asserções de valores, campos e IDs.
 - [Zoom nativo indisponível em automação] → registrar a limitação e solicitar verificação manual no apply; não simular CSS nem reutilizar evidência antiga como atual.
+- [Foco E2E divergente do contrato em formulário de edição] → seguir o requisito existente CA-007, inspecionar estado/renderização/foco real antes da correção e manter a matriz completa sem relaxar assertions.
 
 ## Migration Plan
 
-1. Revisar este planejamento e validar OpenSpec; parar até solicitação explícita de apply.
-2. No apply, capturar baseline atual; implementar cálculos, seleção/cartões, gráfico e expansões em entregas coerentes com testes/documentação e commits próprios.
-3. Executar regressão integrada e comparação antes/depois nos temas/viewports, inclusive estados vazios e dados extremos; registrar comandos/resultados reais em `frontend/README.md`.
+1. Baseline foi capturada e o apply do dashboard foi autorizado; cálculos, seleção/cartões, gráfico e expansões foram entregues com testes e commits próprios.
+2. Executar regressão integrada e comparação antes/depois nos temas/viewports, inclusive estados vazios e dados extremos; registrar comandos/resultados reais em `frontend/README.md`.
+3. Corrigir o foco do primeiro campo inválido na edição de cliente conforme `formularios-vendas`, estabilizar a matriz sem reduzir cobertura e executar regressão completa, fixture, build e formatação; registrar bloqueios preexistentes reais.
 4. Abrir um único PR da Change apenas após todo o escopo e verificações, usando o template padrão. Merge só com autorização explícita. Sem migração de dados; se houver regressão, corrigir a superfície ou reverter apenas o commit próprio afetado sem descartar trabalho alheio.

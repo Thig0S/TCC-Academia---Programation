@@ -1,6 +1,6 @@
 # Tasks
 
-PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `design.md`. **Planejamento apenas:** base atual já contém `feedback-luighi`, mas nenhum item de implementação do dashboard foi aplicado. Checklist revisado em 25/11 conforme simplificação confirmada, sem marcar tarefas antigas como executadas.
+PRD/FON-018/RF-018–020/CA-042–043/CA-007, TDD/DEC-032/DEC-019, `proposal.md`, deltas e `design.md`. O dashboard foi implementado nas tarefas 1–5.2 e verificado em 6.1–6.2. Em 25/11, o solicitante autorizou ampliar a conclusão para corrigir o bloqueio E2E preexistente de foco na edição de cliente, conforme contrato de formulário já existente, antes da regressão final; sem alteração financeira ou remoção de cenários.
 
 **Verificação documental em 25/11/2026:** `openspec validate dashboard-relatorios --strict` aprovado; `openspec status --change dashboard-relatorios` informa 4/4 artefatos presentes; `git diff --check` sem erros de whitespace (somente avisos locais LF/CRLF). Diff relativo à `main` restrito a PRD, TDD e artefatos desta Change. Testes da aplicação, builds, capturas e inspeções de interface não executados nesta etapa. Presença de artefatos não comprova implementação ou aprovação.
 
@@ -26,6 +26,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 
 - [x] 5.1 Integrar cinco `details`/`summary` inicialmente fechados, com títulos/totais visíveis, quantidade em Vendas, tabelas e vazios completos; testar Enter/Espaço, estado, foco, duas expansões simultâneas e preservação de abertura ao aplicar mês. Preservar exportação ilustrativa sem download e documentar testes do componente (D6; CA-043).
 - [x] 5.2 Adaptar `relatorios.spec.ts`, `e2e/relatorios-cobranca.spec.ts` e demais testes que presumem tabelas sempre abertas/ausência de seletor, abrindo detalhes antes de consultar; preservar asserções de todas as linhas (>5), IDs opacos, CPF/telefone, ordenação, primeiro vencimento, Prejuízo fora do total e rolagem local. Executar testes direcionados e registrar resultados em `frontend/README.md` no commit de detalhes (D6; CA-042/043).
+- [ ] 5.3 Corrigir o bloqueio de foco no primeiro erro da edição de cliente conforme spec `formularios-vendas`, mantendo rascunho, erro associado e dados financeiros. Investigar campo/controle e momento do foco no browser; adaptar ou dividir a matriz E2E para caber no timeout sem remover os cinco viewports, dois temas nem as asserções de foco, contraste, rolagem e preservação financeira. Executar testes de componente e E2E direcionados e registrar a correção (PRD/CA-007/RNF-002; TDD/DEC-019/DEC-032).
 
 ## 6. Verificação integrada e conclusão
 
