@@ -27,7 +27,7 @@ pacote, extensões ou mapper nesta fase, nem alterar o contrato de `/health`.
 
 ## 3. Disponibilidade e contrato HTTP técnico
 
-- [ ] 3.1 Disponibilizar apenas `GET /health` com health checks do framework e configurar IntegrationTests em MSTest com WebApplicationFactory e acesso ao entry point conforme pacote fixado; executar testes para 200, `text/plain`, corpo `Healthy`, repetição sem cookies/mutação e ausência de banco, planilha ou serviços externos.
+- [x] 3.1 Registrado `AddHealthChecks` sem checks de banco/externos e somente endpoint `GET /health`, com resposta explícita `text/plain`/`Healthy`; `Program` expõe entry point para testes. `HealthEndpointTests` usa `WebApplicationFactory` e confirma HTTP 200, tipo/corpo, segunda consulta idêntica e ausência de `Set-Cookie`. `dotnet test --project tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release`: 1 aprovado, 0 falhas/ignorados. Produção não adicionou pacote; teste usa `Microsoft.AspNetCore.Mvc.Testing` fixado. Sem dependências de banco, planilha ou serviço externo.
 - [ ] 3.2 Adicionar testes MSTest de integração para 404 em `/vendas` e `/pagamentos`, acesso sem credenciais/redirect e ausência de CORS permissivo com origem arbitrária; verificar execução não vazia do IntegrationTests e remoção de rotas de template, OpenAPI e middleware de autenticação/HTTPS não previstos.
 - [ ] 3.3 Documentar e conferir em processo real o contrato de `/health` e a distinção entre disponibilidade do processo e readiness de banco inexistente; registrar requisição/resposta e ambiente no README. Criar commit da funcionalidade com seus testes, documentação e tarefas após as verificações deste grupo.
 
