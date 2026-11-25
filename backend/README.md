@@ -48,8 +48,8 @@ A API foi iniciada como processo real, sem launch profile: listener padrão `507
 alternativo `5073` observados somente em `127.0.0.1`; porta alternativa foi liberada
 após `CTRL_BREAK_EVENT`/encerramento normal. Porta `5074` ocupada causou falha na
 instância nova sem interromper o listener proprietário; configuração de porta `1023`
-falhou antes de abrir listener. A suíte de integração ainda não foi executada;
-`/health` será implementado e verificado nas tarefas 3.x.
+falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 1 teste
+aprovado, 0 falhas e 0 ignorados, verificando `/health` via `WebApplicationFactory`.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução
@@ -128,7 +128,8 @@ decisão explícita.
 ## Host local e limites
 
 O binding já implementado restringe o listener a `127.0.0.1`, porta padrão `5070`.
-Após a tarefa 3.1, o host disponibilizará somente `GET /health`.
+O host disponibiliza somente `GET /health`; teste de integração confirma HTTP 200,
+`text/plain`, corpo `Healthy`, repetição sem `Set-Cookie` e resposta sem mutação.
 `Backend:Porta` (variável de ambiente `Backend__Porta`) seleciona uma porta inteira
 entre 1024 e 65535; por exemplo, `Backend__Porta=5080`. Ausência da configuração
 usa 5070; valor vazio, não numérico ou fora dos limites encerra a inicialização
@@ -137,7 +138,7 @@ com mensagem que identifica a chave suportada. Não configurar `--urls`,
 `ASPNETCORE_HTTPS_PORTS`, `DOTNET_HTTP_PORTS`, `DOTNET_HTTPS_PORTS` ou
 `Kestrel:Endpoints` concorrentes. A validação ocorre antes de construir/iniciar o
 host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
-também são rejeitados. Quando implementado, `/health` indicará somente
+também são rejeitados. `/health` indica somente
 disponibilidade do processo, não readiness de banco nem operação comercial. Não há
 login, dados financeiros, integração Angular, importação da planilha, persistência
 ou Tauri nesta fase.
