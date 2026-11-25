@@ -1,5 +1,41 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## Estudo estrutural da planilha local — 25/11/2026
+
+**Base:** PRD/FON-034 e [inventário da fonte](../planilha-loja/README.md).
+Esta revisão documenta uma dependência da migração futura; não altera DEC-001,
+não define o schema do banco e não autoriza implementação.
+
+**Inspeção executada:** leitura somente do pacote ZIP/XML do XLSX por
+`System.IO.Compression` e análise dos cabeçalhos, dimensões, tipos físicos de
+células, fórmulas e mesclagens. Sem execução de macros, recálculo, gravação na
+planilha ou carga em banco. A leitura não valida a consistência contábil dos dados.
+As quatro abas compartilham A:G, mas contêm valores heterogêneos, campos ausentes,
+anotações e conteúdo auxiliar. Nenhuma fórmula de célula foi encontrada nas quatro
+worksheets inspecionadas; não presumir total contratual calculado ou arquivo já
+normalizado. Contagem de linhas XML e dimensão não são contagem de contratos.
+
+**Direção técnica proposta, não implementada:** futura importação separada do
+cadastro de venda nova, com área temporária, preservação controlada de origem
+(arquivo/lote, aba e linha), validação, prévia, conciliação e confirmação antes da
+gravação transacional. Manter datas e valores históricos comprovados; não gerar
+parcelamento retroativo pelas regras de novas vendas, deduzir recebimentos de
+anotações ambíguas ou somar entrada duas vezes. Planejar detecção de reimportação
+sem usar CPF/nome/data isolados como identificador de contrato.
+
+**Roadmap condicionado:** (1) resolver no PRD as ambiguidades listadas no inventário;
+(2) revisar TDD com modelo persistente e política explícita para dados legados
+incompletos; (3) criar e revisar proposta, especificações e tarefas OpenSpec próprias;
+(4) somente após autorização, implementar e testar com fixtures sintéticas;
+(5) ensaiar importação e conciliação em base isolada, provar restauração de backup e
+obter conferência responsável antes da carga definitiva. Nenhuma dessas etapas de
+implementação foi executada nesta revisão.
+
+**Verificação desta mudança documental:** conferir referências, inventário e
+ausência de registros pessoais nos três arquivos alterados. SDD novo não se aplica
+à mera catalogação de uma fonte: as capabilities existentes permanecem inalteradas;
+não criar Change vazia nem tratar este registro como contrato executável de migração.
+
 ## DEC-032 — Dashboard contextual de Relatórios (revisão de 25/11/2026)
 
 **Base:** PRD/FON-018/RF-018–020/CA-042–043 e RN-025/026. Revisa o rascunho do dashboard de 24/11, então denominado DEC-029; esse ID fica preservado para a navegação integrada na `main`, e o dashboard passa a DEC-032 conforme registro de colisões no PRD. `feedback-luighi` está integrado à base atual e seus cinco relatórios foram inspecionados; não há dependência de implementação daquela Change. Reutilizar `feature/dashboard-relatorios`, atualizada com `main`. O apply autorizado implementou o dashboard; a extensão da regressão integrada está autorizada e aguarda a revisão dos artefatos atualizados.
