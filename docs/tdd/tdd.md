@@ -5,9 +5,11 @@
 ### Contexto, origem e situação
 
 Base: PRD/FON-040/RF-023/CA-046–048 e regras financeiras vigentes. Escopo e
-contrato técnico confirmados pelo solicitante no Harness; implementação **não
-iniciada**. Esta revisão prepara `fase-002-dominio`, sem autorizar apply. Reutiliza
-DEC-033–036, sem adotar ainda as bibliotecas de DEC-034/035.
+contrato técnico foram confirmados pelo solicitante no Harness. Na elaboração
+original desta decisão, a implementação ainda não havia começado e o apply não estava
+autorizado; após revisão dos artefatos, o solicitante autorizou o apply de
+`fase-002-dominio`, agora concluído conforme as evidências ao fim desta decisão.
+Reutiliza DEC-033–036, sem adotar as bibliotecas de DEC-034/035.
 
 **Avaliação da fase 001:** `backend/src/` tem quatro projetos; Dominio, Aplicacao e
 Infraestrutura não possuem tipos de negócio. `Program.cs` valida endpoints antes
@@ -102,11 +104,12 @@ Prejuízo mostra todas suas pendências, totaliza apenas contratos sem recebimen
 inclusive sem entrada. Série diária completa reconcilia o mês, sem alterar posição
 na referência. Meses vazios são válidos; posição histórica não é reconstruída.
 
-### Roadmap de implementação — obrigatório
+### Roadmap de implementação — resultado
 
-Todos os marcos abaixo estão **planejados e não implementados**; execução somente
-após revisão dos artefatos e novo apply explícito. Cada entrega inclui MSTest,
-documentação/tarefa e commit próprio; um único PR ao concluir toda a Change.
+O roadmap abaixo foi executado após revisão dos artefatos e autorização explícita do
+apply. Cada entrega inclui MSTest e documentação; commits por funcionalidade estão
+na feature branch. Evidências e limitações finais estão registradas em
+`backend/README.md` e em `openspec/changes/fase-002-dominio/tasks.md`.
 
 | Marco | Entrega e dependência | Critério verificável |
 | --- | --- | --- |
@@ -117,6 +120,15 @@ documentação/tarefa e commit próprio; um único PR ao concluir toda a Change.
 | DOM-05 | Status; depende DOM-02 | Matriz completa, no-op e preservação histórica testados |
 | DOM-06 | Projeções de venda/conjunto/período/mês; depende DOM-04/05 | Reconciliação, universos, série diária e overflow agregado testados |
 | DOM-07 | Catálogo de paridade, regressão e evidências; depende todos | CA-046–048, restore/build/test/format e não regressão documentados |
+
+**Resultado dos marcos:** DOM-01–DOM-07 concluídos. A verificação integrada aprovou
+139 testes backend (115 de domínio, 16 técnicos unitários e 8 de integração), build
+Release sem avisos/erros, restore bloqueado e formatação. O smoke real confirmou
+listener somente em loopback, `/health` 200/text/plain/Healthy, `/vendas` 404 e
+liberação da porta. Com a API desligada, o frontend aprovou 430 testes em 33 arquivos
+e build. A validação OpenSpec estrita e `git diff --check` do fechamento estão
+registrados no README; nenhuma verificação E2E/visual/zoom foi executada, pois não
+houve mudança de UI. Os resultados não constituem homologação operacional.
 
 DOM-03/04/05 podem ser desenvolvidos independentemente após DOM-02, sem executar
 builds concorrentes na mesma saída (a fase 001 registrou conflito de DLL). Não há
