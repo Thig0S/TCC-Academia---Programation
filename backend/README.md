@@ -42,9 +42,10 @@ build Release sem restore passou com 0 avisos e 0 erros. `dotnet list ... packag
 --vulnerable --include-transitive` não reportou pacotes vulneráveis nas fontes
 consultadas em 25/11/2026. A primeira checagem de formatação encontrou finais de
 linha/codificação nos arquivos gerados; após `dotnet format`, a verificação sem
-alterações foi aprovada. A suíte `UnitTests` foi executada pelo MTP: 8 testes
-aprovados, 0 falhas e 0 ignorados (configuração de porta). A suíte de integração e
-`dotnet run` ainda não foram executados; o host ainda não implementou `/health`.
+alterações foi aprovada. A suíte `UnitTests` foi executada pelo MTP: 16 testes
+aprovados, 0 falhas e 0 ignorados (porta e rejeição de endpoints concorrentes).
+A suíte de integração e `dotnet run` sem configuração inválida ainda não foram
+executados; o host ainda não implementou `/health`.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução
@@ -127,7 +128,11 @@ O host disponibiliza somente `GET /health` em `127.0.0.1:5070` por padrão.
 entre 1024 e 65535; por exemplo, `Backend__Porta=5080`. Ausência da configuração
 usa 5070; valor vazio, não numérico ou fora dos limites encerra a inicialização
 com mensagem que identifica a chave suportada. Não configurar `--urls`,
-`ASPNETCORE_URLS` ou endpoints Kestrel concorrentes. `/health` indica somente
+`ASPNETCORE_URLS`, `DOTNET_URLS`, `ASPNETCORE_HTTP_PORTS`,
+`ASPNETCORE_HTTPS_PORTS`, `DOTNET_HTTP_PORTS`, `DOTNET_HTTPS_PORTS` ou
+`Kestrel:Endpoints` concorrentes. A validação ocorre antes de construir/iniciar o
+host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
+também são rejeitados. `/health` indica somente
 disponibilidade do processo, não readiness de banco nem operação comercial. Não há
 login, dados financeiros, integração Angular, importação da planilha, persistência
 ou Tauri nesta fase.
