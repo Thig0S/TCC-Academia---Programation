@@ -1,5 +1,35 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fonte local de vendas para evolução futura — 25/11/2026
+
+**FON-034:** planilha fornecida pelo solicitante em
+`docs/planilha-loja/00 - VENDAS LIBERAÇÃO LUIGHI CORRETO.xlsx`, inspecionada
+somente para documentação estrutural. Inventário, mapeamento preliminar e limitações
+em [docs/planilha-loja/README.md](../planilha-loja/README.md). O arquivo contém dados
+reais, permanece local e está ignorado pela configuração atual do Git; não deve ser
+publicado nem usado como fixture. A documentação não reproduz registros pessoais.
+
+**Evidência e limites:** há quatro abas, com cabeçalhos DATA VENDA, CLIENTE, PC,
+VALOR, VENCIMENTO, STATUS e DATA PAGTO. Existem textos livres em campos de valor,
+situação e data, cabeçalho repetido, células mescladas e conteúdo auxiliar fora da
+estrutura principal. Linhas não equivalem necessariamente a vendas. Não há colunas
+principais próprias de CPF, telefone ou identificador estável de contrato; não se
+presume que esses dados possam ser recuperados de anotações.
+
+**Impacto no planejamento:** a fonte passa a estar disponível para estudo da futura
+migração, mas não define regras comerciais nem autoriza carga real. Antes de
+especificar a importação, confirmar agrupamento de contratos, significado de PC e
+VALOR, tratamento das entradas, recebimentos incompletos e correspondência das abas
+com os status da aplicação. Ausências de CPF/telefone não autorizam inventar dados
+ou flexibilizar silenciosamente as regras atuais de cadastro. O nome de uma aba não
+comprova quitação nem elegibilidade para o total de Prejuízo de RN-026.
+
+**Escopo desta revisão:** documentação da fonte, sem novo requisito funcional,
+mudança de regras, backend, importador ou migração. O cenário de evolução informado
+pelo solicitante é um computador com funcionamento offline; isso não aprova ainda
+a arquitetura de produção. As exclusões vigentes do MVP demonstrativo continuam
+válidas até uma proposta própria de evolução.
+
 ## Dashboard de Relatórios — escopo revisado (25/11/2026)
 
 **FON-018:** pedido original de dashboard, refinado por decisões explícitas no Harness em 25/11/2026: equilíbrio entre visão financeira e cobrança, escolha de mês/ano, cinco cartões, somente um gráfico diário de recebimentos, cinco detalhes expansíveis e identidade visual atual. O solicitante autorizou substituir os três gráficos e resumos extras do plano anterior por esse recorte. Reutilizar `dashboard-relatorios` e `feature/dashboard-relatorios`. As projeções de `feedback-luighi` já estão na `main` e foram incorporadas à base desta branch; não reimplementar aquele escopo. O apply foi autorizado e o dashboard implementado na feature; a regressão integrada está em andamento. Isso não representa aceite da ótica ou autorização de merge.
