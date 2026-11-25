@@ -4188,4 +4188,6 @@ Verificações reais direcionadas:
 - `npm.cmd run format:check` não passou porque `README.md` não está formatado; a mesma checagem falha no `frontend/README.md` da revisão base (`HEAD`). O trecho adicionado foi revisado e o restante do arquivo não foi reformatado para evitar alterações alheias.
 - A primeira execução com a configuração padrão não iniciou porque a porta 4200 já estava ocupada. Não encerramos o servidor preexistente; a suíte direcionada passou usando servidor isolado na porta 4305 e configuração temporária removida após a execução.
 
+Refinamento visual posterior: o grupo usa `gap-2` (8 px) entre os links; cada link recebeu SVG inline de 16 px com check, pausa e alerta, todos decorativos e ocultos à tecnologia assistiva. E2E mediu ordem, separação mínima de 7 px, alinhamento dos ícones, nomes acessíveis e atributos decorativos nos dois temas e viewports. A suíte de navegação serial passou **4/4**; a suíte unitária passou **416/416** em 33 arquivos; build, Prettier direcionado, `git diff --check` e `openspec validate empilhar-links-sidebar --strict` passaram. Uma execução paralela anterior teve falha intermitente no teste preexistente de teclado/ordenação mobile; a repetição isolada e a regressão serial passaram.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
