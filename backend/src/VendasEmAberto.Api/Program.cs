@@ -14,7 +14,10 @@ ConfiguracaoBackend.ValidarAusenciaDeSobrescritaDeEndpoints(
 var porta = ConfiguracaoBackend.ObterPorta(builder.Configuration[ConfiguracaoBackend.ChavePorta]);
 builder.WebHost.ConfigureKestrel(opcoes => opcoes.Listen(IPAddress.Loopback, porta));
 builder.Services.AddHealthChecks();
+builder.Services.AddProblemDetails();
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
