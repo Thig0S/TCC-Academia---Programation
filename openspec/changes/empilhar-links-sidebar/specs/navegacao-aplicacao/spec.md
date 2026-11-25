@@ -4,7 +4,7 @@
 
 ### Requirement: Navegação principal e contexto de Vendas
 
-A aplicação SHALL oferecer navegação com ícones decorativos e rótulos Visão Geral, Vendas, Relatórios e Configurações, indicando visualmente o módulo ativo. Quitadas, Inativas, Prejuízo e detalhes de venda SHALL pertencer a Vendas, sem quinto módulo, Clientes ou Parcelas independentes. Quando Vendas estiver ativo, os destinos administrativos SHALL aparecer na barra lateral em linhas verticais separadas, na ordem Quitadas, Inativas e Prejuízo. O perfil Administrador SHALL ser identificado como estático, sem sugerir autenticação.
+A aplicação SHALL oferecer navegação com ícones decorativos e rótulos Visão Geral, Vendas, Relatórios e Configurações, indicando visualmente o módulo ativo. Quitadas, Inativas, Prejuízo e detalhes de venda SHALL pertencer a Vendas, sem quinto módulo, Clientes ou Parcelas independentes. Quando Vendas estiver ativo, os destinos administrativos SHALL aparecer na barra lateral em linhas verticais separadas, na ordem Quitadas, Inativas e Prejuízo, com espaçamento visível e consistente entre eles. Cada destino SHALL incluir um ícone SVG decorativo distinto: check para Quitadas, pausa/arquivo para Inativas e alerta para Prejuízo; os ícones SHALL ser ocultos à tecnologia assistiva e não substituir o rótulo acessível. O perfil Administrador SHALL ser identificado como estático, sem sugerir autenticação.
 
 #### Scenario: Percorrer os módulos
 - **WHEN** a pessoa acionar cada item da navegação principal
@@ -29,3 +29,5 @@ A aplicação SHALL oferecer navegação com ícones decorativos e rótulos Vis�
 - **THEN** Quitadas, Inativas e Prejuízo SHALL aparecer um abaixo do outro, cada qual em uma linha própria e nessa ordem
 - **AND** cada destino SHALL continuar acionável por teclado e indicar corretamente a página atual
 - **AND** o empilhamento SHALL permanecer nos dois temas e nos viewports técnicos de 1366 × 768 e 390 × 844, sem corte horizontal nem alteração das rotas
+- **AND** cada linha SHALL ter intervalo vertical perceptível em relação à seguinte, mantendo os três ícones distintos e alinhados aos respectivos rótulos
+- **AND** os ícones SHALL ser ignorados pela árvore acessível e cada link SHALL manter como nome seu rótulo textual

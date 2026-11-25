@@ -44,6 +44,14 @@ apply autorizada.
 
 **Verificação realizada:** E2E geométrico e de navegação por teclado, 4/4 nos viewports Chromium 1366×768 e 390×844 e nos dois temas; suíte unitária 416/416, build e validação estrita OpenSpec aprovados. O `format:check` global continua falhando por formatação preexistente de `frontend/README.md`, também confirmada em `HEAD`; Prettier direcionado ao template e E2E passou. Evidências e limitação em `frontend/README.md`; zoom não foi parte deste recorte.
 
+## DEC-030 — Espaçamento e ícones dos destinos administrativos (24/11/2026)
+
+**Base:** solicitação posterior do usuário, PRD/FON-032 e CA-040. Refinar o grupo lateral já empilhado para que os links não fiquem colados e cada coleção tenha um sinal visual próprio.
+
+**Escolha técnica:** usar `gap-2` (8 px) no contêiner vertical sem remover o espaçamento existente entre módulo e grupo. Incluir SVGs inline pequenos e decorativos nos links: check em círculo para Quitadas, pausa/arquivo para Inativas e triângulo de alerta para Prejuízo. Os SVGs recebem `aria-hidden="true"` e `focusable="false"`; os nomes acessíveis continuam sendo somente os rótulos visíveis. Não adicionar dependências nem mudar destino, ordem, estilos de ativo ou sequência de foco.
+
+**Verificação planejada:** E2E deve conferir gap geométrico perceptível e ordem, presença/ocultação acessível dos SVGs, rótulos dos links, temas claro/escuro e viewports desktop/mobile; preservar os testes existentes de teclado e rota atual.
+
 ## DEC-028 — Feedback de Luighi: status, pagamentos e relatórios (24/11/2026)
 
 **Base:** `docs/prd/vendas-em-aberto.md`, seção “Feedback de Luighi”, FON-017, RF-013/014/015/016, RN-025/026 e CA-036/037/038. Esta decisão definiu o desenho da Change `feedback-luighi`, aplicada na feature branch. No escopo da Change, substitui as restrições técnicas de valor derivado imutável (DEC-027) e a consulta sem ordenação (DEC-018); preserva o pagamento individual sequencial, o seed histórico, a referência civil, o estado em memória e os IDs existentes. Este TDD documenta decisões, mas não é evidência de aceite operacional.
@@ -455,6 +463,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-029 | PRD 1.19/FON-016; Harness e inspeção de `registrar-pagamento`, `detalhes-venda`, `rascunhos.ts`, `pagamento.modelos.ts`, `pagamento.validacoes.ts`, `servico-demonstracao.ts`, seed e testes adjacentes/E2E | 22/11/2026 | Uma parcela por confirmação, antecipação, data fixa/editável e texto nas bloqueadas confirmados; fronteira de comando individual e compatibilidade histórica propostas para revisão |
 | FON-030 | Context7 `/angular/angular`, fonte oficial `packages/forms/signals/src/api/structure.ts` e `src/field/node.ts` | 22/11/2026 | `submit` impede envio concorrente, chama `onInvalid` e libera estado em `finally`; `focusBoundControl` permite foco no campo inválido. Consulta não comprova comportamento do patch 22.2.6 instalado; testes locais continuam necessários |
 | FON-031 | Solicitação explícita do usuário no Harness e inspeção de `barra-navegacao.html`, `barra-navegacao.css`, `app.spec.ts` e testes E2E de coleções | 24/11/2026 | Quitadas, Inativas e Prejuízo devem ocupar linhas verticais distintas na lateral quando Vendas estiver ativo; não alterar rotas/coleções; critério CA-039 |
+| FON-032 | Solicitação explícita do usuário no Harness | 24/11/2026 | Aumentar o espaço entre os três destinos e acrescentar ícones distintos que remetam a cada coleção; critérios CA-040 |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -1223,6 +1232,7 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-027 | Pagamento individual | Comando com parcela única e valor derivado; histórico em lote compatível; modal data/forma e ações sequenciais | Implementação técnica na Change `simplificar-pagamento-parcelas`; regressão automatizada verificada; zoom nativo 200% e aceite da ótica pendentes | DEC-004/007/010/015/016/022/026; PRD 1.19/RN-016/CA-024; FON-029/030; evidências em `frontend/README.md` |
 | DEC-028 | Feedback de Luighi | Status administrativo, recebimento efetivo/correção e universos de relatórios | Implementada na branch `feature/feedback-luighi`; Change arquivada e PR #30 aberto | PRD/FON-017, RF-013–016, CA-036–038; evidências em `frontend/README.md` |
 | DEC-029 | Navegação das coleções administrativas | Quitadas, Inativas e Prejuízo em coluna vertical, uma por linha, sob Vendas | Implementada e verificada na Change `empilhar-links-sidebar`; `format:check` global limitado por falha preexistente no README | PRD/FON-031, RF-013/CA-039; evidências em `frontend/README.md` |
+| DEC-030 | Espaçamento e ícones das coleções | `gap-2`, check, pausa/arquivo e alerta decorativos | Planejada na Change `empilhar-links-sidebar`; implementação pendente | PRD/FON-032/CA-040; OpenSpec `empilhar-links-sidebar` |
 
 ### DEC-023 — Remoção do aviso global e limpeza conjunta
 
