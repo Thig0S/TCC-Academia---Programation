@@ -1,5 +1,63 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fase 001 do backend — base técnica planejada (25/11/2026)
+
+**FON-036:** solicitação `fase-001-backend`, refinada no Harness: preparar uma base
+C# com API local, estrutura de camadas, testes e comandos documentados. O solicitante
+determinou **MSTest** para os testes do backend. Esta autorização cobre planejamento
+PRD → TDD → SDD, não execução da implementação. A fase não substitui nem conclui as
+fases históricas do protótipo que também usam numeração 001.
+
+**Problema e objetivo:** o repositório tem uma demonstração Angular funcional, mas
+não dispõe de solução C#, API ou testes .NET. Criar, em etapa de apply própria, uma
+fundação reproduzível para desenvolver o backend sem alterar a demonstração e sem
+introduzir regras financeiras ou dados reais prematuramente.
+
+**RF-021 — Base independente de backend:** disponibilizar solução C#/.NET 10 em
+`backend/`, com projetos de API, aplicação, domínio e infraestrutura e testes em
+MSTest. Restaurar, compilar, testar, verificar formatação e iniciar a API por
+comandos documentados, sem depender de IDE, banco, Angular em execução ou planilha.
+Somente a API precisa de comportamento executável nesta fase; camadas restantes
+estabelecem fronteiras de dependência, sem entidades ou serviços fictícios.
+
+**RF-022 — Disponibilidade técnica local:** oferecer somente `GET /health` como
+endpoint técnico de disponibilidade do processo, sem informações pessoais,
+configuração sensível ou promessa de banco disponível. Escutar apenas em loopback,
+sem login, contas ou perfis, conforme FON-035. Não disponibilizar endpoints de
+vendas, pagamentos, importação ou outras operações de negócio. Falhas inesperadas
+devem ter resposta genérica sem stack trace exposta ao cliente.
+
+**CA-044 — Ambiente reproduzível e testes:** de um checkout com o SDK documentado,
+restaurar dependências, compilar em Release, executar testes MSTest não vazios e
+verificar formatação com saída de sucesso. Os testes devem cobrir configuração
+válida/inválida e restrições da API e seu contrato HTTP por integração. Registrar
+SDK, versões exatas das dependências, comandos e resultados reais; falha de teste
+deve resultar em código de saída não zero. A instalação/restauração inicial pode
+exigir internet; o processo da API restaurado não exige serviços externos.
+
+**CA-045 — Isolamento e não regressão:** iniciar a API em loopback e obter HTTP 200
+com corpo textual `Healthy` em `/health`, sem redirecionamento, credencial ou banco.
+Rota de negócio inexistente retorna 404; configuração que exponha endereço não
+loopback é rejeitada. Confirmar disponibilidade em processo real, sem confundir
+TestServer com socket de rede, e encerramento sem processo residual. O frontend
+continua exclusivamente demonstrativo, sem chamadas à nova API, alteração de seed,
+rotas ou dados e sem mudança no deploy do Pages. Build e testes unitários existentes
+do frontend devem continuar passando quando a fase for implementada.
+
+**Exclusão excepcional e limitada:** as exclusões históricas de backend do MVP são
+relaxadas apenas para esta base técnica independente. Continuam fora desta fase:
+EF Core/SQLite e migrations, entidades/regras financeiras C#, endpoints de negócio,
+integração Angular, importação/uso da planilha real, Tauri/instalador, autenticação,
+proteção de IPC de produção, backup, implantação do backend e novo workflow CI.
+Não considerar a API técnica pronta para operar dados reais ou como aprovação da
+arquitetura completa. Pendências de migração e homologação não bloqueiam esta base,
+pois nenhum caso dependente delas será implementado.
+
+**Rastreabilidade:** FON-036 + FON-035 → RF-021/022 → CA-044/045 → TDD/DEC-033 →
+`openspec/changes/fase-001-backend/`. A implementação e as verificações acima são
+planejadas; não foram executadas nesta revisão. PR único apenas após apply autorizado
+e conclusão integral da fase; sem PR antecipado por planejamento pronto.
+
 ## Equipe usuária e ausência de autenticação — 25/11/2026
 
 **FON-035:** confirmação explícita do solicitante: a aplicação será utilizada por
