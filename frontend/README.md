@@ -243,8 +243,9 @@ diff amplo fora da correção E2E. A tarefa 6.3 permanece pendente até resolver
 checagem ou receber decisão explícita sobre o bloqueio preexistente.
 
 A tarefa 6.3 continua **aberta somente pela checagem global de formato** no README. A
-suíte E2E completa concluiu com sucesso; os resultados não equivalem a homologação,
-operação real ou aceite da ótica.
+suíte E2E completa concluiu com sucesso. O PR não foi aberto, pois o fluxo exige todas
+as tarefas e verificações aplicáveis concluídas. Os resultados não equivalem a
+homologação, operação real ou aceite da ótica.
 
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
