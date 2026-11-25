@@ -376,6 +376,72 @@ describe('Cálculos puros dos Relatórios', () => {
     expect(calcularRelatorio([], referencia)).toMatchObject({ inicioMes: inicio, fimMes: fim });
   });
 
+  it('seleciona mês opcional com limites inclusivos sem alterar as posições da referência', () => {
+    const ativa = venda('ativa', '2027-01-31', {
+      saldo: 700,
+      parcelas: [parcela('atrasada', 1, '2027-01-31', 'Atrasado', 300)],
+      recebimentos: [
+        recebimento('antes', '2026-12-31', 10),
+        recebimento('inicio', '2027-01-01', 20),
+        recebimento('fim', '2027-01-31', 30),
+        recebimento('depois', '2027-02-01', 40),
+      ],
+    });
+    const inativa = venda('inativa', '2027-01-15', {
+      statusAdministrativo: 'Inativo',
+      recebimentos: [recebimento('inativa', '2027-01-15', 50)],
+    });
+
+    const padrao = calcularRelatorio([ativa, inativa], '2027-01-31');
+    const janeiro = calcularRelatorio([ativa, inativa], '2027-03-15', '2027-01-01');
+
+    expect(janeiro).toMatchObject({
+      inicioMes: '2027-01-01',
+      fimMes: '2027-01-31',
+      totalRecebidoCentavos: 100,
+      quantidadeVendasMes: 1,
+      totalVendasMesCentavos: 1000,
+    });
+    expect(janeiro.recebimentos.map((item) => item.id)).toEqual([
+      'ativa/recebimento/inicio',
+      'ativa/recebimento/fim',
+      'inativa/recebimento/inativa',
+    ]);
+    expect(janeiro.saldos).toEqual(padrao.saldos);
+    expect(janeiro.parcelasAtrasadas).toEqual(padrao.parcelasAtrasadas);
+    expect(janeiro.parcelasPrejuizo).toEqual(padrao.parcelasPrejuizo);
+    expect([
+      janeiro.totalEmAbertoCentavos,
+      janeiro.totalAtrasadoCentavos,
+      janeiro.totalPrejuizoCentavos,
+    ]).toEqual([
+      padrao.totalEmAbertoCentavos,
+      padrao.totalAtrasadoCentavos,
+      padrao.totalPrejuizoCentavos,
+    ]);
+    expect(calcularRelatorio([], '2027-01-15', '2028-06-01')).toMatchObject({
+      inicioMes: '2028-06-01',
+      fimMes: '2028-06-30',
+      recebimentos: [],
+      vendasDoMes: [],
+      totalRecebidoCentavos: 0,
+    });
+  });
+
+  it.each([
+    ['2024-02-01', '2024-02-29'],
+    ['2023-02-01', '2023-02-28'],
+    ['2027-12-01', '2027-12-31'],
+    ['2028-01-01', '2028-01-31'],
+    ['0001-01-01', '0001-01-31'],
+    ['9999-12-01', '9999-12-31'],
+  ])('aceita período mensal nos limites civis %s–%s', (inicio, fim) => {
+    expect(calcularRelatorio([], '2027-06-15', inicio)).toMatchObject({
+      inicioMes: inicio,
+      fimMes: fim,
+    });
+  });
+
   it('inclui vendas quitadas do mês, mantém posição global e retorna coleções sem truncar', () => {
     const vendas = Array.from({ length: 7 }, (_, indice) =>
       venda(`v${indice}`, `2027-05-${String(indice + 1).padStart(2, '0')}`, {

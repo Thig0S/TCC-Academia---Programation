@@ -15,6 +15,22 @@ de exportação; ainda não há seletor, cartões ou gráficos. Os arquivos fora
 verificados após a geração. Capturas e dados são sintéticos, sem aceite visual ou
 operacional; esta baseline não mede zoom nativo.
 
+### Cálculo mensal opcional — tarefa 2.1
+
+`calcularRelatorio(vendas, referencia, mes?)` mantém o comportamento anterior quando
+chamado com dois argumentos. O terceiro argumento seleciona o mês civil das vendas e
+recebimentos; as posições de saldo, vencidas e Prejuízo continuam derivadas das
+projeções existentes na referência, sem reconstrução histórica. Foram cobertos os
+limites inclusivos, movimento de venda Ativa e recebimentos de todos os status,
+meses sem dados/futuros, fevereiro bissexto e comum, dezembro/janeiro e os anos
+0001/9999. A comparação de meses confirmou saldos, vencidas e Prejuízo invariáveis.
+
+Verificações executadas em 25/11/2026: `npm.cmd test -- --watch=false
+--include="src/app/funcionalidades/relatorios/relatorios.calculos.spec.ts"` — **19/19
+testes aprovados**; Prettier direcionado aos dois arquivos de cálculo/teste e
+`git diff --check` — aprovados. Os cenários são unitários e usam projeções sintéticas;
+não representam aceite operacional.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por

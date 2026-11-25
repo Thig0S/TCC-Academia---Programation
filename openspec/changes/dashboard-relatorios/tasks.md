@@ -10,7 +10,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 
 ## 2. Período mensal e série diária
 
-- [ ] 2.1 Estender `calcularRelatorio` com mês opcional sem quebrar chamadas de dois argumentos; em `relatorios.calculos.spec.ts`, verificar limites inclusivos, meses vazios/futuros, fevereiro bissexto, dezembro/janeiro, anos 0001/9999 e invariância de saldos/vencidas/Prejuízo/referência ao trocar mês. Documentar contrato e resultados reais em `frontend/README.md` (D1/D2; CA-042).
+- [x] 2.1 Estender `calcularRelatorio` com mês opcional sem quebrar chamadas de dois argumentos; em `relatorios.calculos.spec.ts`, verificar limites inclusivos, meses vazios/futuros, fevereiro bissexto, dezembro/janeiro, anos 0001/9999 e invariância de saldos/vencidas/Prejuízo/referência ao trocar mês. Documentar contrato e resultados reais em `frontend/README.md` (D1/D2; CA-042).
 - [ ] 2.2 Derivar série de todos os dias a partir dos mesmos recebimentos, com zeros e soma em centavos; testar entrada/lote/individual de todos os status, valores desiguais, correção entre meses sem novo ID, reativação, totais efetivos de vendas Ativas e igualdade série/total/tabela. Registrar testes/documentação no commit da projeção (D3; CA-042).
 
 ## 3. Seleção e cartões contextuais

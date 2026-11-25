@@ -49,8 +49,9 @@ export interface DadosRelatorio {
 export function calcularRelatorio(
   vendas: readonly ProjecaoVenda[],
   referencia: string,
+  mes = referencia,
 ): DadosRelatorio {
-  const [inicioMes, fimMes] = limitesDoMes(referencia);
+  const [inicioMes, fimMes] = limitesDoMes(mes);
   const noMes = (data: string) =>
     compararDatasCivis(data, inicioMes) >= 0 && compararDatasCivis(data, fimMes) <= 0;
 
