@@ -233,6 +233,19 @@ desnecessário. `dotnet list` confirmou que o projeto Dominio não tem pacotes; 
 `packages.lock.json` contém dependências vazias para `net10.0`. O grafo de produção
 não recebeu dependências novas nesta fase.
 
+### Smoke real da API — DOM-07 (25/11/2026)
+
+Executada a DLL Release (`src/VendasEmAberto.Api/bin/Release/net10.0/
+VendasEmAberto.Api.dll`) diretamente com o SDK isolado 10.0.404, diretório de
+trabalho `backend/`, sem launch profile e com `Backend__Porta` temporária `62372`.
+`Get-NetTCPConnection` associou o listener ao PID `12136` em `127.0.0.1` somente;
+`GET /health` respondeu `200`, `text/plain`, corpo `Healthy`; `GET /vendas` respondeu
+404. O processo iniciado foi encerrado e a conexão TCP de verificação falhou como
+esperado, confirmando liberação da porta. A variável de ambiente foi restaurada e
+nenhum outro processo/listener foi encerrado. Os testes técnicos de endpoint/falha
+genérica também passaram na suíte de integração da tarefa 7.2 (8/8). Nenhum banco,
+frontend ou serviço externo foi iniciado.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
