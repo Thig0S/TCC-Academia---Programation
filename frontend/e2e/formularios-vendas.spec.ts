@@ -410,9 +410,12 @@ test('corrige pagamento individual com foco, validação e relatório nos dois t
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
     const relatorio = page.locator('section[aria-labelledby="recebimentos-mensais"]');
-    const totalAntes = await valorEmCentavos(
-      relatorio.locator('p').filter({ hasText: 'Total recebido:' }).locator('strong'),
-    );
+    const totalRecebidoAntes = relatorio
+      .locator('p')
+      .filter({ hasText: 'Total recebido:' })
+      .locator('strong');
+    await expect(totalRecebidoAntes).toHaveText(/R\$\s*[\d.]+,[\d]{2}/);
+    const totalAntes = await valorEmCentavos(totalRecebidoAntes);
     const linhaRelatorio = relatorio.locator('tbody tr').filter({ hasText: nome });
     await expect(linhaRelatorio).toHaveCount(1);
     await expect(linhaRelatorio.locator('td').nth(1)).toHaveText('Individual');
