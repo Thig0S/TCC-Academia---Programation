@@ -1,3 +1,4 @@
+using System.Text;
 using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 
@@ -11,7 +12,8 @@ public sealed partial class Venda
         Dinheiro valorRecebido,
         DateOnly data,
         FormaPagamento forma,
-        DateOnly referencia)
+        DateOnly referencia,
+        string? observacao = null)
     {
         if (string.IsNullOrEmpty(recebimentoId))
         {
@@ -57,6 +59,16 @@ public sealed partial class Venda
                 "dados-recebimento-invalidos",
                 "Informe forma aceita e data entre a venda e a referência da sessão.",
                 !FormasPagamento.EhValida(forma) ? "forma" : "data");
+        }
+
+        var observacaoNormalizada = observacao ?? "";
+        if (observacaoNormalizada.EnumerateRunes().Count() > 20)
+        {
+            return FalhaPagamento(
+                CategoriaErroDominio.Validacao,
+                "observacao-longa-demais",
+                "A observação deve ter no máximo 20 caracteres.",
+                "observacao");
         }
 
         if (StatusAdministrativo != StatusAdministrativoVenda.Ativo)
@@ -119,7 +131,7 @@ public sealed partial class Venda
             valorRecebido,
             OrigemRecebimento.Individual,
             acrescimoValido.Valor,
-            "",
+            observacaoNormalizada,
             [new AlocacaoPagamento(parcela.Id, valorRecebido)]);
 
         return ResultadoDominio<Venda>.CriarSucesso(new Venda(

@@ -126,6 +126,31 @@ public sealed class VendaPagamentoTests
         Assert.AreEqual("identificador-duplicado", igualRecebimento.Erro.Codigo);
     }
 
+    [TestMethod]
+    public void RegistrarPagamento_AceitaEPreserva20EscalaresUnicode()
+    {
+        var observacao = string.Concat(Enumerable.Repeat("😀", 20));
+
+        var venda = ObterSucesso(Registrar(CriarVenda(), observacao: observacao));
+
+        Assert.AreEqual(40, venda.Recebimentos[0].Observacao.Length);
+        Assert.AreEqual(observacao, venda.Recebimentos[0].Observacao);
+    }
+
+    [TestMethod]
+    public void RegistrarPagamento_Rejeita21EscalaresENormalizaAusencia()
+    {
+        var observacaoLonga = string.Concat(Enumerable.Repeat("😀", 21));
+        var venda = CriarVenda();
+        var falha = ObterFalha(Registrar(venda, observacao: observacaoLonga));
+        var semObservacao = ObterSucesso(Registrar(CriarVenda(), observacao: null));
+
+        Assert.AreEqual("observacao-longa-demais", falha.Erro.Codigo);
+        Assert.AreEqual("observacao", falha.Erro.Campo);
+        Assert.AreEqual(0, venda.Recebimentos.Count);
+        Assert.AreEqual("", semObservacao.Recebimentos[0].Observacao);
+    }
+
     private static ResultadoDominio<Venda> Registrar(
         Venda venda,
         string recebimentoId = "recebimento-novo",
@@ -133,14 +158,16 @@ public sealed class VendaPagamentoTests
         long valor = 10_000,
         DateOnly? data = null,
         FormaPagamento forma = FormaPagamento.Pix,
-        DateOnly? referencia = null) =>
+        DateOnly? referencia = null,
+        string? observacao = null) =>
         venda.RegistrarPagamento(
             recebimentoId,
             parcelaId,
             DinheiroValido(valor),
             data ?? DataVenda,
             forma,
-            referencia ?? Referencia);
+            referencia ?? Referencia,
+            observacao);
 
     private static Venda CriarVenda(
         StatusAdministrativoVenda status = StatusAdministrativoVenda.Ativo,
