@@ -42,10 +42,10 @@ build Release sem restore passou com 0 avisos e 0 erros. `dotnet list ... packag
 --vulnerable --include-transitive` não reportou pacotes vulneráveis nas fontes
 consultadas em 25/11/2026. A primeira checagem de formatação encontrou finais de
 linha/codificação nos arquivos gerados; após `dotnet format`, a verificação sem
-alterações foi aprovada. Os testes funcionais ainda serão adicionados; não considerar
-projetos sem testes como suítes aprovadas. `dotnet test` e `dotnet run` estão
-documentados como comandos alvo, mas ainda não foram executados: os projetos estão
-sem testes e o host ainda não implementou `/health`.
+alterações foi aprovada. A suíte `UnitTests` foi executada pelo MTP: 8 testes
+aprovados, 0 falhas e 0 ignorados (configuração de porta). A suíte de integração e
+`dotnet run` ainda não foram executados; o host ainda não implementou `/health`.
+Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução
 
@@ -122,9 +122,12 @@ decisão explícita.
 
 ## Host local e limites
 
-Quando implementado pelas tarefas desta Change, o host disponibiliza somente
-`GET /health` em `127.0.0.1:5070` por padrão. `Backend:Porta` pode selecionar uma
-porta entre 1024 e 65535; não configurar `--urls`, `ASPNETCORE_URLS` ou endpoints
-Kestrel concorrentes. `/health` indica somente disponibilidade do processo, não
-readiness de banco nem operação comercial. Não há login, dados financeiros,
-integração Angular, importação da planilha, persistência ou Tauri nesta fase.
+O host disponibiliza somente `GET /health` em `127.0.0.1:5070` por padrão.
+`Backend:Porta` (variável de ambiente `Backend__Porta`) seleciona uma porta inteira
+entre 1024 e 65535; por exemplo, `Backend__Porta=5080`. Ausência da configuração
+usa 5070; valor vazio, não numérico ou fora dos limites encerra a inicialização
+com mensagem que identifica a chave suportada. Não configurar `--urls`,
+`ASPNETCORE_URLS` ou endpoints Kestrel concorrentes. `/health` indica somente
+disponibilidade do processo, não readiness de banco nem operação comercial. Não há
+login, dados financeiros, integração Angular, importação da planilha, persistência
+ou Tauri nesta fase.

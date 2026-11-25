@@ -21,7 +21,7 @@ pacote, extensões ou mapper nesta fase, nem alterar o contrato de `/health`.
 
 ## 2. Configuração local e ciclo de vida do host
 
-- [ ] 2.1 Implementar fonte `Backend:Porta` com padrão 5070, intervalo 1024–65535 e binding explícito a `127.0.0.1`; escrever testes MSTest unitários para padrão, limites e porta alternativa, além de valor não numérico e fora dos limites. Verificar execução não vazia do UnitTests e documentar a configuração no README no mesmo grupo.
+- [x] 2.1 Implementada `ConfiguracaoBackend.ObterPorta` para fallback 5070 e valores inteiros 1024–65535, com erro claro para entrada vazia, não numérica e fora dos limites. MSTest unitários cobrem padrão, limites, porta alternativa e rejeições; `dotnet test --project tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release` executou 8 testes, 8 aprovados, 0 falhas/ignorados, sem avisos após formatação. README documenta a chave `Backend__Porta` e os limites. Binding Kestrel real permanece em 2.3.
 - [ ] 2.2 Rejeitar configurações de URLs/endpoints concorrentes, incluindo argumentos, variáveis e `Kestrel:Endpoints`, sem depender de launch profile; adicionar MSTest para sobrescritas, garantindo que a validação falhe antes de expor listener externo. Verificar ausência de alteração permanente do ambiente do usuário e mensagem orientando a configuração suportada.
 - [ ] 2.3 Cobrir startup inválido e configurar encerramento padrão do host; verificar em smoke Kestrel real o listener apenas em loopback, porta alternativa, conflito com porta ocupada e liberação após encerramento. Preservar o processo dono da porta, registrar comandos/resultados no README e criar commit da funcionalidade com seus testes e tarefas atualizados.
 
