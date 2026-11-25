@@ -24,7 +24,7 @@ este plano não representa deploy já realizado ou aprovação do produto.
 
 ## Feedback de Luighi — requisitos planejados em 24/11/2026
 
-**Fonte FON-017:** `docs/feedback.luighi.md` e esclarecimentos do solicitante nesta conversa. Esta seção é planejamento da Change `feedback-luighi`, não implementação nem aceite operacional. Para esta Change, as regras abaixo substituem as restrições anteriores de RF-002/006/007/008/010, RN-015/016/019/020/021 e os critérios de aceite afetados, **somente após apply autorizado**; os registros datados abaixo descrevem o comportamento entregue anteriormente. Preservar os IDs e o histórico, sem fingir que código ou specs principais já mudaram.
+**Fonte FON-017:** `docs/feedback.luighi.md` e esclarecimentos do solicitante nesta conversa. Esta seção é a base de requisitos da Change `feedback-luighi`; permanece um artefato de planejamento e, por si só, não comprova implementação nem aceite operacional. No escopo da Change aplicada, as regras abaixo substituem as restrições anteriores de RF-002/006/007/008/010, RN-015/016/019/020/021 e os critérios de aceite afetados; os registros datados abaixo descrevem o comportamento entregue anteriormente. Preservar os IDs e o histórico.
 
 ### Problema, objetivo e escopo
 
@@ -47,7 +47,7 @@ O proprietário precisa localizar contratos por destino administrativo, corrigir
 - **CA-037 — Valor e correção:** baixa de parcela-base R$ 100,00 por R$ 110,00 registra R$ 10,00 de acréscimo, total da venda +R$ 10,00 e recebido +R$ 110,00, sem aumentar o saldo de parcelas ainda pendentes. Corrigir esse pagamento para R$ 105,00 altera o acréscimo para R$ 5,00, conserva o ID e reconcilia todos os totais; data, forma e nota corrigidas aparecem no histórico. Rejeitar valor menor que R$ 100,00, data inválida, salto e duplicidade sem alterar estado. Parcela atrasada exibe “Checar juros do Crediloja!”; observação respeita 20 caracteres. Sem cálculo automático de juros.
 - **CA-038 — Consulta e relatórios:** ordenar e paginar Vendas com filtros combinados; conferir os três títulos, CPF/telefone, links, primeiro vencimento e ordem das parcelas vencidas. Contrato Prejuízo sem recebimentos contribui apenas com suas pendências ao total separado; contrato Prejuízo com pagamento anterior aparece no grid mas não é somado. Vendas Inativas/Prejuízo não afetam total operacional, e pagamentos históricos continuam no relatório mensal. Testar vazios, empates, centavos, entrada, temas e viewports. Não exigir cartões ou gráficos nesta Change.
 
-**Rastreabilidade da Change:** FON-017 → OBJ-001/002/003/004 → RF-013/014/015/016 → RN-025/026 → CA-036/037/038 → TDD/DEC-028 e `openspec/changes/feedback-luighi/`. O PRD antecede o TDD e o SDD; a implementação exige pedido posterior e verificações reais.
+**Rastreabilidade da Change:** FON-017 → OBJ-001/002/003/004 → RF-013/014/015/016 → RN-025/026 → CA-036/037/038 → TDD/DEC-028 e `openspec/changes/feedback-luighi/`. O PRD antecede o TDD e o SDD. O apply autorizado foi executado na feature branch; a implementação e suas verificações/limitações estão rastreadas em `openspec/changes/feedback-luighi/tasks.md` e `frontend/README.md`. Isso não representa homologação, aceite operacional ou merge.
 
 ## Refinamento dos dados demonstrativos — 23/11/2026
 

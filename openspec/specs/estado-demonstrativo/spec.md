@@ -48,7 +48,7 @@ A demonstração SHALL capturar o dia civil local na abertura da aplicação e u
 
 ### Requirement: Fonte única preservada entre rotas
 
-Todas as consultas e comandos internos SHALL usar a mesma fonte de vendas durante a sessão. Navegar entre páginas SHALL não reinicializar ou duplicar registros. Cadastros, edições de cliente e recebimentos aceitos SHALL ser refletidos coerentemente em todas as projeções, sem copiar vendas entre coleções de abertas e quitadas. Edição de cliente SHALL não alterar resumos financeiros ou outras vendas.
+Todas as consultas e comandos internos SHALL usar a mesma fonte de vendas durante a sessão. Navegar entre páginas SHALL não reinicializar ou duplicar registros. Cadastros, edições de cliente, alterações de status, recebimentos e correções aceitas SHALL ser refletidos coerentemente em todas as projeções, sem copiar vendas entre coleções. Edição de cliente SHALL não alterar resumos financeiros ou outras vendas.
 
 #### Scenario: Navegar depois de uma mutação interna
 - **WHEN** um comando válido for aceito em teste de integração e a navegação percorrer os destinos existentes
@@ -60,9 +60,13 @@ Todas as consultas e comandos internos SHALL usar a mesma fonte de vendas durant
 - **THEN** consultas e busca SHALL refletir os novos dados nessa venda, mantendo seu ID e a coleção financeira correspondente
 - **AND** as demais vendas, parcelas, recebimentos, saldos e resumos SHALL permanecer inalterados
 
+#### Scenario: Reclassificar sem duplicar nem apagar venda
+- **WHEN** uma venda percorrer Ativo→Inativo→Ativo ou Ativo→Prejuízo→Ativo
+- **THEN** o ID SHALL permanecer único na fonte e as projeções SHALL refletir o status atual sem alterar os pagamentos já registrados
+
 ### Requirement: Consultas imutáveis e comandos protegidos
 
-Consultas SHALL não permitir alterar o estado por referências retornadas. Comandos de cadastro, edição de cliente e recebimento SHALL copiar entradas, validar o agregado completo e publicar no máximo uma alteração aceita, distinguindo sucesso, validação, ausência, inelegibilidade e falha inesperada com mensagens em português. Rascunhos e comandos rejeitados SHALL não produzir mutações.
+Consultas SHALL não permitir alterar o estado por referências retornadas. Comandos de cadastro, edição de cliente, mudança de status, recebimento e correção de pagamento individual SHALL copiar entradas, validar o agregado completo e publicar no máximo uma alteração aceita, distinguindo sucesso, validação, ausência, inelegibilidade e falha inesperada em português. Rascunhos e comandos rejeitados SHALL não produzir mutações.
 
 #### Scenario: Impedir alteração por referência externa
 - **WHEN** um consumidor tentar modificar objetos ou listas de uma consulta, ou alterar seu rascunho após cadastrar ou editar
@@ -84,7 +88,20 @@ Consultas SHALL não permitir alterar o estado por referências retornadas. Coma
 - **WHEN** o núcleo oferecer preparação interna ou rascunho antes de confirmação pela interface
 - **THEN** as consultas SHALL continuar sem efeitos colaterais, sem publicar alterações por preparar ou abandonar rascunhos
 - **AND** a preparação interna isolada SHALL não comprovar entrega da UI comercial, avaliação ou aceite da ótica
-- **AND** cadastro, edição e recebimento funcionais da FASE-006 SHALL usar os comandos protegidos somente na confirmação explícita
+- **AND** cadastro, edição e recebimento funcionais SHALL usar os comandos protegidos somente na confirmação explícita
+
+#### Scenario: Rejeitar correção ou transição obsoleta
+- **WHEN** uma correção tiver ID de pagamento ausente/obsoleto, valor inválido ou uma mudança de status não for elegível
+- **THEN** SHALL preservar todos os registros e totais sem anunciar sucesso nem deslocar a ação para outro ID
+
+#### Scenario: Rejeitar transição direta entre Inativo e Prejuízo
+- **WHEN** uma mudança direta Inativo→Prejuízo ou Prejuízo→Inativo for solicitada
+- **THEN** SHALL rejeitar a transição e preservar o agregado e suas projeções
+
+#### Scenario: Repetir o status atual sem nova mutação
+- **WHEN** um comando solicitar o status administrativo que a venda já possui
+- **THEN** SHALL aceitar o comando como no-op idempotente
+- **AND** SHALL preservar o agregado e não publicar efeitos duplicados
 
 ### Requirement: Descarte de sessão sem persistência ou serviços de dados
 
