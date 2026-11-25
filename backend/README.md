@@ -48,7 +48,7 @@ A API foi iniciada como processo real, sem launch profile: listener padrão `507
 alternativo `5073` observados somente em `127.0.0.1`; porta alternativa foi liberada
 após `CTRL_BREAK_EVENT`/encerramento normal. Porta `5074` ocupada causou falha na
 instância nova sem interromper o listener proprietário; configuração de porta `1023`
-falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 4 testes
+falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 8 testes
 aprovados, 0 falhas e 0 ignorados; cobre `/health`, 404 sem autenticação ou
 redirecionamento, ausência de CORS permissivo e inexistência de rotas de
 template/OpenAPI.
@@ -150,3 +150,19 @@ também são rejeitados. `/health` indica somente
 disponibilidade do processo, não readiness de banco nem operação comercial. Não há
 login, dados financeiros, integração Angular, importação da planilha, persistência
 ou Tauri nesta fase.
+
+## Falhas técnicas e segurança das respostas
+
+Exceções inesperadas em requisições são tratadas pelo middleware nativo
+`UseExceptionHandler` e pelo serviço `AddProblemDetails`. Em Development e
+Production, a resposta é HTTP 500 com `application/problem+json`, sem mensagem da
+exceção, stack trace, segredo ou configuração interna. Os testes provocam a falha
+por um `IStartupFilter` adicionado exclusivamente via `ConfigureTestServices` na
+`WebApplicationFactory`; essa composição não faz parte do `Program` publicado e
+`/__test/failure` retorna 404 em ambos os ambientes sem a injeção de teste.
+
+O middleware registra a exceção nos logs do servidor para diagnóstico. Logs podem
+conter mensagens e stack traces internos: evitar incluir credenciais ou dados
+pessoais em mensagens de exceção e restringir acesso e retenção dos logs conforme o
+ambiente. A resposta HTTP é deliberadamente genérica; detalhes de implementação
+não devem ser adicionados ao corpo nem a headers.
