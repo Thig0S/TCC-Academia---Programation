@@ -1,0 +1,40 @@
+{
+  "viewport": "1366x768",
+  "document": "1366x1773",
+  "headings": [
+    "Relatórios",
+    "Análise mensal",
+    "Recebimentos no mês",
+    "Vendas do mês",
+    "Parcelas em aberto",
+    "Parcelas vencidas",
+    "Prejuízo"
+  ],
+  "tables": [
+    {
+      "caption": "Entradas, pagamentos individuais e lotes recebidos entre 01/11/2026 e 30/11/2026",
+      "rows": 6,
+      "font": "18px",
+      "lineHeight": "20px"
+    },
+    {
+      "caption": "Vendas cadastradas entre 01/11/2026 e 30/11/2026",
+      "rows": 3,
+      "font": "18px",
+      "lineHeight": "20px"
+    },
+    {
+      "caption": "Saldos positivos por venda na referência 25/11/2026",
+      "rows": 9,
+      "font": "18px",
+      "lineHeight": "20px"
+    },
+    {
+      "caption": "Parcelas pendentes vencidas na referência 25/11/2026",
+      "rows": 6,
+      "font": "18px",
+      "lineHeight": "20px"
+    }
+  ],
+  "theme": "dark"
+}

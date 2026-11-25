@@ -6,7 +6,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 
 ## 1. Base visual da mudança autorizada
 
-- [ ] 1.1 Após pedido explícito de apply, capturar Relatórios antes das mudanças em 1366×768/390×844, claro/escuro, com dados sintéticos; registrar baseline, caminhos das capturas e composição existente em `frontend/README.md`, verificando que os arquivos de evidência existem (D4; CA-043).
+- [x] 1.1 Após pedido explícito de apply, capturar Relatórios antes das mudanças em 1366×768/390×844, claro/escuro, com dados sintéticos; registrar baseline, caminhos das capturas e composição existente em `frontend/README.md`, verificando que os arquivos de evidência existem (D4; CA-043).
 
 ## 2. Período mensal e série diária
 
