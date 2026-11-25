@@ -28,6 +28,38 @@ function dataISO(data: string): string {
   return `${ano}-${mes}-${dia}`;
 }
 
+test('detalhes independentes abrem por Enter e Espaço e permanecem abertos ao aplicar mês', async ({
+  page,
+}) => {
+  await page.goto('/relatorios');
+  const detalhes = page.locator('main details');
+  await expect(detalhes).toHaveCount(5);
+  for (let indice = 0; indice < 5; indice++) {
+    await expect(detalhes.nth(indice)).toHaveJSProperty('open', false);
+  }
+
+  const resumoRecebimentos = detalhes.nth(0).locator('summary');
+  const resumoVendas = detalhes.nth(1).locator('summary');
+  await resumoRecebimentos.focus();
+  await page.keyboard.press('Enter');
+  await expect(detalhes.nth(0)).toHaveJSProperty('open', true);
+  await expect(resumoRecebimentos).toBeFocused();
+
+  await resumoVendas.focus();
+  await page.keyboard.press('Space');
+  await expect(detalhes.nth(1)).toHaveJSProperty('open', true);
+  await expect(detalhes.nth(0)).toHaveJSProperty('open', true);
+  await expect(resumoVendas).toBeFocused();
+
+  await page.locator('#mes-relatorio').selectOption('6');
+  await page.locator('#ano-relatorio').fill('2027');
+  await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
+  await expect(page.getByText('01/06/2027 a 30/06/2027')).toBeVisible();
+  await expect(detalhes.nth(0)).toHaveJSProperty('open', true);
+  await expect(detalhes.nth(1)).toHaveJSProperty('open', true);
+  await expect(page.getByRole('button', { name: 'Aplicar' })).toBeFocused();
+});
+
 for (const tema of ['dark', 'light'] as const) {
   test(`Relatórios separa Prejuízo, identifica linhas e rola localmente em ${tema}`, async ({
     page,
