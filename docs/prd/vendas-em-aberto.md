@@ -51,6 +51,25 @@ O proprietário precisa localizar contratos por destino administrativo, corrigir
 
 **Rastreabilidade da Change:** FON-017 → OBJ-001/002/003/004 → RF-013/014/015/016 → RN-025/026 → CA-036/037/038 → TDD/DEC-028 e `openspec/changes/archive/2026-11-24-feedback-luighi/`. O apply foi executado na feature branch; implementação e evidências estão em `frontend/README.md`. O ajuste de navegação vertical segue FON-031/032 → RF-013/CA-039/040 → TDD/DEC-029/030 → `openspec/changes/empilhar-links-sidebar/`, mantendo IDs anteriores. Ambos integram o PR #30; isso não representa homologação nem aceite operacional.
 
+## Consistência visual das consultas por coleção — requisitos em 24/11/2026
+
+**Fonte FON-033:** solicitação explícita do usuário nesta conversa. Aplicar às
+buscas de Quitadas, Inativas e Prejuízo a mesma linguagem visual dos controles da
+listagem de Vendas abertas, preservando busca local e Limpar pesquisa. Inativas e
+Prejuízo compartilham a tela administrativa. Não oferecer filtro por situação,
+ordenação ou outros controles nessas coleções.
+
+- **RF-017 — Consistência visual nas consultas por coleção:** busca e Limpar
+  pesquisa em Quitadas, Inativas e Prejuízo devem acompanhar altura, borda, raio,
+  superfície, padding, espaçamento e foco visual dos controles de Vendas abertas.
+  IDs, rótulos, orientação, handlers, busca local e limpeza permanecem inalterados.
+- **CA-041 — Controles consistentes nas coleções:** confirmar visualmente e por
+  teste que os controles das três coleções secundárias usam o mesmo padrão de
+  apresentação, que Inativas e Prejuízo recebem o tratamento pelo template
+  compartilhado e que não há filtro por situação nessas telas. Vendas abertas
+  mantém busca, filtro de situação, ordenação, limpeza e Nova venda; dados,
+  rotas, paginação e resultados não mudam.
+
 ## Refinamento dos dados demonstrativos — 23/11/2026
 
 Para tornar as 12 vendas iniciais mais verossímeis em apresentações, substituir
@@ -1105,6 +1124,7 @@ Na revisão inicial, este PRD foi uma entrega independente, sem alterações em 
 
 | Versão | Data | Alteração | Motivo |
 | --- | --- | --- | --- |
+| 1.27 | 24/11/2026 | Harmonizar visualmente os controles de busca de Quitadas, Inativas e Prejuízo com Vendas abertas, sem filtros por situação | Solicitação explícita do usuário; FON-033/RF-017/CA-041 |
 | 1.24 | 24/11/2026 | Confirmar consulta administrativa por coleções e rotas separadas: Ativas em Vendas, Inativas e Prejuízo em destinos próprios, sem seletor desses status na lista normal | Resposta explícita do solicitante no Harness durante a tarefa 4.2; esclarecimento registrado antes da integração final |
 | 1.25 | 24/11/2026 | Dispor Quitadas, Inativas e Prejuízo em links laterais separados, um abaixo do outro, quando Vendas estiver ativo | Solicitação explícita posterior do usuário; FON-031/CA-039; sem alterar rotas, coleções ou status |
 | 1.26 | 24/11/2026 | Refinar espaçamento dos links laterais e associar ícones decorativos distintos a Quitadas, Inativas e Prejuízo | Solicitação explícita posterior do usuário; FON-032/CA-040; sem alterar rotas, coleções ou status |

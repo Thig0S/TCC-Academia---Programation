@@ -40,6 +40,26 @@ O teste E2E `npm run test:e2e -- --grep "logo local"` não iniciou: o endereço 
 `127.0.0.1:4200` já estava ocupado. O servidor existente foi preservado e não reutilizado;
 portanto esse teste não é contado como aprovado. A resolução no subcaminho é verificada
 pela regressão unitária e pela presença do arquivo no build local.
+## Apply `harmonizar-consultas-colecoes` — estilo das buscas — 24/11/2026
+
+Os campos de busca e botões Limpar pesquisa em Quitadas, Inativas e Prejuízo agora
+usam a mesma altura, superfície, borda, arredondamento, espaçamento e foco visual
+da listagem de Vendas abertas. Inativas e Prejuízo recebem o ajuste pelo template
+administrativo compartilhado. Nenhum filtro por situação ou outro controle foi
+adicionado; busca, limpeza, rotas e paginação permanecem inalteradas.
+
+Verificações direcionadas:
+
+- `npm.cmd test -- --watch=false --include=src/app/funcionalidades/vendas/listas-vendas.spec.ts --include=src/app/funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas.spec.ts` — **13 testes em 2 arquivos aprovados**.
+- `npm.cmd run build` — aprovado; bundle inicial **315,57 kB** (transferência estimada **83,53 kB**).
+- Prettier direcionado aos templates, teste e artefatos OpenSpec — aprovado.
+- `openspec validate harmonizar-consultas-colecoes --strict` e `git diff --check` — aprovados.
+
+A checagem Prettier que também incluiu o PRD e o TDD apontou diferenças de
+formatação que já existem nesses documentos em `HEAD`; eles não foram reformatados
+integralmente. A suíte unitária/E2E completa não foi executada. As verificações
+usaram somente dados sintéticos e não constituem aceite operacional.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
