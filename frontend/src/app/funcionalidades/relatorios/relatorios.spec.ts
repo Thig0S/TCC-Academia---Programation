@@ -86,6 +86,12 @@ function texto(elemento: Element): string {
   return (elemento.textContent ?? '').replaceAll('\u00a0', ' ');
 }
 
+function centavos(textoValor: string): number {
+  const valor = textoValor.match(/R\$\s*([\d.]+,\d{2})/)?.[1];
+  if (!valor) throw new Error(`Valor BRL ausente: ${textoValor}`);
+  return Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
+}
+
 describe('Relatórios', () => {
   const vendas = signal<readonly ProjecaoVenda[]>([]);
 
@@ -114,13 +120,62 @@ describe('Relatórios', () => {
     expect(conteudo).toContain('Recebimentos no mês');
     expect(conteudo).toContain('Parcelas em aberto');
     expect(conteudo).toContain('R$ 0,00');
-    expect(pagina.querySelectorAll('table')).toHaveLength(0);
+    expect(pagina.querySelectorAll('table')).toHaveLength(1);
+    expect(pagina.querySelector('table caption')?.textContent).toContain('valores em BRL');
     expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
       0,
     );
     expect(pagina.querySelectorAll('select')).toHaveLength(1);
     expect(pagina.querySelectorAll('input[type="number"]')).toHaveLength(1);
     expect(pagina.querySelectorAll('canvas')).toHaveLength(0);
+    const diaria = pagina.querySelector(
+      '[aria-label="Tabela diária equivalente de recebimentos"]',
+    )!;
+    expect(diaria.querySelectorAll('tbody tr')).toHaveLength(31);
+    expect(
+      [...diaria.querySelectorAll('tbody td:last-child')].every(
+        (celula) => centavos(texto(celula)) === 0,
+      ),
+    ).toBe(true);
+    expect(pagina.querySelector('[role="status"]')?.textContent).toContain(
+      'todos os dias estão zerados',
+    );
+    expect(pagina.querySelectorAll('svg')).toHaveLength(1);
+  });
+
+  it('reconcilia gráfico e tabela diária com os recebimentos em centavos', async () => {
+    const movimento = venda('serie', '2027-03-01', {
+      recebimentos: [
+        pagamento('entrada', '2027-03-10', 125),
+        pagamento('lote', '2027-03-10', 50),
+        pagamento('individual', '2027-03-20', 305),
+      ],
+    });
+    vendas.set([movimento]);
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = harness.routeNativeElement!;
+    const regiao = pagina.querySelector(
+      '[aria-label="Tabela diária equivalente de recebimentos"]',
+    )!;
+    const linhas = [...regiao.querySelectorAll<HTMLTableRowElement>('tbody tr')];
+    const soma = linhas.reduce((total, linha) => total + centavos(texto(linha.cells[2])), 0);
+    const recebido = pagina.querySelector(
+      '[aria-label="Totais da movimentação do mês"] article p',
+    )!;
+
+    expect(linhas).toHaveLength(31);
+    expect(linhas[0].cells[1].textContent?.trim()).toBe('01/03/2027');
+    expect(texto(linhas[9].cells[2])).toContain('R$ 1,75');
+    expect(texto(linhas[19].cells[2])).toContain('R$ 3,05');
+    expect(linhas[30].cells[1].textContent?.trim()).toBe('31/03/2027');
+    expect(soma).toBe(centavos(texto(recebido)));
+    expect(pagina.querySelectorAll('svg rect')).toHaveLength(31);
+    expect(Number(pagina.querySelectorAll('svg rect')[0].getAttribute('height'))).toBe(0);
+    expect(pagina.querySelector('svg')?.getAttribute('aria-describedby')).toBe(
+      'grafico-recebimentos-descricao',
+    );
+    expect(regiao.getAttribute('tabindex')).toBe('0');
+    expect(regiao.querySelector('caption')?.textContent).toContain('valores em BRL');
   });
 
   it('aplica mês localmente, preserva posições e mantém foco e resultado em seleção inválida', async () => {
@@ -545,13 +600,19 @@ describe('Relatórios', () => {
     expect(pagina.querySelector('#indisponibilidade-exportacao')?.textContent).toContain(
       'Exportação não disponível no protótipo.',
     );
-    expect(pagina.querySelector('[role="status"]')).toBeNull();
+    expect(
+      [...pagina.querySelectorAll('[role="status"]')].some((status) =>
+        status.textContent?.includes('A exportação de relatórios'),
+      ),
+    ).toBe(false);
 
     botao.click();
     harness.detectChanges();
-    expect(pagina.querySelector('[role="status"]')?.textContent).toContain(
-      'A exportação de relatórios não está disponível no protótipo.',
-    );
+    expect(
+      [...pagina.querySelectorAll('[role="status"]')].find((status) =>
+        status.textContent?.includes('A exportação de relatórios'),
+      )?.textContent,
+    ).toContain('A exportação de relatórios não está disponível no protótipo.');
     expect(pagina.querySelectorAll('a[download]')).toHaveLength(0);
   });
 });
