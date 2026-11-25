@@ -75,6 +75,11 @@ de centavo por parcela, data não futura, alcance do calendário e unicidade loc
 IDs antes de publicar o agregado. A distribuição do resto prioriza as primeiras
 parcelas. Cada parcela e alocação é imutável; nenhuma operação gera IDs.
 
+Com entrada, a quantidade solicitada inclui a entrada como parcela 1; ela vence e
+é recebida uma única vez na data da venda, com forma explícita. A distribuição do
+saldo ocorre apenas nas parcelas futuras. Entrada zero, integral, sem parcela futura,
+com data divergente ou forma desconhecida é rejeitada antes de publicar a venda.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
