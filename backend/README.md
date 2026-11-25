@@ -82,6 +82,13 @@ listener apareceu em `5091`. Ao final, nenhuma das portas de smoke ou processo d
 host ficou ativo; variáveis de ambiente foram restauradas. Nenhum banco ou serviço
 externo foi iniciado.
 
+Verificação de independência da demonstração (5.3), executada em `frontend/` com
+a API desligada: `npm.cmd test -- --watch=false` aprovou 33 arquivos e 430 testes;
+`npm.cmd run build` concluiu sem erros. Nenhum E2E foi executado, pois não houve
+mudança de UI. O diff da Change não contém alterações em fontes Angular, seed,
+workflow Pages, banco, autenticação, Tauri ou dados reais; a compilação frontend
+permanece independente do host backend.
+
 ## Pré-requisitos e execução
 
 - Windows x64 com SDK .NET `10.0.404` (ou patch compatível da mesma feature band)
