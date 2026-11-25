@@ -52,6 +52,12 @@ falhou antes de abrir listener. `IntegrationTests` foi executado pelo MTP: 4 tes
 aprovados, 0 falhas e 0 ignorados; cobre `/health`, 404 sem autenticação ou
 redirecionamento, ausência de CORS permissivo e inexistência de rotas de
 template/OpenAPI.
+Contrato também verificado em processo Kestrel real (DLL Release, diretório
+`backend/`, ambiente `Production`, sem launch profile): listener `127.0.0.1:5070`,
+`GET /health` respondeu `HTTP 200`, `text/plain`, corpo `Healthy`; `CTRL_BREAK_EVENT`
+encerrou o host normalmente (exit code 0) e a porta foi liberada. A resposta informa
+apenas que o processo está disponível; não existe banco ou verificação de readiness
+financeira nesta fase.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução
