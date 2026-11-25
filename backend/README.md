@@ -53,6 +53,13 @@ validadas e retornam resultado de domínio tipado; valores negativos ou operaç�
 que ultrapassem o intervalo não produzem um novo valor. Formatação e interpretação
 de reais permanecem responsabilidade dos consumidores.
 
+`CalendarioCivil` usa exclusivamente `DateOnly` gregoriano, sem relógio ou fuso.
+Cada vencimento mensal é calculado a partir da data-base original; o alcance do
+último vencimento é validado antes de alocar a coleção. A classificação na janela
+de dias compara diferença civil inclusiva e não soma dias à referência, inclusive
+em `9999-12-31`. Este núcleo recebe datas já tipadas; parse e apresentação textual
+permanecem nas fronteiras consumidoras.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
