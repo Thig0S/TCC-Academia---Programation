@@ -1,33 +1,40 @@
 # Tasks
 
-PRD/FON-018/RF-017/CA-039, TDD/DEC-029, `proposal.md`, delta e `design.md`. **Planejamento apenas:** a Change `feedback-luighi` e seus contratos não estão integrados nesta branch. Nenhum item foi aplicado.
+PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `design.md`. **Planejamento apenas:** base atual já contém `feedback-luighi`, mas nenhum item de implementação do dashboard foi aplicado. Checklist revisado em 25/11 conforme simplificação confirmada, sem marcar tarefas antigas como executadas.
 
-## 1. Pré-condição e reconciliação antes do apply
+**Verificação documental em 25/11/2026:** `openspec validate dashboard-relatorios --strict` aprovado; `openspec status --change dashboard-relatorios` informa 4/4 artefatos presentes; `git diff --check` sem erros de whitespace (somente avisos locais LF/CRLF). Diff relativo à `main` restrito a PRD, TDD e artefatos desta Change. Testes da aplicação, builds, capturas e inspeções de interface não executados nesta etapa. Presença de artefatos não comprova implementação ou aprovação.
 
-- [ ] 1.1 Conferir merge real de `feedback-luighi` e seus critérios na `main`, atualizar esta branch para a `main` integrada sem descartar trabalho e verificar que status, seções de Prejuízo, identificação e valores efetivos existem; se não existirem, manter apply bloqueado (D1; CA-038/039).
-- [ ] 1.2 Comparar PRD/TDD/delta com o código e a spec principal integrada, ajustar primeiro os artefatos afetados se houver divergência e executar `openspec validate dashboard-relatorios --strict`; documentar referências/resultado real antes de qualquer mudança de código (D1; CA-039).
+## 1. Base visual da mudança autorizada
 
-## 2. Projeções contextuais do dashboard
+- [ ] 1.1 Após pedido explícito de apply, capturar Relatórios antes das mudanças em 1366×768/390×844, claro/escuro, com dados sintéticos; registrar baseline, caminhos das capturas e composição existente em `frontend/README.md`, verificando que os arquivos de evidência existem (D4; CA-043).
 
-- [ ] 2.1 Derivar cinco valores dos relatórios integrados sem repetir regras financeiras, e séries por data efetiva de recebimentos no mês, comparação saldo Ativo/Prejuízo elegível e vencidas Ativas por vencimento na referência; testar centavos, bordas, data corrigida, entrada, Inativas/Prejuízo e vencidas de meses anteriores com igualdade aos totais das tabelas (D2; CA-039).
-- [ ] 2.2 Derivar resumos de cobrança com cliente, CPF, telefone, primeiro vencimento, valor/situação e ID sem cortar a coleção detalhada; testar nomes similares, múltiplas parcelas por venda, ID íntegro, empates e estados vazios, registrando verificações em `frontend/README.md` (D2; CA-039).
+## 2. Período mensal e série diária
 
-## 3. Cartões e gráficos acessíveis
+- [ ] 2.1 Estender `calcularRelatorio` com mês opcional sem quebrar chamadas de dois argumentos; em `relatorios.calculos.spec.ts`, verificar limites inclusivos, meses vazios/futuros, fevereiro bissexto, dezembro/janeiro, anos 0001/9999 e invariância de saldos/vencidas/Prejuízo/referência ao trocar mês. Documentar contrato e resultados reais em `frontend/README.md` (D1/D2; CA-042).
+- [ ] 2.2 Derivar série de todos os dias a partir dos mesmos recebimentos, com zeros e soma em centavos; testar entrada/lote/individual de todos os status, valores desiguais, correção entre meses sem novo ID, reativação, totais efetivos de vendas Ativas e igualdade série/total/tabela. Registrar testes/documentação no commit da projeção (D3; CA-042).
 
-- [ ] 3.1 Apresentar cinco cartões contextuais com rótulos “no mês”/“na referência”, sem copiar a faixa global da Visão Geral; testar valores, atualizações após pagamento/status, estados vazios, dois temas e viewports e documentar resultados (D3; CA-039).
-- [ ] 3.2 Apresentar três gráficos com título, unidade/legenda, rótulos e tabela/texto equivalente, sem manipulação exclusiva por ponteiro; testar leitura por teclado, vazio, contraste, tela estreita e reconciliação de cada categoria com dados detalhados, registrando observações em `frontend/README.md` (D3; CA-039).
+## 3. Seleção e cartões contextuais
 
-## 4. Cobrança e acesso integral aos detalhes
+- [ ] 3.1 Implementar rascunhos de mês/ano, sinal de seleção aplicada e ação Aplicar local à página, com erro associado/anunciável; testar seleção inválida/vazia preservando último resultado, ano decimal/fora dos limites, atualização mensal sem mudar posição, foco e restauração ao recriar a página, sem URL/storage. Registrar resultados em `frontend/README.md` (D2; CA-042).
+- [ ] 3.2 Apresentar dois cartões mensais e três de posição atual com quantidade de vendas, intervalo/referência e explicações sobre sobreposição de vencidas e restrição do total de Prejuízo; testar cinco totais, zeros, mudanças de status/pagamento e ausência de faixa global duplicada. Verificar identidade atual e empilhamento em temas/viewports e documentar no commit da apresentação (D4; CA-042/043).
 
-- [ ] 4.1 Integrar resumos por cliente e links para a venda correta, mantendo as cinco tabelas integrais na mesma aba abaixo ou em expansão acessível; testar foco, estado da expansão, rolagem contida, linhas de prejuízo não somadas, dados sem truncamento e vazio por seção nos dois temas/viewports; documentar evidências (D3; CA-039).
+## 4. Gráfico diário acessível
 
-## 5. Regressão e conclusão da Change
+- [ ] 4.1 Implementar somente gráfico de barras diário local em SVG com eixos/unidade, título/descrição e tabela HTML equivalente acessível também visualmente, fora dos cinco detalhes; testar todos os dias, soma exata, dias zero, mês vazio, escala sem divisão por zero, valores desiguais, leitura sem hover e sem gráficos/resumos extras. Verificar temas/viewports, ausência de overflow global e de nova dependência, documentando evidências no commit do gráfico (D3/D5; CA-042/043).
 
-- [ ] 5.1 Executar testes unitários/componentes, E2E da aplicação e fixture aplicável, builds, formatação e `openspec validate dashboard-relatorios --strict`; registrar comandos, resultados, avisos e limites reais sem alegar verificação não executada (CA-039).
-- [ ] 5.2 Inspecionar cenário integrado em 1366×768 e 390×844 nos temas claro/escuro, foco/teclado, equivalentes textuais, contraste e zoom nativo 200% quando verificável; conciliar PRD/TDD/SDD e tarefas com evidências reais, conferir diff restrito à Change sem reivindicar aceite da ótica ou merge (CA-039).
+## 5. Detalhes completos em expansão
+
+- [ ] 5.1 Integrar cinco `details`/`summary` inicialmente fechados, com títulos/totais visíveis, quantidade em Vendas, tabelas e vazios completos; testar Enter/Espaço, estado, foco, duas expansões simultâneas e preservação de abertura ao aplicar mês. Preservar exportação ilustrativa sem download e documentar testes do componente (D6; CA-043).
+- [ ] 5.2 Adaptar `relatorios.spec.ts`, `e2e/relatorios-cobranca.spec.ts` e demais testes que presumem tabelas sempre abertas/ausência de seletor, abrindo detalhes antes de consultar; preservar asserções de todas as linhas (>5), IDs opacos, CPF/telefone, ordenação, primeiro vencimento, Prejuízo fora do total e rolagem local. Executar testes direcionados e registrar resultados em `frontend/README.md` no commit de detalhes (D6; CA-042/043).
+
+## 6. Verificação integrada e conclusão
+
+- [ ] 6.1 Executar cenário integrado com pagamento/acréscimo, correção de data entre meses, inativação/Prejuízo/reativação e recarga; verificar conciliação cartões/gráfico/detalhes, independência das posições e demais telas, consulta sem mutação, descarte da sessão e ausência de transmissão/download. Registrar comandos e evidências reais (CA-042/043).
+- [ ] 6.2 Comparar capturas antes/depois em 1366×768/390×844 e claro/escuro; verificar contraste, teclado/foco, controles, tabela diária, tabelas de 18 px/20 px, overflow localizado e zoom nativo 200% quando verificável. Documentar medições, diferenças intencionais, falhas/limitações e eventual evidência manual sem alegar aceite visual/operacional automático (D4–D6; CA-043).
+- [ ] 6.3 Executar regressão unitária/componentes, E2E da aplicação e fixture aplicável, builds correspondentes, `format:check`, `git diff --check` e `openspec validate dashboard-relatorios --strict`; registrar resultados reais e bloqueios preexistentes sem enfraquecer expectativas/budgets. Conciliar PRD/TDD/SDD, evidências e tarefas antes de declarar o escopo implementado (CA-042/043).
 
 ## Workflow follow-up
 
-- Fazer commits por funcionalidade com seus testes/documentação na branch `feature/dashboard-relatorios` somente após a pré-condição para o apply; nunca antecipar trabalho da Change `feedback-luighi`.
+- Fazer commits por funcionalidade com seus testes/documentação na branch `feature/dashboard-relatorios`; mensagens objetivas em português com prefixos adequados. Não reimplementar `feedback-luighi` nem iniciar código nesta etapa de planejamento.
 - Abrir um PR independente para a `main` apenas após concluir todas as tarefas autorizadas e verificações aplicáveis, usando `.github/pull_request_template.md`; não abrir PR por planejamento parcial.
 - Sincronizar/arquivar a Change no fluxo apropriado após implementação/revisão; mesclar somente com autorização explícita do usuário.
