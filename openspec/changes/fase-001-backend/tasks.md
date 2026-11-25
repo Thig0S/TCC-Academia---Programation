@@ -1,17 +1,20 @@
 # Tasks
 
-Base: PRD/FON-036/RF-021/022/CA-044/045, FON-035 e TDD/DEC-033; contrato em
-`specs/execucao-backend-local/spec.md`, decisões D1–D6 em `design.md`.
+Base: PRD/FON-036/037/RF-021/022/CA-044/045, FON-035 e TDD/DEC-033/034; contrato em
+`specs/execucao-backend-local/spec.md`, decisões D1–D7 em `design.md`.
 Todas as caixas estão pendentes: esta Change foi somente planejada. Iniciar apenas
 após revisão dos artefatos e pedido explícito de apply. Não implementar fases de
 banco, regras financeiras, migração ou Tauri para encerrar esta lista.
+MediatR/CQRS/Vertical Slices é padrão documentado para futuros casos de uso; não
+adicionar pacote, registro de DI, requisições ou handlers nesta fase. A versão e o
+licenciamento serão resolvidos antes da Change que autorizar a adoção efetiva.
 
 ## 1. Solução e ambiente reproduzível
 
 - [ ] 1.1 Confirmar, no início do apply, SDK 10.0.103 com política latestPatch e disponibilidade/suporte das versões exatas MSTest.Sdk 4.5.3 e Microsoft.AspNetCore.Mvc.Testing 10.0.3; verificar com `dotnet --info`, metadados e avisos de suporte/segurança, registrando no README. Se exigir troca de baseline, revisar PRD/TDD/SDD antes do código afetado, sem substituição silenciosa de framework de testes.
 - [ ] 1.2 Criar `backend/VendasEmAberto.slnx`, os quatro projetos de produção e os dois projetos MSTest em `src/` e `tests/`, conforme D1; conferir arquivos e referências com inspeção dos projetos/solução e `dotnet build`, sem Class1, WeatherForecast, entidades ou regras financeiras.
 - [ ] 1.3 Adicionar configurações locais de SDK/runner, nullable/implicit usings, formatação e exclusões em `backend/` conforme D2/D3; habilitar lockfiles, gerar a resolução e executar `dotnet restore VendasEmAberto.slnx --locked-mode` e build Release. Verificar que SDK/runner foram selecionados a partir de `backend/`, lockfiles aplicáveis estão versionados e `.gitignore` da raiz permanece fora do staging.
-- [ ] 1.4 Documentar em `backend/README.md` pré-requisitos, camadas, versões efetivas e comandos de restore/build/format, distinguindo acesso inicial a pacotes de execução offline; verificar comandos como escritos e dependências sem EF/SQLite, login ou ferramentas globais. Consolidar este grupo em commit próprio após build e revisão do diff, sem declarar testes vazios como aprovados.
+- [ ] 1.4 Documentar em `backend/README.md` pré-requisitos, camadas, versões efetivas e comandos de restore/build/format, distinguindo acesso inicial a pacotes de execução offline; registrar MediatR + CQRS + Vertical Slices como padrão futuro de Aplicacao, conforme DEC-034/D7, com Command/Query e Handler por caso de uso, sem instalar/registrar MediatR ou criar slices de exemplo e mantendo `/health` nativo. Conferir o texto contra D1/D7, indicar versão/licença como pré-requisito da adoção posterior e verificar comandos como escritos e dependências sem EF/SQLite, login ou ferramentas globais. Consolidar este grupo em commit próprio após build e revisão do diff, sem declarar testes vazios como aprovados.
 
 ## 2. Configuração local e ciclo de vida do host
 

@@ -2,7 +2,7 @@
 
 ## Context
 
-Ver `proposal.md`, PRD/FON-036/RF-021/022/CA-044/045 e TDD/DEC-033. A inspeção
+Ver `proposal.md`, PRD/FON-036/037/RF-021/022/CA-044/045 e TDD/DEC-033/034. A inspeção
 encontrou somente `frontend/` como aplicação, `app.config.ts` sem cliente HTTP de
 dados e workflow exclusivo de Pages. `ServicoDemonstracao` mantém o estado em
 memória; a nova API não será seu substituto nesta fase.
@@ -87,8 +87,9 @@ Habilitar lockfiles NuGet aplicáveis e versioná-los, incluindo resolução tra
 O MSBuild SDK MSTest tem versão exata própria, não substituída pelo lockfile NuGet.
 Restauração inicial gera locks; depois usar `--locked-mode`. Não adicionar
 ferramentas dotnet globais ou dependências de ORM, DI externo, FluentAssertions,
-mediador, mapeador ou cobertura sem necessidade desta fase. A checagem de formato
-usa o comando do SDK e o `.editorconfig` local.
+mediador, mapeador ou cobertura nesta fase. MediatR é o padrão futuro documentado
+em D7, não uma dependência desta base técnica. A checagem de formato usa o comando
+do SDK e o `.editorconfig` local.
 
 Alternativa de versões flutuantes rejeitada por dificultar repetição. Não declarar
 a baseline observada como o patch atual de segurança nem como pacote pronto para
@@ -183,6 +184,70 @@ para ausência de cliente HTTP, mudanças em seed, assets e Pages. Não reexecut
 E2E como requisito artificial de uma base sem alteração da UI; registrar a dispensa
 e reavaliá-la se o escopo mudar (sem ampliar implementação silenciosamente).
 
+### D7 — Casos de uso com MediatR, CQRS e Vertical Slices
+
+Por decisão do solicitante (PRD/FON-037 e TDD/DEC-034), organizar futuros casos de
+uso em `Aplicacao/Funcionalidades/<contexto>/<caso-de-uso>/`, com Command ou Query,
+Handler e tipos específicos necessários juntos. Exemplos apenas documentais:
+`Vendas/CadastrarVenda/` e `Vendas/ConsultarVenda/`. Não criar esses diretórios ou
+arquivos de exemplo na fase 001. Evitar pastas globais por tipo técnico que
+dispersem uma funcionalidade e serviços genéricos que concentrem operações.
+
+Cada requisição terá seu handler próprio: Command altera estado; Query consulta
+sem efeitos colaterais. “Uma classe por funcionalidade” expressa responsabilidade
+por caso de uso, não proíbe separar requisição, handler, resposta e validação em
+tipos próprios nem recomenda uma classe que faça tudo. É uma escolha do projeto,
+não um padrão obrigatório imposto pelo .NET.
+
+Fluxo previsto para a fase que adotar a dependência:
+
+```text
+Endpoint HTTP fino (Api)
+          |
+          v
+ISender.Send (MediatR, em processo)
+          |
+          v
+Command/Query + Handler (Aplicacao, por caso de uso)
+          |
+          v
+Dominio / abstracoes de recursos
+          |
+          v
+Implementacoes de Infraestrutura
+```
+
+O registro da aplicação deverá descobrir os handlers do assembly Aplicacao quando
+essa instalação for autorizada. Preservar D1: API cuida de HTTP e composição,
+Aplicacao coordena, Dominio mantém invariantes e não depende de MediatR/ASP.NET,
+Infraestrutura implementa o acesso aos recursos. Slices organizam a funcionalidade
+através dessas fronteiras, não exigem fundir os quatro projetos ou duplicar regras
+financeiras nos handlers.
+
+MediatR não implementa CQRS sozinho nem fornece transações ou mensageria durável.
+Separar escrita de leitura não implica bancos separados, Event Sourcing,
+microserviços, consistência eventual ou processamento assíncrono. Não acrescentar
+behaviors ou bibliotecas adicionais sem requisito e teste que os sustentem.
+MSTest continua obrigatório para futuros handlers e integração do despacho;
+cancelamento deve ser propagado quando aplicável.
+
+**Limite desta Change:** a revisão só documenta o padrão, inclusive no README a
+ser entregue no apply. Não altera o contrato HTTP, não instala MediatR, não registra
+serviços de mediação e não cria requisições, handlers ou testes artificiais. O
+endpoint `/health` usa os health checks nativos de D4. Assim, a especificação de
+`execucao-backend-local` permanece inalterada.
+
+**Versão/licença para adoção posterior:** a documentação corrente informa
+licenciamento duplo e configuração de chave comercial. Antes da primeira Change
+que realmente instalar MediatR, selecionar/fixar a versão, verificar os respectivos
+termos/eligibilidade e definir eventual chave fora do Git, sem presumir gratuidade
+ou obrigação de compra. Suprimir aviso de licença não resolve licenciamento.
+Nenhuma versão foi escolhida nesta revisão; essa decisão é pré-requisito da
+adoção posterior, não bloqueio da fase 001 que não usa o pacote.
+
+Alternativas de serviços amplos ou eliminação das camadas não foram adotadas;
+esta revisão refina a organização dos casos futuros sem mudar o escopo executável.
+
 ## Risks / Trade-offs
 
 - [Baseline não representar patch de segurança atual] → validar avisos/suporte no
@@ -202,6 +267,9 @@ e reavaliá-la se o escopo mudar (sem ampliar implementação silenciosamente).
   README; sem dados reais, persistência, auth ou integrações.
 - [Autoria ou segurança presumida pelo uso offline] → FON-035 preservada; sem login
   nem autoria individual prometida, sem dispensar futuro desenho de IPC.
+- [Confundir decisão arquitetural com instalação autorizada] → D7 é documental;
+  não instalar MediatR ou criar handlers na base. Resolver versão/licença antes da
+  Change que efetivamente utilizar o pacote.
 
 ## Migration Plan
 

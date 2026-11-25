@@ -1,5 +1,68 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-034 — MediatR, CQRS e Vertical Slices na aplicação (25/11/2026)
+
+**Base:** PRD/FON-037 e confirmação de revisão exclusivamente documental da Change
+`fase-001-backend`. O padrão vale para as funcionalidades futuras; não amplia o
+escopo executável de DEC-033. É uma decisão arquitetural deste projeto, não um
+requisito do framework .NET.
+
+**Organização:** preservar os projetos Api, Aplicacao, Dominio e Infraestrutura
+de DEC-033. Dentro de Aplicacao, agrupar por funcionalidade/caso de uso, por exemplo
+`Funcionalidades/Vendas/CadastrarVenda/` e
+`Funcionalidades/Vendas/ConsultarVenda/`. Esses caminhos são ilustrativos, não
+pastas ou funcionalidades a criar nesta fase. Cada operação tem seu próprio
+Command ou Query e Handler, com resposta/validação específicas quando necessárias.
+“Uma classe por funcionalidade” significa responsabilidade concentrada em um caso
+de uso, não uma única classe que mistura transporte, persistência e todas as regras.
+Não criar uma estrutura global de pastas Commands/Queries/Handlers que disperse
+os arquivos de uma mesma funcionalidade.
+
+**Fluxo futuro:** endpoint fino → `ISender.Send` do MediatR → Handler do caso de
+uso → domínio/abstrações de infraestrutura conforme a necessidade. A composição
+da API registra os handlers do assembly Aplicacao quando a adoção for autorizada.
+MediatR realiza despacho em processo; não é broker, persistência, transação ou
+garantia automática de CQRS. Separar Command (altera estado) de Query (consulta
+sem efeitos colaterais), com um handler por requisição. Não introduzir um serviço
+genérico de vendas/pagamentos como concentrador de operações independentes.
+
+**Fronteiras:** Vertical Slices organiza os casos de uso de ponta a ponta sem
+eliminar as dependências entre projetos. Contrato HTTP/mapeamento ficam na API,
+coordenação do caso de uso em Aplicacao, invariantes financeiras em Dominio e
+implementações de acesso a recursos em Infraestrutura. Dominio não depende de
+MediatR ou ASP.NET Core. CQRS não exige dois bancos, modelos físicos separados,
+Event Sourcing, microserviços ou processamento assíncrono; nada disso está aprovado.
+Behaviors de pipeline só devem ser adicionados com necessidade e testes próprios,
+sem instalar dependências ou abstrações antecipadas.
+
+**Testes:** manter MSTest; futuras funcionalidades terão testes de Command/Query e
+Handler e testes de integração que comprovem despacho e comportamento HTTP,
+incluindo cancelamento quando aplicável. Não criar testes triviais ou handlers
+artificiais para declarar o padrão implementado na fase 001.
+
+**Dependência e licença:** a documentação corrente do MediatR informa licenciamento
+duplo e configuração de chave comercial. Antes da adoção efetiva, selecionar e
+fixar versão, verificar seus termos e elegibilidade para este projeto e definir
+tratamento da eventual chave fora do Git. Não presumir gratuidade, direito de uso
+ou necessidade de compra a partir do porte da equipe; não suprimir avisos como
+substituto da verificação de licença. Nenhuma versão/chave foi escolhida e nenhum
+pacote foi instalado. A decisão deve ser concluída na proposta da primeira fase
+que realmente dependa de MediatR, antes de sua implementação.
+
+**Roadmap e compatibilidade:** nesta fase, revisar PRD → TDD → proposal/design/tasks
+e documentar o padrão no futuro README da base. `/health` permanece em health
+checks nativos, sem MediatR. Não adicionar pacote, registro de DI, pastas de slices,
+requisições ou handlers vazios; as camadas podem permanecer sem tipos. Em Change
+posterior, resolver versão/licença, especificar a primeira funcionalidade e então
+implementar seu slice com MSTest. Contrato de execução local e CA-044/045 não mudam.
+
+**Alternativas e verificação:** serviços amplos com métodos para todos os casos
+foram rejeitados pela decisão do solicitante; substituir as camadas por um único
+projeto também não faz parte desta revisão. Conferir coerência com DEC-033 e
+design/D7 e validar os artefatos OpenSpec; não alegar dispatcher ou testes de
+handlers implementados. Fonte consultada: documentação MediatR via Context7,
+incluindo registro de serviços e configuração de licença.
+
 ## DEC-033 — Fundação C# da fase 001 do backend (25/11/2026)
 
 **Base:** PRD/FON-036/RF-021/022/CA-044/045 e FON-035. Planejamento da Change
@@ -23,7 +86,9 @@ simulados. Class libraries podem não ter tipos até as próximas fases.
 **Referências:** Dominio não referencia outros projetos; Aplicacao → Dominio;
 Infraestrutura → Aplicacao e Dominio; Api → Aplicacao e Infraestrutura, como ponto
 de composição. Não adicionar EF, bibliotecas de mediação/mapeamento, autenticação
-ou referências Angular. A estrutura prepara fronteiras, não regras financeiras.
+ou referências Angular nesta fase. DEC-034 define o padrão MediatR/CQRS/Vertical
+Slices para futuros casos de uso, sem antecipar sua instalação. A estrutura prepara
+fronteiras, não regras financeiras.
 
 **SDK e dependências:** todos os projetos em `net10.0`, nullable e implicit usings
 habilitados, sem `LangVersion=preview`. `global.json` dentro de `backend/` seleciona

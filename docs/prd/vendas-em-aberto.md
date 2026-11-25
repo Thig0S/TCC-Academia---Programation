@@ -1,5 +1,27 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Organização dos futuros casos de uso do backend — 25/11/2026
+
+**FON-037:** o solicitante definiu MediatR combinado com CQRS e Vertical Slice
+Architecture como padrão para os futuros casos de uso da camada de aplicação.
+Cada funcionalidade deve ter responsabilidade própria, distinguindo operações de
+escrita de consultas, em vez de concentrar ações independentes em um serviço
+genérico. O detalhamento técnico fica em TDD/DEC-034; essa é uma escolha do projeto,
+não uma exigência universal do desenvolvimento .NET.
+
+**Limite confirmado:** nesta `fase-001-backend`, documentar o padrão e as fronteiras,
+preservando os projetos de camadas e MSTest. Não incluir pacote, configuração de
+MediatR ou handlers de exemplo nesta fase. `/health` continua endpoint técnico
+nativo. Não antecipar funcionalidades financeiras, persistência ou novos contratos
+HTTP para demonstrar a arquitetura. Versão e licenciamento do MediatR devem ser
+resolvidos antes da primeira Change que autorizar sua adoção efetiva; isso não
+bloqueia a base técnica sem essa dependência.
+
+**Rastreabilidade:** FON-037 → RF-021 (organização documentada, sem ampliar seu
+comportamento executável) → TDD/DEC-034 → design/D7 e tasks/1.4 de
+`openspec/changes/fase-001-backend/`. CA-044/045 e a especificação de execução local
+permanecem inalterados. Não há autorização de implementação nesta revisão.
+
 ## Fase 001 do backend — base técnica planejada (25/11/2026)
 
 **FON-036:** solicitação `fase-001-backend`, refinada no Harness: preparar uma base
