@@ -46,6 +46,14 @@ falha somente no README, cuja falha já existia em `HEAD`. A tarefa permanece ab
 até a regressão E2E da aplicação poder concluir com sucesso e a verificação de formato
 global deixar de estar bloqueada; detalhes e comandos em `frontend/README.md`.
 
+**Atualização após autorização — 25/11/2026:** a matriz de edição foi dividida sem
+reduzir cenários/assertions; unitários 430/430, fixture 24/24, build e regressão E2E
+completa 156/156 passaram, além de `git diff --check` e validação OpenSpec estrita. O
+único item pendente de 6.3 é `npm.cmd run format:check`, ainda falhando exclusivamente
+no README por formatação preexistente, documentada em `frontend/README.md`. Por isso
+6.3 permanece desmarcada e o PR não foi aberto: o fluxo deste repositório só permite
+abri-lo depois de concluir todas as tarefas e verificações aplicáveis.
+
 ## Workflow follow-up
 
 - Fazer commits por funcionalidade com seus testes/documentação na branch `feature/dashboard-relatorios`; mensagens objetivas em português com prefixos adequados. Não reimplementar `feedback-luighi` nem iniciar código nesta etapa de planejamento.
