@@ -1,5 +1,4 @@
 using VendasEmAberto.Dominio.Projecoes;
-using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 
 namespace VendasEmAberto.Dominio.Vendas;

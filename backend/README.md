@@ -205,6 +205,34 @@ auditoria de rastreabilidade e escopo, não homologação operacional nem audito
 de segurança. Evidências finais das verificações integradas serão registradas após
 as tarefas 7.2–7.5.
 
+### Verificação integrada do backend — DOM-07 (25/11/2026)
+
+Executada em `backend/` com o SDK isolado `10.0.404` e runtimes
+`Microsoft.NETCore.App`/`Microsoft.AspNetCore.App 10.0.15` (Windows x64). O
+`dotnet` disponível no `PATH` seleciona SDK `10.0.103`, incompatível com o
+`backend/global.json`; por isso, nesta execução, os comandos foram iniciados pelo
+`dotnet.exe` instalado em `%LOCALAPPDATA%\Temp\opencode\dotnet-10.0.404`. A saída de
+`--info` confirmou SDK 10.0.404 e leitura do `global.json` do backend.
+
+Comandos executados, nessa ordem, a partir de `backend/`:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" --info
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" restore VendasEmAberto.slnx --locked-mode
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" build VendasEmAberto.slnx -c Release --no-restore
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test --solution VendasEmAberto.slnx -c Release --no-build
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Restore bloqueado e build Release passaram; build registrou 0 avisos e 0 erros.
+A suíte da solução descobriu e aprovou 139 testes, sem falhas/ignorados: 131 em
+UnitTests (115 no filtro do namespace `Dominio`, além dos testes técnicos) e 8 em
+IntegrationTests. A verificação de formatação integral passou após aplicar
+`dotnet format` para normalizar finais de linha/codificação e remover um `using`
+desnecessário. `dotnet list` confirmou que o projeto Dominio não tem pacotes; seu
+`packages.lock.json` contém dependências vazias para `net10.0`. O grafo de produção
+não recebeu dependências novas nesta fase.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
