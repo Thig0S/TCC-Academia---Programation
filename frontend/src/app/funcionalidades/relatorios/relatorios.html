@@ -1,5 +1,52 @@
 <app-cabecalho titulo="Relatórios" />
 @let relatorio = dados();
+<section
+  class="mb-5 flex flex-wrap items-end gap-3 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+  aria-label="Selecionar mês dos movimentos"
+>
+  <label class="flex min-w-40 flex-col gap-1 font-medium" for="mes-relatorio">
+    Mês
+    <select
+      id="mes-relatorio"
+      class="min-h-12 rounded-lg border-[1px] border-control-border bg-surface px-3 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+      [attr.aria-invalid]="erroSelecao() ? 'true' : null"
+      aria-describedby="erro-selecao-mes"
+      (change)="mesRascunho.set($any($event.target).value)"
+    >
+      @for (mes of meses; track $index) {
+        <option [value]="$index + 1" [selected]="mesSelecionado($index)">{{ mes }}</option>
+      }
+    </select>
+  </label>
+  <label class="flex w-36 flex-col gap-1 font-medium" for="ano-relatorio">
+    Ano
+    <input
+      id="ano-relatorio"
+      type="number"
+      min="1"
+      max="9999"
+      step="1"
+      inputmode="numeric"
+      class="min-h-12 rounded-lg border-[1px] border-control-border bg-surface px-3 text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+      [value]="anoRascunho()"
+      [attr.aria-invalid]="erroSelecao() ? 'true' : null"
+      aria-describedby="erro-selecao-mes"
+      (input)="anoRascunho.set($any($event.target).value)"
+    />
+  </label>
+  <button
+    type="button"
+    class="min-h-12 rounded-lg border-[1px] border-control-border bg-surface-muted px-4 font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+    (click)="aplicarMes()"
+  >
+    Aplicar
+  </button>
+  @if (erroSelecao()) {
+    <p id="erro-selecao-mes" class="m-0 w-full text-danger" role="alert">{{ erroSelecao() }}</p>
+  } @else {
+    <span id="erro-selecao-mes" class="sr-only">Seleção de mês e ano válida.</span>
+  }
+</section>
 <section class="mb-5" aria-label="Exportação de relatório">
   <button
     type="button"
@@ -20,7 +67,7 @@
 </section>
 
 <section class="mb-6" aria-labelledby="periodo-relatorio">
-  <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal</h2>
+  <h2 id="periodo-relatorio" class="mb-2 text-lg font-semibold">Análise mensal aplicada</h2>
   <p class="mb-0 text-text-muted">
     Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
     {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
