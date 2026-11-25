@@ -61,8 +61,7 @@ public sealed partial class Venda
                 !FormasPagamento.EhValida(forma) ? "forma" : "data");
         }
 
-        var observacaoNormalizada = observacao ?? "";
-        if (observacaoNormalizada.EnumerateRunes().Count() > 20)
+        if (!TentarNormalizarObservacao(observacao, out var observacaoNormalizada))
         {
             return FalhaPagamento(
                 CategoriaErroDominio.Validacao,
@@ -160,4 +159,10 @@ public sealed partial class Venda
             "limite-financeiro-excedido",
             mensagem,
             "valorRecebido");
+
+    private static bool TentarNormalizarObservacao(string? observacao, out string normalizada)
+    {
+        normalizada = observacao ?? "";
+        return normalizada.EnumerateRunes().Count() <= 20;
+    }
 }

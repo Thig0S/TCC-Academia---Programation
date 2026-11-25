@@ -104,6 +104,17 @@ Observação opcional é normalizada para texto vazio quando ausente e limitada 
 valores escalares Unicode por `Rune`, não por unidades UTF-16; seu conteúdo é
 preservado sem aparar.
 
+`Venda.CorrigirPagamento` substitui os dados do mesmo recebimento Individual de uma
+venda Ativa, inclusive quitada: preserva ID e vínculo à parcela, atualiza a alocação
+para o novo valor efetivo e recalcula o acréscimo sem alterar a base, outras parcelas
+ou recebimentos. Revalida mínimo-base, data, forma e observação pelas mesmas regras
+da baixa; repetição corrige o registro existente em vez de acrescentar outro. O
+conjunto de vendas conhecidas é recebido somente para distinguir ID de outra venda
+de ID inexistente; a operação devolve apenas a raiz corrigida. Entrada, lote
+histórico, recebimento ausente e venda Inativa/Prejuízo falham sem mutar qualquer
+venda. A validação/aceitação global de um conjunto candidato permanece na operação
+de conjunto prevista para DOM-06.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
