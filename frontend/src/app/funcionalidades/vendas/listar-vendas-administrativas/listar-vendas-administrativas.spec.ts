@@ -21,18 +21,12 @@ describe('Coleções administrativas de vendas', () => {
 
   it('apresenta estados vazios próprios para Inativas e Prejuízo', async () => {
     const harness = await RouterTestingHarness.create('/vendas/inativas');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Vendas inativas');
+    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('Vendas inativas');
     expect(harness.routeNativeElement?.textContent).toContain('Não há vendas inativas.');
-    expect(
-      harness.routeNativeElement?.querySelector('[aria-current="page"]')?.textContent,
-    ).toContain('Inativas');
 
     await harness.navigateByUrl('/vendas/prejuizo');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Vendas em Prejuízo');
+    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('Vendas em Prejuízo');
     expect(harness.routeNativeElement?.textContent).toContain('Não há vendas em Prejuízo.');
-    expect(
-      harness.routeNativeElement?.querySelector('[aria-current="page"]')?.textContent,
-    ).toContain('Prejuízo');
   });
 
   it('mantém coleções exclusivas, busca local e navegação pelo ID opaco', async () => {

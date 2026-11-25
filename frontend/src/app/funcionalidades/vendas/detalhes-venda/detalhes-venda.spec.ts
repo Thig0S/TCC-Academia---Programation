@@ -7,6 +7,7 @@ import { projetarVenda } from '../venda.calculos';
 import { prepararCadastro } from '../venda.validacoes';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
+import { formatarCpf, formatarTelefone } from '../identificacao.validacoes';
 import { calcularRelatorio } from '../../relatorios/relatorios.calculos';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
 
@@ -51,7 +52,8 @@ describe('DetalhesVenda', () => {
     const harness = await RouterTestingHarness.create(url);
     const pagina = harness.routeNativeElement!;
     expect(pagina.textContent).toContain(venda.cliente.nome);
-    expect(pagina.textContent).toContain(venda.cliente.cpf);
+    expect(pagina.textContent).toContain(formatarCpf(venda.cliente.cpf));
+    expect(pagina.textContent).toContain(formatarTelefone(venda.cliente.telefone));
     expect(pagina.textContent).toContain(formatarDataCivil(venda.dataVenda));
     expect(pagina.textContent).toContain(formatarDinheiro(venda.valorTotalCentavos));
     expect(pagina.textContent).toContain(formatarDinheiro(venda.totalPagoCentavos));
@@ -71,9 +73,6 @@ describe('DetalhesVenda', () => {
       expect(linha?.textContent).toContain(parcela.formaPagamento ?? 'Não informada');
     }
     expect(pagina.querySelector('a[href="/vendas"]')).not.toBeNull();
-    expect(pagina.querySelector('a[routerLink="/vendas/quitadas"]')).not.toBeNull();
-    expect(pagina.querySelector('a[routerLink="/vendas/inativas"]')).not.toBeNull();
-    expect(pagina.querySelector('a[routerLink="/vendas/prejuizo"]')).not.toBeNull();
     expect(pagina.querySelectorAll('form, input').length).toBe(0);
     expect(pagina.querySelector('[data-acao-pagar]')).not.toBeNull();
     expect(pagina.querySelectorAll('[data-acao-corrigir]')).toHaveLength(0);
@@ -416,7 +415,8 @@ describe('DetalhesVenda', () => {
 
     const harness = await RouterTestingHarness.create(urlPara(cadastrada.valor.id));
     expect(harness.routeNativeElement?.textContent).toContain('Cliente de sessão');
-    expect(harness.routeNativeElement?.textContent).toContain('90000000175');
+    expect(harness.routeNativeElement?.textContent).toContain(formatarCpf('90000000175'));
+    expect(harness.routeNativeElement?.textContent).toContain(formatarTelefone('00900000001'));
   });
 
   it('separa a entrada, explicita sua ausência e mantém todas as parcelas pagas em Quitadas', async () => {

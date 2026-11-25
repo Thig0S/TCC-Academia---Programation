@@ -1,4 +1,10 @@
-import { cpfValido, prepararCliente, telefoneValido } from './identificacao.validacoes';
+import {
+  cpfValido,
+  formatarCpf,
+  formatarTelefone,
+  prepararCliente,
+  telefoneValido,
+} from './identificacao.validacoes';
 
 describe('Identificação local compartilhada', () => {
   it.each(['90000000175', '900.000.001-75', ' 900.000.001-75 '])('aceita CPF %s', (cpf) => {
@@ -55,5 +61,12 @@ describe('Identificação local compartilhada', () => {
       },
     });
     expect(dados).toEqual(antes);
+  });
+
+  it('formata CPF e telefones brasileiros para apresentação', () => {
+    expect(formatarCpf('90000000175')).toBe('900.000.001-75');
+    expect(formatarCpf('900.000.001-75')).toBe('900.000.001-75');
+    expect(formatarTelefone('00900000001')).toBe('(00) 90000-0001');
+    expect(formatarTelefone('(00) 1234-5678')).toBe('(00) 1234-5678');
   });
 });

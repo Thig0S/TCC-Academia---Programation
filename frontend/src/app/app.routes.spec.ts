@@ -24,7 +24,11 @@ describe('Rotas da demonstração', () => {
     it(`abre diretamente ${url} com título contextual`, async () => {
       const harness = await RouterTestingHarness.create(url);
       expect(harness.routeNativeElement?.querySelectorAll('h1').length).toBe(1);
-      expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe(titulo);
+      const tituloVisivel =
+        url === '/vendas/quitadas'
+          ? harness.routeNativeElement?.querySelector('h2')?.textContent
+          : harness.routeNativeElement?.querySelector('h1')?.textContent;
+      expect(tituloVisivel).toBe(titulo);
       expect(TestBed.inject(Title).getTitle()).toBe(
         `${titulo} | Mercadão dos Óculos - Vendas em Aberto`,
       );

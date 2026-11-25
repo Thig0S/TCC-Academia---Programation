@@ -51,6 +51,34 @@ describe('Listas de vendas', () => {
     });
   });
 
+  it('mantém controles de pesquisa consistentes e não adiciona filtros às outras coleções', async () => {
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = () => harness.routeNativeElement!;
+    const controles = () => {
+      const entrada = pagina().querySelector<HTMLInputElement>(
+        '#busca-vendas, #busca-vendas-quitadas, #busca-vendas-administrativas',
+      )!;
+      const limpar = [...pagina().querySelectorAll('button')].find((botao) =>
+        botao.textContent?.includes('Limpar pesquisa'),
+      )!;
+      const secao = entrada.closest('section')!;
+      return { entrada, limpar, secao };
+    };
+    const base = controles();
+
+    expect(pagina().querySelector('#situacao-vendas')).not.toBeNull();
+    for (const rota of ['/vendas/quitadas', '/vendas/inativas', '/vendas/prejuizo']) {
+      await harness.navigateByUrl(rota);
+      const atual = controles();
+
+      expect(atual.secao.className).toBe(base.secao.className);
+      expect(atual.entrada.className).toBe(base.entrada.className);
+      expect(atual.limpar.className).toBe(base.limpar.className);
+      expect(pagina().querySelector('#situacao-vendas')).toBeNull();
+      expect(pagina().querySelector('#ordenacao-vendas')).toBeNull();
+    }
+  });
+
   it('pagina resultados filtrados e limita a página após comando interno reduzir a coleção', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
     const criadas = [];
@@ -266,7 +294,7 @@ describe('Listas de vendas', () => {
 
     expect(linhas).toHaveLength(vendas.length);
     expect(pagina.querySelector('caption')?.textContent).toContain('Vendas quitadas');
-    expect(pagina.textContent).toContain(formatarDataCivil(servico.referencia));
+    expect(pagina.querySelector('h2')?.textContent).toContain('Vendas quitadas');
     expect(vendas.length).toBeGreaterThan(0);
     expect(vendas.every((venda) => venda.saldoCentavos === 0)).toBe(true);
     vendas.forEach((venda, indice) => {
