@@ -47,6 +47,12 @@ para os testes técnicos.
 Os casos iniciais RES-001/RES-002 e sua rastreabilidade estão em
 `tests/VendasEmAberto.UnitTests/Dominio/catalogo-paridade.md`.
 
+`Dinheiro` guarda somente centavos `long` entre zero e `9.007.199.254.740.991`,
+o limite comum com `Number.MAX_SAFE_INTEGER`. Criação, soma e subtração são
+validadas e retornam resultado de domínio tipado; valores negativos ou operações
+que ultrapassem o intervalo não produzem um novo valor. Formatação e interpretação
+de reais permanecem responsabilidade dos consumidores.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
