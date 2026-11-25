@@ -21,6 +21,11 @@ financeiras na primeira entrega.
   TDD/DEC-034). Não instalar MediatR, registrar DI ou criar slices/handlers nesta
   fase; `/health` continua nativo. Versão/licenciamento antecedem a adoção efetiva
   em Change posterior.
+- Documentar **FluentResults** como contrato interno futuro entre Aplicacao e API
+  (PRD/FON-038, TDD/DEC-035): handlers retornam `Result`/`Result<T>`, e a API traduz
+  em DTO/status de sucesso ou Problem Details (400 validação, 404 inexistência,
+  409 conflito, 422 inelegibilidade; falhas inesperadas continuam 500 genérico).
+  Não serializar os resultados diretamente nem instalar pacote/mapeador nesta fase.
 - Disponibilizar apenas `GET /health`, sem dados de negócio, em loopback, com
   configuração validada, erro técnico genérico e encerramento controlado.
 - Atualizar primeiro PRD/FON-036/RF-021/022/CA-044/045 e TDD/DEC-033. A exclusão
@@ -54,8 +59,8 @@ frontend independente, sem chamadas de dados ou persistência. A API não será 
 - Dependências propostas: ASP.NET Core do framework .NET 10, MSTest.Sdk e
   Microsoft.AspNetCore.Mvc.Testing. Sem banco, serviço externo ou infraestrutura
   de autenticação. Internet pode ser necessária no restore, não na execução do
-  host já preparado. MediatR é direção documentada para funcionalidades futuras,
-  não uma dependência a restaurar ou configurar nesta fase.
+  host já preparado. MediatR e FluentResults são padrões documentados para
+  funcionalidades futuras, não dependências a restaurar/configurar nesta fase.
 - Baseline observada: SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64; compatibilidade
   dos pacotes e execução dos comandos ainda não foram comprovadas.
 - Esta entrega é planejamento. Nenhum projeto foi gerado, pacote restaurado ou

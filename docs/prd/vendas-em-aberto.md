@@ -1,5 +1,32 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Resultados da aplicação e respostas da API — 25/11/2026
+
+**FON-038:** o solicitante definiu **FluentResults** como padrão interno de retorno
+da camada Aplicacao para a API, complementando MediatR/CQRS/Vertical Slices de
+FON-037. No Harness, confirmou sucesso com DTO e status HTTP adequado, falhas
+esperadas com Problem Details e exceções inesperadas com 500 genérico. Não expor
+objetos internos de resultado no JSON público.
+
+**Mapeamento confirmado para futuros endpoints de negócio:** validação → 400;
+recurso inexistente → 404; conflito → 409; regra de negócio/inelegibilidade → 422.
+Mensagens públicas devem ser seguras, em pt-BR, e acompanhadas de códigos estáveis,
+sem depender do texto para classificar o erro. O contrato de cada endpoint definirá
+se o sucesso usa 200, 201 ou 204 e os respectivos DTOs; esta decisão não cria
+endpoints, regras de negócio ou um envelope JSON genérico obrigatório.
+
+**Limite:** revisão exclusivamente documental da `fase-001-backend`, sem instalar
+FluentResults, criar resultados/erros/mapeadores ou alterar `/health`. A API técnica
+continua com health checks nativos e tratamento genérico de falhas inesperadas.
+Versão e compatibilidade da biblioteca e contratos públicos detalhados serão
+fechados na Change que autorizar a primeira adoção efetiva, antes de implementá-la.
+MSTest permanece o padrão de testes do backend.
+
+**Rastreabilidade:** FON-038 → RF-021 (padrão documentado, sem ampliar comportamento
+executável) → TDD/DEC-035 → design/D8 e tasks/1.4 de
+`openspec/changes/fase-001-backend/`. CA-044/045 e a especificação de execução local
+permanecem inalterados. Nenhuma funcionalidade foi implementada nesta revisão.
+
 ## Organização dos futuros casos de uso do backend — 25/11/2026
 
 **FON-037:** o solicitante definiu MediatR combinado com CQRS e Vertical Slice
