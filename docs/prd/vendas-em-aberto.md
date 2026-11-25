@@ -78,6 +78,26 @@ será especificada na capability existente `dominio-vendas`, preservando os cont
 demonstrativos e evitando outra capability para as mesmas invariantes.
 Estado: escopo confirmado, implementação não iniciada; sem aceite operacional.
 
+### Atualização de execução da Change — 25/11/2026
+
+Após a revisão do planejamento, o solicitante autorizou explicitamente o apply de
+`fase-002-dominio`. As tarefas DOM-01–DOM-07 foram implementadas; o estado inicial
+acima registra a autorização original de planejamento e não descreve o estado atual.
+As evidências de catálogo, auditoria, verificações integradas e limitações estão em
+`backend/README.md` e nos artefatos da Change. A suíte backend aprovou 139 testes
+(115 de domínio, 16 técnicos unitários e 8 de integração), com build Release e
+formatação aprovados; restore em modo bloqueado passou. O smoke real confirmou
+`/health` em loopback e `/vendas` 404. Com a API desligada, o frontend aprovou 430
+testes em 33 arquivos e o build de produção.
+
+O fechamento documental validou rastreabilidade PRD → TDD → SDD → catálogo/testes/
+evidências e os critérios CA-046–048. E2E, inspeção visual e zoom não foram
+executados por não haver alteração de interface. Isso comprova as verificações
+técnicas registradas, não homologação operacional, aceite da ótica ou prontidão para
+uso com vendas reais; persistência, endpoints de negócio e integração permanecem fora
+do escopo. A Change foi concluída na feature branch; a publicação do PR é uma etapa
+separada e não representa autorização de merge.
+
 ## Revisão de baseline por segurança — 25/11/2026
 
 **FON-039:** durante o apply da Change `fase-001-backend`, verificou-se que a

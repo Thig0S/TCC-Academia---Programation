@@ -255,6 +255,33 @@ com sucesso. A árvore não contém alterações em fontes do frontend. E2E, ins
 visual e zoom não foram executados porque não houve mudança de UI; estes resultados
 demonstram não regressão automatizada, não homologação operacional ou visual.
 
+### Fechamento PRD → TDD → SDD — DOM-07
+
+FON-040/RF-023/CA-046–048 rastreiam para TDD/DEC-037, a proposta e o design de
+`openspec/changes/fase-002-dominio/`, a delta `dominio-vendas`, as tarefas DOM-01–07,
+o catálogo de paridade e os testes MSTest correspondentes. O planejamento inicial
+foi revisado antes da autorização explícita de apply. As tarefas 1.1–7.4 foram
+concluídas; 7.5 fecha a validação documental e o escopo desta Change.
+
+A revisão do escopo confirmou que a entrega permanece no domínio e testes: sem
+handlers, persistência, endpoints de negócio, leitura de XLSX, alteração de Angular
+ou seed. Restore bloqueado, build Release, 139 testes backend, formatação, smoke real
+e 430 testes/build do frontend estão detalhados acima. O smoke confirma somente a API
+técnica (`/health` em loopback e `/vendas` 404); não é aceite operacional. E2E,
+inspeção visual e zoom não foram executados porque a interface não mudou.
+
+Validações finais executadas na revisão 7.5:
+
+- `openspec validate fase-002-dominio --strict` — aprovado.
+- `git diff --check` — aprovado, sem erros de whitespace.
+
+Não há dados reais incluídos ou usados como fixture. A regra de `.gitignore` que
+estava no commit inicial foi retirada em commit corretivo separado para que o arquivo
+não componha o diff final da Change; o XLSX local permaneceu fora do staging e dos
+commits. Os resultados comprovam critérios técnicos e rastreabilidade, não
+homologação da ótica, uso com dados reais, nem existência de camada de aplicação ou
+persistência.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
