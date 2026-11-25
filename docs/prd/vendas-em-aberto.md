@@ -1,5 +1,31 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Equipe usuária e ausência de autenticação — 25/11/2026
+
+**FON-035:** confirmação explícita do solicitante: a aplicação será utilizada por
+uma única equipe específica da loja, no cenário já informado de um computador com
+funcionamento offline. **Não será necessária autenticação de usuários**, inclusive
+na evolução operacional local; não se trata apenas de uma dispensa do protótipo.
+
+Não haverá login/logout, contas individuais, cadastro de usuários, senhas,
+recuperação de senha ou perfis de permissão por pessoa no escopo definido. Os perfis
+de atendimento e gestão da seção 4 descrevem tarefas, não papéis de autorização no
+software. A equipe utiliza as funcionalidades disponibilizadas sem diferenciação
+de acesso por usuário; o rótulo estático “Administrador” não identifica uma sessão.
+
+Esta decisão resolve a definição do público operacional e a necessidade de auth;
+não exige número ou nomes de integrantes para avançar no desenho. PEN-014 continua
+restrita à avaliação e ao aceite: responsável pela homologação, metas, participantes
+da avaliação e validação das entrevistas. A escolha de quem confere a importação e
+autoriza o corte operacional também não implica criar contas ou permissões.
+
+**Limites:** ausência de login não dispensa proteção do computador, arquivos,
+backups e comunicação local. Sem identidade autenticada, não se deve prometer
+atribuição confiável de cada operação a um integrante. Exposição em rede, acesso
+remoto ou uso por outras equipes exigem revisão explícita deste escopo antes de
+implementação. Esta atualização é exclusivamente documental e não autoriza backend,
+migração ou mudanças na interface.
+
 ## Fonte local de vendas para evolução futura — 25/11/2026
 
 **FON-034:** planilha fornecida pelo solicitante em
@@ -497,7 +523,14 @@ homologação.
 | Proprietário ou pessoa de gestão | Conferir situação dos valores auxiliares e discutir o fluxo da loja | Resumos consistentes, identificação de atrasos e distinção entre aberto e quitado | FON-001 e FON-004; participação e papel aprovador a confirmar |
 | Participante da avaliação do protótipo | Executar tarefas fictícias e comentar navegação | Aviso de demonstração, dados sintéticos e cancelamento sem efeito | FON-001 e FON-002 |
 
-Não se pressupõem contas, permissões ou autenticação por perfil. O perfil “Administrador” na navegação é apenas estático. Não há pesquisa específica de deficiência ou tecnologia assistiva; navegação por teclado, foco perceptível, rótulos e situações textuais são requisitos, não características presumidas dos participantes.
+Conforme FON-035, o público operacional é uma única equipe específica da loja, em
+um computador offline, sem autenticação, contas individuais ou permissões por
+perfil, também na evolução local planejada. Os perfis acima representam tarefas,
+não controle de acesso. O perfil “Administrador” na navegação é apenas estático.
+Participantes e autoridade de aceite da avaliação continuam distintos do público
+operacional confirmado. Não há pesquisa específica de deficiência ou tecnologia
+assistiva; navegação por teclado, foco perceptível, rótulos e situações textuais são
+requisitos, não características presumidas dos participantes.
 
 ## 5. Escopo e prioridades
 
