@@ -1,4 +1,3 @@
-using System.Text;
 using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 

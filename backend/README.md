@@ -83,10 +83,11 @@ com data divergente ou forma desconhecida é rejeitada antes de publicar a venda
 O histórico reconstruído distingue `Entrada`, `Individual` e `HistoricoLote` por
 origem explícita. A fábrica `Venda.Reconstruir` valida o parcelamento-base,
 identidades, vínculos, sequência, datas, formas, metadados individuais e reconciliação
-financeira antes de criar a raiz. Ela existe para estados sintéticos completos de
-consulta/teste; não importa planilhas/dados reais e não oferece comando para registrar
-novas baixas em lote. O catálogo documenta lotes de uma e várias parcelas e as falhas
-de reconstrução correspondentes.
+financeira antes de criar a raiz; alocação Individual deve igualar o valor efetivo
+recebido. Ela existe para estados sintéticos completos de consulta/teste; não importa
+planilhas/dados reais e não oferece comando para registrar novas baixas em lote. O
+catálogo documenta lotes de uma e várias parcelas e as falhas de reconstrução
+correspondentes.
 
 `Venda.EditarCliente` recebe somente nome, CPF, telefone e descrição; valida o novo
 cliente e retorna outra raiz preservando status, contrato, parcelas, recebimentos,
@@ -120,6 +121,15 @@ com saldo e retorno de Inativo/Prejuízo a Ativo. Solicitar o status atual é um
 que devolve a mesma raiz; transições diretas entre Inativo e Prejuízo e Prejuízo em
 venda quitada falham tipadamente. Cada transição permitida cria nova raiz e conserva
 cliente, contrato-base, parcelas, vencimentos e recebimentos — sem estorno ou exclusão.
+
+`Venda.Projetar(referencia)` revalida o histórico e devolve uma projeção imutável de
+parcelas e venda. Por parcela, informa base, acréscimo, efetivo, recebido, saldo,
+situação e dados do pagamento; no agregado, reconcilia base + acréscimos = efetivo,
+efetivo − recebido = saldo, quantidade paga e primeiro vencimento pendente. Parcela
+paga prevalece sobre atraso; vencimento anterior à referência é Atrasada, de hoje a
+sete dias é Próximos dias e além disso é Em aberto. A situação da venda prioriza
+Quitada, Atrasada, Próximos dias e Em aberto. A consulta não modifica o agregado e
+protege a coleção projetada contra mutação externa.
 
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).

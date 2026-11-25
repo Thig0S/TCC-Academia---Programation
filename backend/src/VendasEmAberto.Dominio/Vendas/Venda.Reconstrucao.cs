@@ -1,4 +1,3 @@
-using System.Text;
 using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 
@@ -216,6 +215,7 @@ public sealed partial class Venda
                 case OrigemRecebimento.Individual:
                     if (alocacoesInformadas.Length != 1 || proximaParcela >= parcelas.Length ||
                         !ValidarAlocacao(alocacoesInformadas[0], parcelas, proximaParcela, out var valorBaseIndividual) ||
+                        alocacoesInformadas[0].Valor.Centavos != recebimento.Valor.Centavos ||
                         recebimento.Valor.Centavos < valorBaseIndividual.Centavos ||
                         recebimento.Acrescimo.Centavos != recebimento.Valor.Centavos - valorBaseIndividual.Centavos ||
                         observacao.EnumerateRunes().Count() > 20)
