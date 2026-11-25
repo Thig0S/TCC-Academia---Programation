@@ -1,0 +1,12 @@
+﻿<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <ProjectReference Include="..\..\src\VendasEmAberto.Api\VendasEmAberto.Api.csproj" />
+  </ItemGroup>
+
+</Project>
