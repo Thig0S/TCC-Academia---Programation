@@ -36,6 +36,14 @@ apply autorizada.
 > são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
 > roadmap. Implementação técnica não equivale a aceite do produto.
 
+## DEC-029 — Coleções administrativas em coluna na barra lateral (24/11/2026)
+
+**Base:** solicitação posterior do usuário, PRD/FON-031, RF-013 e CA-039. A barra lateral deve apresentar Quitadas, Inativas e Prejuízo como três destinos próprios, em coluna vertical e nessa ordem, dentro do grupo Vendas quando este estiver ativo.
+
+**Escolha técnica:** os subdestinos não podem permanecer como âncoras inline lado a lado. Agrupá-los em um contêiner vertical (`flex-col`) no template de `BarraNavegacao`, mantendo recuo e estilos existentes. Não alterar rotas, coleções, ordem de foco, nome acessível, estado ativo, indicação `aria-current`, módulos principais ou comportamento dos temas/viewports. Não adicionar dependências.
+
+**Verificação realizada:** E2E geométrico e de navegação por teclado, 4/4 nos viewports Chromium 1366×768 e 390×844 e nos dois temas; suíte unitária 416/416, build e validação estrita OpenSpec aprovados. O `format:check` global continua falhando por formatação preexistente de `frontend/README.md`, também confirmada em `HEAD`; Prettier direcionado ao template e E2E passou. Evidências e limitação em `frontend/README.md`; zoom não foi parte deste recorte.
+
 ## DEC-028 — Feedback de Luighi: status, pagamentos e relatórios (24/11/2026)
 
 **Base:** `docs/prd/vendas-em-aberto.md`, seção “Feedback de Luighi”, FON-017, RF-013/014/015/016, RN-025/026 e CA-036/037/038. Esta decisão definiu o desenho da Change `feedback-luighi`, aplicada na feature branch. No escopo da Change, substitui as restrições técnicas de valor derivado imutável (DEC-027) e a consulta sem ordenação (DEC-018); preserva o pagamento individual sequencial, o seed histórico, a referência civil, o estado em memória e os IDs existentes. Este TDD documenta decisões, mas não é evidência de aceite operacional.
@@ -446,6 +454,7 @@ As alterações são perdidas ao recarregar.”** Cadastro e pagamento são simu
 | FON-028 | Context7 `/angular/angular`, fontes oficiais `packages/forms/signals/src/api/structure.ts` e `api/rules/validation/validate.ts` no GitHub Angular | Consulta nesta revisão | `form`, `validate` e `submit`/`onInvalid` sustentam o padrão existente. Consulta geral, não comprova execução no patch instalado 22.2.6; verificar select e erro/foco localmente no apply, sem atualizar dependências |
 | FON-029 | PRD 1.19/FON-016; Harness e inspeção de `registrar-pagamento`, `detalhes-venda`, `rascunhos.ts`, `pagamento.modelos.ts`, `pagamento.validacoes.ts`, `servico-demonstracao.ts`, seed e testes adjacentes/E2E | 22/11/2026 | Uma parcela por confirmação, antecipação, data fixa/editável e texto nas bloqueadas confirmados; fronteira de comando individual e compatibilidade histórica propostas para revisão |
 | FON-030 | Context7 `/angular/angular`, fonte oficial `packages/forms/signals/src/api/structure.ts` e `src/field/node.ts` | 22/11/2026 | `submit` impede envio concorrente, chama `onInvalid` e libera estado em `finally`; `focusBoundControl` permite foco no campo inválido. Consulta não comprova comportamento do patch 22.2.6 instalado; testes locais continuam necessários |
+| FON-031 | Solicitação explícita do usuário no Harness e inspeção de `barra-navegacao.html`, `barra-navegacao.css`, `app.spec.ts` e testes E2E de coleções | 24/11/2026 | Quitadas, Inativas e Prejuízo devem ocupar linhas verticais distintas na lateral quando Vendas estiver ativo; não alterar rotas/coleções; critério CA-039 |
 
 As consultas ao Context7 incluíram Angular e Playwright. Para Angular 22, as páginas oficiais
 v22 foram usadas para confirmar a compatibilidade e resolver a falta de precisão dos trechos
@@ -1212,6 +1221,8 @@ originais descrevem o plano histórico; os resultados ficam em `frontend/README.
 | DEC-023 | Aviso e limpeza de consultas | Sem aviso global ou “Limpar critérios”; ação Nova venda na faixa, restaurar lista via campo e situação | Implementação do solicitante e regressão ajustada; unitários 363/363, E2E 80/80, fixture 12/12 | DEC-018/022; PRD 1.14/RF-001/003/RN-019/CA-001/005/028; FON-025 |
 | DEC-024 | Tipografia das tabelas de Relatórios | Igualar dados/cabeçalhos das quatro tabelas ao padrão de 18 px e padding compartilhado | Implementada/verificada nos dois temas e viewports; regressão completa teve falha intermitente externa repetida com sucesso isoladamente | DEC-020/022; PRD 1.15/RF-010/RNF-003/007/009/CA-031; FON-026 |
 | DEC-027 | Pagamento individual | Comando com parcela única e valor derivado; histórico em lote compatível; modal data/forma e ações sequenciais | Implementação técnica na Change `simplificar-pagamento-parcelas`; regressão automatizada verificada; zoom nativo 200% e aceite da ótica pendentes | DEC-004/007/010/015/016/022/026; PRD 1.19/RN-016/CA-024; FON-029/030; evidências em `frontend/README.md` |
+| DEC-028 | Feedback de Luighi | Status administrativo, recebimento efetivo/correção e universos de relatórios | Implementada na branch `feature/feedback-luighi`; Change arquivada e PR #30 aberto | PRD/FON-017, RF-013–016, CA-036–038; evidências em `frontend/README.md` |
+| DEC-029 | Navegação das coleções administrativas | Quitadas, Inativas e Prejuízo em coluna vertical, uma por linha, sob Vendas | Implementada e verificada na Change `empilhar-links-sidebar`; `format:check` global limitado por falha preexistente no README | PRD/FON-031, RF-013/CA-039; evidências em `frontend/README.md` |
 
 ### DEC-023 — Remoção do aviso global e limpeza conjunta
 
