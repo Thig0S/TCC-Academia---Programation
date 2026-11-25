@@ -95,6 +95,117 @@
   </div>
 </section>
 
+<section
+  class="mb-6 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm sm:p-4"
+  aria-labelledby="grafico-recebimentos-titulo"
+>
+  <h2 id="grafico-recebimentos-titulo" class="mb-1 text-lg font-semibold">Recebimentos por dia</h2>
+  <p id="grafico-recebimentos-descricao" class="mb-3 text-sm text-text-muted">
+    Valores em reais (BRL) por data efetiva no mês selecionado. A tabela abaixo apresenta todos os
+    dias e valores exatos.
+  </p>
+  @if (relatorio.totalRecebidoCentavos === 0) {
+    <p class="mb-3 rounded-lg bg-surface-muted p-3 text-text-muted" role="status">
+      Nenhum recebimento registrado neste mês; todos os dias estão zerados.
+    </p>
+  }
+  <div
+    class="max-w-full overflow-x-auto"
+    role="region"
+    aria-label="Gráfico de barras diário de recebimentos"
+    aria-describedby="grafico-recebimentos-descricao"
+    tabindex="0"
+  >
+    <svg
+      class="block h-auto w-full min-w-[640px] text-text sm:min-w-0"
+      viewBox="0 0 760 300"
+      role="img"
+      focusable="false"
+      aria-labelledby="grafico-recebimentos-titulo"
+      aria-describedby="grafico-recebimentos-descricao"
+    >
+      <g aria-hidden="true" class="text-border" stroke="currentColor" stroke-width="1">
+        @for (escala of escalasGrafico(); track $index) {
+          <line [attr.x1]="76" [attr.x2]="744" [attr.y1]="escala.y" [attr.y2]="escala.y" />
+        }
+        <line x1="76" x2="76" y1="28" y2="256" />
+        <line x1="76" x2="744" y1="256" y2="256" />
+      </g>
+      <g aria-hidden="true" class="fill-current text-text-muted" font-size="12">
+        @for (escala of escalasGrafico(); track $index) {
+          <text x="70" [attr.y]="escala.y + 4" text-anchor="end">{{ escala.rotulo }}</text>
+        }
+        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+          @if (mostrarRotuloDia(indice, relatorio.recebimentosDiarios.length)) {
+            <text [attr.x]="posicaoBarra(indice) + larguraBarra() / 2" y="276" text-anchor="middle">
+              {{ indice + 1 }}
+            </text>
+          }
+        }
+        <text x="410" y="296" text-anchor="middle">Dia do mês</text>
+        <text transform="translate(14 142) rotate(-90)" text-anchor="middle">Valor (BRL)</text>
+      </g>
+      <g aria-hidden="true" class="fill-brand">
+        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+          <rect
+            [attr.x]="
+              posicaoBarra(indice) +
+              (posicaoBarra(indice + 1) - posicaoBarra(indice) - larguraBarra()) / 2
+            "
+            [attr.y]="topoBarra(item.totalCentavos)"
+            [attr.width]="larguraBarra()"
+            [attr.height]="alturaBarra(item.totalCentavos)"
+            rx="2"
+          />
+        }
+      </g>
+    </svg>
+  </div>
+  <div
+    class="mt-3 max-w-full overflow-x-auto rounded-lg border-[1px] border-border"
+    role="region"
+    aria-label="Tabela diária equivalente de recebimentos"
+    aria-describedby="orientacao-tabela-diaria"
+    tabindex="0"
+  >
+    <p id="orientacao-tabela-diaria" class="sr-only">
+      Tabela diária completa em reais. Ao focar nesta região, use as setas do teclado para percorrer
+      as colunas.
+    </p>
+    <table
+      class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_td:last-child]:text-right [&_td:last-child]:tabular-nums"
+    >
+      <caption>
+        Recebimentos diários entre
+        {{
+          formatarDataCivil(relatorio.inicioMes)
+        }}
+        e
+        {{
+          formatarDataCivil(relatorio.fimMes)
+        }}
+        — valores em BRL
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Dia</th>
+          <th scope="col">Data</th>
+          <th scope="col">Recebido (BRL)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+          <tr>
+            <td>{{ indice + 1 }}</td>
+            <td>{{ formatarDataCivil(item.data) }}</td>
+            <td>{{ formatarDinheiro(item.totalCentavos) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="mb-4" aria-labelledby="posicao-atual-relatorio">
   <h2 id="posicao-atual-relatorio" class="mb-1 text-xl font-semibold">Posição atual</h2>
   <p class="mb-0 text-text-muted">Referência fixa: {{ formatarDataCivil(referencia) }}.</p>

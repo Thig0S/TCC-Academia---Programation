@@ -13,6 +13,14 @@ import { calcularRelatorio } from './relatorios.calculos';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Relatorios {
+  private static readonly larguraGrafico = 760;
+  private static readonly alturaGrafico = 300;
+  private static readonly margemEsquerdaGrafico = 76;
+  private static readonly margemDireitaGrafico = 16;
+  private static readonly margemSuperiorGrafico = 28;
+  private static readonly margemInferiorGrafico = 44;
+  private static readonly alturaPlotagemGrafico =
+    Relatorios.alturaGrafico - Relatorios.margemSuperiorGrafico - Relatorios.margemInferiorGrafico;
   private readonly servico = inject(ServicoDemonstracao);
   protected readonly referencia = this.servico.referencia;
   private readonly partesReferencia = interpretarDataCivil(this.referencia);
@@ -39,6 +47,15 @@ export class Relatorios {
   protected readonly exportacaoInformada = signal(false);
   protected readonly dados = computed(() =>
     calcularRelatorio(this.servico.vendas(), this.referencia, this.mesAplicado()),
+  );
+  protected readonly maiorRecebimentoDiario = computed(() =>
+    Math.max(0, ...this.dados().recebimentosDiarios.map((item) => item.totalCentavos)),
+  );
+  protected readonly escalasGrafico = computed(() =>
+    [1, 0.75, 0.5, 0.25, 0].map((proporcao, indice) => ({
+      y: Relatorios.margemSuperiorGrafico + (Relatorios.alturaPlotagemGrafico * indice) / 4,
+      rotulo: this.formatarDinheiro(Math.round(this.maiorRecebimentoDiario() * proporcao)),
+    })),
   );
   protected readonly formatarDataCivil = formatarDataCivil;
   protected readonly formatarDinheiro = formatarDinheiro;
@@ -70,5 +87,40 @@ export class Relatorios {
 
   protected mesSelecionado(indice: number): boolean {
     return String(indice + 1) === this.mesRascunho();
+  }
+
+  protected posicaoBarra(indice: number): number {
+    const quantidade = this.dados().recebimentosDiarios.length;
+    const larguraUtil =
+      Relatorios.larguraGrafico -
+      Relatorios.margemEsquerdaGrafico -
+      Relatorios.margemDireitaGrafico;
+    return Relatorios.margemEsquerdaGrafico + (indice * larguraUtil) / quantidade;
+  }
+
+  protected larguraBarra(): number {
+    const quantidade = this.dados().recebimentosDiarios.length;
+    const larguraUtil =
+      Relatorios.larguraGrafico -
+      Relatorios.margemEsquerdaGrafico -
+      Relatorios.margemDireitaGrafico;
+    return (larguraUtil / quantidade) * 0.7;
+  }
+
+  protected alturaBarra(valorCentavos: number): number {
+    const maior = this.maiorRecebimentoDiario();
+    return maior === 0 ? 0 : (valorCentavos / maior) * Relatorios.alturaPlotagemGrafico;
+  }
+
+  protected topoBarra(valorCentavos: number): number {
+    return (
+      Relatorios.margemSuperiorGrafico +
+      Relatorios.alturaPlotagemGrafico -
+      this.alturaBarra(valorCentavos)
+    );
+  }
+
+  protected mostrarRotuloDia(indice: number, quantidade: number): boolean {
+    return indice === 0 || (indice + 1) % 5 === 0 || indice === quantidade - 1;
   }
 }

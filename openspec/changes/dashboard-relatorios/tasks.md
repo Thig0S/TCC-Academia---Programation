@@ -20,7 +20,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 
 ## 4. Gráfico diário acessível
 
-- [ ] 4.1 Implementar somente gráfico de barras diário local em SVG com eixos/unidade, título/descrição e tabela HTML equivalente acessível também visualmente, fora dos cinco detalhes; testar todos os dias, soma exata, dias zero, mês vazio, escala sem divisão por zero, valores desiguais, leitura sem hover e sem gráficos/resumos extras. Verificar temas/viewports, ausência de overflow global e de nova dependência, documentando evidências no commit do gráfico (D3/D5; CA-042/043).
+- [x] 4.1 Implementar somente gráfico de barras diário local em SVG com eixos/unidade, título/descrição e tabela HTML equivalente acessível também visualmente, fora dos cinco detalhes; testar todos os dias, soma exata, dias zero, mês vazio, escala sem divisão por zero, valores desiguais, leitura sem hover e sem gráficos/resumos extras. Verificar temas/viewports, ausência de overflow global e de nova dependência, documentando evidências no commit do gráfico (D3/D5; CA-042/043).
 
 ## 5. Detalhes completos em expansão
 

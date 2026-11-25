@@ -78,6 +78,24 @@ aprovados**; verificação Playwright pontual dos grupos/temas/viewports, Pretti
 direcionado e `git diff --check` — aprovados. Fixtures são sintéticas; não equivalem
 a aceite visual ou operacional.
 
+### Gráfico diário e tabela equivalente — tarefa 4.1
+
+Foi adicionado um SVG local não interativo com escala iniciada em zero, eixos de dias
+e valor em BRL, todos os pontos diários e rótulos espaçados. A escala de mês sem
+recebimentos mantém valores zero e barras com altura zero, sem divisão por zero. Uma
+tabela HTML visual, completa e fora das expansões informa data e valor exatos de cada
+dia, sem depender de hover. Em celular, o gráfico usa rolagem horizontal local para
+preservar os rótulos; a tabela também rola localmente. Nenhuma biblioteca ou dependência
+foi adicionada, nem outros gráficos ou resumos.
+
+Verificações em 25/11/2026: testes de cálculo/componente — **29/29**; Chromium nos
+temas escuro/claro e viewports 1366×768/390×844 confirmou os 30 dias deste mês de
+referência, tabela diária, tipografia de 18 px/20 px, cores temáticas e ausência de
+overflow horizontal global. No seed de novembro, 29 barras são zero e uma representa
+o recebimento; o mês vazio foi verificado nos testes, com todas as barras em zero.
+Prettier direcionado e `git diff --check` passaram. Zoom nativo e aceite operacional
+não são alegados.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
