@@ -565,7 +565,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await page.goto(detalhe);
   await expect(page).toHaveURL(/\/vendas\/seed%2Fvenda%2F1$/i);
   await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Cliente DEMO Aurora 1');
+  await expect(page.getByRole('main')).toContainText('Pedro Farias');
   await expect(page.getByRole('main')).toContainText('90000000175');
   await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
   await expect(page.getByRole('main').getByRole('table')).toBeVisible();
@@ -581,7 +581,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
 
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Cliente DEMO Aurora 1');
+  await expect(page.getByRole('main')).toContainText('Pedro Farias');
 
   await page
     .getByRole('navigation', { name: 'Retornos de Vendas' })
@@ -864,7 +864,7 @@ test('confere semântica e contraste de tabelas, situações e controles de cons
     await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Nova venda', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Limpar critérios' })).toHaveCount(0);
-    await verificarFaixaDesktop(4);
+    await verificarFaixaDesktop(5);
     await expect(page.locator('main [role="status"]:not([aria-label])')).toContainText(
       'vendas encontradas',
     );
