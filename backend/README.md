@@ -246,6 +246,15 @@ nenhum outro processo/listener foi encerrado. Os testes técnicos de endpoint/fa
 genérica também passaram na suíte de integração da tarefa 7.2 (8/8). Nenhum banco,
 frontend ou serviço externo foi iniciado.
 
+### Independência do frontend — DOM-07 (25/11/2026)
+
+Com a API desligada (porta padrão `5070` sem listener antes e após as execuções),
+foram executados em `frontend/` `npm.cmd test -- --watch=false` e `npm.cmd run build`.
+Os testes passaram: 33 arquivos e 430 testes, sem falhas; o build Angular concluiu
+com sucesso. A árvore não contém alterações em fontes do frontend. E2E, inspeção
+visual e zoom não foram executados porque não houve mudança de UI; estes resultados
+demonstram não regressão automatizada, não homologação operacional ou visual.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
