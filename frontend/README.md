@@ -46,19 +46,21 @@ Os campos de busca e botões Limpar pesquisa em Quitadas, Inativas e Prejuízo a
 usam a mesma altura, superfície, borda, arredondamento, espaçamento e foco visual
 da listagem de Vendas abertas. Inativas e Prejuízo recebem o ajuste pelo template
 administrativo compartilhado. Nenhum filtro por situação ou outro controle foi
-adicionado; busca, limpeza, rotas e paginação permanecem inalteradas.
+adicionado; busca, limpeza, rotas e paginação permanecem inalteradas. O texto auxiliar
+usa a cor de conteúdo para manter contraste legível sobre a nova superfície da busca.
 
-Verificações direcionadas:
+Verificações finais após a revisão:
 
-- `npm.cmd test -- --watch=false --include=src/app/funcionalidades/vendas/listas-vendas.spec.ts --include=src/app/funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas.spec.ts` — **13 testes em 2 arquivos aprovados**.
-- `npm.cmd run build` — aprovado; bundle inicial **315,57 kB** (transferência estimada **83,53 kB**).
-- Prettier direcionado aos templates, teste e artefatos OpenSpec — aprovado.
+- `npm.cmd test -- --watch=false` — **418 testes em 33 arquivos aprovados**.
+- Build (`npm.cmd run build`) — aprovado; bundle inicial **315,57 kB** (transferência estimada **83,52 kB**).
+- E2E completo (134 testes, Chromium 1366×768 e 390×844) — aprovado usando configuração temporária com `reuseExistingServer: true`, pois a porta padrão 4200 já estava em uso.
+- Prettier direcionado aos templates, testes e artefatos OpenSpec — aprovado.
 - `openspec validate harmonizar-consultas-colecoes --strict` e `git diff --check` — aprovados.
 
 A checagem Prettier que também incluiu o PRD e o TDD apontou diferenças de
 formatação que já existem nesses documentos em `HEAD`; eles não foram reformatados
-integralmente. A suíte unitária/E2E completa não foi executada. As verificações
-usaram somente dados sintéticos e não constituem aceite operacional.
+integralmente. As verificações usaram somente dados sintéticos e não constituem
+aceite operacional.
 
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
