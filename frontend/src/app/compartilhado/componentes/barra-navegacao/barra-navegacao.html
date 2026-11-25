@@ -19,30 +19,32 @@
         {{ modulo.nome }}
       </a>
       @if (modulo.rota === '/vendas' && estado.isActive) {
-        <a
-          class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
-          routerLink="/vendas/quitadas"
-          routerLinkActive="pagina-atual"
-          [routerLinkActiveOptions]="{ exact: true }"
-          ariaCurrentWhenActive="page"
-          >Quitadas</a
-        >
-        <a
-          class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
-          routerLink="/vendas/inativas"
-          routerLinkActive="pagina-atual"
-          [routerLinkActiveOptions]="{ exact: true }"
-          ariaCurrentWhenActive="page"
-          >Inativas</a
-        >
-        <a
-          class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
-          routerLink="/vendas/prejuizo"
-          routerLinkActive="pagina-atual"
-          [routerLinkActiveOptions]="{ exact: true }"
-          ariaCurrentWhenActive="page"
-          >Prejuízo</a
-        >
+        <div class="flex flex-col">
+          <a
+            class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
+            routerLink="/vendas/quitadas"
+            routerLinkActive="pagina-atual"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page"
+            >Quitadas</a
+          >
+          <a
+            class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
+            routerLink="/vendas/inativas"
+            routerLinkActive="pagina-atual"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page"
+            >Inativas</a
+          >
+          <a
+            class="nav-link subdestino ml-6 mt-1 border-s-[3px] border-sidebar-focus ps-4 text-sidebar-text hover:bg-sidebar-hover hover:underline hover:underline-offset-4 focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
+            routerLink="/vendas/prejuizo"
+            routerLinkActive="pagina-atual"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page"
+            >Prejuízo</a
+          >
+        </div>
       }
     </div>
   }

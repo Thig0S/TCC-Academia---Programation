@@ -4174,3 +4174,18 @@ As capturas e sidecars gerados estão localmente em `frontend/test-results/` e n
 versionados; documentam execução automatizada, não substituem zoom nativo ou aceite
 visual. Não houve inspeção manual de zoom nesta tarefa. O resultado do grupo não
 representa a regressão integrada nem a conclusão da Change.
+## Apply `empilhar-links-sidebar` — coleções em linhas verticais — 24/11/2026
+
+Quitadas, Inativas e Prejuízo agora estão agrupadas em um contêiner flexível
+vertical sob Vendas. A ordem DOM, destinos, foco e indicação de rota atual foram
+preservados.
+
+Verificações reais direcionadas:
+
+- E2E de navegação por teclado e empilhamento geométrico: **4/4** nos projetos Chromium 1366×768 e 390×844; o novo cenário conferiu os dois temas.
+- Prettier direcionado ao template e ao E2E: aprovado.
+- `npm.cmd test -- --watch=false`: **416/416 testes em 33 arquivos**; `npm.cmd run build`: aprovado; `openspec validate empilhar-links-sidebar --strict`: válido.
+- `npm.cmd run format:check` não passou porque `README.md` não está formatado; a mesma checagem falha no `frontend/README.md` da revisão base (`HEAD`). O trecho adicionado foi revisado e o restante do arquivo não foi reformatado para evitar alterações alheias.
+- A primeira execução com a configuração padrão não iniciou porque a porta 4200 já estava ocupada. Não encerramos o servidor preexistente; a suíte direcionada passou usando servidor isolado na porta 4305 e configuração temporária removida após a execução.
+
+## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
