@@ -164,6 +164,24 @@ totais zero, e as coleções devolvidas são somente leitura. Os casos CON-007�
 registram vazio, bordas inclusivas, universo dos status, totais operacionais,
 reativação e intervalo inválido.
 
+`ConjuntoVendas.GerarRelatorioMensal(referencia, mesSelecionado)` é uma projeção
+puramente mensal. Sem mês selecionado, usa o mês civil da referência; ao selecionar
+outro mês, troca somente os limites de movimentos/vendas mensais, mantendo a mesma
+referência para posições. A série diária contém todos os dias do mês e zeros, e sua
+soma reconcilia com os recebimentos detalhados. Cada recebimento de Entrada,
+HistoricoLote ou Individual é contado uma única vez por seu valor, sem somar
+alocações novamente; movimentos incluem todos os status.
+
+Vendas do mês consideram somente Ativas pela data de venda e totalizam o valor
+efetivo (base mais acréscimos). Saldos e parcelas atrasadas são posições da
+referência, somente de Ativas, ordenadas por vencimento e estáveis nos empates.
+Prejuízo lista todas as parcelas pendentes em seção separada; somente vendas sem
+recebimentos contribuem ao total, e uma entrada também conta como recebimento.
+Relatório, listas, itens e série devolvidos são imutáveis. Nenhum componente de UI,
+histórico de posição ou persistência é introduzido. Os casos REL-001–REL-006
+documentam limites de mês/calendário, reconciliação diária, status, entrada/lote,
+correção entre meses e estabilidade de ordenação.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
