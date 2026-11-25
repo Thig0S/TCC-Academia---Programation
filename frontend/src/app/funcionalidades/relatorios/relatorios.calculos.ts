@@ -1,5 +1,10 @@
 import { ProjecaoParcela } from '../parcelas/parcela.calculos';
-import { compararDatasCivis, limitesDoMes } from '../vendas/data-civil';
+import {
+  compararDatasCivis,
+  diasNoMes,
+  limitesDoMes,
+  interpretarDataCivil,
+} from '../vendas/data-civil';
 import { somarCentavos } from '../vendas/dinheiro';
 import { consultarPeriodo, ProjecaoVenda } from '../vendas/venda.calculos';
 
@@ -29,10 +34,16 @@ export interface ParcelaPrejuizoRelatorio {
   readonly incluirNoTotal: boolean;
 }
 
+export interface RecebimentoDiarioRelatorio {
+  readonly data: string;
+  readonly totalCentavos: number;
+}
+
 export interface DadosRelatorio {
   readonly inicioMes: string;
   readonly fimMes: string;
   readonly recebimentos: readonly RecebimentoRelatorio[];
+  readonly recebimentosDiarios: readonly RecebimentoDiarioRelatorio[];
   readonly vendasDoMes: readonly ProjecaoVenda[];
   readonly saldos: readonly SaldoRelatorio[];
   readonly parcelasAtrasadas: readonly ParcelaAtrasadaRelatorio[];
@@ -49,9 +60,9 @@ export interface DadosRelatorio {
 export function calcularRelatorio(
   vendas: readonly ProjecaoVenda[],
   referencia: string,
-  mes = referencia,
+  mesSelecionado = referencia,
 ): DadosRelatorio {
-  const [inicioMes, fimMes] = limitesDoMes(mes);
+  const [inicioMes, fimMes] = limitesDoMes(mesSelecionado);
   const noMes = (data: string) =>
     compararDatasCivis(data, inicioMes) >= 0 && compararDatasCivis(data, fimMes) <= 0;
 
@@ -81,6 +92,29 @@ export function calcularRelatorio(
   const totalRecebidoCentavos = somarCentavos(recebimentos.map((item) => item.valorCentavos));
   if (totalRecebidoCentavos !== consulta.valor.recebidosCentavos) {
     throw new RangeError('O detalhamento de recebimentos diverge da consulta do período.');
+  }
+  const { ano, mes } = interpretarDataCivil(inicioMes);
+  const totaisPorData = new Map<string, number>();
+  for (const item of recebimentos) {
+    totaisPorData.set(
+      item.data,
+      somarCentavos([totaisPorData.get(item.data) ?? 0, item.valorCentavos]),
+    );
+  }
+  const recebimentosDiarios = Array.from({ length: diasNoMes(ano, mes) }, (_, indice) => {
+    const dia = String(indice + 1).padStart(2, '0');
+    return {
+      data: `${String(ano).padStart(4, '0')}-${String(mes).padStart(2, '0')}-${dia}`,
+      totalCentavos:
+        totaisPorData.get(
+          `${String(ano).padStart(4, '0')}-${String(mes).padStart(2, '0')}-${dia}`,
+        ) ?? 0,
+    };
+  });
+  if (
+    somarCentavos(recebimentosDiarios.map((item) => item.totalCentavos)) !== totalRecebidoCentavos
+  ) {
+    throw new RangeError('A série diária diverge do total de recebimentos do período.');
   }
 
   const ativas = vendas.filter((venda) => venda.statusAdministrativo === 'Ativo');
@@ -122,6 +156,7 @@ export function calcularRelatorio(
     inicioMes,
     fimMes,
     recebimentos,
+    recebimentosDiarios,
     vendasDoMes,
     saldos,
     parcelasAtrasadas,

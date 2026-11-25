@@ -31,6 +31,21 @@ testes aprovados**; Prettier direcionado aos dois arquivos de cálculo/teste e
 `git diff --check` — aprovados. Os cenários são unitários e usam projeções sintéticas;
 não representam aceite operacional.
 
+### Série diária de recebimentos — tarefa 2.2
+
+`DadosRelatorio.recebimentosDiarios` contém todos os dias civis do mês selecionado,
+ordenados, com total agregado em centavos a partir dos mesmos recebimentos únicos
+usados pela tabela. Dias sem lançamento recebem zero apenas na série. A reconciliação
+é conferida contra o total mensal calculado e falha com `RangeError` se divergir.
+Testes cobrem entrada, lote e pagamento individual em vendas Ativas, Inativas e em
+Prejuízo, valores distintos, dias vazios, fevereiro bissexto e movimento entre meses
+após correção preservando o ID. Reativar a venda não duplica o recebimento; o total
+efetivo de vendas Ativas continua coberto separadamente.
+
+Verificação em 25/11/2026: a mesma suíte focada de cálculo passou **19/19**; Prettier
+direcionado e `git diff --check` passaram. A igualdade série/total/tabela é verificada
+por testes sintéticos; integração visual será verificada nas tarefas posteriores.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por

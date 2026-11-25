@@ -112,6 +112,12 @@ describe('Cálculos puros dos Relatórios', () => {
       ['Entrada', 'primeiro', '2027-03-01'],
     ]);
     expect(resultado.recebimentos.map((item) => item.valorCentavos)).toEqual([300, 100]);
+    expect(resultado.recebimentosDiarios).toHaveLength(31);
+    expect(resultado.recebimentosDiarios[0]).toEqual({ data: '2027-03-01', totalCentavos: 100 });
+    expect(resultado.recebimentosDiarios[30]).toEqual({ data: '2027-03-31', totalCentavos: 300 });
+    expect(resultado.recebimentosDiarios.reduce((soma, item) => soma + item.totalCentavos, 0)).toBe(
+      resultado.totalRecebidoCentavos,
+    );
     expect(fonte).toEqual(original);
   });
 
@@ -171,6 +177,10 @@ describe('Cálculos puros dos Relatórios', () => {
       ['Lote', 200],
     ]);
     expect(resultado.totalRecebidoCentavos).toBe(450);
+    expect(resultado.recebimentosDiarios[0].totalCentavos).toBe(100);
+    expect(resultado.recebimentosDiarios[14].totalCentavos).toBe(150);
+    expect(resultado.recebimentosDiarios[19].totalCentavos).toBe(200);
+    expect(resultado.recebimentosDiarios[1].totalCentavos).toBe(0);
   });
 
   it('mantém recebimentos de todos os status e restringe vendas e posições às Ativas', () => {
@@ -236,6 +246,12 @@ describe('Cálculos puros dos Relatórios', () => {
       ['prejuizo', false],
     ]);
     expect(resultado.totalPrejuizoCentavos).toBe(0);
+    expect(resultado.recebimentosDiarios[6].totalCentavos).toBe(1000);
+    expect(resultado.recebimentosDiarios[9].totalCentavos).toBe(4000);
+    expect(resultado.recebimentosDiarios[10].totalCentavos).toBe(2000);
+    expect(resultado.recebimentosDiarios.reduce((soma, item) => soma + item.totalCentavos, 0)).toBe(
+      resultado.recebimentos.reduce((soma, item) => soma + item.valorCentavos, 0),
+    );
 
     const reativada = calcularRelatorio(
       [ativa, { ...inativa, statusAdministrativo: 'Ativo' }, prejuizo],
@@ -364,6 +380,14 @@ describe('Cálculos puros dos Relatórios', () => {
     expect(abril.recebimentos[0].data).toBe('2027-04-01');
     expect(abril.vendasDoMes.map((item) => item.id)).toEqual([]);
     expect(abril.totalRecebidoCentavos).toBe(250);
+    expect(marco.recebimentosDiarios[30].totalCentavos).toBe(250);
+    expect(abril.recebimentosDiarios[0].totalCentavos).toBe(250);
+    expect(
+      marco.recebimentosDiarios.map((item) => item.totalCentavos).reduce((a, b) => a + b, 0),
+    ).toBe(250);
+    expect(
+      abril.recebimentosDiarios.map((item) => item.totalCentavos).reduce((a, b) => a + b, 0),
+    ).toBe(250);
     expect(abril.totalVendasMesCentavos).toBe(0);
     expect(corrigida.valorTotalCentavos).toBe(1000);
   });
@@ -426,6 +450,9 @@ describe('Cálculos puros dos Relatórios', () => {
       vendasDoMes: [],
       totalRecebidoCentavos: 0,
     });
+    const vazio = calcularRelatorio([], '2027-01-15', '2028-02-01');
+    expect(vazio.recebimentosDiarios).toHaveLength(29);
+    expect(vazio.recebimentosDiarios.every((item) => item.totalCentavos === 0)).toBe(true);
   });
 
   it.each([
