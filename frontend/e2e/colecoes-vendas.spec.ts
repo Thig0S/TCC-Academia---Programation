@@ -60,3 +60,30 @@ test('navega por teclado entre coleções separadas e mantém controles responsi
   await expect(ordenacao).toHaveValue('original');
   await verificarSemOverflowHorizontal(page);
 });
+
+test('empilha destinos administrativos em ordem nos dois temas', async ({ page }) => {
+  await page.goto('/vendas');
+  const raiz = page.locator('app-root');
+  const navegacao = page.getByRole('navigation', { name: 'Navegação principal' });
+
+  for (const tema of ['dark', 'light'] as const) {
+    if ((await raiz.getAttribute('data-tema')) !== tema) {
+      await page.getByRole('button', { name: /Tema (escuro|claro)/ }).click();
+    }
+    await expect(raiz).toHaveAttribute('data-tema', tema);
+
+    const links = [
+      navegacao.getByRole('link', { name: 'Quitadas', exact: true }),
+      navegacao.getByRole('link', { name: 'Inativas', exact: true }),
+      navegacao.getByRole('link', { name: 'Prejuízo', exact: true }),
+    ];
+    const caixas = await Promise.all(links.map((link) => link.boundingBox()));
+    expect(caixas.every((caixa) => caixa !== null)).toBe(true);
+    const [quitadas, inativas, prejuizo] = caixas;
+    expect(quitadas!.y).toBeLessThan(inativas!.y);
+    expect(inativas!.y).toBeLessThan(prejuizo!.y);
+    expect(quitadas!.height).toBeLessThanOrEqual(inativas!.y - quitadas!.y);
+    expect(inativas!.height).toBeLessThanOrEqual(prejuizo!.y - inativas!.y);
+    await verificarSemOverflowHorizontal(page);
+  }
+});
