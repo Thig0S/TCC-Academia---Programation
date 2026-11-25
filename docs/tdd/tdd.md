@@ -36,6 +36,14 @@ apply autorizada.
 > são históricos; a situação corrente de cada fase e suas evidências constam na seção 1 e no
 > roadmap. Implementação técnica não equivale a aceite do produto.
 
+## DEC-031 — Consistência visual das consultas por coleção (24/11/2026)
+
+**Base:** PRD/FON-033, RF-017 e CA-041. Aplicar às consultas de Quitadas, Inativas e Prejuízo a linguagem visual dos controles de Vendas abertas, sem alterar comportamento nem introduzir filtros.
+
+**Escolha técnica:** atualizar somente as classes Tailwind das seções de pesquisa em `listar-vendas-quitadas.html` e `listar-vendas-administrativas.html`; este último template serve Inativas e Prejuízo. Reutilizar altura de 3rem, borda, raio, superfície, padding, foco, hover e espaçamento presentes em `listar-vendas.html`. Manter em cada tela apenas busca e Limpar pesquisa. Não modificar o filtro de situação existente em Vendas abertas, nem adicionar filtro, ordenação, componente compartilhado, lógica ou dependência.
+
+**Verificação proposta:** testes de componente devem confirmar a apresentação equivalente de busca/limpeza nas quatro rotas, a ausência de filtro por situação em Quitadas/Inativas/Prejuízo e a preservação do filtro em Vendas abertas. Executar testes direcionados, build e validação estrita OpenSpec; registrar resultados reais e limitações.
+
 ## DEC-029 — Coleções administrativas em coluna na barra lateral (24/11/2026)
 
 **Base:** solicitação posterior do usuário, PRD/FON-031, RF-013 e CA-039. A barra lateral deve apresentar Quitadas, Inativas e Prejuízo como três destinos próprios, em coluna vertical e nessa ordem, dentro do grupo Vendas quando este estiver ativo.
@@ -2229,6 +2237,7 @@ detalhe/modal permanece pendente, assim como o aceite da ótica, validação Ope
 
 | Revisão e data | Alteração | Decisões | Origem |
 | --- | --- | --- | --- |
+| 1.27 — 24/11/2026 | Consistência visual dos controles de pesquisa em Quitadas, Inativas e Prejuízo, sem filtro por situação | DEC-031; sem alterar o comportamento das consultas | Solicitação explícita do usuário; PRD/FON-033/RF-017/CA-041 |
 | 1.26 — 24/11/2026 | Registrar status repetido como no-op idempotente na matriz de status da DEC-028 | DEC-028 detalhada; sem alterar o restante do escopo | Resposta explícita do solicitante no Harness; somente planejamento, sem implementação ou testes de aplicação |
 | 1.25 — 24/11/2026 | Confirmar reativação de vendas Inativas, matriz completa de status e rejeição de transições diretas entre Inativo e Prejuízo, antes da revisão SDD | DEC-028 detalhada; sem alterar o restante do escopo | Resposta explícita do solicitante no Harness; somente planejamento, sem implementação ou testes de aplicação |
 | 1.24 — 22/11/2026 | Estado da implementação e verificações reais da FASE-014 a FASE-016 | DEC-027 implementada tecnicamente; zoom nativo 200% e aceite da ótica permanecem pendentes | PRD 1.20, Change `simplificar-pagamento-parcelas` e resultados em `frontend/README.md` |
