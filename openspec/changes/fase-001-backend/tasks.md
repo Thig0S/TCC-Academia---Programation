@@ -33,7 +33,7 @@ pacote, extensões ou mapper nesta fase, nem alterar o contrato de `/health`.
 
 ## 4. Tratamento de falhas técnicas
 
-- [ ] 4.1 Configurar tratamento de exceções com HTTP 500 e Problem Details genérico em Development e ambiente não Development; criar testes MSTest de integração que injetem falha apenas no host de testes e confiram status/tipo de conteúdo e ausência de stack trace, mensagem sensível e configuração no corpo.
+- [x] 4.1 Registrados `AddProblemDetails` e `UseExceptionHandler` antes dos endpoints. Teste de integração injeta middleware de falha via `IStartupFilter` registrado por `ConfigureTestServices` apenas na `WebApplicationFactory`, exercitando exceção em Development e Production. Nos dois ambientes, `HTTP 500`, `application/problem+json` e `status:500`, sem stack trace, tipo/mensagem sensível (`FalhaSensivel`, `segredo-de-teste`) ou texto de configuração no corpo; nenhum segredo refletido. `dotnet test --project tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release`: 6 aprovados, 0 falhas/ignorados. A verificação de isolamento de composição/rotas e documentação fica na tarefa 4.2.
 - [ ] 4.2 Verificar que composição de erro é exclusiva dos testes, sem rota pública para provocar exceção e sem leitura de dados reais; documentar limites dos logs/respostas no README, executar as suítes MSTest aplicáveis e criar commit próprio com código, testes, documentação e tarefas deste grupo.
 
 ## 5. Verificação integrada e registro da entrega
