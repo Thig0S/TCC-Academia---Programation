@@ -127,6 +127,30 @@ public sealed class VendaPagamentoTests
     }
 
     [TestMethod]
+    public void RegistrarPagamento_RejeitaOverflowLocalSemPublicarRecebimento()
+    {
+        var venda = CriarVendaDeDoisCentavos();
+        var comPrimeiroPagamento = ObterSucesso(Registrar(
+            venda,
+            recebimentoId: "recebimento-limite",
+            parcelaId: "parcela-1",
+            valor: Dinheiro.LimiteCentavos - 1));
+
+        var falha = ObterFalha(Registrar(
+            comPrimeiroPagamento,
+            recebimentoId: "recebimento-overflow",
+            parcelaId: "parcela-2",
+            valor: 2));
+
+        Assert.AreEqual("limite-financeiro-excedido", falha.Erro.Codigo);
+        Assert.AreEqual(CategoriaErroDominio.Validacao, falha.Erro.Categoria);
+        Assert.AreEqual("valorRecebido", falha.Erro.Campo);
+        Assert.AreEqual(1, comPrimeiroPagamento.Recebimentos.Count);
+        Assert.AreEqual(Dinheiro.LimiteCentavos - 1, comPrimeiroPagamento.Recebimentos[0].Valor.Centavos);
+        Assert.AreEqual(0, venda.Recebimentos.Count);
+    }
+
+    [TestMethod]
     public void RegistrarPagamento_AceitaEPreserva20EscalaresUnicode()
     {
         var observacao = string.Concat(Enumerable.Repeat("😀", 20));
@@ -202,6 +226,15 @@ public sealed class VendaPagamentoTests
             []);
         return ObterSucesso(Venda.Reconstruir(dados, Referencia));
     }
+
+    private static Venda CriarVendaDeDoisCentavos() => ObterSucesso(Venda.Cadastrar(
+        "venda-pagamento-limite",
+        ClienteValido(),
+        DataVenda,
+        DinheiroValido(2),
+        2,
+        ["parcela-1", "parcela-2"],
+        Referencia));
 
     private static DadosClienteVenda ClienteValido() =>
         Assert.IsInstanceOfType<ResultadoDominio<DadosClienteVenda>.Sucesso>(
