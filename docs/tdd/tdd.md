@@ -12,6 +12,8 @@
 
 **Extensão da regressão aprovada em 25/11/2026:** o fechamento E2E da aplicação também cobre a edição restrita de cliente conforme PRD/CA-007 e a capability `formularios-vendas`; não modifica regras financeiras nem os quatro campos autorizados. A tela já usa Signal Forms `submit`/`onInvalid` e `focusBoundControl()`, mas a execução real no navegador não manteve foco no CPF inválido no viewport móvel. Diagnosticar associação do campo, momento de renderização do erro e elemento focado; a correção deve orientar ao primeiro controle inválido após exibir seu erro e preservar rascunho/estado. Manter a verificação de foco no browser. O teste de matriz de cinco larguras e dois temas pode ser repartido em casos menores, mantendo todos os casos e assertions; não tratar o timeout do teste como autorização para remover cobertura ou somente aumentá-lo. Executar a suíte completa serialmente em servidor isolado e aguardar sua conclusão, distinguindo limite do Harness de falha de teste.
 
+**Zoom nativo 200% — evidência manual de 25/11/2026:** o solicitante verificou o dashboard nas configurações previamente registradas para RNF-007/CA-028 (Chrome 157.0.8103.79, Windows a 125%, viewport útil 506×528,65 CSS px) e informou que os elementos não distorcem e permanecem corretamente exibidos. Registrar como relato manual, sem atribuir medição independente ou aceite da ótica. Chromium headless continua sem controle de zoom nativo; não usar viewport reduzido nem CSS zoom como substituto. Detalhes em `frontend/README.md`.
+
 ## Deploy automatizado no GitHub Pages — desenho de 23/11/2026
 
 **Base:** planejamento do PRD “Publicação demonstrativa no GitHub Pages”. Preservar

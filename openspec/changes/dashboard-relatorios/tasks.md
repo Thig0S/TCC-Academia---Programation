@@ -32,6 +32,9 @@ PRD/FON-018/RF-018–020/CA-042–043/CA-007, TDD/DEC-032/DEC-019, `proposal.md`
 
 - [x] 6.1 Executar cenário integrado com pagamento/acréscimo, correção de data entre meses, inativação/Prejuízo/reativação e recarga; verificar conciliação cartões/gráfico/detalhes, independência das posições e demais telas, consulta sem mutação, descarte da sessão e ausência de transmissão/download. Registrar comandos e evidências reais (CA-042/043).
 - [x] 6.2 Comparar capturas antes/depois em 1366×768/390×844 e claro/escuro; verificar contraste, teclado/foco, controles, tabela diária, tabelas de 18 px/20 px, overflow localizado e zoom nativo 200% quando verificável. Documentar medições, diferenças intencionais, falhas/limitações e eventual evidência manual sem alegar aceite visual/operacional automático (D4–D6; CA-043).
+
+**Zoom nativo 200% em 25/11/2026:** verificação manual informada pelo solicitante nas configurações já documentadas; relata ausência de distorção e elementos exibidos corretamente. Evidência, ambiente e limitações em `frontend/README.md`; não é medição independente nem aceite da ótica.
+
 - [ ] 6.3 Executar regressão unitária/componentes, E2E da aplicação e fixture aplicável, builds correspondentes, `format:check`, `git diff --check` e `openspec validate dashboard-relatorios --strict`; registrar resultados reais e bloqueios preexistentes sem enfraquecer expectativas/budgets. Conciliar PRD/TDD/SDD, evidências e tarefas antes de declarar o escopo implementado (CA-042/043).
 
 **Resultado parcial de 6.3 em 25/11/2026:** unitários/componentes 430/430, build,
