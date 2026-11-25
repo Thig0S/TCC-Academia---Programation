@@ -60,6 +60,24 @@ Verificação em 25/11/2026: `npm.cmd test -- --watch=false
 aprovados**; Prettier direcionado e `git diff --check` — aprovados. Os testes usam
 RouterTestingHarness e dados sintéticos; não são aceite operacional.
 
+### Cartões contextuais — tarefa 3.2
+
+Os cinco valores reutilizam os totais da projeção: Recebimentos e Vendas (com
+quantidade Ativa) em **Movimentação do mês**; parcelas em aberto, vencidas e Prejuízo
+elegível em **Posição atual**, rotulada pela referência fixa. O texto informa que
+vencidas já integram o saldo em aberto e que Prejuízo considera somente contratos sem
+recebimentos. Não foi adicionada a faixa global da Visão Geral. Testes de componente
+conferiram valores, zero, alteração de pagamento/status e atualização reativa dos
+cartões. A verificação Playwright em Chromium, nos dois temas e viewports 1366×768 e
+390×844, confirmou dois/três cartões em desktop, grupos empilhados em celular e
+ausência de overflow horizontal global.
+
+Verificações em 25/11/2026: `npm.cmd test -- --watch=false
+--include="src/app/funcionalidades/relatorios/relatorios.spec.ts"` — **9/9 testes
+aprovados**; verificação Playwright pontual dos grupos/temas/viewports, Prettier
+direcionado e `git diff --check` — aprovados. Fixtures são sintéticas; não equivalem
+a aceite visual ou operacional.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
