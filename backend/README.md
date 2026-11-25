@@ -113,8 +113,9 @@ da baixa; repetição corrige o registro existente em vez de acrescentar outro. 
 conjunto de vendas conhecidas é recebido somente para distinguir ID de outra venda
 de ID inexistente; a operação devolve apenas a raiz corrigida. Entrada, lote
 histórico, recebimento ausente e venda Inativa/Prejuízo falham sem mutar qualquer
-venda. A validação/aceitação global de um conjunto candidato permanece na operação
-de conjunto prevista para DOM-06.
+venda. A validação/aceitação global é uma fronteira distinta em `ConjuntoVendas`:
+operações locais não publicam automaticamente suas raízes; o consumidor valida o
+candidato completo antes de adotar o novo snapshot.
 
 `Venda.AlterarStatusAdministrativo` aplica a matriz Ativo→Inativo, Ativo→Prejuízo
 com saldo e retorno de Inativo/Prejuízo a Ativo. Solicitar o status atual é um no-op
@@ -130,6 +131,22 @@ paga prevalece sobre atraso; vencimento anterior à referência é Atrasada, de 
 sete dias é Próximos dias e além disso é Em aberto. A situação da venda prioriza
 Quitada, Atrasada, Próximos dias e Em aberto. A consulta não modifica o agregado e
 protege a coleção projetada contra mutação externa.
+
+`ConjuntoVendas.Criar` valida a coleção inicial e `AceitarCandidato` prepara um novo
+snapshot somente após conferir unicidade ordinal global entre IDs de vendas,
+parcelas e recebimentos e somas seguras de base, efetivo, recebido e saldo. A
+verificação inclui vendas Inativas e em Prejuízo, mesmo que projeções operacionais
+posteriores as separem. Candidatos rejeitados não são retornados como sucesso nem
+alteram o conjunto anterior; aceitar um candidato também não publica nem persiste
+estado por conta própria. O consumidor escolhe se conserva o novo conjunto. A
+fronteira não captura exceções inesperadas: falhas técnicas propagam sem serem
+classificadas como regra comercial. A garantia é de validação e imutabilidade em
+memória, não de concorrência, transação ou persistência.
+
+Os casos CON-001–CON-006 do catálogo cobrem colisões entre tipos/agregados, soma
+insegura em estados não operacionais, cadastro/baixa/correção localmente válidos mas
+globalmente inválidos, rejeição sem publicação parcial, descarte de preparação e
+propagação de falha técnica.
 
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
