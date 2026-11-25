@@ -1,5 +1,25 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Revisão de baseline por segurança — 25/11/2026
+
+**FON-039:** durante o apply da Change `fase-001-backend`, verificou-se que a
+baseline planejada (.NET SDK 10.0.103/runtime 10.0.3 e
+Microsoft.AspNetCore.Mvc.Testing 10.0.3) precede correções de segurança atuais.
+O solicitante autorizou revisar PRD/TDD/SDD antes de implementar. Manter .NET 10,
+mas fixar a baseline de SDK/runtime/pacotes de servicing no release corrigido
+10.0.15, usando SDK 10.0.404, `rollForward=latestPatch` e pacote de teste ASP.NET
+Core 10.0.15. MSTest.Sdk permanece 4.5.3, com metadados e avisos a confirmar no
+início do apply. A baseline precisa ser validada com o SDK efetivamente selecionado;
+esta revisão documental não instala SDK nem comprova restore/build.
+
+**Rastreabilidade:** FON-039 → RF-021 (baseline corrigida sem alterar o objetivo da
+fase) → TDD/DEC-036 → proposal/design/tasks de
+`openspec/changes/fase-001-backend/`. A decisão aplica o menor servicing corrigido
+observado na fonte oficial consultada em 25/11/2026; antes de consolidar pacotes,
+verificar advisories e versões exatas novamente, sem presumir que 10.0.15 continuará
+sendo o patch mais recente. Referências: calendário de suporte .NET e página de
+download .NET 10 (release 10.0.15 em 10/11/2026; suporte até 14/11/2028).
+
 ## Resultados da aplicação e respostas da API — 25/11/2026
 
 **FON-038:** o solicitante definiu **FluentResults** como padrão interno de retorno

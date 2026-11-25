@@ -1,5 +1,44 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-036 — Atualização da baseline .NET 10 por segurança (25/11/2026)
+
+**Base:** PRD/FON-039 e autorização do solicitante durante o apply de
+`fase-001-backend`. Revisar esta decisão antes de qualquer código dependente; não
+manter silenciosamente os números anteriores de DEC-033.
+
+**Evidência observada:** `dotnet --info` neste computador ainda seleciona SDK
+10.0.103 com runtimes .NET e ASP.NET Core 10.0.3. A página oficial de downloads
+consultada em 25/11/2026 indica .NET 10.0.15 como patch de segurança atual (lançado
+10/11/2026), SDK 10.0.404 e SDK 10.0.115; a política oficial mantém .NET 10 em
+suporte até 14/11/2028. Avisos de segurança ASP.NET Core publicados em 10/11/2026
+identificam versões até 10.0.14 como afetadas e 10.0.15 como corrigida. Assim, a
+baseline 10.0.3 e Microsoft.AspNetCore.Mvc.Testing 10.0.3 não será consolidada.
+
+**Baseline revisada:** manter target `net10.0`, fixar `backend/global.json` em SDK
+10.0.404, `rollForward=latestPatch`, `allowPrerelease=false`, e alinhar runtime
+ASP.NET Core e `Microsoft.AspNetCore.Mvc.Testing` em 10.0.15. MSTest.Sdk permanece
+4.5.3. SDK 10.0.404 é a distribuição oficial atual consultada, da feature band
+10.0.400; `latestPatch` evita avanço implícito para feature band/major diferente.
+O 10.0.115 existe, mas não substitui o SDK de servicing mais recente. Antes de
+fixar dependências, verificar NuGet, compatibilidade, avisos de suporte e auditoria
+de vulnerabilidades em cadeia; qualquer patch mais novo disponível no início do
+apply deve ser reavaliado no PRD/TDD/SDD antes da consolidação, sem pin obsoleto.
+
+**Limite/verificação:** esta decisão não instala SDK nem runtimes na máquina. A
+execução da task 1.1 deve confirmar qual SDK o `global.json` realmente seleciona
+partindo de `backend/`; como o host observado só dispõe de 10.0.103, a execução da
+solução requer o SDK 10.0.404 (ou patch na mesma feature band, se documentado) antes
+de restore/build. O README registrará versão exigida, versão efetivamente usada,
+pré-requisito de instalação e advisories consultados. Fontes consultadas em
+25/11/2026: página oficial de download e política de suporte .NET; advisories
+ASP.NET Core de 10/11/2026; galeria NuGet para os pacotes exatos. A consulta não é
+uma auditoria completa de transitivas nem evidência de build.
+
+**Alternativas:** permanecer em 10.0.3 foi rejeitado pelo solicitante após
+identificação das correções; migrar para .NET 11 ampliaria o escopo e não é
+necessário, pois .NET 10 continua LTS suportado. Preservar MSTest como decisão
+explícita e não instalar outro framework/runner.
+
 ## DEC-035 — FluentResults na fronteira Aplicacao → API (25/11/2026)
 
 **Base:** PRD/FON-038 e padrão MediatR/CQRS/Vertical Slices de DEC-034. O
@@ -143,9 +182,10 @@ o estado demonstrativo nem aprova persistência, regras financeiras ou desktop.
 
 **Ambiente observado:** `dotnet --info` informou SDK 10.0.103 e runtimes .NET e
 ASP.NET Core 10.0.3, Windows x64. Não existem solução C#, `global.json` ou projetos
-.NET versionados. Esses números são a baseline local, não alegação de versão mais
-recente ou recomendação de produção. O único workflow observado publica Angular no
-Pages; não deve ser alterado nesta fase.
+.NET versionados. Esses números descrevem somente o ambiente pré-existente; a
+baseline foi revisada por DEC-036 para SDK 10.0.404 e servicing 10.0.15, ainda não
+instalados neste computador. O único workflow observado publica Angular no Pages;
+não deve ser alterado nesta fase.
 
 **Estrutura planejada:** `backend/VendasEmAberto.slnx`, `backend/global.json`,
 `backend/Directory.Build.props`, `.editorconfig`, `.gitignore` e `README.md` locais;
@@ -163,16 +203,17 @@ fronteiras, não regras financeiras.
 
 **SDK e dependências:** todos os projetos em `net10.0`, nullable e implicit usings
 habilitados, sem `LangVersion=preview`. `global.json` dentro de `backend/` seleciona
-SDK 10.0.103 como baseline, `rollForward=latestPatch`, `allowPrerelease=false` e
+SDK 10.0.404 como baseline, `rollForward=latestPatch`, `allowPrerelease=false` e
 runner `Microsoft.Testing.Platform`. Executar comandos a partir de `backend/` para
 que a resolução do SDK use esse arquivo. Testes usam **MSTest.Sdk 4.5.3**, versão
 exata no projeto, sem xUnit/NUnit ou runner VSTest paralelo; integração referencia
-**Microsoft.AspNetCore.Mvc.Testing 10.0.3**. Metadados dessas duas versões foram
+**Microsoft.AspNetCore.Mvc.Testing 10.0.15**. Os metadados destas versões foram
 consultados no NuGet, não restaurados nem compilados. Gerar e versionar
 `packages.lock.json` aplicáveis, usar restauração em modo bloqueado e registrar
 versões efetivas do SDK, runner e dependências. Analisar vulnerabilidades/suporte
-no apply antes de consolidar a base; se for necessário trocar a baseline, revisar
-esta decisão e os artefatos SDD antes do código afetado. Não usar versões flutuantes.
+no início do apply antes de consolidar a base; se houver patch mais novo ou advisory
+que exija ajuste, revisar PRD/TDD/SDD antes do código afetado. Não usar versões
+flutuantes.
 
 **API técnica:** Minimal API ASP.NET Core com `AddHealthChecks`/`MapHealthChecks`
 em `/health`, resposta padrão 200 `text/plain`, corpo `Healthy`, sem checks de
