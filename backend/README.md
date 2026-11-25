@@ -44,8 +44,12 @@ consultadas em 25/11/2026. A primeira checagem de formatação encontrou finais 
 linha/codificação nos arquivos gerados; após `dotnet format`, a verificação sem
 alterações foi aprovada. A suíte `UnitTests` foi executada pelo MTP: 16 testes
 aprovados, 0 falhas e 0 ignorados (porta e rejeição de endpoints concorrentes).
-A suíte de integração e `dotnet run` sem configuração inválida ainda não foram
-executados; o host ainda não implementou `/health`.
+A API foi iniciada como processo real, sem launch profile: listener padrão `5070` e
+alternativo `5073` observados somente em `127.0.0.1`; porta alternativa foi liberada
+após `CTRL_BREAK_EVENT`/encerramento normal. Porta `5074` ocupada causou falha na
+instância nova sem interromper o listener proprietário; configuração de porta `1023`
+falhou antes de abrir listener. A suíte de integração ainda não foi executada;
+`/health` será implementado e verificado nas tarefas 3.x.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
 ## Pré-requisitos e execução
@@ -123,7 +127,8 @@ decisão explícita.
 
 ## Host local e limites
 
-O host disponibiliza somente `GET /health` em `127.0.0.1:5070` por padrão.
+O binding já implementado restringe o listener a `127.0.0.1`, porta padrão `5070`.
+Após a tarefa 3.1, o host disponibilizará somente `GET /health`.
 `Backend:Porta` (variável de ambiente `Backend__Porta`) seleciona uma porta inteira
 entre 1024 e 65535; por exemplo, `Backend__Porta=5080`. Ausência da configuração
 usa 5070; valor vazio, não numérico ou fora dos limites encerra a inicialização
@@ -132,7 +137,7 @@ com mensagem que identifica a chave suportada. Não configurar `--urls`,
 `ASPNETCORE_HTTPS_PORTS`, `DOTNET_HTTP_PORTS`, `DOTNET_HTTPS_PORTS` ou
 `Kestrel:Endpoints` concorrentes. A validação ocorre antes de construir/iniciar o
 host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
-também são rejeitados. `/health` indica somente
+também são rejeitados. Quando implementado, `/health` indicará somente
 disponibilidade do processo, não readiness de banco nem operação comercial. Não há
 login, dados financeiros, integração Angular, importação da planilha, persistência
 ou Tauri nesta fase.
