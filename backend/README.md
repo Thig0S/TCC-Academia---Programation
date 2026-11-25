@@ -93,6 +93,13 @@ cliente e retorna outra raiz preservando status, contrato, parcelas, recebimento
 identificadores e a venda original. A operação é por agregado, sem procura nem
 propagação por CPF.
 
+`Venda.RegistrarPagamento` aceita somente a primeira parcela pendente de uma venda
+Ativa, com data entre venda e referência explícita e uma das quatro formas vigentes.
+O valor recebido pode superar a base; a diferença fica no recebimento Individual,
+sem reescrever parcelas futuras ou o total contratual. Salto, repetição, entrada já
+paga, identidade duplicada ou estado administrativo inelegível retorna falha sem
+publicar novo agregado.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
