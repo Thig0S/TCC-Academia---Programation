@@ -88,6 +88,11 @@ consulta/teste; não importa planilhas/dados reais e não oferece comando para r
 novas baixas em lote. O catálogo documenta lotes de uma e várias parcelas e as falhas
 de reconstrução correspondentes.
 
+`Venda.EditarCliente` recebe somente nome, CPF, telefone e descrição; valida o novo
+cliente e retorna outra raiz preservando status, contrato, parcelas, recebimentos,
+identificadores e a venda original. A operação é por agregado, sem procura nem
+propagação por CPF.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a

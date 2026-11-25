@@ -26,7 +26,7 @@ Executar builds/testes sequencialmente para não disputar saídas intermediária
 
 ## 3. Edição restrita do cliente — DOM-03
 
-- [ ] 3.1 Implementar edição dos quatro campos sem reconstruir contrato ou propagar por CPF; testar Ativa, Inativa, Prejuízo, quitada e com recebimentos, cliente inválido e preservação de todas as finanças/IDs/datas. Comparar estado original e outra venda antes/depois em MSTest; incluir casos no catálogo e contrato no README no commit da edição.
+- [x] 3.1 Implementar edição dos quatro campos sem reconstruir contrato ou propagar por CPF; testar Ativa, Inativa, Prejuízo, quitada e com recebimentos, cliente inválido e preservação de todas as finanças/IDs/datas. Comparar estado original e outra venda antes/depois em MSTest; incluir casos no catálogo e contrato no README no commit da edição.
 
 ## 4. Baixa e correção individuais — DOM-04
 
