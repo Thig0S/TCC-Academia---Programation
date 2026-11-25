@@ -239,415 +239,418 @@
   </div>
 </section>
 
-<section
+<details
   class="mb-3 overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
   aria-labelledby="recebimentos-mensais"
 >
-  <h2
-    id="recebimentos-mensais"
-    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
-  >
-    Recebimentos no mês
-  </h2>
-  <p class="px-3 text-text-muted">
-    Total recebido:
-    <strong class="font-semibold tabular-nums text-success">{{
-      formatarDinheiro(relatorio.totalRecebidoCentavos)
-    }}</strong>
-  </p>
-  @if (relatorio.recebimentos.length) {
-    <div
-      class="max-w-full overflow-x-auto"
-      role="region"
-      aria-label="Tabela de recebimentos no mês"
-      aria-describedby="orientacao-recebimentos-relatorio"
-      tabindex="0"
-    >
-      <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(5)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(5)]:tabular-nums"
-      >
-        <caption>
-          Entradas, pagamentos individuais e lotes recebidos entre
-          {{
-            formatarDataCivil(relatorio.inicioMes)
-          }}
-          e
-          {{
-            formatarDataCivil(relatorio.fimMes)
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Origem</th>
-            <th scope="col">Venda</th>
-            <th scope="col">Forma</th>
-            <th scope="col">Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of relatorio.recebimentos; track item.id) {
-            <tr>
-              <td>{{ formatarDataCivil(item.data) }}</td>
-              <td>{{ item.origem }}</td>
-              <td>
-                <a
-                  [routerLink]="['/vendas', item.venda.id]"
-                  [attr.aria-label]="
-                    'Abrir detalhes da venda de ' +
-                    item.venda.cliente.nome +
-                    ', ID ' +
-                    item.venda.id
-                  "
-                  >{{ item.venda.cliente.nome }}</a
-                >
-              </td>
-              <td>{{ item.forma }}</td>
-              <td>{{ formatarDinheiro(item.valorCentavos) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-      Nenhum recebimento neste mês.
+  <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
+    <h2 id="recebimentos-mensais" class="inline text-lg font-semibold tracking-tight">
+      Recebimentos no mês
+    </h2>
+    <p class="mt-1 mb-0 text-text-muted">
+      Total recebido:
+      <strong class="font-semibold tabular-nums text-success">{{
+        formatarDinheiro(relatorio.totalRecebidoCentavos)
+      }}</strong>
     </p>
-  }
-</section>
+  </summary>
+  <div class="border-t border-border p-3">
+    @if (relatorio.recebimentos.length) {
+      <div
+        class="max-w-full overflow-x-auto"
+        role="region"
+        aria-label="Tabela de recebimentos no mês"
+        aria-describedby="orientacao-recebimentos-relatorio"
+        tabindex="0"
+      >
+        <table
+          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(5)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(5)]:tabular-nums"
+        >
+          <caption>
+            Entradas, pagamentos individuais e lotes recebidos entre
+            {{
+              formatarDataCivil(relatorio.inicioMes)
+            }}
+            e
+            {{
+              formatarDataCivil(relatorio.fimMes)
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Data</th>
+              <th scope="col">Origem</th>
+              <th scope="col">Venda</th>
+              <th scope="col">Forma</th>
+              <th scope="col">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of relatorio.recebimentos; track item.id) {
+              <tr>
+                <td>{{ formatarDataCivil(item.data) }}</td>
+                <td>{{ item.origem }}</td>
+                <td>
+                  <a
+                    [routerLink]="['/vendas', item.venda.id]"
+                    [attr.aria-label]="
+                      'Abrir detalhes da venda de ' +
+                      item.venda.cliente.nome +
+                      ', ID ' +
+                      item.venda.id
+                    "
+                    >{{ item.venda.cliente.nome }}</a
+                  >
+                </td>
+                <td>{{ item.forma }}</td>
+                <td>{{ formatarDinheiro(item.valorCentavos) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+        Nenhum recebimento neste mês.
+      </p>
+    }
+  </div>
+</details>
 
 <p id="orientacao-recebimentos-relatorio" class="sr-only">
   Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para percorrer
   as colunas.
 </p>
 
-<section
+<details
   class="mb-3 overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
   aria-labelledby="vendas-mensais"
 >
-  <h2
-    id="vendas-mensais"
-    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
-  >
-    Vendas do mês
-  </h2>
-  <p class="px-3 text-text-muted">
-    {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
-    <strong class="font-semibold tabular-nums text-text">{{
-      formatarDinheiro(relatorio.totalVendasMesCentavos)
-    }}</strong>
-  </p>
-  @if (relatorio.vendasDoMes.length) {
-    <div
-      class="max-w-full overflow-x-auto"
-      role="region"
-      aria-label="Tabela de vendas do mês"
-      aria-describedby="orientacao-vendas-relatorio"
-      tabindex="0"
-    >
-      <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
-      >
-        <caption>
-          Vendas cadastradas entre
-          {{
-            formatarDataCivil(relatorio.inicioMes)
-          }}
-          e
-          {{
-            formatarDataCivil(relatorio.fimMes)
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Data da venda</th>
-            <th scope="col">Cliente</th>
-            <th scope="col">Situação</th>
-            <th scope="col">Valor total efetivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (venda of relatorio.vendasDoMes; track venda.id) {
-            <tr>
-              <td>{{ formatarDataCivil(venda.dataVenda) }}</td>
-              <td>
-                <a
-                  [routerLink]="['/vendas', venda.id]"
-                  [attr.aria-label]="
-                    'Abrir detalhes da venda de ' + venda.cliente.nome + ', ID ' + venda.id
-                  "
-                  >{{ venda.cliente.nome }}</a
-                >
-              </td>
-              <td>{{ venda.situacao }}</td>
-              <td>{{ formatarDinheiro(venda.valorTotalEfetivoCentavos) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-      Nenhuma venda cadastrada neste mês.
+  <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
+    <h2 id="vendas-mensais" class="inline text-lg font-semibold tracking-tight">Vendas do mês</h2>
+    <p class="mt-1 mb-0 text-text-muted">
+      {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
+      <strong class="font-semibold tabular-nums text-text">{{
+        formatarDinheiro(relatorio.totalVendasMesCentavos)
+      }}</strong>
     </p>
-  }
-</section>
+  </summary>
+  <div class="border-t border-border p-3">
+    @if (relatorio.vendasDoMes.length) {
+      <div
+        class="max-w-full overflow-x-auto"
+        role="region"
+        aria-label="Tabela de vendas do mês"
+        aria-describedby="orientacao-vendas-relatorio"
+        tabindex="0"
+      >
+        <table
+          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
+        >
+          <caption>
+            Vendas cadastradas entre
+            {{
+              formatarDataCivil(relatorio.inicioMes)
+            }}
+            e
+            {{
+              formatarDataCivil(relatorio.fimMes)
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Data da venda</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Situação</th>
+              <th scope="col">Valor total efetivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (venda of relatorio.vendasDoMes; track venda.id) {
+              <tr>
+                <td>{{ formatarDataCivil(venda.dataVenda) }}</td>
+                <td>
+                  <a
+                    [routerLink]="['/vendas', venda.id]"
+                    [attr.aria-label]="
+                      'Abrir detalhes da venda de ' + venda.cliente.nome + ', ID ' + venda.id
+                    "
+                    >{{ venda.cliente.nome }}</a
+                  >
+                </td>
+                <td>{{ venda.situacao }}</td>
+                <td>{{ formatarDinheiro(venda.valorTotalEfetivoCentavos) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+        Nenhuma venda cadastrada neste mês.
+      </p>
+    }
+  </div>
+</details>
 
 <p id="orientacao-vendas-relatorio" class="sr-only">
   Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para percorrer
   as colunas.
 </p>
 
-<section
+<details
   class="mb-3 overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
   aria-labelledby="parcelas-abertas"
 >
-  <h2
-    id="parcelas-abertas"
-    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
-  >
-    Parcelas em aberto
-  </h2>
-  <p class="px-3 text-text-muted">
-    Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
-    <strong class="font-semibold tabular-nums text-text">{{
-      formatarDinheiro(relatorio.totalEmAbertoCentavos)
-    }}</strong>
-  </p>
-  @if (relatorio.saldos.length) {
-    <div
-      class="max-w-full overflow-x-auto"
-      role="region"
-      aria-label="Tabela de parcelas em aberto"
-      aria-describedby="orientacao-saldos-relatorio"
-      tabindex="0"
-    >
-      <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
-      >
-        <caption>
-          Saldos positivos por venda na referência
-          {{
-            formatarDataCivil(referencia)
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Data da venda</th>
-            <th scope="col">Cliente</th>
-            <th scope="col">CPF</th>
-            <th scope="col">Telefone</th>
-            <th scope="col">Primeiro vencimento pendente</th>
-            <th scope="col">Saldo</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of relatorio.saldos; track item.venda.id) {
-            <tr>
-              <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
-              <td>
-                <a
-                  [routerLink]="['/vendas', item.venda.id]"
-                  [attr.aria-label]="
-                    'Abrir detalhes da venda de ' +
-                    item.venda.cliente.nome +
-                    ', ID ' +
-                    item.venda.id
-                  "
-                  >{{ item.venda.cliente.nome }}</a
-                >
-              </td>
-              <td>{{ item.venda.cliente.cpf }}</td>
-              <td>{{ item.venda.cliente.telefone }}</td>
-              <td>
-                {{
-                  item.primeiroVencimentoPendente
-                    ? formatarDataCivil(item.primeiroVencimentoPendente)
-                    : 'Não informado'
-                }}
-              </td>
-              <td>{{ formatarDinheiro(item.saldoCentavos) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-      Nenhuma parcela em aberto nesta referência.
+  <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
+    <h2 id="parcelas-abertas" class="inline text-lg font-semibold tracking-tight">
+      Parcelas em aberto
+    </h2>
+    <p class="mt-1 mb-0 text-text-muted">
+      Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
+      <strong class="font-semibold tabular-nums text-text">{{
+        formatarDinheiro(relatorio.totalEmAbertoCentavos)
+      }}</strong>
     </p>
-  }
-</section>
+  </summary>
+  <div class="border-t border-border p-3">
+    @if (relatorio.saldos.length) {
+      <div
+        class="max-w-full overflow-x-auto"
+        role="region"
+        aria-label="Tabela de parcelas em aberto"
+        aria-describedby="orientacao-saldos-relatorio"
+        tabindex="0"
+      >
+        <table
+          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+        >
+          <caption>
+            Saldos positivos por venda na referência
+            {{
+              formatarDataCivil(referencia)
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Data da venda</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">CPF</th>
+              <th scope="col">Telefone</th>
+              <th scope="col">Primeiro vencimento pendente</th>
+              <th scope="col">Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of relatorio.saldos; track item.venda.id) {
+              <tr>
+                <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
+                <td>
+                  <a
+                    [routerLink]="['/vendas', item.venda.id]"
+                    [attr.aria-label]="
+                      'Abrir detalhes da venda de ' +
+                      item.venda.cliente.nome +
+                      ', ID ' +
+                      item.venda.id
+                    "
+                    >{{ item.venda.cliente.nome }}</a
+                  >
+                </td>
+                <td>{{ item.venda.cliente.cpf }}</td>
+                <td>{{ item.venda.cliente.telefone }}</td>
+                <td>
+                  {{
+                    item.primeiroVencimentoPendente
+                      ? formatarDataCivil(item.primeiroVencimentoPendente)
+                      : 'Não informado'
+                  }}
+                </td>
+                <td>{{ formatarDinheiro(item.saldoCentavos) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+        Nenhuma parcela em aberto nesta referência.
+      </p>
+    }
+  </div>
+</details>
 
 <p id="orientacao-saldos-relatorio" class="sr-only">
   Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para percorrer
   as colunas.
 </p>
 
-<section
+<details
   class="overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
   aria-labelledby="parcelas-vencidas"
 >
-  <h2
-    id="parcelas-vencidas"
-    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
-  >
-    Parcelas vencidas
-  </h2>
-  <p class="px-3 text-text-muted">
-    Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
-    <strong class="font-semibold tabular-nums text-danger">{{
-      formatarDinheiro(relatorio.totalAtrasadoCentavos)
-    }}</strong>
-  </p>
-  @if (relatorio.parcelasAtrasadas.length) {
-    <div
-      class="max-w-full overflow-x-auto"
-      role="region"
-      aria-label="Tabela de parcelas vencidas"
-      aria-describedby="orientacao-vencidas-relatorio"
-      tabindex="0"
-    >
-      <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
-      >
-        <caption>
-          Parcelas pendentes vencidas na referência
-          {{
-            formatarDataCivil(referencia)
-          }}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Venda</th>
-            <th scope="col">CPF</th>
-            <th scope="col">Telefone</th>
-            <th scope="col">Parcela</th>
-            <th scope="col">Vencimento</th>
-            <th scope="col">Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of relatorio.parcelasAtrasadas; track item.parcela.id) {
-            <tr>
-              <td>
-                <a
-                  [routerLink]="['/vendas', item.venda.id]"
-                  [attr.aria-label]="
-                    'Abrir detalhes da venda de ' +
-                    item.venda.cliente.nome +
-                    ', ID ' +
-                    item.venda.id
-                  "
-                  >{{ item.venda.cliente.nome }}</a
-                >
-              </td>
-              <td>{{ item.venda.cliente.cpf }}</td>
-              <td>{{ item.venda.cliente.telefone }}</td>
-              <td>{{ item.parcela.numero }}</td>
-              <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
-              <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-      Nenhuma parcela vencida nesta referência.
+  <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
+    <h2 id="parcelas-vencidas" class="inline text-lg font-semibold tracking-tight">
+      Parcelas vencidas
+    </h2>
+    <p class="mt-1 mb-0 text-text-muted">
+      Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
+      <strong class="font-semibold tabular-nums text-danger">{{
+        formatarDinheiro(relatorio.totalAtrasadoCentavos)
+      }}</strong>
     </p>
-  }
-</section>
+  </summary>
+  <div class="border-t border-border p-3">
+    @if (relatorio.parcelasAtrasadas.length) {
+      <div
+        class="max-w-full overflow-x-auto"
+        role="region"
+        aria-label="Tabela de parcelas vencidas"
+        aria-describedby="orientacao-vencidas-relatorio"
+        tabindex="0"
+      >
+        <table
+          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+        >
+          <caption>
+            Parcelas pendentes vencidas na referência
+            {{
+              formatarDataCivil(referencia)
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Venda</th>
+              <th scope="col">CPF</th>
+              <th scope="col">Telefone</th>
+              <th scope="col">Parcela</th>
+              <th scope="col">Vencimento</th>
+              <th scope="col">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of relatorio.parcelasAtrasadas; track item.parcela.id) {
+              <tr>
+                <td>
+                  <a
+                    [routerLink]="['/vendas', item.venda.id]"
+                    [attr.aria-label]="
+                      'Abrir detalhes da venda de ' +
+                      item.venda.cliente.nome +
+                      ', ID ' +
+                      item.venda.id
+                    "
+                    >{{ item.venda.cliente.nome }}</a
+                  >
+                </td>
+                <td>{{ item.venda.cliente.cpf }}</td>
+                <td>{{ item.venda.cliente.telefone }}</td>
+                <td>{{ item.parcela.numero }}</td>
+                <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
+                <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+        Nenhuma parcela vencida nesta referência.
+      </p>
+    }
+  </div>
+</details>
 
 <p id="orientacao-vencidas-relatorio" class="sr-only">
   Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para percorrer
   as colunas.
 </p>
 
-<section
+<details
   class="overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
   aria-labelledby="prejuizo-relatorio"
 >
-  <h2
-    id="prejuizo-relatorio"
-    class="border-b border-border px-3 pt-3 pb-2 text-lg font-semibold tracking-tight"
-  >
-    Prejuízo
-  </h2>
-  <p class="px-3 text-text-muted">
-    Total de prejuízo:
-    <strong class="font-semibold tabular-nums text-danger">{{
-      formatarDinheiro(relatorio.totalPrejuizoCentavos)
-    }}</strong>
-  </p>
-  <p id="orientacao-prejuizo-relatorio" class="px-3 text-text-muted">
-    O total considera apenas parcelas pendentes de contratos sem nenhum pagamento. Contratos com
-    recebimentos anteriores permanecem visíveis e ficam fora da soma.
-  </p>
-  @if (relatorio.parcelasPrejuizo.length) {
-    <div
-      class="max-w-full overflow-x-auto"
-      role="region"
-      aria-label="Tabela de parcelas em Prejuízo"
-      aria-describedby="orientacao-prejuizo-relatorio orientacao-tabela-prejuizo-relatorio"
-      tabindex="0"
-    >
-      <p id="orientacao-tabela-prejuizo-relatorio" class="sr-only">
-        Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para
-        percorrer as colunas.
-      </p>
-      <table
-        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(7)]:text-right [&_td:nth-child(7)]:text-right [&_td:nth-child(7)]:tabular-nums"
-      >
-        <caption>
-          Parcelas pendentes dos contratos classificados como Prejuízo
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Data da venda</th>
-            <th scope="col">Cliente</th>
-            <th scope="col">CPF</th>
-            <th scope="col">Telefone</th>
-            <th scope="col">Parcela</th>
-            <th scope="col">Vencimento</th>
-            <th scope="col">Valor pendente</th>
-            <th scope="col">Participação no total</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of relatorio.parcelasPrejuizo; track item.venda.id + '/' + item.parcela.id) {
-            <tr>
-              <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
-              <td>
-                <a
-                  [routerLink]="['/vendas', item.venda.id]"
-                  [attr.aria-label]="
-                    'Abrir detalhes da venda de ' +
-                    item.venda.cliente.nome +
-                    ', ID ' +
-                    item.venda.id
-                  "
-                  >{{ item.venda.cliente.nome }}</a
-                >
-              </td>
-              <td>{{ item.venda.cliente.cpf }}</td>
-              <td>{{ item.venda.cliente.telefone }}</td>
-              <td>{{ item.parcela.numero }} de {{ item.venda.parcelas.length }}</td>
-              <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
-              <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
-              <td>
-                {{
-                  item.incluirNoTotal ? 'Incluída no total' : 'Fora do total: recebimento anterior'
-                }}
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p class="m-2 rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-      Nenhuma parcela pendente em contratos em Prejuízo.
+  <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
+    <h2 id="prejuizo-relatorio" class="inline text-lg font-semibold tracking-tight">Prejuízo</h2>
+    <p class="mt-1 mb-0 text-text-muted">
+      Total de prejuízo:
+      <strong class="font-semibold tabular-nums text-danger">{{
+        formatarDinheiro(relatorio.totalPrejuizoCentavos)
+      }}</strong>
     </p>
-  }
-</section>
+  </summary>
+  <div class="border-t border-border p-3">
+    <p id="orientacao-prejuizo-relatorio" class="mb-3 text-text-muted">
+      O total considera apenas parcelas pendentes de contratos sem nenhum pagamento. Contratos com
+      recebimentos anteriores permanecem visíveis e ficam fora da soma.
+    </p>
+    @if (relatorio.parcelasPrejuizo.length) {
+      <div
+        class="max-w-full overflow-x-auto"
+        role="region"
+        aria-label="Tabela de parcelas em Prejuízo"
+        aria-describedby="orientacao-prejuizo-relatorio orientacao-tabela-prejuizo-relatorio"
+        tabindex="0"
+      >
+        <p id="orientacao-tabela-prejuizo-relatorio" class="sr-only">
+          Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para
+          percorrer as colunas.
+        </p>
+        <table
+          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(7)]:text-right [&_td:nth-child(7)]:text-right [&_td:nth-child(7)]:tabular-nums"
+        >
+          <caption>
+            Parcelas pendentes dos contratos classificados como Prejuízo
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Data da venda</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">CPF</th>
+              <th scope="col">Telefone</th>
+              <th scope="col">Parcela</th>
+              <th scope="col">Vencimento</th>
+              <th scope="col">Valor pendente</th>
+              <th scope="col">Participação no total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of relatorio.parcelasPrejuizo; track item.venda.id + '/' + item.parcela.id) {
+              <tr>
+                <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
+                <td>
+                  <a
+                    [routerLink]="['/vendas', item.venda.id]"
+                    [attr.aria-label]="
+                      'Abrir detalhes da venda de ' +
+                      item.venda.cliente.nome +
+                      ', ID ' +
+                      item.venda.id
+                    "
+                    >{{ item.venda.cliente.nome }}</a
+                  >
+                </td>
+                <td>{{ item.venda.cliente.cpf }}</td>
+                <td>{{ item.venda.cliente.telefone }}</td>
+                <td>{{ item.parcela.numero }} de {{ item.venda.parcelas.length }}</td>
+                <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
+                <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
+                <td>
+                  {{
+                    item.incluirNoTotal
+                      ? 'Incluída no total'
+                      : 'Fora do total: recebimento anterior'
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="m-2 rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+        Nenhuma parcela pendente em contratos em Prejuízo.
+      </p>
+    }
+  </div>
+</details>

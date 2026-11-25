@@ -122,6 +122,18 @@ describe('Relatórios', () => {
     expect(conteudo).toContain('R$ 0,00');
     expect(pagina.querySelectorAll('table')).toHaveLength(1);
     expect(pagina.querySelector('table caption')?.textContent).toContain('valores em BRL');
+    const detalhes = [...pagina.querySelectorAll<HTMLDetailsElement>('details')];
+    expect(detalhes).toHaveLength(5);
+    expect(detalhes.every((detalhe) => !detalhe.open)).toBe(true);
+    expect(detalhes.map((detalhe) => texto(detalhe.querySelector('summary')!))).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Recebimentos no mês'),
+        expect.stringContaining('Vendas do mês'),
+        expect.stringContaining('Parcelas em aberto'),
+        expect.stringContaining('Parcelas vencidas'),
+        expect.stringContaining('Prejuízo'),
+      ]),
+    );
     expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
       0,
     );
@@ -176,6 +188,39 @@ describe('Relatórios', () => {
     );
     expect(regiao.getAttribute('tabindex')).toBe('0');
     expect(regiao.querySelector('caption')?.textContent).toContain('valores em BRL');
+  });
+
+  it('mantém detalhes independentes e sua abertura ao aplicar outro mês', async () => {
+    const harness = await RouterTestingHarness.create('/relatorios');
+    const pagina = harness.routeNativeElement!;
+    const detalhes = [...pagina.querySelectorAll<HTMLDetailsElement>('details')];
+    const resumoRecebimentos = detalhes[0].querySelector('summary')!;
+    const resumoVendas = detalhes[1].querySelector('summary')!;
+    resumoRecebimentos.focus();
+    resumoRecebimentos.click();
+    resumoVendas.focus();
+    resumoVendas.click();
+    harness.detectChanges();
+
+    expect(detalhes[0].open).toBe(true);
+    expect(detalhes[1].open).toBe(true);
+    expect(document.activeElement).toBe(resumoVendas);
+
+    const mes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    const ano = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
+    const aplicar = pagina.querySelector<HTMLButtonElement>('button')!;
+    mes.value = '6';
+    mes.dispatchEvent(new Event('change'));
+    ano.value = '2027';
+    ano.dispatchEvent(new Event('input'));
+    aplicar.focus();
+    aplicar.click();
+    harness.detectChanges();
+
+    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+    expect(detalhes[0].open).toBe(true);
+    expect(detalhes[1].open).toBe(true);
+    expect(document.activeElement).toBe(aplicar);
   });
 
   it('aplica mês localmente, preserva posições e mantém foco e resultado em seleção inválida', async () => {

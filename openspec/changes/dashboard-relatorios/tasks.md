@@ -24,7 +24,7 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 
 ## 5. Detalhes completos em expansão
 
-- [ ] 5.1 Integrar cinco `details`/`summary` inicialmente fechados, com títulos/totais visíveis, quantidade em Vendas, tabelas e vazios completos; testar Enter/Espaço, estado, foco, duas expansões simultâneas e preservação de abertura ao aplicar mês. Preservar exportação ilustrativa sem download e documentar testes do componente (D6; CA-043).
+- [x] 5.1 Integrar cinco `details`/`summary` inicialmente fechados, com títulos/totais visíveis, quantidade em Vendas, tabelas e vazios completos; testar Enter/Espaço, estado, foco, duas expansões simultâneas e preservação de abertura ao aplicar mês. Preservar exportação ilustrativa sem download e documentar testes do componente (D6; CA-043).
 - [ ] 5.2 Adaptar `relatorios.spec.ts`, `e2e/relatorios-cobranca.spec.ts` e demais testes que presumem tabelas sempre abertas/ausência de seletor, abrindo detalhes antes de consultar; preservar asserções de todas as linhas (>5), IDs opacos, CPF/telefone, ordenação, primeiro vencimento, Prejuízo fora do total e rolagem local. Executar testes direcionados e registrar resultados em `frontend/README.md` no commit de detalhes (D6; CA-042/043).
 
 ## 6. Verificação integrada e conclusão

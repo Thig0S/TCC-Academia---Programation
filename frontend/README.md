@@ -96,6 +96,20 @@ o recebimento; o mês vazio foi verificado nos testes, com todas as barras em ze
 Prettier direcionado e `git diff --check` passaram. Zoom nativo e aceite operacional
 não são alegados.
 
+### Detalhes expansíveis independentes — tarefa 5.1
+
+As cinco tabelas agora ficam em `details`/`summary` nativos, inicialmente fechados,
+sem exclusividade entre seções. Cada resumo mantém título, total e, em Vendas,
+quantidade; a tabela e seu estado vazio ficam no conteúdo expandido. Os nós são
+estáveis durante a atualização mensal. O controle ilustrativo de exportação continua
+sem download.
+
+Verificações em 25/11/2026: testes de componente de Relatórios — **11/11**; E2E
+direcionado Chromium — **1/1**, abrindo por Enter e Espaço, mantendo duas seções
+simultâneas, foco no summary e abertura após aplicar mês. Prettier direcionado e
+`git diff --check` passaram. O teste é de browser automatizado com dados sintéticos;
+não representa auditoria de leitor de tela ou aceite operacional.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
