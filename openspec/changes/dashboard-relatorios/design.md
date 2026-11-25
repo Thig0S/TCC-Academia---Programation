@@ -66,7 +66,7 @@ A regressão da aplicação revelou um bloqueio no fluxo existente de edição d
 - [Barra pequena ou eixo pouco legível] → tabela diária exata, contraste de 4,5:1 no texto comum/3:1 em elementos essenciais, dois temas/viewports e ausência de dependência exclusiva de cor.
 - [Seleção invalidar o resultado ou perder abertura] → rascunho separado de seleção aplicada, mensagem acessível e seções estáveis.
 - [Testes antigos exigirem apresentação superada] → abrir expansões e ajustar só expectativas de ausência de seletor/layout; preservar asserções de valores, campos e IDs.
-- [Zoom nativo indisponível em automação] → registrar a limitação e solicitar verificação manual no apply; não simular CSS nem reutilizar evidência antiga como atual.
+- [Zoom nativo indisponível em automação] → registrar que o solicitante verificou manualmente 200% em 25/11/2026 nas configurações documentadas e relatou conteúdo sem distorção; isso não é medição independente nem aceite da ótica. Headless não controla zoom nativo; não simular por CSS nem atribuir à automação esse resultado.
 - [Foco E2E divergente do contrato em formulário de edição] → seguir o requisito existente CA-007, inspecionar estado/renderização/foco real antes da correção e manter a matriz completa sem relaxar assertions.
 
 ## Migration Plan

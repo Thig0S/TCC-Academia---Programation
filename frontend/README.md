@@ -182,9 +182,12 @@ Verificações visuais executadas em 25/11/2026:
   duas expansões simultâneas, foco e abertura preservados ao aplicar mês. Esses dados
   são sintéticos; automação e comparação de capturas não representam aceite visual ou
   operacional.
-- Zoom nativo de **200% não verificado**: o Chromium headless usado nesta execução não
-  fornece controle de zoom nativo. Não foi substituído por CSS nem inferido dos
-  viewports; a verificação manual permanece como limitação.
+- Zoom nativo de **200% verificado manualmente pelo solicitante** em 25/11/2026, nas
+  mesmas configurações já documentadas: Chrome 157.0.8103.79 (64 bits), escala do
+  Windows 125% e viewport útil de 506×528,65 CSS px. O solicitante relata que os
+  elementos não distorcem e permanecem exibidos corretamente. É relato manual, sem
+  medição independente do agente e sem aceite da ótica. O Chromium headless continua
+  sem controle de zoom nativo; não foi usado CSS zoom como substituto.
 
 ### Regressão final da Change — tarefa 6.3 — 25/11/2026
 
