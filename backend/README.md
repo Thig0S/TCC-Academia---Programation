@@ -60,6 +60,16 @@ apenas que o processo está disponível; não existe banco ou verificação de r
 financeira nesta fase.
 Não considerar projeto sem testes descobertos como suíte aprovada.
 
+Verificação integrada 5.1 executada em sequência a partir de `backend/` com o SDK
+isolado 10.0.404: `restore --locked-mode` passou; build Release sem restore passou
+com 0 avisos/erros; `dotnet test --solution ... --no-build` descobriu e aprovou 16
+testes unitários e 8 de integração (24 total, 0 falhas/ignorados); `dotnet format
+... --verify-no-changes --no-restore` passou. Em cópia temporária isolada, a troca
+de `Microsoft.AspNetCore.Mvc.Testing` para 10.0.14 sem atualizar o lockfile foi
+rejeitada por NU1004 (exit code 1). Também foi adicionada nessa cópia uma falha MSTest
+intencional: execução identificou 17 testes, 1 falha, exit code 2. Nenhum desses
+arquivos de verificação foi criado na árvore de trabalho entregue.
+
 ## Pré-requisitos e execução
 
 - Windows x64 com SDK .NET `10.0.404` (ou patch compatível da mesma feature band)
