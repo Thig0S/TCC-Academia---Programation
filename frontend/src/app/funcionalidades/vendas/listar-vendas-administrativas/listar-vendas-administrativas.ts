@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { TabelaVendas } from '../componentes/tabela-vendas/tabela-vendas';
@@ -24,7 +24,7 @@ import {
 
 @Component({
   selector: 'app-listar-vendas-administrativas',
-  imports: [Cabecalho, RouterLink, RouterLinkActive, TabelaVendas, PaginacaoVendas],
+  imports: [Cabecalho, TabelaVendas, PaginacaoVendas],
   templateUrl: './listar-vendas-administrativas.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

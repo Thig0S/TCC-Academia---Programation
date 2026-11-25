@@ -24,6 +24,7 @@ import { CorrigirPagamento } from '../../parcelas/corrigir-pagamento/corrigir-pa
 import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
 import { ProjecaoVenda } from '../venda.calculos';
 import { StatusAdministrativoVenda } from '../venda.modelos';
+import { formatarCpf, formatarTelefone } from '../identificacao.validacoes';
 import {
   PagamentoDemonstrativo,
   PagamentoIndividualDemonstrativo,
@@ -258,4 +259,6 @@ export class DetalhesVenda {
   protected readonly referencia = this.servico.referencia;
   protected readonly formatarDinheiro = formatarDinheiro;
   protected readonly formatarDataCivil = formatarDataCivil;
+  protected readonly formatarCpf = formatarCpf;
+  protected readonly formatarTelefone = formatarTelefone;
 }

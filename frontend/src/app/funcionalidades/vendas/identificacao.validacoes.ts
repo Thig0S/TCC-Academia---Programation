@@ -18,6 +18,23 @@ export function telefoneValido(telefone: string): boolean {
   return /^\d{10,11}$/.test(telefone.replace(/[\s()-]/g, ''));
 }
 
+export function formatarCpf(cpf: string): string {
+  const digitos = cpf.replace(/\D/g, '').slice(0, 11);
+  if (digitos.length !== 11) return cpf;
+  return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`;
+}
+
+export function formatarTelefone(telefone: string): string {
+  const digitos = telefone.replace(/\D/g, '').slice(0, 11);
+  if (digitos.length === 11) {
+    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+  }
+  if (digitos.length === 10) {
+    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+  }
+  return telefone;
+}
+
 /** Normaliza somente a formatação permitida; nunca consulta titularidade. */
 export function prepararCliente(dados: ComandoCadastro['cliente']): Resultado<DadosClienteVenda> {
   if (!dados.nome.trim() || !dados.cpf.trim() || !dados.telefone.trim()) {
