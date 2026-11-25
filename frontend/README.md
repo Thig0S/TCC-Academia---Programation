@@ -170,8 +170,8 @@ rolagem horizontal localizada, conforme estilos computados verificados no E2E.
 Verificações visuais executadas em 25/11/2026:
 
 - `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts
-  e2e/demonstracao-inicial.spec.ts --grep
-  "Relatórios mantém|confere contraste de textos"`
+e2e/demonstracao-inicial.spec.ts --grep
+"Relatórios mantém|confere contraste de textos"`
   — **4/4** (dois testes em Chromium 1366×768 e 390×844; ambos percorrem temas claro
   e escuro). Contraste mínimo medido nos textos de Relatórios: **6,57:1** no escuro e
   **5,64:1** no claro; ambos acima de 4,5:1. Os testes também confirmaram cinco
@@ -210,12 +210,13 @@ Verificações executadas em `frontend/`:
   fora do escopo do dashboard; não foram alteradas expectativas nem código dessa área.
   Naquele ponto, a regressão E2E ampla permanecia bloqueada; o reteste autorizado está
   registrado a seguir.
+
 - **Reteste após autorização em 25/11/2026:** a matriz foi repartida em dez testes
   independentes (cinco larguras × dois temas), sem retirar asserções. Os dez casos
   passaram em Chromium serialmente; cada um verificou erro associado e foco no CPF,
   contraste ≥4,5:1, ausência de overflow global, navegação por teclado no recebimento,
   rolagem e preservação dos dados financeiros. `ng test --no-watch
-  --include=src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts` passou
+--include=src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts` passou
   **10/10**. O foco é fornecido pelo `onInvalid`/`focusBoundControl()` já existente e
   recomendado na documentação atual do Angular; a falha histórica não se reproduziu
   nos retestes, portanto não foi introduzida uma alteração especulativa no formulário.
@@ -224,10 +225,10 @@ Verificações executadas em `frontend/`:
   1366×768 e 390×844; inclui limites de coleção, temas, overflow, teclado, tipografia e
   layout responsivo. Aviso esperado de prebundling não usado com otimização de scripts.
 - `openspec validate dashboard-relatorios --strict` e `git diff --check` — aprovados.
-- `npm.cmd run format:check` — falhou somente em `frontend/README.md`. A mesma
-  checagem desse README em `HEAD` anterior às adições desta tarefa também falhou;
-  trata-se de formatação preexistente no documento, sem reformatá-lo integralmente.
-  Os JSONs das capturas finais e `tasks.md` passam no Prettier direcionado.
+- **Resultado naquele reteste:** `npm.cmd run format:check` falhou somente em
+  `frontend/README.md`; a mesma falha já existia em `HEAD` antes desta tarefa. O README
+  foi formatado posteriormente após autorização explícita, conforme resultado final
+  registrado abaixo.
 
 **Conclusão da regressão após autorização — 25/11/2026:** `npm.cmd test --
 --watch=false` passou **430/430** em 33 arquivos; `npm.cmd run build` passou sem
@@ -235,17 +236,13 @@ alterar budgets; `npm.cmd run test:e2e:paginacao-fixture` passou **24/24**; e
 `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --workers=1`
 passou **156/156** em 7 minutos, nos projetos 1366×768 e 390×844. Assim, o bloqueio
 anterior da regressão E2E foi removido sem mudanças em budgets, retries ou assertions.
-`openspec validate dashboard-relatorios --strict` e `git diff --check` passaram. A
-checagem global `npm.cmd run format:check` continua falhando apenas no README por
-formatação já pendente antes desta alteração; Prettier direcionado ao E2E e às tarefas
-alteradas passa. A formatação integral desse README não foi incluída para evitar um
-diff amplo fora da correção E2E. A tarefa 6.3 permanece pendente até resolver essa
-checagem ou receber decisão explícita sobre o bloqueio preexistente.
+`openspec validate dashboard-relatorios --strict`, `git diff --check` e `npm.cmd run
+format:check` passaram após autorização para formatar `frontend/README.md`. O Prettier
+foi aplicado somente a esse arquivo; as mudanças documentais registram os resultados da
+regressão e corrigem a formatação, sem alterar o conteúdo semântico do README.
 
-A tarefa 6.3 continua **aberta somente pela checagem global de formato** no README. A
-suíte E2E completa concluiu com sucesso. O PR não foi aberto, pois o fluxo exige todas
-as tarefas e verificações aplicáveis concluídas. Os resultados não equivalem a
-homologação, operação real ou aceite da ótica.
+A tarefa 6.3 está concluída: verificações automatizadas passaram. A abertura do PR não
+representa homologação, operação real ou aceite da ótica.
 
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
