@@ -1,5 +1,83 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fase 002 — domínio C# independente (25/11/2026)
+
+**FON-040:** solicitação `fase-002-dominio` e duas respostas no Harness: planejar
+o domínio completo, sem banco ou endpoints; adotar operações imutáveis com erros
+tipados, centavos inteiros compatíveis com TypeScript e datas civis. Autoriza apenas
+planejamento PRD → TDD → SDD. Não autoriza apply, publicação de PR ou uso operacional.
+
+**Problema, objetivo e público:** a fase 001 já fornece solução, camadas e host
+técnico; suas bibliotecas de negócio ainda estão vazias por desenho. Consolidar em
+C# as regras atuais do protótipo para futura aplicação local da equipe da loja,
+sem substituir a demonstração ou inventar regras para a planilha legada. Reutilizar
+OBJ-001–004, jornadas de cadastro/edição/recebimento e regras vigentes, incluindo
+RF-013/015/016/018/019, RN-021–026 e CA-036–038/042; não portar apresentação.
+
+**RF-023 — Núcleo de domínio completo e isolado (Essencial):** oferecer operações
+internas de cadastro, edição dos quatro campos do cliente, entrada/parcelamento,
+pagamento individual sequencial, correção individual e mudança administrativa,
+além de projeções puras por venda, conjunto e período mensal. Entradas incluem
+identificadores explícitos e referência civil fornecida pelo chamador; não consultar
+relógio, rede, arquivos ou banco. Cliente pertence à venda, sem cadastro mestre ou
+unicidade de CPF. Entrada, recebimentos individuais e históricos em lote têm origem
+distinta; histórico sintético válido pode ser reconstruído e consultado, mas não há
+comando para novas baixas em lote, edição de entrada/lote ou importação. Sucesso
+produz novo estado validado; falhas esperadas informam código estável, mensagem
+pt-BR e campo quando aplicável, mantendo o estado original. Prioridade essencial
+para preparar os futuros casos de uso, confirmada por FON-040.
+
+**CA-046 — Paridade financeira e temporal (RF-023):** dado um catálogo sintético
+de casos com resultados explícitos derivados das regras vigentes, quando exercitado
+em C#, então cadastro, distribuição dos centavos, vencimentos, entrada única,
+baixa/correção, matriz administrativa e projeções devem reconciliar exatamente.
+Incluir 10.000/3 = 3.334+3.333+3.333; janeiro dia 31 → fevereiro → março dia 31;
+entrada nas N parcelas; base 100, recebido 110, corrigido 105; calendário 0001–9999,
+bordas hoje/+7/+8, mês vazio, mudança de mês e Prejuízo com/sem recebimentos.
+
+**CA-047 — Falha sem mutação e isolamento (RF-023):** dado estado válido, quando
+houver CPF/telefone inválido, overflow individual ou agregado, data/forma inválida,
+salto, repetição de baixa, identidade duplicada, correção de entrada/lote ou tentativa
+de baixa/correção em venda não Ativa, então retornar falha tipada sem publicação parcial nem alteração do
+original ou de outras vendas. Repetir o status atual é no-op; não prometer
+idempotência distribuída ou concorrência persistente. Validar limites antes de
+alocar parcelamentos. O domínio não depende de HTTP, ORM, MediatR ou FluentResults.
+
+**CA-048 — Verificação e não regressão (RF-023/RF-021/022):** dado checkout com
+baseline da fase 001, quando executados restore bloqueado, build Release, MSTest
+e formatação, então a suíte de domínio não vazia e os testes técnicos existentes
+devem passar. Conferir referência direta dos testes ao domínio, catálogo de paridade,
+ausência de pacotes de produção novos e preservação de `/health`, loopback e 404
+de negócio. Frontend permanece independente; registrar build/testes unitários e
+limitações, sem exigir E2E visual de código que não mudou.
+
+**Escopo e exclusões:** RF-023 relaxa a exclusão de regras C# apenas para biblioteca
+isolada. Não incluir handlers/aplicação, adaptador HTTP/FluentResults, EF/SQLite,
+migrations, repositórios, autenticação, IPC/Tauri, backup, Angular, seed, busca,
+paginação, componentes de dashboard, CI ou leitura da planilha real. Mensagens
+pt-BR, dinheiro BRL e dias civis permanecem; foco/teclado/temas não têm alterações
+nesta etapa. Não há nova meta de desempenho ou pesquisa com usuários: sucesso
+técnico será avaliado por CA-046–048, não por redução de erros ainda não medida.
+Pendências do legado e da homologação continuam fora do recorte e não autorizam
+flexibilizar identificação ou recalcular contratos históricos reais.
+
+**Avaliação da base e próximos passos:** arquivos de produção e testes da fase 001
+foram inspecionados; `backend/README.md` registra 16 testes unitários e 8 de
+integração aprovados, smoke real e independência Angular. Não foram reexecutados
+nesta revisão. Textos antigos de PRD/TDD e o preâmbulo de tasks da fase 001 ainda
+dizem “planejado”; são históricos, não ausência atual de implementação. Esta seção
+prevalece para o diagnóstico sem reescrever aquela Change. Próximos marcos:
+tipos/identificação → cadastro/entrada → recebimentos/status → projeções/conjunto →
+regressão e evidências. Tudo depende de revisão e novo pedido explícito de apply.
+
+**Rastreabilidade:** FON-040 → RF-023 → CA-046–048 → TDD/DEC-037 →
+`openspec/changes/fase-002-dominio/`; fontes de comportamento em
+`frontend/src/app/funcionalidades/{vendas,parcelas,relatorios}/` e capabilities
+`dominio-vendas`, `recebimentos-parcelas` e `relatorios-financeiros`. A extensão C#
+será especificada na capability existente `dominio-vendas`, preservando os contratos
+demonstrativos e evitando outra capability para as mesmas invariantes.
+Estado: escopo confirmado, implementação não iniciada; sem aceite operacional.
+
 ## Revisão de baseline por segurança — 25/11/2026
 
 **FON-039:** durante o apply da Change `fase-001-backend`, verificou-se que a
