@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VendasEmAberto.Api/VendasEmAberto.Api.csproj" />
+    <Project Path="src/VendasEmAberto.Aplicacao/VendasEmAberto.Aplicacao.csproj" />
+    <Project Path="src/VendasEmAberto.Dominio/VendasEmAberto.Dominio.csproj" />
+    <Project Path="src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj" />
+    <Project Path="tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj" />
+  </Folder>
+</Solution>
