@@ -48,10 +48,12 @@ capability `dominio-vendas` e os requisitos da Change `fase-002-dominio`.
 | PAG-002 | Mesma origem de PAG-001; RN-025 | Parcela-base 10.000 recebida por 11.000 centavos | Acréscimo 1.000; valor-base e futura permanecem 10.000; original inalterado | `VendaPagamentoTests.RegistrarPagamento_ComAcrescimoNaoAlteraBaseNemSaldoDeParcelasFuturas` |
 | PAG-003 | Mesma origem de PAG-001; `frontend/src/app/funcionalidades/vendas/venda.calculos.ts`, `validarVenda` | Pagamento antecipado na data da venda ou na referência, inclusive | Ambas as bordas inclusivas são aceitas | `VendaPagamentoTests.RegistrarPagamento_AceitaAsBordasDeDataDaVendaEReferencia` |
 | PAG-004 | `dominio-vendas`, requisito “Baixa individual segura no núcleo independente”, cenário “Rejeitar estado inelegível ou confirmação repetida” | Valor abaixo da base, forma/data inválida, salto, entrada já paga, repetição, venda Inativa/Prejuízo ou ID em uso | Falha tipada sem novo recebimento e sem avançar parcela-alvo | `VendaPagamentoTests.RegistrarPagamento_RejeitaValorMenorFormaEDataInvalidas`, `VendaPagamentoTests.RegistrarPagamento_RejeitaSaltoEntradaPagaERepeticaoSemAvancarAlvo`, `VendaPagamentoTests.RegistrarPagamento_RejeitaVendaNaoAtiva` e `VendaPagamentoTests.RegistrarPagamento_RejeitaIdentidadeVaziaOuEmUso` |
+| PAG-005 | CA-047 (overflow individual); `dominio-vendas`, requisito “Precisão financeira compatível entre consumidores”, cenário “Rejeitar valor e soma fora do limite” | Venda-base de 2 centavos em duas parcelas; primeiro recebimento `9.007.199.254.740.990`, seguido de tentativa de receber 2 centavos | Falha `Validacao/limite-financeiro-excedido`; o recebimento existente permanece único e inalterado, sem publicar o segundo | `VendaPagamentoTests.RegistrarPagamento_RejeitaOverflowLocalSemPublicarRecebimento` |
 | OBS-001 | `dominio-vendas`, requisito “Baixa individual segura no núcleo independente”, cenário “Contar observação sem divergência de Unicode”; `frontend/src/app/funcionalidades/parcelas/pagamento.validacoes.ts`, `prepararPagamento` | Observação de 20 emojis (20 escalares representados por 40 unidades UTF-16) ou 21 emojis | 20 preservados integralmente; 21 falham `Validacao/observacao-longa-demais`; ausência vira texto vazio | `VendaPagamentoTests.RegistrarPagamento_AceitaEPreserva20EscalaresUnicode` e `VendaPagamentoTests.RegistrarPagamento_Rejeita21EscalaresENormalizaAusencia` |
 | COR-001 | PRD/RF-015/RN-025/CA-037; `dominio-vendas`, requisito “Correção e status sem reescrita do contrato”, cenário “Corrigir valor e mês” | Venda Ativa quitada; recebimento Individual de 11.000 sobre parcela-base 10.000; correção para 10.500 em outro mês, com nova data, forma e nota; repetir a mesma correção | Mesmo ID e parcela; alocação atualizada para 10.500, acréscimo 500, base/parcelas e outros recebimentos preservados; nenhum registro adicional; raiz original inalterada | `VendaCorrecaoPagamentoTests.CorrigirPagamento_AlteraRecebimentoQuitadoSemDuplicarEPreservaContrato` |
 | COR-002 | RF-015/CA-037; `dominio-vendas`, requisitos “Baixa individual segura no núcleo independente” e “Correção e status sem reescrita do contrato” | Corrigir observação com 20 ou 21 emojis; valor menor que a base, forma inválida ou data antes da venda/depois da referência; observação ausente | 20 escalares preservados, 21 rejeitados; ausência normalizada; erros de validação sem alterar recebimento original | `VendaCorrecaoPagamentoTests.CorrigirPagamento_Aceita20EscalaresENormalizaObservacaoAusente` e `VendaCorrecaoPagamentoTests.CorrigirPagamento_RejeitaNotaLongaValorMenorFormaEDataSemMutacao` |
 | COR-003 | `dominio-vendas`, requisito “Correção e status sem reescrita do contrato”, cenário “Recusar origem ou venda não elegível” | Corrigir Entrada, HistoricoLote, ID inexistente ou pertencente a outra venda, e Individual de venda Inativa/Prejuízo | Falha tipada distinta por origem, inexistência, outra venda ou status; históricos e outras vendas permanecem íntegros | `VendaCorrecaoPagamentoTests.CorrigirPagamento_RejeitaEntradaELoteHistorico`, `VendaCorrecaoPagamentoTests.CorrigirPagamento_DistingueRecebimentoInexistenteEDaOutraVenda` e `VendaCorrecaoPagamentoTests.CorrigirPagamento_RejeitaVendaNaoAtivaSemAlterarHistorico` |
+| COR-004 | CA-047 (overflow individual); `dominio-vendas`, requisito “Precisão financeira compatível entre consumidores”, cenário “Rejeitar valor e soma fora do limite” | Venda-base de 2 centavos em duas parcelas; recebimentos de `9.007.199.254.740.990` e 1 centavo; corrigir o segundo para 2 centavos | Falha `Validacao/limite-financeiro-excedido`; os dois recebimentos existentes e a raiz anterior mantêm seus valores | `VendaCorrecaoPagamentoTests.CorrigirPagamento_RejeitaOverflowLocalSemAlterarRecebimentos` |
 | STS-001 | PRD/RF-013/CA-036; `dominio-vendas`, requisito “Correção e status sem reescrita do contrato”, cenário “Exercitar matriz administrativa sem efeitos financeiros” | Venda Ativa com entrada e Individual, mudanças Ativo→Inativo→Ativo→Prejuízo→Ativo e solicitação repetida de cada status | Transições permitidas e no-op mantêm cliente, contrato, parcelas, datas, IDs e recebimentos idênticos; raiz original continua disponível | `VendaStatusAdministrativoTests.AlterarStatusAdministrativo_AplicaMatrizPermitidaSemAlterarHistorico` e `VendaStatusAdministrativoTests.AlterarStatusAdministrativo_StatusAtualEhNoOpParaTodosOsEstados` |
 | STS-002 | PRD/RF-013/CA-036; `dominio-vendas`, requisito “Correção e status sem reescrita do contrato” | Transição direta Inativo↔Prejuízo, Prejuízo em venda quitada e valor enum desconhecido | Falhas `RegraNegocio/transicao-nao-permitida` ou `Validacao/status-invalido`, sem qualquer alteração do estado | `VendaStatusAdministrativoTests.AlterarStatusAdministrativo_RejeitaTransicaoDiretaStatusInvalidoEPrejuizoQuitado` |
 | PRJ-001 | PRD/RN-025/CA-037; `frontend/src/app/funcionalidades/vendas/venda.calculos.ts`, `projetarVenda`; `dominio-vendas`, requisito “Resultados de domínio sem publicação parcial” | Venda-base 20.000, primeira parcela de 10.000 recebida por 11.000 e segunda pendente | Base 20.000, acréscimo 1.000, efetivo 21.000, recebido 11.000, saldo 10.000; saldo reconcilia com bases pendentes e efetivo−recebido; próximo vencimento e metadados da parcela projetados sem mutação | `VendaProjecaoTests.Projetar_ReconciliaBaseAcrescimoEfetivoRecebidoSaldoEProximoVencimento` |
@@ -77,4 +79,29 @@ capability `dominio-vendas` e os requisitos da Change `fase-002-dominio`.
 
 Os casos DOM-01 a DOM-06 registram valores, calendário, identificação, agregado,
 operações e projeções com oráculos exatos e testes correspondentes. A auditoria final
-de cobertura e de regressões integradas permanece como tarefa DOM-07.
+de cobertura está registrada abaixo; as regressões integradas permanecem nas tarefas
+7.2–7.5.
+
+## Auditoria de rastreabilidade — DOM-07 (25/11/2026)
+
+A revisão comparou os critérios CA-046/047 do PRD e cada cenário da delta da
+capability `dominio-vendas` com as linhas do catálogo e seus métodos MSTest. Foram
+conferidos sucessos/falhas, limites civis e financeiros, origem dos recebimentos,
+isolamento e preservação do estado. A lacuna identificada foi a ausência de casos
+explícitos de overflow local durante baixa e correção; PAG-005 e COR-004 agora
+exercitam essas duas operações no limite seguro, incluindo falha tipada e ausência
+de publicação/alteração parcial.
+
+Os valores esperados são números e regras especificados diretamente nas entradas
+(por exemplo, `9.007.199.254.740.990 + 2` excede o limite comum), não saídas
+calculadas pela implementação C#. Os testes usam fábricas do domínio somente para
+preparar valores/agregados válidos; as expectativas são constantes explícitas. As
+fontes TypeScript registradas fundamentam regras de paridade, sem execução Node nem
+uso de fórmula C# como oráculo.
+
+Inspecionados o grafo/projetos de produção, fontes do domínio e arquivos alterados
+da Change: reconstrução é exclusivamente sintética; não há leitor XLSX, novo pacote
+de produção, handler/caso de uso, alteração Angular/seed nem endpoint de negócio.
+O domínio não contém dependências de I/O, HTTP ou integração externa; os testes
+puros invocam diretamente seus tipos, sem iniciar host ou acessar arquivos/dados
+reais. Esta revisão não é auditoria geral de segurança ou homologação operacional.

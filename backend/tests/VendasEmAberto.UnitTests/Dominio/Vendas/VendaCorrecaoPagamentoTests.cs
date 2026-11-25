@@ -147,6 +147,41 @@ public sealed class VendaCorrecaoPagamentoTests
     }
 
     [TestMethod]
+    public void CorrigirPagamento_RejeitaOverflowLocalSemAlterarRecebimentos()
+    {
+        var vendaOriginal = CriarVendaDeDoisCentavos();
+        var primeiroPagamento = ObterSucesso(Registrar(
+            vendaOriginal,
+            "recebimento-limite",
+            "parcela-limite-1",
+            Dinheiro.LimiteCentavos - 1,
+            DataVenda,
+            FormaPagamento.Pix,
+            ""));
+        var doisPagamentos = ObterSucesso(Registrar(
+            primeiroPagamento,
+            "recebimento-minimo",
+            "parcela-limite-2",
+            1,
+            DataVenda,
+            FormaPagamento.Pix,
+            ""));
+
+        var falha = ObterFalha(Corrigir(
+            doisPagamentos,
+            "recebimento-minimo",
+            2));
+
+        Assert.AreEqual("limite-financeiro-excedido", falha.Erro.Codigo);
+        Assert.AreEqual(CategoriaErroDominio.Validacao, falha.Erro.Categoria);
+        Assert.AreEqual("valorRecebido", falha.Erro.Campo);
+        Assert.AreEqual(2, doisPagamentos.Recebimentos.Count);
+        Assert.AreEqual(Dinheiro.LimiteCentavos - 1, doisPagamentos.Recebimentos[0].Valor.Centavos);
+        Assert.AreEqual(1, doisPagamentos.Recebimentos[1].Valor.Centavos);
+        Assert.AreEqual(0, vendaOriginal.Recebimentos.Count);
+    }
+
+    [TestMethod]
     public void CorrigirPagamento_RejeitaEntradaELoteHistorico()
     {
         var entrada = CriarVendaComEntrada();
@@ -261,6 +296,15 @@ public sealed class VendaCorrecaoPagamentoTests
         DinheiroValido(20_000),
         2,
         [$"{id}-parcela-1", $"{id}-parcela-2"],
+        Referencia));
+
+    private static Venda CriarVendaDeDoisCentavos() => ObterSucesso(Venda.Cadastrar(
+        "venda-correcao-limite",
+        ClienteValido(),
+        DataVenda,
+        DinheiroValido(2),
+        2,
+        ["parcela-limite-1", "parcela-limite-2"],
         Referencia));
 
     private static Venda CriarVendaComEntrada() => ObterSucesso(Venda.Cadastrar(

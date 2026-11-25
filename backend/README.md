@@ -182,6 +182,29 @@ histórico de posição ou persistência é introduzido. Os casos REL-001–REL-
 documentam limites de mês/calendário, reconciliação diária, status, entrada/lote,
 correção entre meses e estabilidade de ordenação.
 
+### Auditoria do catálogo de paridade — DOM-07
+
+A revisão do catálogo contra CA-046/047 e todos os cenários da delta da capability
+`dominio-vendas` encontrou e fechou duas lacunas de cobertura: overflow local na
+baixa (`PAG-005`) e na correção (`COR-004`). Os testes usam uma venda sintética de
+2 centavos e recebimentos próximos de `9.007.199.254.740.991`; as expectativas
+numéricas são explícitas e confirmam falha tipada sem publicar/alterar recebimentos.
+As demais linhas do catálogo ligam fonte/regra, entrada, resultado esperado e método
+MSTest, cobrindo cadastro, identificação, calendário, reconstrução, isolamento,
+status, conjunto e projeções. A implementação C# não é usada como oráculo dos valores
+esperados; referências TypeScript são fontes de regra e não são executadas em runtime.
+Verificação direcionada executada com SDK 10.0.404: os dois casos novos passaram
+(2 aprovados, 0 falhas); `dotnet format` direcionado com `--verify-no-changes`
+também passou.
+
+A inspeção do escopo confirmou reconstrução apenas sintética e ausência, nas fontes
+de domínio/produção e alterações da Change, de leitura XLSX, pacotes de produção
+novos, handlers, mudanças Angular/seed ou endpoints de negócio. Não se iniciou host
+nem houve acesso a arquivo/dado real durante testes de domínio. Limite: esta é uma
+auditoria de rastreabilidade e escopo, não homologação operacional nem auditoria geral
+de segurança. Evidências finais das verificações integradas serão registradas após
+as tarefas 7.2–7.5.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
