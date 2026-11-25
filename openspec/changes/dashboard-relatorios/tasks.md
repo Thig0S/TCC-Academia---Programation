@@ -35,7 +35,7 @@ PRD/FON-018/RF-018–020/CA-042–043/CA-007, TDD/DEC-032/DEC-019, `proposal.md`
 
 **Zoom nativo 200% em 25/11/2026:** verificação manual informada pelo solicitante nas configurações já documentadas; relata ausência de distorção e elementos exibidos corretamente. Evidência, ambiente e limitações em `frontend/README.md`; não é medição independente nem aceite da ótica.
 
-- [ ] 6.3 Executar regressão unitária/componentes, E2E da aplicação e fixture aplicável, builds correspondentes, `format:check`, `git diff --check` e `openspec validate dashboard-relatorios --strict`; registrar resultados reais e bloqueios preexistentes sem enfraquecer expectativas/budgets. Conciliar PRD/TDD/SDD, evidências e tarefas antes de declarar o escopo implementado (CA-042/043).
+- [x] 6.3 Executar regressão unitária/componentes, E2E da aplicação e fixture aplicável, builds correspondentes, `format:check`, `git diff --check` e `openspec validate dashboard-relatorios --strict`; registrar resultados reais e bloqueios preexistentes sem enfraquecer expectativas/budgets. Conciliar PRD/TDD/SDD, evidências e tarefas antes de declarar o escopo implementado (CA-042/043).
 
 **Resultado parcial de 6.3 em 25/11/2026:** unitários/componentes 430/430, build,
 fixture 24/24, `git diff --check` e validação estrita OpenSpec passaram. A suíte E2E
@@ -46,13 +46,11 @@ falha somente no README, cuja falha já existia em `HEAD`. A tarefa permanece ab
 até a regressão E2E da aplicação poder concluir com sucesso e a verificação de formato
 global deixar de estar bloqueada; detalhes e comandos em `frontend/README.md`.
 
-**Atualização após autorização — 25/11/2026:** a matriz de edição foi dividida sem
-reduzir cenários/assertions; unitários 430/430, fixture 24/24, build e regressão E2E
-completa 156/156 passaram, além de `git diff --check` e validação OpenSpec estrita. O
-único item pendente de 6.3 é `npm.cmd run format:check`, ainda falhando exclusivamente
-no README por formatação preexistente, documentada em `frontend/README.md`. Por isso
-6.3 permanece desmarcada e o PR não foi aberto: o fluxo deste repositório só permite
-abri-lo depois de concluir todas as tarefas e verificações aplicáveis.
+**Conclusão após autorização — 25/11/2026:** a matriz de edição foi dividida sem reduzir
+cenários/assertions. Unitários 430/430, fixture 24/24, build, E2E completo 156/156,
+`format:check`, `git diff --check` e validação OpenSpec estrita passaram. O README foi
+formatado após autorização do solicitante; o diff de formatação foi restrito a esse
+arquivo. A tarefa 6.3 está concluída e a Change está pronta para revisão em PR.
 
 ## Workflow follow-up
 
