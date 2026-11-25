@@ -36,7 +36,7 @@ Executar builds/testes sequencialmente para não disputar saídas intermediária
 
 ## 5. Situação administrativa — DOM-05
 
-- [ ] 5.1 Implementar mudanças administrativas com matriz completa e no-op do status atual; testar Ativo→Inativo/Prejuízo, retornos a Ativo, transições diretas proibidas, enum inválido e Prejuízo em quitada. Verificar preservação de parcelas/recebimentos/datas/base e estado original, sem estorno/exclusão; adicionar casos ao catálogo/README e executar MSTest antes do commit.
+- [x] 5.1 Implementar mudanças administrativas com matriz completa e no-op do status atual; testar Ativo→Inativo/Prejuízo, retornos a Ativo, transições diretas proibidas, enum inválido e Prejuízo em quitada. Verificar preservação de parcelas/recebimentos/datas/base e estado original, sem estorno/exclusão; adicionar casos ao catálogo/README e executar MSTest antes do commit.
 
 ## 6. Projeções, conjunto e períodos — DOM-06
 

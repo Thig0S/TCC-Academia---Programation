@@ -115,6 +115,12 @@ histórico, recebimento ausente e venda Inativa/Prejuízo falham sem mutar qualq
 venda. A validação/aceitação global de um conjunto candidato permanece na operação
 de conjunto prevista para DOM-06.
 
+`Venda.AlterarStatusAdministrativo` aplica a matriz Ativo→Inativo, Ativo→Prejuízo
+com saldo e retorno de Inativo/Prejuízo a Ativo. Solicitar o status atual é um no-op
+que devolve a mesma raiz; transições diretas entre Inativo e Prejuízo e Prejuízo em
+venda quitada falham tipadamente. Cada transição permitida cria nova raiz e conserva
+cliente, contrato-base, parcelas, vencimentos e recebimentos — sem estorno ou exclusão.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
