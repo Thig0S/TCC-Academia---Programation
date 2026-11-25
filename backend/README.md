@@ -100,6 +100,10 @@ sem reescrever parcelas futuras ou o total contratual. Salto, repetição, entra
 paga, identidade duplicada ou estado administrativo inelegível retorna falha sem
 publicar novo agregado.
 
+Observação opcional é normalizada para texto vazio quando ausente e limitada a 20
+valores escalares Unicode por `Rune`, não por unidades UTF-16; seu conteúdo é
+preservado sem aparar.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
