@@ -15,6 +15,12 @@ financeiras na primeira entrega.
   documentação dos comandos de desenvolvimento sem dependência de IDE.
 - Adotar **MSTest** para testes unitários e de integração do backend, por decisão
   explícita do solicitante; preservar Vitest/Playwright do frontend.
+- Documentar o padrão futuro de Aplicacao: **MediatR + CQRS + Vertical Slice
+  Architecture**, com requisição e handler próprios por caso de uso e organização
+  por funcionalidade, preservando os projetos de camadas (PRD/FON-037 e
+  TDD/DEC-034). Não instalar MediatR, registrar DI ou criar slices/handlers nesta
+  fase; `/health` continua nativo. Versão/licenciamento antecedem a adoção efetiva
+  em Change posterior.
 - Disponibilizar apenas `GET /health`, sem dados de negócio, em loopback, com
   configuração validada, erro técnico genérico e encerramento controlado.
 - Atualizar primeiro PRD/FON-036/RF-021/022/CA-044/045 e TDD/DEC-033. A exclusão
@@ -48,7 +54,8 @@ frontend independente, sem chamadas de dados ou persistência. A API não será 
 - Dependências propostas: ASP.NET Core do framework .NET 10, MSTest.Sdk e
   Microsoft.AspNetCore.Mvc.Testing. Sem banco, serviço externo ou infraestrutura
   de autenticação. Internet pode ser necessária no restore, não na execução do
-  host já preparado.
+  host já preparado. MediatR é direção documentada para funcionalidades futuras,
+  não uma dependência a restaurar ou configurar nesta fase.
 - Baseline observada: SDK 10.0.103/ASP.NET Core 10.0.3 no Windows x64; compatibilidade
   dos pacotes e execução dos comandos ainda não foram comprovadas.
 - Esta entrega é planejamento. Nenhum projeto foi gerado, pacote restaurado ou
