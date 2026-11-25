@@ -1,33 +1,21 @@
-<app-cabecalho [titulo]="titulo()" [compacto]="true" />
-<div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-  <p class="mb-0 text-text-muted">{{ descricao() }}</p>
-  <p class="mb-0 text-text-muted">
-    Referência da demonstração: {{ formatarDataCivil(referencia) }}
-  </p>
-</div>
-<nav aria-label="Coleções de vendas" class="mb-2 flex flex-wrap gap-x-4 gap-y-2">
-  <a routerLink="/vendas">Vendas em aberto</a>
-  <a routerLink="/vendas/quitadas">Quitadas</a>
-  <a routerLink="/vendas/inativas" routerLinkActive="font-semibold" ariaCurrentWhenActive="page"
-    >Inativas</a
-  >
-  <a routerLink="/vendas/prejuizo" routerLinkActive="font-semibold" ariaCurrentWhenActive="page"
-    >Prejuízo</a
-  >
-</nav>
+<app-cabecalho titulo="Vendas" [compacto]="false" />
 <div class="rounded-xl border-[1px] border-border bg-surface shadow-sm">
-  <section class="mb-2 border-b border-border p-2" aria-label="Pesquisa da coleção">
+  <header class="flex items-center gap-3 border-b border-border px-4 py-2">
+    <span class="h-7 w-1 rounded-full bg-action" aria-hidden="true"></span>
+    <h2 class="mb-0 text-xl font-semibold tracking-tight">{{ titulo() }}</h2>
+  </header>
+  <section class="border-b border-border bg-surface-muted/40 p-3" aria-label="Pesquisa da coleção">
     <div
-      class="grid grid-cols-1 items-end gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(9rem,auto)] consulta-controles"
+      class="grid grid-cols-1 items-end gap-3 md:grid-cols-[minmax(0,2.5fr)_minmax(9rem,1fr)] consulta-controles"
     >
       <div class="min-w-0">
-        <label for="busca-vendas-administrativas" class="mb-1 block text-sm font-medium">
+        <label for="busca-vendas-administrativas" class="mb-1 block text-sm font-semibold">
           Buscar por nome, CPF, telefone ou data da venda
         </label>
         <input
           #campoBusca
           id="busca-vendas-administrativas"
-          class="w-full min-w-0 rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          class="h-12 w-full min-w-0 rounded-xl border border-control-border bg-surface px-4 text-text shadow-sm transition-colors hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
           type="search"
           [value]="termo()"
           aria-describedby="orientacao-busca-vendas-administrativas"
@@ -37,7 +25,7 @@
       <div class="min-w-0">
         <button
           type="button"
-          class="w-full rounded-md border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          class="h-12 w-full rounded-xl border border-control-border bg-surface px-4 text-sm font-semibold text-text shadow-sm transition-colors hover:border-brand hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
           (click)="limparPesquisa(campoBusca)"
         >
           Limpar pesquisa

@@ -6,7 +6,7 @@
 .detalhe-resumo {
   display: grid;
   grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.8fr);
-  align-items: start;
+  align-items: stretch;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
@@ -26,6 +26,16 @@
 
 .detalhe-bloco {
   padding: 0.5rem;
+}
+
+.detalhe-bloco:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalhe-bloco:first-child > .detalhe-campos {
+  flex: 1;
+  align-content: space-between;
 }
 
 .detalhe-bloco h2 {

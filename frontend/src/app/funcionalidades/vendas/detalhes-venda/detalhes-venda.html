@@ -70,9 +70,9 @@
         </h2>
         <dl class="detalhe-campos mb-0">
           <dt>CPF</dt>
-          <dd>{{ resultado.valor.cliente.cpf }}</dd>
+          <dd>{{ formatarCpf(resultado.valor.cliente.cpf) }}</dd>
           <dt>Telefone</dt>
-          <dd>{{ resultado.valor.cliente.telefone }}</dd>
+          <dd>{{ formatarTelefone(resultado.valor.cliente.telefone) }}</dd>
           @if (resultado.valor.cliente.descricao) {
             <dt>Descrição</dt>
             <dd>{{ resultado.valor.cliente.descricao }}</dd>
