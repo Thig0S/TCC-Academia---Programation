@@ -60,6 +60,14 @@ de dias compara diferença civil inclusiva e não soma dias à referência, incl
 em `9999-12-31`. Este núcleo recebe datas já tipadas; parse e apresentação textual
 permanecem nas fronteiras consumidoras.
 
+`DadosClienteVenda` é criado por fábrica validada e expõe apenas propriedades de
+leitura. Nome é obrigatório e aparado; CPF aceita somente a formatação local
+permitida, dígitos ASCII e verificadores válidos; telefone aceita 10 ou 11 dígitos
+ASCII com formatação permitida, sem `+55`. CPF não é único entre vendas. Descrição
+vazia é representada por `null`. `FormaPagamento` restringe as operações a dinheiro,
+Pix, cartão de débito ou cartão de crédito e possui validação explícita de valores de
+enum desconhecidos.
+
 O SDK isolado respondeu `dotnet --info` como versão `10.0.404`, com runtimes
 `Microsoft.NETCore.App 10.0.15` e `Microsoft.AspNetCore.App 10.0.15` (Windows x64).
 A seleção por `backend/global.json` foi confirmada executando os comandos abaixo a
