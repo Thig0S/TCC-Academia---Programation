@@ -33,6 +33,15 @@ PRD/FON-018/RF-018–020/CA-042–043, TDD/DEC-032, `proposal.md`, delta e `desi
 - [x] 6.2 Comparar capturas antes/depois em 1366×768/390×844 e claro/escuro; verificar contraste, teclado/foco, controles, tabela diária, tabelas de 18 px/20 px, overflow localizado e zoom nativo 200% quando verificável. Documentar medições, diferenças intencionais, falhas/limitações e eventual evidência manual sem alegar aceite visual/operacional automático (D4–D6; CA-043).
 - [ ] 6.3 Executar regressão unitária/componentes, E2E da aplicação e fixture aplicável, builds correspondentes, `format:check`, `git diff --check` e `openspec validate dashboard-relatorios --strict`; registrar resultados reais e bloqueios preexistentes sem enfraquecer expectativas/budgets. Conciliar PRD/TDD/SDD, evidências e tarefas antes de declarar o escopo implementado (CA-042/043).
 
+**Resultado parcial de 6.3 em 25/11/2026:** unitários/componentes 430/430, build,
+fixture 24/24, `git diff --check` e validação estrita OpenSpec passaram. A suíte E2E
+completa da aplicação foi interrompida após timeout em teste preexistente de foco no
+fluxo de edição de cliente, fora do escopo; isoladamente, esse teste falhou em 390×844
+por foco não movido ao CPF e excedeu 30 s em 1366×768. `format:check` global também
+falha somente no README, cuja falha já existia em `HEAD`. A tarefa permanece aberta
+até a regressão E2E da aplicação poder concluir com sucesso e a verificação de formato
+global deixar de estar bloqueada; detalhes e comandos em `frontend/README.md`.
+
 ## Workflow follow-up
 
 - Fazer commits por funcionalidade com seus testes/documentação na branch `feature/dashboard-relatorios`; mensagens objetivas em português com prefixos adequados. Não reimplementar `feedback-luighi` nem iniciar código nesta etapa de planejamento.

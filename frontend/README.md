@@ -170,7 +170,8 @@ rolagem horizontal localizada, conforme estilos computados verificados no E2E.
 Verificações visuais executadas em 25/11/2026:
 
 - `npx.cmd playwright test --config=playwright.refinar-baseline.config.ts
-  e2e/demonstracao-inicial.spec.ts --grep "Relatórios mantém|confere contraste de textos"`
+  e2e/demonstracao-inicial.spec.ts --grep
+  "Relatórios mantém|confere contraste de textos"`
   — **4/4** (dois testes em Chromium 1366×768 e 390×844; ambos percorrem temas claro
   e escuro). Contraste mínimo medido nos textos de Relatórios: **6,57:1** no escuro e
   **5,64:1** no claro; ambos acima de 4,5:1. Os testes também confirmaram cinco
@@ -184,6 +185,39 @@ Verificações visuais executadas em 25/11/2026:
 - Zoom nativo de **200% não verificado**: o Chromium headless usado nesta execução não
   fornece controle de zoom nativo. Não foi substituído por CSS nem inferido dos
   viewports; a verificação manual permanece como limitação.
+
+### Regressão final da Change — tarefa 6.3 — 25/11/2026
+
+Verificações executadas em `frontend/`:
+
+- `npm.cmd test -- --watch=false` — **430 testes em 33 arquivos aprovados**.
+- `npm.cmd run build` — aprovado; bundle inicial de **316,87 kB** (transferência
+  estimada **83,65 kB**), sem alterar budgets.
+- E2E da aplicação — iniciado com **138 casos** pelo comando:
+
+  ```text
+  npx.cmd playwright test --config=playwright.refinar-baseline.config.ts --workers=1
+  ```
+
+  A execução do Harness atingiu o limite de seis minutos após 46 casos. Antes da
+  interrupção, o teste de matriz de edição/recebimento excedeu o timeout próprio de
+  30 s. Repetido isoladamente nos dois viewports, falhou em 1366×768 pelo mesmo timeout
+  e em 390×844 porque o foco não foi movido para CPF após erro de validação
+  (`e2e/formularios-vendas.spec.ts:675`). Esse fluxo pertence à edição de cliente,
+  fora do escopo do dashboard; não foram alteradas expectativas nem código dessa área.
+  A regressão E2E ampla da aplicação permanece bloqueada, sem aprovação alegada.
+- `npm.cmd run test:e2e:paginacao-fixture` — **24/24** aprovados nos projetos Chromium
+  1366×768 e 390×844; inclui limites de coleção, temas, overflow, teclado, tipografia e
+  layout responsivo. Aviso esperado de prebundling não usado com otimização de scripts.
+- `openspec validate dashboard-relatorios --strict` e `git diff --check` — aprovados.
+- `npm.cmd run format:check` — falhou somente em `frontend/README.md`. A mesma
+  checagem desse README em `HEAD` anterior às adições desta tarefa também falhou;
+  trata-se de formatação preexistente no documento, sem reformatá-lo integralmente.
+  Os JSONs das capturas finais e `tasks.md` passam no Prettier direcionado.
+
+A tarefa 6.3 continua **aberta**: a suíte E2E completa da aplicação não concluiu com
+sucesso, e o `format:check` global permanece bloqueado pela formatação preexistente do
+README. Os resultados não equivalem a homologação, operação real ou aceite da ótica.
 
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
