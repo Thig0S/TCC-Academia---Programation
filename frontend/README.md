@@ -1,5 +1,20 @@
 # Base técnica — Vendas em Aberto
 
+## Apply `dashboard-relatorios` — baseline de Relatórios — 25/11/2026
+
+Antes de alterar a página, Relatórios foi capturado com o seed sintético padrão no
+Chromium headless, nos viewports 1366×768 e 390×844, temas escuro e claro. As quatro
+capturas PNG e os metadados JSON estão versionados em
+`frontend/evidencias/dashboard-relatorios/baseline/` (`relatorios-{dark,light}-{1366x768,390x844}.{png,json}`).
+Os metadados registram dimensões do documento, títulos, linhas das tabelas e
+tipografia. No baseline, o documento mede 1366×1773 no desktop e 390×2466 no celular;
+as quatro tabelas presentes usam fonte de 18 px e line-height de 20 px, com 6
+recebimentos, 3 vendas, 9 saldos e 6 parcelas vencidas no seed. A composição contém
+“Análise mensal”, seguida das cinco tabelas/seções existentes e da ação ilustrativa
+de exportação; ainda não há seletor, cartões ou gráficos. Os arquivos foram
+verificados após a geração. Capturas e dados são sintéticos, sem aceite visual ou
+operacional; esta baseline não mede zoom nativo.
+
 ## Deploy no GitHub Pages — `deploy-github-pages` — 23/11/2026
 
 Foi criado `.github/workflows/deploy-pages.yml`: o deploy automático é acionado por
