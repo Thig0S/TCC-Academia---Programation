@@ -70,6 +70,18 @@ rejeitada por NU1004 (exit code 1). Também foi adicionada nessa cópia uma falh
 intencional: execução identificou 17 testes, 1 falha, exit code 2. Nenhum desses
 arquivos de verificação foi criado na árvore de trabalho entregue.
 
+Smoke repetido (5.2) com a DLL Release, diretório `backend/` e sem launch profile:
+porta padrão `5070` abriu somente em `127.0.0.1` e `GET /health` retornou
+`HTTP 200`, `text/plain`, `Healthy`; porta alternativa `5073` abriu somente em
+loopback. CTRL_BREAK foi enviado aos hosts e, em seguida, foi confirmado que seus
+processos/listeners não permaneciam ativos e que as portas foram liberadas. Com
+`5074` ocupada por um listener de teste, a nova instância falhou com erro de endereço
+em uso e o listener proprietário permaneceu ativo até ser encerrado pelo próprio
+smoke. `ASPNETCORE_URLS=http://0.0.0.0:5091` foi rejeitada antes de bind e nenhum
+listener apareceu em `5091`. Ao final, nenhuma das portas de smoke ou processo de
+host ficou ativo; variáveis de ambiente foram restauradas. Nenhum banco ou serviço
+externo foi iniciado.
+
 ## Pré-requisitos e execução
 
 - Windows x64 com SDK .NET `10.0.404` (ou patch compatível da mesma feature band)
