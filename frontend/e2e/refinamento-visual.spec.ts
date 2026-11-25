@@ -427,7 +427,7 @@ test('ação Nova venda mantém hierarquia, contraste e foco nos dois temas', as
     expect(contraste([255, 255, 255], [181, 31, 61])).toBeGreaterThanOrEqual(4.5);
 
     await page.keyboard.press('Escape');
-    for (let indice = 0; indice < 12; indice += 1) {
+    for (let indice = 0; indice < 24; indice += 1) {
       await page.keyboard.press('Tab');
       if (await acao.evaluate((elemento) => elemento.matches(':focus-visible'))) break;
     }
@@ -506,7 +506,13 @@ test('cabeçalhos e mensagens de sucesso preservam contraste e acabamento nos do
     await page.goto('/vendas/seed%2Fvenda%2F1');
     if (tema === 'light') await page.getByRole('button', { name: 'Tema escuro' }).click();
     await page.locator('[data-acao-pagar]').first().click();
-    await page.getByLabel('Data do pagamento').fill('2026-11-22');
+    const referenciaTexto = await page
+      .getByRole('main')
+      .locator('p')
+      .filter({ hasText: 'Referência da demonstração:' })
+      .innerText();
+    const [, dia, mes, ano] = referenciaTexto.match(/(\d{2})\/(\d{2})\/(\d{4})/)!;
+    await page.getByLabel('Data do pagamento').fill(`${ano}-${mes}-${dia}`);
     await page.getByLabel('Forma do pagamento').selectOption('Pix');
     await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
     const sucesso = page.locator('main [role="status"]').first();
@@ -618,7 +624,7 @@ test('detalhe destaca saldo, recebimento e valores das parcelas nos dois temas',
     await expect(page.locator('.detalhe-bloco').first()).toHaveCSS('padding', '8px');
     await expect(page.locator('.entrada-detalhe dl')).toHaveCSS('border-radius', '8px');
     await expect(page.locator('.parcelas-detalhe')).toHaveCSS('overflow', 'hidden');
-    await expect(tabela.getByRole('columnheader', { name: 'Valor' })).toHaveCSS(
+    await expect(tabela.getByRole('columnheader', { name: 'Valor-base', exact: true })).toHaveCSS(
       'text-align',
       'right',
     );

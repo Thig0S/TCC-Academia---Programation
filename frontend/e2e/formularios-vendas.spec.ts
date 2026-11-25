@@ -293,7 +293,7 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
     await expect(page.getByLabel('Forma do pagamento')).toHaveValue('');
     await expect(page.getByLabel('Data do pagamento')).toHaveValue(referencia);
     await expect(dialog).toContainText('33,34');
-    await expect(page.locator('#valor-recebimento')).toHaveCount(0);
+    await expect(page.getByLabel('Valor recebido')).toHaveValue('33,34');
     await expect(page.locator('#quantidade-recebimento')).toHaveCount(0);
     await page.getByLabel('Data do pagamento').fill('9999-12-31');
     await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
@@ -354,15 +354,7 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
     ).toContainText('3 de 3');
     await expect(page.getByRole('main')).toContainText('Não há parcelas pendentes');
     const id = page.url();
-    await page.getByRole('link', { name: 'Voltar para Vendas', exact: true }).click();
-    await page
-      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
-      .fill('Cliente DEMO E2E recebimento');
-    await expect(page.locator('tbody tr')).toHaveCount(0);
-    await page
-      .getByRole('navigation', { name: 'Navegação principal' })
-      .getByRole('link', { name: 'Quitadas', exact: true })
-      .click();
+    await page.getByRole('link', { name: 'Voltar para Quitadas', exact: true }).click();
     await page.locator('#busca-vendas-quitadas').fill('Cliente DEMO E2E recebimento');
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await page
@@ -418,7 +410,9 @@ test('corrige pagamento individual com foco, validação e relatório nos dois t
       .getByRole('link', { name: 'Relatórios', exact: true })
       .click();
     const relatorio = page.locator('section[aria-labelledby="recebimentos-mensais"]');
-    const totalAntes = await valorEmCentavos(relatorio.locator(':scope > p strong'));
+    const totalAntes = await valorEmCentavos(
+      relatorio.locator('p').filter({ hasText: 'Total recebido:' }).locator('strong'),
+    );
     const linhaRelatorio = relatorio.locator('tbody tr').filter({ hasText: nome });
     await expect(linhaRelatorio).toHaveCount(1);
     await expect(linhaRelatorio.locator('td').nth(1)).toHaveText('Individual');
@@ -979,214 +973,225 @@ test('seleção por teclado, alternância preservada e entrada nas dez parcelas 
 test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão Geral e Relatórios', async ({
   page,
 }) => {
-  const nome = 'Cliente DEMO FASE007 integrado';
-  await page.goto('/visao-geral');
-  const indicadoresIniciais = await indicadoresVisaoGeral(page);
-  const valorInicialAberto = await valorEmCentavos(indicador(page, 'Total em aberto'));
-  const recebimentosGlobaisIniciais = await valorEmCentavos(indicador(page, 'Recebimentos do mês'));
-  const vendasCadastradasIniciais = Number(await indicador(page, 'Vendas cadastradas').innerText());
-  const referencia = await page
-    .getByRole('main')
-    .locator('p')
-    .filter({ hasText: 'Referência da demonstração:' })
-    .innerText();
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Relatórios', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-  const vendasDoMes = page.locator('section[aria-labelledby="vendas-mensais"]');
-  const recebimentosDoMes = page.locator('section[aria-labelledby="recebimentos-mensais"]');
-  const posicaoEmAberto = page.locator('section[aria-labelledby="parcelas-abertas"]');
-  const parcelasVencidas = page.locator('section[aria-labelledby="parcelas-vencidas"]');
-  const vendasIniciais = await vendasDoMes.locator(':scope > p').innerText();
-  const quantidadeInicial = Number(vendasIniciais.match(/(\d+) vendas?/)?.[1]);
-  const totalVendidoInicial = await valorEmCentavos(vendasDoMes.locator(':scope > p'));
-  const recebimentoInicial = await valorEmCentavos(recebimentosDoMes.locator(':scope > p'));
+  for (const tema of ['dark', 'light'] as const) {
+    const nome = `Cliente DEMO FASE007 integrado ${tema}`;
+    await page.goto('/visao-geral');
+    const raiz = page.locator('app-root');
+    if ((await raiz.getAttribute('data-tema')) !== tema) {
+      await page.getByRole('button', { name: /Tema (escuro|claro)/ }).click();
+    }
+    await expect(raiz).toHaveAttribute('data-tema', tema);
+    const indicadoresIniciais = await indicadoresVisaoGeral(page);
+    const valorInicialAberto = await valorEmCentavos(indicador(page, 'Total em aberto'));
+    const recebimentosGlobaisIniciais = await valorEmCentavos(
+      indicador(page, 'Recebimentos do mês'),
+    );
+    const vendasCadastradasIniciais = Number(
+      await indicador(page, 'Vendas cadastradas').innerText(),
+    );
+    const referencia = await page
+      .getByRole('main')
+      .locator('p')
+      .filter({ hasText: 'Referência da demonstração:' })
+      .innerText();
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+    const vendasDoMes = page.locator('section[aria-labelledby="vendas-mensais"]');
+    const recebimentosDoMes = page.locator('section[aria-labelledby="recebimentos-mensais"]');
+    const posicaoEmAberto = page.locator('section[aria-labelledby="parcelas-abertas"]');
+    const parcelasVencidas = page.locator('section[aria-labelledby="parcelas-vencidas"]');
+    const vendasIniciais = await vendasDoMes.locator(':scope > p').innerText();
+    const quantidadeInicial = Number(vendasIniciais.match(/(\d+) vendas?/)?.[1]);
+    const totalVendidoInicial = await valorEmCentavos(vendasDoMes.locator(':scope > p'));
+    const recebimentoInicial = await valorEmCentavos(recebimentosDoMes.locator(':scope > p'));
 
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Vendas', exact: true })
-    .click();
-  await page.getByRole('link', { name: 'Nova venda' }).click();
-  await preencherCadastro(page, nome);
-  const dataVenda = await page.getByLabel('Data da venda', { exact: true }).inputValue();
-  expect(referencia).toContain(dataVenda.split('-').reverse().join('/'));
-  await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
-  await page.getByLabel('Quantidade de parcelas').fill('4');
-  await page.getByLabel('Possui Entrada').selectOption('sim');
-  await page.getByLabel('Valor da entrada (R$)').fill('200');
-  await page.getByLabel('Forma da entrada').selectOption('Pix');
-  await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
-  await expect(page).toHaveURL(/\/vendas\/sessao%2Fvenda%2F1$/i);
-  await expect(
-    page
-      .locator('dt')
-      .filter({ hasText: /^Total pago$/ })
-      .locator('+ dd'),
-  ).toContainText('200,00');
-  await expect(
-    page
-      .locator('dt')
-      .filter({ hasText: /^Saldo devedor$/ })
-      .locator('+ dd'),
-  ).toContainText('800,00');
-  await expect(page.locator('tbody tr').first()).toContainText('Entrada');
-  await expect(page.locator('tbody tr').first().locator('[data-acao-pagar]')).toHaveCount(0);
-  await expect(page.locator('[data-acao-pagar]')).toHaveCount(1);
-  await expect(page.locator('[data-acao-pagar]').first()).toHaveAttribute(
-    'aria-label',
-    /parcela 2/,
-  );
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true })
+      .click();
+    await page.getByRole('link', { name: 'Nova venda' }).click();
+    await preencherCadastro(page, nome);
+    const dataVenda = await page.getByLabel('Data da venda', { exact: true }).inputValue();
+    expect(referencia).toContain(dataVenda.split('-').reverse().join('/'));
+    await page.getByLabel('Valor total (R$)', { exact: true }).fill('1000');
+    await page.getByLabel('Quantidade de parcelas').fill('4');
+    await page.getByLabel('Possui Entrada').selectOption('sim');
+    await page.getByLabel('Valor da entrada (R$)').fill('200');
+    await page.getByLabel('Forma da entrada').selectOption('Pix');
+    await page.getByRole('button', { name: 'Confirmar cadastro demonstrativo' }).click();
+    await expect(page).toHaveURL(/\/vendas\/sessao%2Fvenda%2F1$/i);
+    await expect(
+      page
+        .locator('dt')
+        .filter({ hasText: /^Total pago$/ })
+        .locator('+ dd'),
+    ).toContainText('200,00');
+    await expect(
+      page
+        .locator('dt')
+        .filter({ hasText: /^Saldo devedor$/ })
+        .locator('+ dd'),
+    ).toContainText('800,00');
+    await expect(page.locator('tbody tr').first()).toContainText('Entrada');
+    await expect(page.locator('tbody tr').first().locator('[data-acao-pagar]')).toHaveCount(0);
+    await expect(page.locator('[data-acao-pagar]')).toHaveCount(1);
+    await expect(page.locator('[data-acao-pagar]').first()).toHaveAttribute(
+      'aria-label',
+      /parcela 2/,
+    );
 
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Visão Geral', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
-  expect(await valorEmCentavos(indicador(page, 'Total em aberto'))).toBe(
-    valorInicialAberto + 80000,
-  );
-  expect(await valorEmCentavos(indicador(page, 'Recebimentos do mês'))).toBe(
-    recebimentosGlobaisIniciais + 20000,
-  );
-  expect(Number(await indicador(page, 'Vendas cadastradas').innerText())).toBe(
-    vendasCadastradasIniciais + 1,
-  );
-  const indicadoresAposCadastro = await indicadoresVisaoGeral(page);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Visão Geral', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
+    expect(await valorEmCentavos(indicador(page, 'Total em aberto'))).toBe(
+      valorInicialAberto + 80000,
+    );
+    expect(await valorEmCentavos(indicador(page, 'Recebimentos do mês'))).toBe(
+      recebimentosGlobaisIniciais + 20000,
+    );
+    expect(Number(await indicador(page, 'Vendas cadastradas').innerText())).toBe(
+      vendasCadastradasIniciais + 1,
+    );
+    const indicadoresAposCadastro = await indicadoresVisaoGeral(page);
 
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Relatórios', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-  expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
-    recebimentoInicial + 20000,
-  );
-  expect(await valorEmCentavos(vendasDoMes.locator(':scope > p'))).toBe(
-    totalVendidoInicial + 100000,
-  );
-  expect(
-    Number((await vendasDoMes.locator(':scope > p').innerText()).match(/(\d+) vendas?/)?.[1]),
-  ).toBe(quantidadeInicial + 1);
-  await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
-  await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+    expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
+      recebimentoInicial + 20000,
+    );
+    expect(await valorEmCentavos(vendasDoMes.locator(':scope > p'))).toBe(
+      totalVendidoInicial + 100000,
+    );
+    expect(
+      Number((await vendasDoMes.locator(':scope > p').innerText()).match(/(\d+) vendas?/)?.[1]),
+    ).toBe(quantidadeInicial + 1);
+    await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+    await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
 
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Vendas', exact: true })
-    .click();
-  await page
-    .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
-    .fill('sem-resultado');
-  await expect(page.locator('tbody tr')).toHaveCount(0);
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Visão Geral', exact: true })
-    .click();
-  await expect(indicador(page, 'Total em aberto')).toContainText('R$');
-  const aposFiltro = await indicadoresVisaoGeral(page);
-  expect(aposFiltro).toEqual(indicadoresAposCadastro);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true })
+      .click();
+    await page
+      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
+      .fill('sem-resultado');
+    await expect(page.locator('tbody tr')).toHaveCount(0);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Visão Geral', exact: true })
+      .click();
+    await expect(indicador(page, 'Total em aberto')).toContainText('R$');
+    const aposFiltro = await indicadoresVisaoGeral(page);
+    expect(aposFiltro).toEqual(indicadoresAposCadastro);
 
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Vendas', exact: true })
-    .click();
-  await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
-  await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
-  const acoesPagar = page.locator('[data-acao-pagar]');
-  for (let pagamentosRestantes = 3; pagamentosRestantes > 0; pagamentosRestantes--) {
-    // Só a próxima parcela pendente pode ser paga; aguarda cada publicação antes do passo seguinte.
-    await expect(acoesPagar).toHaveCount(1);
-    await acoesPagar.first().click();
-    const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
-    await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
-    await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
-    await expect(dialog).toHaveCount(0);
-    await expect(acoesPagar).toHaveCount(pagamentosRestantes > 1 ? 1 : 0);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true })
+      .click();
+    await page.getByRole('link', { name: new RegExp(`Visualizar venda de ${nome}`) }).click();
+    await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
+    const acoesPagar = page.locator('[data-acao-pagar]');
+    for (let pagamentosRestantes = 3; pagamentosRestantes > 0; pagamentosRestantes--) {
+      // Só a próxima parcela pendente pode ser paga; aguarda cada publicação antes do passo seguinte.
+      await expect(acoesPagar).toHaveCount(1);
+      await acoesPagar.first().click();
+      const dialog = page.getByRole('dialog', { name: 'Pagar parcela' });
+      await page.getByLabel('Forma do pagamento').selectOption('Dinheiro');
+      await page.getByRole('button', { name: 'Confirmar pagamento' }).click();
+      await expect(dialog).toHaveCount(0);
+      await expect(acoesPagar).toHaveCount(pagamentosRestantes > 1 ? 1 : 0);
+    }
+    await expect(
+      page
+        .locator('dt')
+        .filter({ hasText: /^Total pago$/ })
+        .locator('+ dd'),
+    ).toContainText('1.000,00');
+    await expect(
+      page
+        .locator('dt')
+        .filter({ hasText: /^Saldo devedor$/ })
+        .locator('+ dd'),
+    ).toContainText('0,00');
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Visão Geral', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
+    expect(await valorEmCentavos(indicador(page, 'Total em aberto'))).toBe(valorInicialAberto);
+    expect(await valorEmCentavos(indicador(page, 'Recebimentos do mês'))).toBe(
+      recebimentosGlobaisIniciais + 100000,
+    );
+    expect(Number(await indicador(page, 'Vendas cadastradas').innerText())).toBe(
+      vendasCadastradasIniciais + 1,
+    );
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
+    expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
+      recebimentoInicial + 100000,
+    );
+    await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(4);
+    await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
+    await expect(posicaoEmAberto.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
+    await expect(parcelasVencidas.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
+
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Vendas', exact: true })
+      .click();
+    await page
+      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
+      .fill(nome);
+    await expect(page.locator('tbody tr')).toHaveCount(0);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Quitadas', exact: true })
+      .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeVisible();
+    await page
+      .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
+      .fill(nome);
+    const vendaQuitada = page.locator('tbody tr').filter({ hasText: nome });
+    await expect(vendaQuitada).toHaveCount(1);
+    await vendaQuitada
+      .getByRole('link', { name: /Visualizar venda de Cliente DEMO FASE007 integrado/ })
+      .click();
+    const dadosFinanceiros = page.locator('section[aria-labelledby="dados-financeiros"]');
+    const antesEdicao = await dadosFinanceiros.innerText();
+    await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
+    await page.getByLabel('Nome', { exact: true }).fill(`${nome} editado`);
+    await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
+    await expect(page.getByRole('main')).toContainText(`${nome} editado`);
+    expect(await dadosFinanceiros.innerText()).toBe(antesEdicao);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Relatórios', exact: true })
+      .click();
+    await expect(
+      vendasDoMes.locator('tbody tr').filter({ hasText: `${nome} editado` }),
+    ).toHaveCount(1);
+
+    await page.reload();
+    await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Visão Geral', exact: true })
+      .click();
+    expect(await indicadoresVisaoGeral(page)).toEqual(indicadoresIniciais);
   }
-  await expect(
-    page
-      .locator('dt')
-      .filter({ hasText: /^Total pago$/ })
-      .locator('+ dd'),
-  ).toContainText('1.000,00');
-  await expect(
-    page
-      .locator('dt')
-      .filter({ hasText: /^Saldo devedor$/ })
-      .locator('+ dd'),
-  ).toContainText('0,00');
-
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Visão Geral', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Visão Geral' })).toBeVisible();
-  expect(await valorEmCentavos(indicador(page, 'Total em aberto'))).toBe(valorInicialAberto);
-  expect(await valorEmCentavos(indicador(page, 'Recebimentos do mês'))).toBe(
-    recebimentosGlobaisIniciais + 100000,
-  );
-  expect(Number(await indicador(page, 'Vendas cadastradas').innerText())).toBe(
-    vendasCadastradasIniciais + 1,
-  );
-
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Relatórios', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Relatórios' })).toBeVisible();
-  expect(await valorEmCentavos(recebimentosDoMes.locator(':scope > p'))).toBe(
-    recebimentoInicial + 100000,
-  );
-  await expect(recebimentosDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(4);
-  await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
-  await expect(posicaoEmAberto.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
-  await expect(parcelasVencidas.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
-
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Vendas', exact: true })
-    .click();
-  await page
-    .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
-    .fill(nome);
-  await expect(page.locator('tbody tr')).toHaveCount(0);
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Quitadas', exact: true })
-    .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Vendas quitadas' })).toBeVisible();
-  await page
-    .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
-    .fill(nome);
-  const vendaQuitada = page.locator('tbody tr').filter({ hasText: nome });
-  await expect(vendaQuitada).toHaveCount(1);
-  await vendaQuitada
-    .getByRole('link', { name: /Visualizar venda de Cliente DEMO FASE007 integrado/ })
-    .click();
-  const dadosFinanceiros = page.locator('section[aria-labelledby="dados-financeiros"]');
-  const antesEdicao = await dadosFinanceiros.innerText();
-  await page.getByRole('link', { name: /Editar dados do cliente da venda/ }).click();
-  await page.getByLabel('Nome', { exact: true }).fill(`${nome} editado`);
-  await page.getByRole('button', { name: 'Confirmar edição demonstrativa' }).click();
-  await expect(page.getByRole('main')).toContainText(`${nome} editado`);
-  expect(await dadosFinanceiros.innerText()).toBe(antesEdicao);
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Relatórios', exact: true })
-    .click();
-  await expect(vendasDoMes.locator('tbody tr').filter({ hasText: `${nome} editado` })).toHaveCount(
-    1,
-  );
-
-  await page.reload();
-  await expect(vendasDoMes.locator('tbody tr').filter({ hasText: nome })).toHaveCount(0);
-  await page
-    .getByRole('navigation', { name: 'Navegação principal' })
-    .getByRole('link', { name: 'Visão Geral', exact: true })
-    .click();
-  expect(await indicadoresVisaoGeral(page)).toEqual(indicadoresIniciais);
 });
 
 test('revela erros por campo e foco, invalida prévia e cancela sem efeito nos dois temas', async ({

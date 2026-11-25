@@ -220,8 +220,51 @@ temas escuro/claro em 1366×768 e 390×844; também verificou reconciliação en
 recebimentos, vendas, Visão Geral e relatório. Prettier dos arquivos desta tarefa,
 `git diff --check` e
 `openspec validate feedback-luighi --strict` — aprovados. São evidências sintéticas do
-protótipo, não aceite operacional. Regressão unitária e E2E completas, fixture independente
-de paginação, build integrado e zoom nativo de 200% ficam para as tarefas 6.1/6.2.
+protótipo, não aceite operacional. A regressão integrada e a fixture independente de
+paginação estão registradas abaixo.
+
+## Apply `feedback-luighi` — regressão integrada e conciliação — 24/11/2026
+
+As projeções de status, baixa/correção individual, valores-base e efetivos, coleções,
+filtros, indicadores e relatórios foram conferidos em conjunto. Os E2E exercitam a navegação
+e os fluxos administrativos, o acréscimo seguido de correção de valor/data/forma, edição de
+identificação sem mudar finanças, filtro sem restringir indicadores, recebimentos que mudam
+de mês, recarga que descarta a sessão demonstrativa e retorno das coleções. Casos de centavos,
+limites de mês civil, pagamentos históricos e falhas atômicas também são cobertos nos testes
+unitários/componentes, conforme as seções anteriores. O E2E integrado de cadastro, entrada,
+quitação, filtro, edição, indicadores e relatórios percorreu os temas escuro/claro nos dois
+projetos Chromium.
+
+Verificações finais em 24/11/2026:
+
+- `npm.cmd test -- --watch=false` — **416/416 testes em 33 arquivos**.
+- `npm.cmd run test:e2e -- --config=playwright.reuse.config.ts` — **132/132**; projetos
+  Chromium 1366×768 e 390×844.
+- `npm.cmd run test:e2e:paginacao-fixture` — **24/24**; inclui os limites 0/1/10/11/21,
+  larguras responsivas, temas, teclado e detalhes com dez/onze parcelas.
+- O E2E de reconciliação integrada, ampliado para ambos os temas, passou **2/2 projetos**;
+  cada projeto percorreu escuro e claro. A fixture permite rolagem vertical normal no detalhe
+  de dez parcelas (documento de 935 px para viewport de 768 px), mantendo alinhamento dos
+  blocos em desktop, conteúdo alcançável e sem overflow horizontal.
+- `npm.cmd run build` — aprovado; bundle inicial **314,47 kB** (transferência estimada
+  **83,10 kB**). `npm.cmd run format:check` e `openspec validate feedback-luighi --strict`
+  — aprovados; `git diff --check` — aprovado.
+
+O E2E reutilizou temporariamente o servidor já ativo na porta 4200 por meio de
+`playwright.reuse.config.ts`; a configuração não faz parte da entrega e foi removida após a
+execução. As duas suítes Playwright foram executadas em processos separados para evitar
+colisão de artefatos de trace. Tentou-se o atalho de zoom no Chromium headless, mas o browser
+não expôs controle de zoom nativo: `innerWidth`, largura do documento, `devicePixelRatio` e
+`visualViewport.scale` permaneceram inalterados. Portanto, zoom nativo de 200% **não foi
+verificado**; as verificações em viewports reais de 1366×768 e 390×844 não são apresentadas
+como equivalente. Todos os dados são sintéticos; não houve homologação, operação com clientes
+reais nem aprovação da ótica.
+
+Conciliação: PRD/FON-017, TDD/DEC-028, seis deltas SDD e tarefas CA-036–038 foram comparados
+com a implementação e os resultados acima. A Change implementa o protótipo em memória sem
+persistência, juros calculados ou integração Crediloja; `dashboard-relatorios` permanece fora
+do escopo. Ver também `openspec/changes/feedback-luighi/tasks.md` para rastreabilidade por
+tarefa.
 
 ## Apply `nomes-e-valores-seed-vendas` — 23/11/2026
 
