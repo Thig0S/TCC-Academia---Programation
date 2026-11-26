@@ -477,6 +477,33 @@ revisão e zero Init/Save, conjunto vazio zerado e valor no limite seguro de cen
 SQLite em provider reaberto confirma revisão 1 e ausência de alteração; banco e pools
 foram temporários e limpos.
 
+## Consulta de período (APP-05/5.3)
+
+`ConsultarPeriodoQuery` recebe início, fim e referência civil explícitos. O handler
+rejeita intervalo invertido antes de carregar o banco; para intervalo válido, carrega
+um snapshot e delega a `ConjuntoVendas.ConsultarPeriodo`, fonte das regras: vendas
+Ativas cuja data de venda esteja entre as duas bordas inclusivas, e recebimentos
+somados uma vez por data no intervalo em todas as vendas/status. A resposta própria
+contém limites, total recebido em centavos, revisão/referência do snapshot e resumos
+das vendas elegíveis projetados na referência. Não inicializa nem grava.
+
+Verificações direcionadas, SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarPeriodoHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarPeriodoSqliteTests
+```
+
+Resultado: 3 testes unitários e 2 SQLite passaram. Oráculo literal: recebimentos de
+10.000 e 10.000 nas bordas, 5.000 de venda cuja data está fora do período, 6.000 de
+venda Inativa e 7.000 de venda Prejuízo somam 38.000; somente as vendas Ativas aberta
+e quitadas das bordas/intervalo aparecem, na ordem do snapshot. UnitTests verificam
+uma carga, destino/referência/revisão, zero preparação/gravação, coleção protegida,
+vazio e inversão como validação antes da carga. Integração repete via `ISender` com
+SQLite temporário/provider reaberto e confirma revisão/conjunto inalterados.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
