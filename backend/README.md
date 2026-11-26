@@ -504,6 +504,35 @@ uma carga, destino/referência/revisão, zero preparação/gravação, coleção
 vazio e inversão como validação antes da carga. Integração repete via `ISender` com
 SQLite temporário/provider reaberto e confirma revisão/conjunto inalterados.
 
+## Consulta de relatório mensal (APP-05/5.4)
+
+`ConsultarRelatorioMensalQuery` recebe ano, mês e referência separadamente. O handler
+valida ano 1–9999 e mês 1–12 antes de construir a data do mês; em seguida carrega um
+snapshot e delega a `ConjuntoVendas.GerarRelatorioMensal`. `RelatorioMensalResposta`
+preserva referência/revisão do snapshot e mapeia limites do mês, recebimentos com venda
+vinculada/origem/data/forma/valor, série diária, vendas do mês, saldos, parcelas
+atrasadas e Prejuízo (incluindo `IncluirNoTotal`), além de todos os totais/quantidades
+do domínio. Cada coleção é uma cópia somente leitura. O mapper não refaz cálculo
+financeiro e a consulta não inicializa nem grava.
+
+Verificações direcionadas, SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarRelatorioMensalHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarRelatorioMensalSqliteTests
+```
+
+Resultado: 4 testes unitários e 3 SQLite passaram. Oráculo sintético literal concilia
+101.000 recebidos com 31 totais diários, 2 vendas Ativas/221.000 no mês, 170.000 em
+aberto, 20.000 atrasados e Prejuízo separado de 10.000; valida vínculos de cliente,
+origens Entrada/Lote/Individual, status mistos, ordenação existente e parcelas de
+Prejuízo com/sem recebimentos. A integração também consulta fevereiro bissexto vazio
+com posição não vazia, valida parâmetros, consulta anos 0001/9999 e usa o command de
+correção para mover um recebimento de março a abril: só a movimentação muda, mantendo
+referência, revisão e posição financeira. Fixtures usam SQLite temporário e cleanup.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
