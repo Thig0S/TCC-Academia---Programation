@@ -1,5 +1,319 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-040 — Casos de uso internos da fase 004 (26/11/2026)
+
+### Situação, origem e síntese da entrevista
+
+**Decisão de escopo confirmada; implementação não iniciada.** Base: PRD/FON-043/044,
+RF-027–030/CA-054–060, DEC-034/035/037/038. Autorização atual cobre somente planejamento
+PRD → TDD → SDD em `feature/fase-004-aplicacao`; apply depende de novo pedido explícito.
+Não é a FASE-004 histórica do Angular. Detalhes técnicos abaixo concretizam as decisões
+confirmadas, sem aprovar regras comerciais adicionais.
+
+| Tema | Resposta explícita no Harness |
+| --- | --- |
+| Escopo | Aplicação completa interna; API e Angular não integrados |
+| Tempo | DateOnly de referência fornecido em cada operação, sem relógio nos handlers |
+| Identidade | Novos IDs gerados na aplicação por abstração; padrão GUID, testes determinísticos |
+| Concorrência | Commands exigem revisão observada pelo consumidor; sem retry automático |
+| Banco | Caminho absoluto por composição; preparação explícita separada, sem CLI |
+| No-op | Mesmo status/cliente normalizado idêntico não grava; revisão obsoleta ainda falha |
+| Queries | Projeções completas; sem busca, ordenação parametrizável ou paginação |
+| Estrutura | Handler explícito por caso de uso, sem coordenador genérico ou behavior transacional |
+| Retorno | DTOs próprios da Aplicacao, long em centavos, DateOnly e coleções protegidas |
+| Dependências | MediatR 12.5.0 Apache-2.0 e FluentResults 4.0.0 MIT aceitos após correção da hipótese MIT do MediatR |
+
+### Estado observado e problema
+
+`Aplicacao` referencia apenas Dominio e contém `Persistencia/`. `IArmazenamentoVendas`
+recebe caminho/referência e retorna snapshot/revisão ou falhas tipadas. Em Infraestrutura,
+`ArmazenamentoVendasSqlite` é internal e só IntegrationTests tem InternalsVisibleTo.
+`Venda` oferece Cadastrar/EditarCliente/AlterarStatusAdministrativo/RegistrarPagamento/
+CorrigirPagamento; `ConjuntoVendas` valida IDs/somas e projeta coleções/período/mês.
+`ProjecaoVenda` não inclui cliente, data contratual ou todo o histórico: DTOs devem
+combinar raiz e projeção por ID, não devolver somente aquela projeção financeira.
+
+API referencia somente Aplicacao, expõe health e não abre banco. UnitTests já referencia
+Aplicacao diretamente; IntegrationTests referencia Infraestrutura. Última evidência
+integrada registrada em `backend/README.md`/VER-01: 205 testes backend e 430 frontend.
+Não foram reexecutados nesta decisão. Specs de persistência ainda estão na Change 003,
+e outras Changes concluídas não arquivadas não se tornam tarefas desta fase.
+
+### Arquitetura, fronteiras e estrutura propostas
+
+```text
+Consumidor interno/testes --> ISender --> Handler explicito --> Dominio
+                                           |
+                                           v
+                                  IArmazenamentoVendas
+                                           ^
+                                           |
+                                        SQLite
+
+Aplicacao --> Dominio
+Infraestrutura --> Aplicacao + Dominio
+Api --> Aplicacao   [sem registrar os casos de uso nem persistencia]
+```
+
+Aplicacao coordena; Dominio conserva regras; Infraestrutura implementa armazenamento
+e gerador padrão. `AdicionarAplicacao` registra handlers do assembly Aplicacao e a
+preparação explícita; `AdicionarPersistenciaSqlite(caminhoAbsoluto)` registra destino
+imutável, adaptador interno e gerador padrão. Essas entradas de composição são públicas,
+sem expor DbContext/modelos; são usadas apenas por código/testes nesta fase. Não ampliar
+InternalsVisibleTo para Aplicacao nem torná-la dependente de Infraestrutura.
+
+Compor/registrar não faz I/O nem prepara arquivo. Validar caminho absoluto e vazio na
+fronteira de composição, sem criar diretórios; configuração inválida gera erro de
+argumento seguro, sem caminho pessoal. O destino imutável pertence a Aplicacao/Persistencia
+e é recebido pelos handlers junto de `IArmazenamentoVendas`; não muda o contrato existente.
+Cada provider de DI representa um destino; sem estado global estático, cache de snapshot
+ou DbContext compartilhado. Adaptador e handlers transient; destino e gerador GUID
+imutáveis/stateless podem ser singleton. O consumidor controla o descarte do provider.
+
+Estrutura proposta sob `backend/src/VendasEmAberto.Aplicacao/`:
+
+```text
+Composicao/                 [registro dos handlers]
+Comum/Erros/                [ErroAplicacao, categorias e conversores]
+Comum/Identificadores/      [IGeradorIdentificadores]
+Contratos/                  [somente DTOs compartilhados efetivamente usados]
+Persistencia/               [contratos existentes + destino + preparacao explicita]
+Funcionalidades/Vendas/
+  CadastrarVenda/ EditarClienteVenda/ AlterarStatusVenda/
+  ConsultarVenda/ ConsultarColecaoVendas/
+Funcionalidades/Recebimentos/
+  RegistrarPagamento/ CorrigirPagamento/
+Funcionalidades/Relatorios/
+  ConsultarResumo/ ConsultarPeriodo/ ConsultarRelatorioMensal/
+```
+
+Cada pasta contém Command/Query, Handler e resposta específica quando necessária.
+Compartilhar conversores de erros, mapeadores e pequenos auxiliares comprovadamente
+repetidos; não criar serviço genérico de vendas, base handler, pipeline transacional,
+repository genérico, CQRS físico, eventos ou bibliotecas de validação/mapeamento extras.
+Nomes próprios em português sem acentos; APIs de bibliotecas preservam nomes oficiais.
+
+### Dependências, ferramentas, compatibilidade e alternativas
+
+Manter net10.0, nullable/implicit usings, SDK 10.0.404/latestPatch, runtime 10.0.15,
+MSTest.Sdk 4.5.3, EF/SQLite existentes. Nenhum pacote é instalado pelo planejamento.
+
+| Dependência proposta | Local/versão | Evidência e limitação |
+| --- | --- | --- |
+| MediatR | Aplicacao, 12.5.0 exata | NuGet declara Apache-2.0 e assets net6.0/netstandard2.0; tag v12.5.0 confirma licença e registro por assembly. Linha anterior escolhida conscientemente, sem pressupor suporte ou chave comercial. |
+| FluentResults | Aplicacao, 4.0.0 exata | NuGet declara MIT e assets net8.0/net9.0/netstandard; documentação orienta erros tipados e não serializar Result. |
+| Microsoft.Extensions.DependencyInjection.Abstractions | Aplicacao/Infraestrutura onde consumido diretamente, 10.0.15 | Alinhar à linha Microsoft já usada por EF; MediatR requer >=8.0.0. Conferir metadados/grafo antes de fixar no apply. |
+| Microsoft.Extensions.Logging.Abstractions | Aplicacao, 10.0.15 | Evitar resolver o mínimo antigo >=2.1.1 declarado por FluentResults; auditar demais transitivas e confirmar compatibilidade. |
+
+Assets e intervalos permitem planejar consumo em net10.0, mas não comprovam execução.
+APP-01 deve conferir metadados/licenças/avisos, restore/build e auditoria do grafo
+antes de código dependente; falha relevante bloqueia e exige revisar DEC-040/SDD.
+Lockfiles devem registrar grafo exato; não adicionar o antigo pacote separado de DI do
+MediatR, Extensions.AspNetCore do FluentResults nem suprimir avisos de licença.
+Não adotar automaticamente APIs de LicenseKey da linha atual na 12.5.0.
+
+Alternativas: MediatR atual exigiria resolver o acordo/RPL e foi preterido pela escolha
+confirmada da linha Apache-2.0; dispatcher próprio revogaria DEC-034 sem necessidade;
+retorno direto de domínio acoplaria consumidores e foi rejeitado. Handler explícito
+repete alguma coordenação, aceito por tornar revisão/no-op/commit verificáveis.
+Snapshot completo continua proporcional à base; não há nova promessa de escala.
+
+### Contratos internos propostos
+
+Requisições usam `IRequest<Result<TResposta>>` e handlers correspondentes. DTOs de
+resposta incluem `Revisao` long e `Referencia` DateOnly, além dos dados do caso de uso;
+são dados, não outro wrapper de sucesso/falha. Não usar Result.Value em falha nem
+serializar Result/Reasons. Nenhum contrato contém status HTTP, EF ou entidade Venda.
+
+**Comuns a todos os Commands:** `Referencia`, `RevisaoEsperada >= 0`. IDs existentes
+obrigatórios são strings opacas comparadas ordinalmente. Campos monetários são long
+em centavos; criar Dinheiro pelas fábricas vigentes, nunca converter reais/double.
+
+| Command | Dados específicos | Operação existente |
+| --- | --- | --- |
+| CadastrarVenda | Nome, Cpf, Telefone, Descricao?, DataVenda, ValorTotalCentavos, QuantidadeParcelas, Entrada? com ValorCentavos/Forma | DadosClienteVenda.Criar + Dinheiro.Criar + Venda.Cadastrar; data da entrada é DataVenda; gerar ID da venda, N parcelas e recebimento da entrada se houver |
+| EditarClienteVenda | VendaId, Nome, Cpf, Telefone, Descricao? | Venda.EditarCliente; comparar os quatro campos normalizados para no-op |
+| AlterarStatusVenda | VendaId, NovoStatus | Venda.AlterarStatusAdministrativo; mesmo status é no-op |
+| RegistrarPagamento | VendaId, ParcelaId, ValorRecebidoCentavos, Data, Forma, Observacao? | Venda.RegistrarPagamento; gerar um recebimento novo, sem escolher implicitamente outra parcela |
+| CorrigirPagamento | VendaId, RecebimentoId, ValorRecebidoCentavos, Data, Forma, Observacao? | Venda.CorrigirPagamento com todas as vendas conhecidas; conservar ID e alocação |
+
+Cada Command retorna detalhe atualizado da venda, revisão e referência; registrar/corrigir
+também identificam RecebimentoId. Só cadastro/baixa geram IDs. `IGeradorIdentificadores`
+expõe uma operação de gerar string, padrão GUID em formato N na Infraestrutura;
+unicidade é validada pelo domínio/conjunto, sem retry de colisão. Não impor formato
+GUID a IDs existentes nem fornecer idempotency key. Validar parâmetros/limites de
+parcelamento antes de gerar listas de IDs, sem alocar com quantidade inválida.
+
+**Queries:** cada uma recebe Referencia e carrega uma vez. `ConsultarVenda(VendaId)`;
+`ConsultarColecaoVendas(Colecao)` com enum próprio Abertas/Quitadas/Inativas/Prejuizo;
+`ConsultarResumo`; `ConsultarPeriodo(Inicio,Fim)`; `ConsultarRelatorioMensal(Ano,Mes)`.
+Ano 1–9999 e mês 1–12 validados antes de construir DateOnly. Cliente consulta o mês da
+referência informando esses valores; nenhuma Query lê relógio ou tem seleção global.
+Revisão não negativa é retornada inclusive em coleção/banco vazios; inexistência de
+detalhe não é lista vazia. Enum desconhecido/ID vazio/intervalo invertido são validação.
+
+DTOs compartilhados mínimos, definidos na Aplicacao e não reutilizados como entidades:
+
+- `ClienteResposta`: quatro campos normalizados, descrição nullable preservada.
+- `VendaResumoResposta`: Id, cliente, DataVenda, status administrativo/financeiro,
+  base/acréscimos/efetivo/recebido/saldo em centavos, quantidades e próximo vencimento.
+- `VendaDetalheResposta`: resumo + parcelas completas e recebimentos/alocações em ordem.
+  Parcela inclui ID/número/base/acréscimo/efetivo/recebido/saldo/vencimento/situação e
+  data/forma de pagamento nullable. Recebimento inclui ID/data/forma/origem/valor/
+  acréscimo/observação e alocações com ParcelaId/ValorCentavos.
+- `ResumoResposta`: total aberto, atrasado, recebido no mês e quantidade de vendas
+  Ativas, inclusive quitadas, a partir de ConjuntoVendas.Projetar.
+- `PeriodoResposta`: Inicio/Fim, RecebidosCentavos e resumos das vendas Ativas do
+  intervalo inclusivo. Não inventar detalhamento de recebimentos que a Query não pede.
+- `RelatorioMensalResposta`: limites do mês, recebimentos identificados com venda/
+  origem/data/forma/valor, série diária completa, vendas do mês, saldos, atrasadas,
+  parcelas Prejuízo/IncluirNoTotal e todos os totais/quantidades do relatório existente.
+
+Enuns de resposta próprios da Aplicacao mapeiam explicitamente os valores conhecidos
+do domínio (status/situação/forma/origem); não usar cast silencioso de enum desconhecido.
+Listas/copias defensivas realmente protegidas, sem arrays mutáveis expostos por
+IReadOnlyList. Mapeadores juntam raiz/projeção por ID e transportam resultados prontos,
+sem recalcular calendário, saldos, acréscimos, elegibilidade ou universos.
+
+### Fluxos, atomicidade e no-op
+
+Command valida estrutura em ordem fixa: revisão/IDs/campos escalares, respeitando a
+ordem das fábricas do domínio; retorna a primeira falha esperada, sem misturar categorias.
+Depois carrega snapshot com o token e referência, compara revisão **antes** de localizar
+venda/operar/detectar no-op; ID da venda ausente é `venda-inexistente`. Executa domínio,
+substitui apenas a raiz na posição original (cadastro acrescenta no fim) e valida todo
+o candidato por ConjuntoVendas.Criar/AceitarCandidato. Nunca salvar só a venda alterada.
+
+Preparar projeções/DTOs que possam falhar antes da escrita. Salvar uma vez com revisão
+carregada, igual à esperada; SQLite detecta disputa entre carga e commit. Sucesso é DTO
+pré-preparado com revisão confirmada, sem recarga obrigatória ou validação cancelável
+após commit. Não devolver candidato como sucesso antes de confirmação; não desfazer
+ou relatar falha por token recebido apenas depois de commit confirmado.
+
+No-op aplica-se **somente** a status igual e cliente normalizado idêntico: após revisão
+conferida, devolver DTO/revisão observada, sem SalvarAsync. Cancelamento já observado
+antes desse retorno continua cancelamento. Não detectar correção idêntica como no-op
+nesta fase nem tornar cadastro/baixa idempotentes. Leitura/no-op não reserva revisão:
+outro escritor pode confirmar logo depois, exigindo novo controle no próximo Command.
+
+Query valida parâmetros, carrega snapshot uma vez, chama projeção/consulta do domínio,
+mapeia e devolve revisão daquele snapshot. Não chama InicializarAsync/SalvarAsync nem
+gera IDs. Relatórios mantêm ordenações existentes e todos os dias do mês; seleção mensal
+não troca referência. Não adicionar lock externo ao leitor nem cache persistente.
+
+Preparação separada: `IPreparacaoArmazenamentoVendas.PrepararAsync(token)` em Aplicacao
+retorna Result e delega InicializarAsync com o destino configurado. Não é Command de
+negócio, não recebe referência/revisão nem adiciona seed; é chamada explicitamente pelo
+consumidor interno. Herda idempotência da preparação existente sem executar no registro DI.
+
+### Falhas e fronteiras
+
+`ErroAplicacao : Error` expõe Categoria, Codigo estável, mensagem segura e Campo opcional.
+Categorias internas: Validacao, Inexistencia, Conflito, RegraNegocio, Infraestrutura e
+EstadoIndeterminado. Sem códigos HTTP. Conversão de domínio conserva sua categoria,
+código/campo/mensagem; erros estruturais novos usam `revisao-invalida`/`revisaoEsperada`,
+`colecao-invalida`/`colecao`, `mes-invalido`/`mes`, `venda-inexistente`/`vendaId` e os
+códigos existentes pertinentes para ID/dinheiro. Não escolher categoria por mensagem.
+
+| Código de armazenamento | Categoria na Aplicacao |
+| --- | --- |
+| caminho-invalido, candidato-invalido | Validacao |
+| conflito-revisao, exclusao-nao-permitida, alteracao-historico-nao-permitida | Conflito |
+| banco-ausente, schema-incompativel, dados-persistidos-invalidos, banco-ocupado, armazenamento-indisponivel, limite-revisao-excedido | Infraestrutura |
+| confirmacao-indeterminada | EstadoIndeterminado |
+
+Manter código/mensagem segura do armazenamento; Campo ausente quando não houver vínculo
+confiável. Não tratar banco ausente como venda inexistente. EstadoIndeterminado não tem
+revisão nova confirmada nem sucesso; consumidor recarrega antes de decidir. Código não
+reconhecido é falha de contrato inesperada e propaga exceção técnica segura, não erro
+de negócio improvisado. Não capturar tudo, não usar Result.Fail(ex.Message), não anexar
+SQL/exceções/dados pessoais em Reasons. OperationCanceledException propaga; token segue
+até armazenamento e é conferido antes de trabalho puro relevante, nunca após sucesso
+de commit para reclassificá-lo. Não prometer cancelamento instantâneo de I/O nativo.
+
+DEC-035 continua definindo futura tradução HTTP para as quatro categorias de negócio;
+esta fase não implementa mapper HTTP nem inventa status para falhas físicas/indeterminadas.
+
+### Segurança, interface e plano de verificação
+
+Somente sintéticos, temporários próprios, sem logs de cliente/SQL/caminho pessoal.
+Sem UI: teclado/foco/temas/BRL e acessibilidade existentes não mudam; E2E/visual/zoom
+não aplicáveis sem alteração de interface. Sem benchmark, telemetria ou uso operacional.
+
+MSTest unitário em `UnitTests/Aplicacao/` usa armazenamento fake, gerador determinístico
+e contador de chamadas. IntegrationTests em `Aplicacao/` compõe provider real e envia
+via ISender, usando arquivo SQLite próprio e reabertura por provider/conexão novos.
+Testes existentes de persistência continuam cobrindo detalhes nativos; não substituí-los
+por mocks. Fixtures de lote são reconstruídas apenas nos testes, não novo Command.
+
+Cobrir CA-054–060 com oráculos literais e protocolo: referência/token/caminho corretos,
+snapshot inteiro, revisão atual/obsoleta e corrida após carga, no-op sem Save, falhas
+sem resposta candidata, colisões globais, Unicode, datas extremas, alteração entre
+meses, todos os status, entrada/lote sem dupla contagem, saída imutável e códigos.
+Usar doubles para confirmação indeterminada/cancelamento tardio no nível handler e
+testes reais existentes como prova do gravador; manter distinção entre as evidências.
+
+No apply, executar sequencialmente a partir de backend: restore inicial das dependências
+novas/lockfiles; restore `--locked-mode`; build Release `--no-restore`; `dotnet test
+--solution VendasEmAberto.slnx -c Release --no-build`; format `--verify-no-changes
+--no-restore`; auditoria transitiva e inspeção do grafo da API sem EF/SQLite. Smoke real
+mantém health/loopback/404/nenhum banco e encerra somente o processo próprio. Frontend
+test/build com API desligada; restauração lockfile-only se necessária, sem atualizar
+manifestos ou encerrar servidores alheios. Não instalar/rebaixar SDK para contornar erro.
+Documentar resultados reais no README e tarefas durante apply, não nesta proposta.
+
+### Roadmap de implementação — obrigatório
+
+Todas as fases abaixo estão **não implementadas** e dependem de apply explícito.
+Cada funcionalidade inclui testes, documentação, tarefas e commit próprio; APP-03/04
+devem ser divididas por caso de uso, não um commit grande por marco.
+
+| Marco | Entrega | Dependência | Critério verificável |
+| --- | --- | --- | --- |
+| APP-01 | Gate de dependências/licenças; erros/DTOs mínimos; destino, gerador, preparação e composição interna | Revisão dos artefatos + autorização de apply; sem risco relevante não tratado | Restore/build/auditoria, isolamento de camadas, DI sem I/O e testes dos contratos |
+| APP-02 | CadastrarVenda e ConsultarVenda, cada um com testes/commit | APP-01 | CA-054, detalhe completo/revisão e reabertura SQLite via ISender |
+| APP-03 | EditarClienteVenda e AlterarStatusVenda, cada um com testes/commit | APP-02 | CA-055, matriz de status, CPF repetido e no-ops/revisão |
+| APP-04 | RegistrarPagamento e CorrigirPagamento, cada um com testes/commit | APP-02 | CA-056, preservação de identidade, saldo e mudança de mês |
+| APP-05 | Coleções, resumo, período e relatório mensal; entregas separadas | APP-02; regressão final após APP-03/04 | CA-057, vazios/ordens/universos e ausência de escrita |
+| APP-06 | Protocolo concorrente/falhas, regressão, smoke e auditoria PRD/TDD/SDD | Todos os anteriores | CA-058–060; evidências reais, limitações e tarefas completas |
+
+APP-03/04/05 podem avançar independentemente após APP-02; não executar builds/testes
+concorrentes na mesma saída. Não há pergunta de produto bloqueante remanescente neste
+recorte; gate técnico do APP-01 não está executado e pode exigir revisão antes de seguir.
+Não inserir importação, dados reais, endpoints, Angular, autenticação, backup, IPC,
+instalador, CI ou archive de outras Changes neste roadmap.
+
+Depois do apply integral e verificações, arquivar **esta** Change conforme AGENTS.md,
+conferir sync/archive e abrir PR único pelo template. Agora não arquivar nem abrir PR:
+artefatos prontos para revisão não são implementação concluída. Merge só autorizado.
+
+### Fontes, riscos e rastreabilidade
+
+Fontes locais: PRD/seção fase 004; projetos/contrato de armazenamento; Venda.*,
+ConjuntoVendas.*, ProjecaoVenda/RelatorioMensalVendas; testes de domínio/persistência e
+README/VER-01; specs dominio-vendas e delta persistencia-vendas da Change 003.
+Fontes externas FON-044 consultadas em 26/11/2026:
+
+- Context7 `/luckypennysoftware/mediatr`: contratos/registro; distinguir conteúdo da
+  linha atual da 12.5.0 usando a tag oficial.
+- <https://raw.githubusercontent.com/LuckyPennySoftware/MediatR/v12.5.0/README.md>
+- <https://raw.githubusercontent.com/LuckyPennySoftware/MediatR/v12.5.0/LICENSE>
+- <https://api.nuget.org/v3/catalog0/data/2025.04.01.16.11.43/mediatr.12.5.0.json>
+- Context7 `/altmann/fluentresults`: erros próprios, acesso a Value e não serializar Result.
+- <https://api.nuget.org/v3/catalog0/data/2025.06.29.15.50.23/fluentresults.4.0.0.json>
+
+Riscos/mitigações: linha antiga sem servicing → gate/revisão, não atualização silenciosa;
+DTO omitindo cliente/histórico → teste por campo/ordem; sucesso falho após commit →
+pré-mapeamento e não rechecagem tardia de token; no-op em revisão velha → conferir antes;
+snapshot parcial → verificar candidato inteiro; categorias por texto → conversores tipados.
+Não se declara auditoria NuGet, compatibilidade compilada ou testes da fase executados.
+
+Rastreabilidade: FON-043/044 → RF-027–030/CA-054–060 → DEC-040 →
+`openspec/changes/fase-004-aplicacao/` → APP-01–06. Complementa DEC-034/035 (adoção
+concreta/licença/retorno), DEC-037 (coordenação) e DEC-038 (consumo interno configurado);
+não muda invariantes financeiras, schema, contrato SQLite ou isolamento da API.
+Revisão inicial de 26/11/2026: planejamento após entrevista, sem implementação.
+
 ## DEC-039 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
 
 **Problema observado:** o C# Dev Kit reporta que não consegue resolver

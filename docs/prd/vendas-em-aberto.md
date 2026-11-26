@@ -1,5 +1,138 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fase 004 do backend — aplicação interna (26/11/2026)
+
+### Identificação, fontes e situação
+
+**FON-043:** pedido `fase-004-aplicacao` e entrevista no Harness desta conversa.
+O solicitante confirmou aplicação completa sem transporte; referência civil explícita
+por operação; IDs novos gerados na aplicação; revisão esperada fornecida pelo consumidor;
+caminho de banco configurado por composição; preparação explícita; no-op sem gravação;
+coleções completas sem controles de busca; handlers explícitos e DTOs próprios.
+Autorizou registrar PRD/TDD e artefatos OpenSpec, **não implementar**. Não confundir
+com a FASE-004 histórica do protótipo Angular.
+
+**FON-044:** consulta documental em 26/11/2026 ao NuGet e às fontes oficiais de
+MediatR/FluentResults, detalhada em TDD/DEC-040. A opção inicialmente apresentada como
+versão anterior MIT foi corrigida: MediatR 12.5.0 é Apache-2.0; o solicitante aceitou
+explicitamente essa licença e versão, com FluentResults 4.0.0 MIT. Não se presume
+licença comercial, suporte da linha antiga ou auditoria executada.
+
+**Situação:** planejamento confirmado para o recorte; implementação não iniciada.
+Sem aceite operacional, dados reais ou autorização de apply. Responsáveis por
+homologação continuam fora desta definição; não se inventam participantes ou prazos.
+
+### Problema, objetivos, público e estado observado
+
+Reutilizar OBJ-001–004: permitir que futuros consumidores internos executem operações
+completas e consultem resultados persistidos sem coordenar manualmente domínio e
+SQLite nem duplicar cálculos financeiros. Consumidor imediato é código/testes;
+beneficiário futuro continua a equipe local da loja, sem contas ou perfis de acesso.
+
+Inspeção: domínio imutável, projeções, armazenamento transacional e contrato
+`Aplicacao/Persistencia/IArmazenamentoVendas.cs` existem. Não há handlers ou pacotes
+MediatR/FluentResults. A API expõe somente health, sem composição SQLite, e Angular usa
+`ServicoDemonstracao`. PRs #34–39 estão integrados. `backend/README.md`, seção VER-01,
+registra a última regressão de 205 testes backend e 430 frontend; são evidências
+anteriores, não novas execuções desta fase. Prevalece este diagnóstico sobre trechos
+históricos que ainda descrevem camadas vazias ou integração pendente.
+
+### Escopo, requisitos e prioridades
+
+Todos os requisitos abaixo são **Essenciais**, de origem FON-043, confirmados para
+planejamento. Eles reutilizam RF-023–026 e RN-025/026; não criam regras financeiras.
+
+| ID | Comportamento, entradas e pré-condições | Resultado e alternativas | Aceite |
+| --- | --- | --- | --- |
+| RF-027 | Oferecer casos de uso de cadastro, edição dos quatro campos do cliente, mudança administrativa, baixa individual e correção individual. Commands recebem dados próprios, referência civil e revisão esperada não negativa; banco preparado. IDs novos são gerados internamente; IDs existentes são informados. | Havendo alteração, sucesso somente após gravação confirmada, com DTO e revisão; no-op segue RF-029. Preservar demais vendas e histórico. Falhas existentes de identificação, elegibilidade, sequência, valores e datas não gravam. Sem nova baixa em lote, exclusão, estorno ou edição de contrato-base. | CA-054–056 |
+| RF-028 | Consultar detalhe por ID, coleções Abertas/Quitadas/Inativas/Prejuízo, resumo, período inclusivo e relatório mensal. Receber referência explícita; mês pode ser selecionado sem trocar a referência. | DTOs com revisão lida do mesmo snapshot; detalhe ausente é inexistência, coleções vazias são sucesso. Coleções completas preservam ordem de origem; relatórios preservam as ordenações existentes. Sem busca, filtros adicionais, paginação ou reconstrução de posição histórica. | CA-057 |
+| RF-029 | Commands exigem a revisão observada pelo consumidor e usam a mesma referência durante carga, domínio e gravação. Conferir revisão antes de operar ou aceitar no-op. | Revisão obsoleta falha sem retry; escrita confirma nova revisão. Status já aplicado ou quatro campos de cliente normalizados idênticos retornam sucesso sem gravar e sem incrementar revisão. Revisão devolvida em consulta/no-op é a observada, não garantia de que não ocorreu escrita posterior. | CA-055/058 |
+| RF-030 | Configurar caminho absoluto uma vez por composição interna e preparar banco somente por chamada explícita separada. Consultas/Commands não criam/migram arquivo; API e frontend continuam independentes. | Respostas próprias da aplicação, com centavos inteiros, datas civis e coleções protegidas; erros tipados/códigos estáveis/mensagens seguras pt-BR. Cancelamento e exceções inesperadas propagam. Confirmação indeterminada não é sucesso nem promessa de rollback: exige recarga, sem retry automático. | CA-058–060 |
+
+### Jornadas técnicas e regras conceituais
+
+- **Preparar e cadastrar (RF-027/030):** compor com caminho temporário → preparar
+  explicitamente → consultar revisão zero → cadastrar → receber IDs/revisão → descartar
+  composição → reabrir e consultar. Arquivo ausente não preparado é falha, nunca seed.
+- **Alterar e conferir (RF-027/029):** consultar detalhe/revisão → editar cliente, mudar
+  status, baixar ou corrigir → validar novo conjunto → gravar → consultar em nova
+  composição. Conflito exige recarregar e decidir novamente, não reenviar às cegas.
+- **Consultar (RF-028):** carregar um snapshot por Query → derivar pelo domínio →
+  devolver DTO/revisão. Mudar mês altera movimentação, não a posição na referência.
+
+Venda continua raiz com cliente próprio, parcelas, recebimentos e alocações. IDs do
+domínio permanecem strings opacas; a geração padrão não altera IDs persistidos nem
+promete deduplicação de requisições. Total/saldo/entrada/acréscimos, status e datas
+seguem RF-023 e RN-025/026, inclusive recebimentos de todos os status e vendas do
+período somente Ativas. A aplicação não substitui as fábricas ou cálculos existentes.
+
+### Critérios de aceite e rastreabilidade
+
+- **CA-054 (RF-027):** dado banco preparado vazio, quando cadastrar total 10.000 sem
+  entrada em três parcelas, então gerar IDs distintos e bases 3.334/3.333/3.333,
+  confirmar revisão +1 e reabrir com os mesmos dados. Com base 20.000, entrada 10.000
+  e duas parcelas, pago/saldo são 10.000/10.000, 1/2 paga e entrada conta uma vez.
+  Dados inválidos, colisão do gerador e overflow do conjunto não publicam candidato.
+- **CA-055 (RF-027/029):** dado snapshot válido, quando editar cliente ou aplicar
+  transição permitida, então preservar contrato/histórico e demais vendas, inclusive
+  CPF repetido. Mesmo status ou cliente normalizado idêntico, com revisão vigente,
+  não chama gravação nem incrementa revisão; revisão obsoleta falha inclusive no no-op.
+- **CA-056 (RF-027):** dada parcela-base 10.000, quando baixar por 11.000 e corrigir
+  para 10.500 com data em outro mês, então preservar IDs na correção, acréscimo 500,
+  saldo-base das demais e recebimento no mês correto. Repetição, salto, valor abaixo
+  da base, venda não Ativa e edição de entrada/lote falham sem gravação parcial.
+- **CA-057 (RF-028):** dado snapshot de status mistos e movimentos nas bordas, quando
+  consultar detalhe/coleções/resumo/período/mês, então DTOs reconciliam literalmente
+  com o domínio, com dados de cliente e histórico quando pertinentes e revisão do
+  mesmo snapshot. Vendas somente Ativas no período; recebimentos de todos os status;
+  série diária soma o mês e posição permanece na referência. Banco vazio tem zeros,
+  mês vazio é válido, ID ausente falha, intervalo invertido/mês inválido falham sem
+  escrita; saída não permite mutar estado e nenhuma Query inicializa/salva banco.
+- **CA-058 (RF-029/030):** dados dois consumidores na mesma revisão, quando enviarem
+  alterações distintas, então no máximo um confirma; o outro recebe conflito/bloqueio
+  identificável, sem retry. Falha/cancelamento antes do commit preservam estado;
+  cancelamento tardio não muda sucesso já confirmado. Confirmação indeterminada exige
+  recarga sem alegar rollback; erro inesperado não vira validação ou mensagem técnica.
+- **CA-059 (RF-030):** dada composição interna sem banco, quando apenas compor ou
+  consultar, então não criar arquivo; preparação explícita separada cria banco vazio
+  e é idempotente. API mantém loopback, health textual e `/vendas` 404 sem acessar
+  SQLite. EF/SQLite não transitam à API; MediatR/FluentResults podem transitar via
+  Aplicacao sem registro de handlers no host. Angular não chama a aplicação.
+- **CA-060 (RF-027–030):** dado apply posteriormente autorizado, quando executar
+  MSTest dos handlers com doubles e integração via ISender/SQLite real em temporários,
+  restore bloqueado, build Release, format, auditoria e smoke, então registrar resultados
+  reais e limitações; manter regressão frontend com API desligada. Contagens históricas
+  não são expectativa fixa; licença e grafo de dependências precisam ser verificados.
+
+Matriz: OBJ-001–004 → FON-043/044 → RF-027–030/CA-054–060 → TDD/DEC-040 →
+`openspec/changes/fase-004-aplicacao/` → APP-01–06 e testes futuros. Não atribuir
+aprovação de produto às respostas de desenho ou ao status de existência dos artefatos.
+
+### Restrições, riscos, métricas e evolução
+
+Mensagens públicas pt-BR, dinheiro em centavos seguros e DateOnly; formatação BRL/JSON
+fica para consumidores. Sem UI nova: navegação, teclado, foco, temas e acessibilidade
+do protótipo não mudam; E2E/visual/zoom não se aplicam ao recorte sem mudança de tela.
+Usar somente fixtures sintéticas e diretórios próprios; não registrar CPF/telefone,
+SQL ou caminho pessoal em erros. Não há nova meta de desempenho nem telemetria.
+Sucesso técnico é a comprovação de CA-054–060, não ganho operacional medido.
+
+Riscos: gerador colidente, DTO que omite histórico, erro de mapeamento de centavos,
+no-op confundido com escrita, confirmação incerta repetida e dependência antiga sem
+correção disponível. Mitigar com valores literais, doubles que verificam chamadas,
+reabertura real e gate de segurança/licenças no APP-01. Vulnerabilidade relevante
+exige revisar TDD/SDD antes de implementar código dependente; não reduzir baseline.
+
+Fora: endpoints/adaptador HTTP, Angular, busca/ordenação/paginação de coleções,
+autenticação, Tauri/IPC, importação, dados reais, seed, backup operacional, criptografia,
+instalador, CI e manutenção/archive de outras Changes. Pendências do legado e aceite
+da loja continuam futuras e não bloqueiam biblioteca interna sintética.
+
+Roadmap: contratos/composição → cadastro/consulta → cliente/status → recebimentos →
+demais Queries → regressão/evidências. Todas as entregas estão não implementadas.
+Revisar artefatos antes de apply explícito; PR único somente após concluir toda a
+Change implementada/verificada e arquivá-la conforme AGENTS.md; merge exige autorização.
+
 ## Correção da descoberta dos testes de backend (26/11/2026)
 
 **Problema:** a extensão C# do VS Code pode iniciar o restore por uma solução
