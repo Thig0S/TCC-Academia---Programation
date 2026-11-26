@@ -1,4 +1,5 @@
 using VendasEmAberto.Api.Configuracao;
+using VendasEmAberto.Api.Contratos;
 using System.Net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -15,6 +16,8 @@ var porta = ConfiguracaoBackend.ObterPorta(builder.Configuration[ConfiguracaoBac
 builder.WebHost.ConfigureKestrel(opcoes => opcoes.Listen(IPAddress.Loopback, porta));
 builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(opcoes =>
+    ContratoApiJson.Configurar(opcoes.SerializerOptions));
 var app = builder.Build();
 
 app.UseExceptionHandler();
