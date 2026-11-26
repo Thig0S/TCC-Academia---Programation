@@ -44,6 +44,8 @@ recebe ORM nem setters; API mantém loopback, `/health` e 404 de negócio, sem a
 banco. Frontend/Pages permanecem exclusivamente demonstrativos e independentes.
 
 Branch: `feature/fase-003-persistencia-sqlite`, criada da main limpa e sincronizada
-com `origin/main`. Revisão recente foi por inspeção, não reexecução dos 143 testes
-backend e 430 frontend registrados. SQL-01/1.1–1.3 e SQL-02/2.1–2.2 estão concluídos;
-SQL-03/3.1–3.3 e SQL-04/4.1–4.4 estão concluídos; SQL-05 permanece pendente.
+com a main remota no início da Change. Na linha de base do planejamento, a revisão foi
+por inspeção e não repetiu os 143 testes backend/430 frontend então registrados; o
+apply posterior executou novas verificações integrais, documentadas em `tasks.md` e
+`backend/README.md`. SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3, SQL-04/4.1–4.4
+e SQL-05 estão concluídos. Resta revisão do PR e integração autorizada.

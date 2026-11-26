@@ -17,8 +17,8 @@ SQL-03/3.3 verificou rejeição de corrupção e releitura após restauração; 
 implementou gravador transacional com revisão condicional e round-trip; SQL-04/4.2
 protege contrato, identidade e histórico existente; SQL-04/4.3 cobre escritores
 concorrentes, leitura deferred consistente, timeout sem retry e revisão máxima; SQL-04/4.4
-verifica rollback, exceções, cancelamento e confirmação indeterminada. SQL-05 é a única
-etapa de implementação ainda pendente.
+verifica rollback, exceções, cancelamento e confirmação indeterminada. SQL-05 concluiu
+regressão, smoke isolado, auditoria de rastreabilidade e evidências finais.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
@@ -180,8 +180,9 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3 e SQL-04/4.1–4.4 foram executados sob apply autorizado;
-SQL-05 permanece pendente e será executado conforme as dependências:
+SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3, SQL-04/4.1–4.4 e SQL-05 foram
+executados sob apply autorizado. A Change está aplicada; revisão e integração seguem o
+processo de PR:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
@@ -189,7 +190,7 @@ SQL-05 permanece pendente e será executado conforme as dependências:
 | SQL-02 | Inicializador explícito e abertura por operação (2.1–2.2 concluídos) | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem sobrescrita; abertura não cria arquivo e confere schema |
 | SQL-03 | Leitura, histórico e dados inválidos (3.1–3.3 concluídos) | Campos/ordem/extremos, HIS-01/COR-01/ORD-01 e rejeição integral HIS-005–007 |
 | SQL-04 | Escrita, revisão, preservação, concorrência e falhas (4.1–4.4 concluídos) | Round-trip, histórico protegido, um commit; rollback/cancelamento e confirmação incerta |
-| SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
+| SQL-05 | Regressão, README e evidências (concluído) | CA-049–052 auditados; smoke, testes/build Angular isolados, validação estrita e diff revisados |
 
 Executar builds/testes sequencialmente na mesma saída. Cada funcionalidade inclui
 testes/documentação e commit em português; planejamento pode ter commit separado,
@@ -223,10 +224,10 @@ corrupção, recusa por constraints/restauração, round-trip, histórico proteg
 mutações válidas, consumidores concorrentes, leitura consistente, timeout e limite de
 revisão. Não houve acesso a dados reais ou operacionais. Evidências detalhadas
 no README.
-Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
-testes/build. E2E/visual/zoom não
-exigidos porque não há alteração UI, mas registrar os não executados. Benchmark,
-teste de queda de energia e homologação operacional não são prometidos.
+SQL-05 executou o smoke real health/404 sem banco e testes/build frontend com API
+desligada em cópia temporária limpa, devido ao EPERM no `node_modules` original em uso.
+E2E/visual/zoom não se aplicam porque não há alteração UI. Benchmark, teste de queda de
+energia e homologação operacional não são prometidos.
 
 Fontes externas consultadas em 25/11/2026: Context7 `/dotnet/entityframework.docs`,
 guias SQLite limitations, concurrency, transactions, migrations/applying e
@@ -240,22 +241,33 @@ testes de abertura, SQL-03/3.1 quatro testes de leitura, SQL-03/3.2 um cenário 
 SQL-03/3.3 dezessete casos de corrupção/restauração, SQL-04/4.1 um round-trip,
 SQL-04/4.2 cinco testes de preservação, SQL-04/4.3 quatro testes concorrentes e
 SQL-04/4.4 cinco de rollback/cancelamento/confirmação; a suíte de persistência passou
-54/54.
+54/54. No fechamento SQL-05, tool restore e restore bloqueado passaram; build Release
+teve zero avisos/erros; solução passou 203/203 (62 integração, 141 unitários), descoberta
+listou 203 e format verify passou. Auditoria NuGet não reportou vulneráveis. O smoke
+real da API confirmou loopback em porta temporária, `/health` 200 `text/plain Healthy`,
+`/vendas` 404, zero SQLite e liberação da porta ao encerrar o processo próprio. A API
+continua sem referência Infraestrutura/EF/SQLite. No frontend, `npm ci` original falhou
+com EPERM no binário Lightning CSS bloqueado por dois `ng serve` ativos, preservados a
+pedido; na cópia temporária limpa, npm ci reportou zero vulneráveis,
+33 arquivos/430 testes passaram e build concluiu. Sem UI, E2E/visual/zoom não se
+aplicam; nenhuma verificação acessou dados reais.
 Leitura/gravação cobrem vazio/revisão, campos, ordem, CPF repetido, datas extremas,
 limite de centavos, descrição nula, Unicode, entrada, lote, correção, status, oráculos
 mensais/diários, rejeição integral, reabertura completa, histórico imutável,
 atualizações permitidas, concorrência com revisão global, leitura deferred consistente,
-timeout de lock (5,197 s para timeout configurado em 5 s), limite da revisão, rollback,
+timeout de lock (aproximadamente 5 s para timeout configurado em 5 s), limite da revisão, rollback,
 cancelamento e confirmação indeterminada.
-Não houve acesso a dados reais ou operacionais.
-Restore bloqueado e auditoria foram executados em SQL-01/1.1.
+Não houve acesso a dados reais ou operacionais. Restore bloqueado e auditoria foram
+executados em SQL-01/1.1 e repetidos no fechamento SQL-05; resultados finais estão no
+README e nas tarefas da Change.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
 DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
-bloqueantes remanescentes; a implementação continua nos marcos ainda pendentes da Change.
+bloqueantes remanescentes; escopo implementado e evidenciado, pendente somente revisão/
+integração via PR e autorização explícita de merge.
 
-As validações estritas da Change e de whitespace foram executadas nas etapas aplicadas;
-os resultados de implementação estão discriminados em `tasks.md` e no README. O estado
-das tarefas ainda não representa conclusão da Change, e nenhuma verificação equivale a
+`openspec validate fase-003-persistencia-sqlite --strict` e `git diff --check` passaram
+no fechamento. Resultados e limitação do frontend local estão discriminados em
+`tasks.md` e no README. O apply está concluído; nenhuma verificação equivale a
 homologação operacional ou acesso a dados reais.
 
 ## DEC-037 — Domínio C# completo e independente (25/11/2026)

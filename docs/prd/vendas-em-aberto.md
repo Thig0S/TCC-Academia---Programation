@@ -34,7 +34,9 @@ cobertura de histórico/relatórios e rejeição adversarial em fixtures SQL; SQ
 implementou a primeira gravação atômica e round-trip. A persistência continua interna,
 sem registro na API; proteção detalhada de histórico, concorrência/revisão e rollback,
 cancelamento e confirmação indeterminada foram verificados em SQL-04/4.2–4.4.
-Verificação final permanece pendente.
+SQL-05 fechou a regressão backend, smoke isolado da API, testes/build frontend em cópia
+temporária, auditoria de critérios e evidências; a limitação do `node_modules` original
+está registrada, sem encerrar os servidores ativos.
 
 ### Escopo, requisitos e prioridade
 
@@ -114,10 +116,12 @@ regressão e evidências. FON-041 → RF-024–026/CA-049–052 → TDD/DEC-038 
 SQL-03/3.1–3.3 e SQL-04/4.1–4.4 (dependências, isolamento da API, contrato, schema,
 inicializador, abertura validada, leitura fiel, rejeição de dados inválidos, gravação
 transacional, preservação de contratos/histórico, revisão concorrente, leitura consistente,
-rollback, cancelamento e confirmação indeterminada) estão aplicados. Verificação final
-permanece pendente.
-Preservar histórico e IDs anteriores. PR único somente após escopo integral verificado;
-nenhum PR antecipado ou merge implícito.
+rollback, cancelamento e confirmação indeterminada) estão aplicados e verificados em
+SQL-05. Backend: 203/203 testes; persistência: 54/54. Frontend: 430 testes e build em
+cópia isolada devido a EPERM no `node_modules` original em uso. Smoke confirmou loopback,
+health, 404 e nenhum banco criado. E2E/visual/zoom não aplicáveis por não haver mudança
+de UI; sem dados reais ou homologação operacional. Preservar histórico e IDs anteriores.
+PR único somente após escopo integral verificado; nenhum PR antecipado ou merge implícito.
 
 ## Fase 002 — domínio C# independente (25/11/2026)
 
