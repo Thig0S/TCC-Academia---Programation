@@ -14,7 +14,8 @@ implementou inicializador explícito e SQL-02/2.2 abertura por operação com co
 do schema físico; SQL-03/3.1 implementou leitura transacional sem tracking e
 reidratação validada; SQL-03/3.2 cobriu entrada, lote, correção, ordem e relatórios
 em fixtures SQL; SQL-04/4.1 implementou adaptador interno e gravação com transação não
-diferida, revisão condicional, reconciliação por ID e round-trip em fixture sintética.
+diferida, revisão condicional, reconciliação por ID e round-trip em fixture sintética;
+SQL-04/4.2 protege contrato, ordem, entrada/lote e identidade/alocação Individual.
 Testes cobriram arquivo novo, repetição, recusa de bancos desconhecidos/futuros, modo
 sem criação, lock, liberação de conexão, leitura e gravação. A decisão de remover a
 referência preexistente Api → Infraestrutura foi confirmada no Harness.
@@ -207,9 +208,9 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 3. SQL-02/2.2: abrir por operação sem criação implícita, validar schema/migration,
    foreign_keys, timeout e descarte de conexão; concluído em arquivos temporários. Não
    há base anterior a converter.
-4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1 implementou gravação/revisão e
-   round-trip; 4.2–4.4 ainda cobrem preservação detalhada, rollback, concorrência e
-   cancelamento. Testes/documentação em cada entrega.
+4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1–4.2 implementaram gravação,
+   revisão, round-trip e preservação detalhada; 4.3–4.4 ainda cobrem rollback,
+   concorrência e cancelamento. Testes/documentação em cada entrega.
 5. SQL-05: restore bloqueado, build Release, toda suíte MSTest, format, smoke real
    health/loopback/404 sem banco, frontend test/build com API desligada e evidências
    reais. E2E/visual/zoom não executados sem UI; não alegar homologação.

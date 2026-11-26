@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using VendasEmAberto.Aplicacao.Persistencia;
 using VendasEmAberto.Dominio.Projecoes;
+using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 using VendasEmAberto.Dominio.Vendas;
 
@@ -77,7 +78,7 @@ internal sealed class GravadorVendasSqlite
                         "O armazenamento atingiu o limite de revisões suportado.");
                 }
 
-                var validacaoPreservacao = ValidarPreservacaoBasica(atual.Conjunto, conjunto);
+                var validacaoPreservacao = ValidarPreservacaoHistorico(atual.Conjunto, conjunto);
                 if (validacaoPreservacao is not null)
                 {
                     return ResultadoArmazenamento<long>.CriarFalha(validacaoPreservacao);
@@ -177,7 +178,7 @@ internal sealed class GravadorVendasSqlite
         return ResultadoArmazenamento<ConjuntoVendas>.CriarSucesso(conjuntoValido.Valor);
     }
 
-    private static ErroArmazenamento? ValidarPreservacaoBasica(
+    private static ErroArmazenamento? ValidarPreservacaoHistorico(
         ConjuntoVendas atual,
         ConjuntoVendas candidato)
     {
@@ -188,30 +189,112 @@ internal sealed class GravadorVendasSqlite
             {
                 return new ErroArmazenamento(
                     CodigosErroArmazenamento.ExclusaoNaoPermitida,
-                    "Não é permitido omitir uma venda já armazenada.");
+                        "Não é permitido omitir uma venda já armazenada.");
             }
 
-            var idsParcelasCandidatas = vendaCandidata.Parcelas
-                .Select(parcela => parcela.Id)
-                .ToHashSet(StringComparer.Ordinal);
-            if (vendaAtual.Parcelas.Any(parcela => !idsParcelasCandidatas.Contains(parcela.Id)))
+            if (vendaCandidata.DataVenda != vendaAtual.DataVenda ||
+                vendaCandidata.ValorTotalBase.Centavos != vendaAtual.ValorTotalBase.Centavos ||
+                !ContratoParcelasIgual(vendaAtual, vendaCandidata))
             {
                 return FalhaHistorico();
             }
 
-            var recebimentosCandidatos = vendaCandidata.Recebimentos
-                .ToDictionary(recebimento => recebimento.Id, StringComparer.Ordinal);
-            foreach (var recebimentoAtual in vendaAtual.Recebimentos)
+            if (vendaCandidata.Recebimentos.Count < vendaAtual.Recebimentos.Count)
             {
-                if (!recebimentosCandidatos.TryGetValue(recebimentoAtual.Id, out var recebimentoCandidato) ||
-                    recebimentoCandidato.Alocacoes.Count < recebimentoAtual.Alocacoes.Count)
+                return FalhaHistorico();
+            }
+
+            for (var indice = 0; indice < vendaAtual.Recebimentos.Count; indice++)
+            {
+                var recebimentoAtual = vendaAtual.Recebimentos[indice];
+                var recebimentoCandidato = vendaCandidata.Recebimentos[indice];
+                if (!RecebimentoPreservado(recebimentoAtual, recebimentoCandidato))
                 {
                     return FalhaHistorico();
                 }
             }
+
+            if (vendaCandidata.Recebimentos
+                .Skip(vendaAtual.Recebimentos.Count)
+                .Any(recebimento => recebimento.Origem != OrigemRecebimento.Individual))
+            {
+                return FalhaHistorico();
+            }
         }
 
         return null;
+    }
+
+    private static bool ContratoParcelasIgual(Venda atual, Venda candidato)
+    {
+        if (atual.Parcelas.Count != candidato.Parcelas.Count)
+        {
+            return false;
+        }
+
+        for (var indice = 0; indice < atual.Parcelas.Count; indice++)
+        {
+            var parcelaAtual = atual.Parcelas[indice];
+            var parcelaCandidata = candidato.Parcelas[indice];
+            if (!string.Equals(parcelaAtual.Id, parcelaCandidata.Id, StringComparison.Ordinal) ||
+                parcelaAtual.Numero != parcelaCandidata.Numero ||
+                parcelaAtual.ValorBase.Centavos != parcelaCandidata.ValorBase.Centavos ||
+                parcelaAtual.Vencimento != parcelaCandidata.Vencimento)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool RecebimentoPreservado(
+        RecebimentoVenda atual,
+        RecebimentoVenda candidato)
+    {
+        if (!string.Equals(atual.Id, candidato.Id, StringComparison.Ordinal) ||
+            atual.Origem != candidato.Origem ||
+            atual.Alocacoes.Count != candidato.Alocacoes.Count)
+        {
+            return false;
+        }
+
+        for (var indice = 0; indice < atual.Alocacoes.Count; indice++)
+        {
+            if (!string.Equals(
+                    atual.Alocacoes[indice].ParcelaId,
+                    candidato.Alocacoes[indice].ParcelaId,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        if (atual.Origem == OrigemRecebimento.Individual)
+        {
+            // A correção de domínio pode alterar valor/acréscimo, data, forma e observação;
+            // a identidade, origem, sequência e parcela alocada continuam estáveis.
+            return true;
+        }
+
+        if (atual.Data != candidato.Data ||
+            atual.Forma != candidato.Forma ||
+            atual.Valor.Centavos != candidato.Valor.Centavos ||
+            atual.Acrescimo.Centavos != candidato.Acrescimo.Centavos ||
+            !string.Equals(atual.Observacao, candidato.Observacao, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        for (var indice = 0; indice < atual.Alocacoes.Count; indice++)
+        {
+            if (atual.Alocacoes[indice].Valor.Centavos != candidato.Alocacoes[indice].Valor.Centavos)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static async Task MoverOrdensParaFaixaTemporariaAsync(
@@ -512,7 +595,7 @@ internal sealed class GravadorVendasSqlite
     private static ErroArmazenamento FalhaHistorico() =>
         new(
             CodigosErroArmazenamento.AlteracaoHistoricoNaoPermitida,
-            "Não é permitido remover vendas, parcelas, recebimentos ou alocações existentes.");
+            "Não é permitido remover vendas, parcelas ou recebimentos nem alterar contrato ou histórico protegido.");
 
     private static ResultadoArmazenamento<long> Falha(string codigo, string mensagem) =>
         ResultadoArmazenamento<long>.CriarFalha(new ErroArmazenamento(codigo, mensagem));
