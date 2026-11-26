@@ -39,9 +39,9 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 ## 5. SQL-05 — Verificação integrada e fechamento de evidências
 
-- [ ] 5.1 Em backend, executar sequencialmente tool restore, restore da solução em modo bloqueado, build Release sem restore, dotnet test --solution VendasEmAberto.slnx -c Release --no-build e dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore. Confirmar descoberta não vazia dos testes de domínio/técnicos/SQLite e ausência de regressão; registrar comandos exatos, versões, contagens, códigos de saída e auditoria de dependências. Conferir ignore limitado a artefatos locais do backend, ausência de bancos/dados reais no diff e limpeza somente de temporários próprios.
-- [ ] 5.2 Iniciar DLL Release como processo real sem banco preparado, conferir listener apenas loopback, /health 200 text/plain Healthy e /vendas 404, sem criação/acesso a banco; conferir que o grafo da API continua sem Infraestrutura/EF/SQLite. Encerrar apenas o processo iniciado e conferir porta liberada. Com API desligada, executar em frontend npm.cmd test -- --watch=false e npm.cmd run build. Registrar evidências novas no README; E2E/visual/zoom não executados por não haver UI alterada, sem alegar homologação operacional.
-- [ ] 5.3 Auditar cada requisito/cenário da delta contra testes e CA-049–052, com matriz final no README; verificar que todos os resultados registrados são execuções reais e que não há handlers/endpoints/Angular/importação/dados reais/sync ou archive alheios. Executar openspec validate fase-003-persistencia-sqlite --strict e git diff --check; revisar diff e marcar tarefas somente com evidências. Atualizar estado de execução no PRD/TDD e Change ao concluir o apply, preservando a distinção entre plano original e entrega.
+- [x] 5.1 Em backend, executar sequencialmente tool restore, restore da solução em modo bloqueado, build Release sem restore, dotnet test --solution VendasEmAberto.slnx -c Release --no-build e dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore. Confirmar descoberta não vazia dos testes de domínio/técnicos/SQLite e ausência de regressão; registrar comandos exatos, versões, contagens, códigos de saída e auditoria de dependências. Conferir ignore limitado a artefatos locais do backend, ausência de bancos/dados reais no diff e limpeza somente de temporários próprios.
+- [x] 5.2 Iniciar DLL Release como processo real sem banco preparado, conferir listener apenas loopback, /health 200 text/plain Healthy e /vendas 404, sem criação/acesso a banco; conferir que o grafo da API continua sem Infraestrutura/EF/SQLite. Encerrar apenas o processo iniciado e conferir porta liberada. Com API desligada, executar em frontend npm.cmd test -- --watch=false e npm.cmd run build. Registrar evidências novas no README; E2E/visual/zoom não executados por não haver UI alterada, sem alegar homologação operacional.
+- [x] 5.3 Auditar cada requisito/cenário da delta contra testes e CA-049–052, com matriz final no README; verificar que todos os resultados registrados são execuções reais e que não há handlers/endpoints/Angular/importação/dados reais/sync ou archive alheios. Executar openspec validate fase-003-persistencia-sqlite --strict e git diff --check; revisar diff e marcar tarefas somente com evidências. Atualizar estado de execução no PRD/TDD e Change ao concluir o apply, preservando a distinção entre plano original e entrega.
 
 ## Workflow follow-up
 
@@ -153,6 +153,35 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   logging desligado. Cinco métodos novos: classe do gravador 15/15; suíte de persistência
   54/54; build Release sem avisos/erros e format verify passaram. Fixtures em arquivos
   temporários. O seam é interno e não integra o contrato de Aplicacao/API.
+- SQL-05/5.1: no diretório `backend/`, `dotnet tool restore` e
+  `dotnet tool run dotnet-ef --version` passaram (EF CLI 10.0.15); `dotnet restore
+  VendasEmAberto.slnx --locked-mode` passou; build Release `--no-restore` passou com
+  zero avisos/erros; `dotnet test --solution VendasEmAberto.slnx -c Release --no-build`
+  passou 203/203 (62 integração e 141 unitários); `dotnet format VendasEmAberto.slnx
+  --verify-no-changes --no-restore` passou. Descoberta explícita listou 203 testes.
+  `dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive` não
+  reportou pacote vulnerável. SDK 10.0.404/runtime 10.0.15; API referencia somente
+  Aplicacao e não tem dependências EF/SQLite no grafo. `.gitignore` do backend limita-se
+  a `bin`, `obj`, `TestResults` e arquivos locais de usuário/lock temporário; não há
+  arquivo SQLite versionado nem dado operacional no diff.
+- SQL-05/5.2: smoke da DLL Release iniciou apenas o processo próprio em
+  `127.0.0.1:59617`; `/health` respondeu 200 `text/plain`/`Healthy`, `/vendas` 404,
+  nenhum arquivo SQLite surgiu no diretório temporário. Processo encerrado e porta
+  liberada. No frontend, `npm ci` no diretório original falhou com EPERM ao tentar
+  remover o binário Lightning CSS em uso. Dois `ng serve` já existentes foram mantidos
+  conforme decisão do usuário; não se repetiu comando nesse
+  `node_modules`. Em cópia temporária do frontend e lockfile, excluindo `node_modules`
+  e `.angular`, `npm ci` passou (301 pacotes adicionados, zero vulnerabilidades),
+  `npm.cmd test -- --watch=false` passou 33 arquivos/430 testes e `npm.cmd run build`
+  concluiu. Ambiente: Node v24.21.0/npm 11.19.0; a API estava desligada durante a
+  validação frontend. E2E/visual/zoom não executados porque não houve alteração de UI.
+- SQL-05/5.3: matriz CA-049–052 e rastreabilidade RF-024–026 → DEC-038 → delta OpenSpec
+  → testes/evidências registradas no README. Revisão confirmou ausência de endpoints,
+  handlers, conexão API/SQLite, alterações Angular, dados reais ou sync/archive de
+  outras Changes. `openspec validate fase-003-persistencia-sqlite --strict` e
+  `git diff --check` passaram; evidências finais revisadas. A limitação do
+  `node_modules` original e verificações não executadas estão explícitas; sem alegação
+  de homologação operacional.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

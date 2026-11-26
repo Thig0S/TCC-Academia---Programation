@@ -399,6 +399,73 @@ desativado. Cinco testes novos de SQL-04/4.4: classe do gravador 15/15; suíte
 `dotnet format --verify-no-changes --no-restore` passaram. A injeção é interna e não
 compõe uma rota ou contrato de produção.
 
+## Fechamento integrado e rastreabilidade (SQL-05)
+
+### Matriz dos critérios de aceite
+
+| PRD / requisito | Evidência em testes e comportamento | Resultado |
+| --- | --- | --- |
+| CA-049 / RF-024 — fidelidade e round-trip | `LeitorVendasSqliteTests` (vazio, campos, ordem, Unicode, CPF repetido e extremos), `LeitorHistoricoVendasSqliteTests`, `GravadorVendasSqliteTests.Salvar_ReabreRoundTripCompletoEIncrementaRevisaoSemDuplicarSnapshotIdentico` e `Salvar_AceitaEdicaoClienteStatusBaixaECorrecaoPreservandoDemaisVendas` | Coberto; leitura e reabertura em SQLite real usando fixtures sintéticas temporárias. |
+| CA-050 / RF-024–025 — atomicidade, revisão e concorrência | `GravadorVendasSqliteTests` cobre omissão, histórico protegido, colisão/overflow, consumidores concorrentes, revisão obsoleta, timeout, rollback, falhas, cancelamento e confirmação indeterminada | Coberto; revisão e snapshot permanecem atômicos; confirmação ambígua exige recarga e não retry. |
+| CA-051 / RF-024/026 — preparação e rejeição integral | `InicializadorSqliteTests`, `AbridorVendasSqliteTests`, `LeitorDadosInvalidosVendasSqliteTests` e `VendasDbContextSchemaTests` | Coberto; arquivo ausente/alheio/futuro, schema e histórico inválidos recusados sem criação, reparo ou retorno parcial. |
+| CA-052 / RF-026 — verificação integrada e isolamento | Suíte backend, restore bloqueado, build/format, auditoria NuGet, grafo da API, smoke real, testes/build frontend em cópia isolada; OpenSpec estrito | Coberto com as limitações de ambiente descritas abaixo; nenhum acesso a dados reais ou banco operacional. |
+
+### Matriz dos cenários OpenSpec
+
+| Requisito / cenários da delta | Evidências associadas | Auditoria |
+| --- | --- | --- |
+| Preparação explícita — “Preparar arquivo novo e repetir a preparação”; “Recusar caminho ou arquivo incompatível”; “Ler ou gravar sem preparação” | `InicializadorSqliteTests` cobre criação/revisão zero, repetição, preservação, caminho inválido e banco alheio/futuro; `AbridorVendasSqliteTests.Abrir_ArquivoAusenteRetornaBancoAusenteSemCriarArquivo`; gravador reutiliza o abridor sem criar/migrar | Coberto; schema desconhecido e arquivo ausente não são sobrescritos. |
+| Recuperação fiel — “Reabrir venda com entrada”; “Preservar correção individual e histórico em lote”; “Preservar representação e universos”; “Ler banco preparado vazio” | `LeitorVendasSqliteTests`, `LeitorHistoricoVendasSqliteTests` e round-trip/gravação válida em `GravadorVendasSqliteTests` | Coberto com SQLite real, reabertura e fixtures sintéticas. |
+| Rejeição de dados — “Recusar entrada divergente antes de entregar snapshot”; “Recusar outros estados inválidos” | `LeitorDadosInvalidosVendasSqliteTests.Carregar_RejeitaCorrupcaoSemRepararERelêAposRestauracao` (casos parametrizados) e constraints/FKs em `VendasDbContextSchemaTests` | Coberto; falha integral, restauração explícita e releitura em conexão nova. |
+| Gravação atômica — “Confirmar candidato válido”; “Concorrência entre consumidores”; “Rejeitar candidato inválido ou limite de revisão”; “Salvar o mesmo snapshot com revisão atual” | Round-trip e repetição de snapshot em `GravadorVendasSqliteTests`; `Salvar_DoisConsumidoresNaMesmaRevisaoConfirmamUmaUnicaVersaoIntegra`; `Salvar_RecusaRevisaoLongMaxValueSemOverflowNemAlteracao`; candidatos inválidos e timeout também cobertos | Coberto; um consumidor confirma, conflito/revisão máxima não alteram o estado, sem retry automático. |
+| Preservação — “Omitir venda existente”; “Tentar apagar ou reescrever histórico protegido”; “Atualizar cliente e status sem perda de histórico” | `Salvar_RecusaOmissaoDeVendaSemAlterarDadosNemRevisao`, `Salvar_RecusaAlteracoesDeContratoEntradaLoteEIdentidadeIndividualSemGravar`, `Salvar_RecusaTrocarIdentidadeEParcelaAlocadaEntreIndividualSemAlterarEstado` e `Salvar_AceitaEdicaoClienteStatusBaixaECorrecaoPreservandoDemaisVendas` | Coberto; sucessos e recusas verificam preservação de revisão/dados. |
+| Falhas e cancelamento — “Falha intermediária e tentativa válida posterior”; “Cancelar antes ou depois da confirmação”; “Arquivo ocupado ou inacessível”; “Confirmação de commit indeterminada” | `GravadorVendasSqliteTests` cobre rollback, exceção, cancelamento pré/durante/pós commit, timeout `banco-ocupado`, mensagem segura e ACK perdido após commit | Bloqueio/timeout, rollback, cancelamento e confirmação indeterminada cobertos; falha de acesso negado específica do sistema operacional não foi induzida separadamente. |
+| Isolamento — “Iniciar API sem banco”; “Executar integração em isolamento” | Smoke da DLL Release; grafo/projeto da API; testes SQLite em fixtures temporárias; validação frontend independente | Coberto para API loopback/health/404 sem banco e fixtures locais; nenhuma UI foi alterada. |
+
+### Execuções finais
+
+No diretório `backend/`, com SDK .NET 10.0.404 e runtime .NET/ASP.NET Core 10.0.15:
+
+```text
+dotnet tool restore                                      — sucesso
+dotnet tool run dotnet-ef --version                     — Entity Framework CLI 10.0.15
+dotnet restore VendasEmAberto.slnx --locked-mode        — sucesso
+dotnet build VendasEmAberto.slnx -c Release --no-restore — sucesso, 0 avisos/erros
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build — 203/203 aprovados
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore — sucesso
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build --list-tests — 203 descobertos
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive — nenhum vulnerável reportado
+```
+
+A descoberta contou 62 testes de integração e 141 unitários. A suíte de persistência
+foi exercitada em etapa própria: 54/54. A API referencia somente `Aplicacao`; sua lista
+de pacotes e `Api.deps.json` não incluem Infraestrutura, EF Core ou SQLite. Nenhum
+arquivo SQLite está versionado; o `.gitignore` do backend limita-se a saídas locais de
+build/testes e arquivos locais de usuário/lock temporário.
+
+O smoke iniciou a DLL Release em processo próprio na porta temporária 59617, ligada
+somente a `127.0.0.1`: `/health` respondeu 200 `text/plain` com `Healthy`,
+`/vendas` respondeu 404 e nenhum arquivo `.db`/SQLite foi criado. O processo foi
+encerrado e a porta liberada. O host não iniciou com banco preparado nem conectou a
+persistência.
+
+No frontend, `npm ci` no diretório original encontrou `EPERM` ao remover
+`node_modules/lightningcss-win32-x64-msvc/lightningcss.win32-x64-msvc.node`, bloqueado
+por servidores `ng serve` ativos. Por decisão do usuário, os processos existentes
+(dois `ng serve` ativos) não foram encerrados e o comando não foi repetido nesse diretório;
+o estado local do `node_modules` pode requerer restauração quando os servidores forem
+encerrados pelo usuário. Para validar sem tocar nesse ambiente, foi usada cópia
+temporária do código/lockfile, sem `node_modules` ou `.angular`: `npm ci` instalou 301
+pacotes e reportou zero vulnerabilidades; `npm.cmd test -- --watch=false` passou 33
+arquivos/430 testes; `npm.cmd run build` concluiu com sucesso, com API desligada.
+Ambiente frontend: Node v24.21.0 e npm 11.19.0.
+
+E2E, revisão visual/zoom e validação operacional não foram executados: não houve
+alteração de UI e esta biblioteca ainda não está homologada para dados/uso operacional.
+Não houve acesso a planilha ou banco real. A Change OpenSpec registra a matriz
+completa: `openspec/changes/fase-003-persistencia-sqlite/`, vinculada ao PRD/FON-041/
+RF-024–026/CA-049–052 e TDD/DEC-038.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio

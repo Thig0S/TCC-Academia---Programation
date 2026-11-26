@@ -219,9 +219,11 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1–4.4 implementaram gravação,
    revisão, round-trip, preservação detalhada, concorrência, rollback, cancelamento e
    confirmação indeterminada. Testes/documentação em cada entrega.
-5. SQL-05: restore bloqueado, build Release, toda suíte MSTest, format, smoke real
-   health/loopback/404 sem banco, frontend test/build com API desligada e evidências
-   reais. E2E/visual/zoom não executados sem UI; não alegar homologação.
+5. SQL-05: concluído. Restore bloqueado, build Release sem avisos/erros, 203 testes
+   backend, format, auditoria NuGet, smoke real health/loopback/404 sem banco e
+   frontend test/build (em cópia temporária, pois `npm ci` no diretório em uso falhou
+   com EPERM) foram registrados. E2E/visual/zoom não executados sem UI; não alegar
+   homologação.
 6. Commit por funcionalidade em português, usando a mesma feature branch; PR único
    com template somente após todo escopo autorizado concluído. Sem PR de planejamento
    e sem merge sem autorização. Não sincronizar/arquivar outras Changes.
