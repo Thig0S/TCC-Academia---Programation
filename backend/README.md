@@ -197,6 +197,53 @@ acesso a `Result.Value`, resposta candidata não publicada, centavos/datas/nulab
 DTOs sem tipos de domínio/infra/HTTP e coleções defensivas. Esta etapa não implementa
 handlers nem mapeamento HTTP.
 
+## Composição interna da aplicação e SQLite (APP-01/1.3)
+
+O consumidor interno compõe um container com o destino de banco explícito. A composição
+não executa I/O nem migração; consulta a um arquivo inexistente retorna `banco-ausente`.
+Somente `IPreparacaoArmazenamentoVendas.PrepararAsync` inicializa o schema, sem seed.
+Repetir a preparação preserva os dados e a revisão. A Aplicacao registra MediatR,
+handlers por assembly e o serviço de preparação; a Infraestrutura registra um destino
+imutável singleton, gerador GUID formato N singleton e adaptador SQLite transient.
+Não há `DbContext` global nem referência da Aplicacao para Infraestrutura. A API não
+chama essas extensões.
+
+Exemplo de composição para consumidor interno (não é registro do host HTTP):
+
+```csharp
+var services = new ServiceCollection()
+    .AdicionarAplicacao()
+    .AdicionarPersistenciaSqlite(caminhoAbsoluto);
+using var provider = services.BuildServiceProvider();
+var preparacao = provider.GetRequiredService<IPreparacaoArmazenamentoVendas>();
+var resultado = await preparacao.PrepararAsync(cancellationToken);
+```
+
+O chamador deve fornecer caminho absoluto e diretório pai já existente, tratar o
+`Result` da preparação e descartar o `ServiceProvider` ao fim do escopo de uso. Não
+compartilhar o provider entre destinos diferentes; providers distintos podem apontar
+para o mesmo arquivo e continuam sujeitos à revisão global do armazenamento.
+
+Verificações executadas em temporários próprios com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~DestinoArmazenamentoVendasTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ComposicaoInternaTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultado: 2 testes unitários e 3 de integração passaram; build Release terminou com
+zero avisos/erros e `dotnet format --verify-no-changes` passou. Os testes cobrem configuração vazia/
+relativa sem I/O, resolução de `ISender`, ausência de criação em composição/consulta,
+revisão zero, reabertura, preparação repetida preservando venda/revisão, e lifetimes
+independentes em dois providers. O SQLite real permaneceu restrito aos diretórios
+temporários descartados pelos testes. Em produção, somente
+`PreparacaoArmazenamentoVendas.PrepararAsync` chama `InicializarAsync`; nesta etapa,
+nenhum handler ou consulta usa o serviço de preparação.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
