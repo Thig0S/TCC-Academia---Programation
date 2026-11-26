@@ -1,5 +1,4 @@
 using VendasEmAberto.Aplicacao.Contratos;
-using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
 using VendasEmAberto.Dominio.Vendas;
 
