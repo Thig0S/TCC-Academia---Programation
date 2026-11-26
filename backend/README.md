@@ -519,9 +519,9 @@ recebimentos por status. Em `backend/`, a classe direcionada passou com SDK isol
 ```
 
 Resultado: 7 aprovados, 0 falhas e 0 ignorados. Isso cobre a consulta por período,
-incluindo os casos adicionados CON-012/013; não é a regressão integrada. HIS-007 e as
-verificações integradas permanecem pendentes; estes resultados não declaram aceite
-final nem substituem as evidências históricas acima.
+incluindo os casos adicionados CON-012/013; não é a regressão integrada. As verificações
+integradas permanecem pendentes; estes resultados não declaram aceite final nem
+substituem as evidências históricas acima.
 
 **Regressões COR-01 executadas em sequência**, também em `backend/` com o mesmo SDK
 10.0.404, Release e `--no-restore`:
@@ -539,6 +539,23 @@ operacionais somente Ativas e recebimentos históricos de todos os status, sem a
 as posições/regras de persistência. A produção alterada nesta entrega é somente o
 predicado de seleção de vendas em `ConjuntoVendas.Consultas.cs`; nenhum relatório,
 validador global ou contrato SQLite foi refatorado.
+
+**HIS-007 sequencial — 26/11/2026:** o mesmo teste agora tenta reconstruir entrada
+recebida de 10.000 com alocação de 9.999, confere a falha tipada e a preservação das
+entradas e do conjunto anterior, e então reconstrói fixture independente com os mesmos
+IDs e alocação exata de 10.000. Na mesma referência, a versão válida reconcilia base e
+efetivo de 20.000, recebido/saldo de 10.000, 1/2 paga e recebimento único no período;
+`Venda.Reconstrucao.cs` não mudou.
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~VendaReconstrucaoTests"
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore
+```
+
+Executados em `backend/`, sequencialmente: classe `VendaReconstrucaoTests`, 11/11
+aprovados; UnitTests completa, 143/143 aprovados; zero falhas ou ignorados em ambas.
+Esses resultados são direcionados à reconstrução/domínio, não substituem a regressão
+integrada de toda a solução.
 
 ## Estado de verificação
 
