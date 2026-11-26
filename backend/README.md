@@ -250,6 +250,32 @@ a suíte `FullyQualifiedName~Persistencia` passou com 21/21 após a leitura.
 Oráculo SQL-REP-01: datas civis válidas permanecem exatas; o centavo máximo permanece
 inteiro, sem conversão por `REAL`, arredondamento ou reconstrução de datas por relógio.
 
+### Histórico, correção e relatórios (SQL-03/3.2)
+
+`LeitorHistoricoVendasSqliteTests` usa fixture SQL própria em arquivo temporário, criada
+após a migration e sem depender de `SalvarAsync`. A venda-base de 20.000 com duas
+parcelas tem entrada de 10.000; uma Individual persistida pelo estado final da correção
+mantém o ID, valor 10.500/acréscimo 500 e data em março. Uma segunda venda contém lote
+de 20.000 alocado a duas parcelas e Individual de 11.000/acréscimo 1.000. A sequência
+armazenada põe o lote de 20/03 antes do Individual de 15/02: a leitura mantém `Ordem`,
+sem reordenar o histórico pela data. Fixtures adicionais cobrem recebimentos em
+Inativa e Prejuízo.
+
+Oráculos SQL-HIS-01/SQL-COR-01/SQL-ORD-01: projeção da venda com entrada = base 20.000,
+efetivo/recebido 20.500 e saldo zero; projeção da venda com lote = base 40.000,
+acréscimos 1.000, efetivo 41.000, recebido 31.000 e saldo 10.000; a mesma parcela e
+identidade do Individual permanecem vinculadas. As coleções projetadas mantêm uma
+Quitada, uma Aberta, uma Inativa e um Prejuízo. O relatório de março inclui todos os
+status: 40.500 recebidos (10.500 em 05/03, 10.000 em 10/03 e 20.000 em 20/03), cuja
+soma diária reconcilia. Fevereiro totaliza 11.000 do outro Individual e não inclui o
+ID corrigido, demonstrando a data final persistida sem duplicidade. Prejuízo com
+histórico permanece separado; total agregado de Prejuízo = 0 conforme regra vigente.
+
+O teste direcionado `LeitorHistoricoVendasSqliteTests` passou 1/1; a suíte de
+persistência passou 22/22. São fixtures sintéticas/oráculos do domínio, não evidência
+de migração ou escrita de produção. HIS-02, rejeição/restauração após fixture inválida
+e gravação continuam pendentes em SQL-03/3.3 e SQL-04.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio
