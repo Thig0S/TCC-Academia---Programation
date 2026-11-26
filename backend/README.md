@@ -588,6 +588,27 @@ dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTest
   -c Release --no-build --filter 'FullyQualifiedName~Salvar_CancelamentoPreviamenteSolicitadoOuAntesDoCommitReverteEstado|FullyQualifiedName~Salvar_CancelamentoDepoisDeCommitConfirmadoRetornaSucessoERevisaoConfirmada|FullyQualifiedName~Salvar_FalhaNaConfirmacaoRetornaIndeterminadaSemRetryNemFalsoRollback|FullyQualifiedName~ConsultarVendaAusenteDistingueAusenciaDeFalhaDeArmazenamento'
 ```
 
+## Verificação integrada do backend (APP-06/6.3)
+
+Executado sequencialmente em `backend/` com o SDK temporário autorizado
+`%LOCALAPPDATA%\Temp\opencode\dotnet-10.0.404\dotnet.exe`: `dotnet --info` confirmou
+SDK `10.0.404`, MSBuild `18.9.15`, runtime `10.0.15`, Windows x64 e seleção pelo
+`global.json`; `dotnet restore VendasEmAberto.slnx --locked-mode` passou; build Release
+com `--no-restore` passou com 0 avisos/erros; a execução MTP
+`dotnet test --solution VendasEmAberto.slnx -c Release --no-build` passou com 285
+testes, 0 falhas e 0 ignorados. `dotnet test --solution ... --list-tests` descobriu
+88 testes de integração e 197 unitários (285 total). `dotnet format
+VendasEmAberto.slnx --verify-no-changes --no-restore` passou.
+
+Auditoria NuGet executada nas fontes `api.nuget.org` e cache Microsoft local:
+`dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive` não
+reportou pacotes vulneráveis em nenhum dos seis projetos. O grafo transitivo de API,
+consultado por `dotnet list src/VendasEmAberto.Api/VendasEmAberto.Api.csproj package
+--include-transitive`, contém apenas `FluentResults 4.0.0`, `MediatR 12.5.0` e
+`MediatR.Contracts 2.0.1`; não inclui EF Core nem SQLite. O restore em modo bloqueado
+não exigiu alteração dos lockfiles. Esses resultados são da auditoria nas fontes
+consultadas nesta execução, não uma garantia futura sobre novos advisories.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
