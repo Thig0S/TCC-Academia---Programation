@@ -210,9 +210,9 @@ A conexão usa `Mode=ReadWrite` (nunca `ReadWriteCreate`), `ForeignKeys=true`, t
 finito de cinco segundos e pooling desabilitado. A sessão é `IAsyncDisposable`; seu
 contexto deve ser descartado ao final da operação. Linha ativa em
 `__EFMigrationsLock` retorna `banco-ocupado`; nenhuma linha/tabela de lock é apagada
-automaticamente. Timeout não aciona retry. O helper não está ligado à API nem expõe
-ainda o contrato de armazenamento: o leitor interno foi entregue em SQL-03/3.1 e a
-gravação continua pendente em SQL-04.
+automaticamente. Timeout não aciona retry. O adaptador interno implementa o contrato
+de armazenamento e delega ao leitor/gravador, mas não está registrado nem ligado à API;
+esta permanece sem dependência da Infraestrutura.
 
 `AbridorVendasSqliteTests` passou com seis casos em arquivos temporários: ausência
 sem criação, arquivo não SQLite preservado, schema corrente com modo/FKs/timeout
@@ -240,8 +240,8 @@ revisão lida na mesma transação. Histórico de domínio inconsistente retorna
 vazio e Unicode são preservados. Não há projeção persistida, reparo ou uso de valores
 reconstruídos por aproximação.
 
-O leitor permanece interno e não implementa ainda `IArmazenamentoVendas`; nenhuma
-leitura é ligada à API. Os quatro testes `LeitorVendasSqliteTests` preparam fixtures
+O leitor permanece interno; nenhuma leitura é ligada à API. Os quatro testes
+`LeitorVendasSqliteTests` preparam fixtures
 por SQL em arquivos temporários após inicializar a migration. Cobrem conjunto vazio e
 revisão corrente, todos os campos de uma venda com entrada e pagamento Individual,
 duas vendas com CPF repetido, descrição nula, notas Unicode e ordem, datas civis
@@ -298,6 +298,38 @@ conjunto; restauração explícita permite reler sem estado residual. Teste foca
 suíte `FullyQualifiedName~Persistencia`: 39/39; build Release sem avisos ou erros.
 A adulteração é exclusiva das fixtures temporárias e não representa uma operação
 pública de reparo.
+
+## Gravação transacional (SQL-04/4.1)
+
+`ArmazenamentoVendasSqlite` implementa internamente `IArmazenamentoVendas`; o gravador
+materializa e valida o candidato completo pelo domínio, abre sessão em modo `ReadWrite`
+e inicia `BeginTransaction(deferred: false)` antes de consultar a revisão e o conjunto
+atual. A carga de validação reutiliza o mesmo `VendasDbContext` e a mesma transação: uma
+primeira tentativa por segunda conexão produziu `banco-ocupado`, então essa validação foi
+extraída para `CarregarNaTransacaoAtualAsync`, sem abandonar a trava adquirida antes da
+leitura.
+
+Na revisão esperada, incrementa `EstadoArmazenamento.Revisao` com `WHERE Revisao = $esperada`
+e exige uma linha afetada. No mesmo commit, reconcilia por ID e faz upsert parametrizado
+das entidades e linhas relacionadas; não exclui nem recria a base. Ordens existentes de
+vendas, parcelas, recebimentos e alocações passam por uma faixa temporária não colidente
+dentro da transação antes de receber os valores finais, protegendo os índices únicos sem
+publicar a etapa intermediária. O retorno só contém a revisão depois do commit.
+
+Um snapshot idêntico salvo com a revisão corrente é aceito e avança uma vez (não é
+deduplicação de transporte); salvar com revisão antiga conflita. O custo da validação e
+reconciliação é proporcional ao conjunto completo lido e às linhas atualizadas; nenhum
+benchmark ou limite operacional foi medido. Leitor/gravador continuam internos e não
+são registrados na API.
+
+`GravadorVendasSqliteTests` parte de fixture sintética com entrada, lote, Individual
+corrigido com nova data, ordem não cronológica, Inativa e Prejuízo. Grava em banco
+preparado vazio, fecha a operação e relê por nova conexão; compara profundamente raízes,
+clientes, status, datas, parcelas, recebimentos, acréscimos, observações, origens e
+alocações. Salvar o mesmo candidato na revisão 1 retorna revisão 2 sem duplicação.
+Teste focado: 1/1; suíte `FullyQualifiedName~Persistencia`: 40/40; build Release com zero
+avisos/erros; `dotnet format --verify-no-changes --no-restore` passou. Fixtures e arquivos
+são próprios/temporários; não houve escrita ou acesso em banco operacional ou com dados reais.
 
 ## Estado de verificação
 

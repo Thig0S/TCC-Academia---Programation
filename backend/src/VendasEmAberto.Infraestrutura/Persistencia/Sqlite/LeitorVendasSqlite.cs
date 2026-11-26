@@ -31,7 +31,64 @@ internal sealed class LeitorVendasSqlite
             await using var transacao = await contexto.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable,
                 cancellationToken);
+            var resultado = await CarregarNaTransacaoAtualAsync(contexto, referencia, cancellationToken);
+            if (resultado is ResultadoArmazenamento<SnapshotVendas>.Falha)
+            {
+                return resultado;
+            }
 
+            await transacao.CommitAsync(cancellationToken);
+            return resultado;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (DadosPersistidosInvalidosException)
+        {
+            return Falha(
+                CodigosErroArmazenamento.DadosPersistidosInvalidos,
+                "O banco contém dados de vendas inconsistentes.");
+        }
+        catch (SqliteException excecao) when (EhBancoOcupado(excecao))
+        {
+            return Falha(
+                CodigosErroArmazenamento.BancoOcupado,
+                "O banco está ocupado por outra operação.");
+        }
+        catch (SqliteException excecao) when (EhFalhaDeAcesso(excecao))
+        {
+            return Falha(
+                CodigosErroArmazenamento.ArmazenamentoIndisponivel,
+                "Não foi possível acessar o armazenamento informado.");
+        }
+        catch (SqliteException excecao) when (EhFalhaDeSchema(excecao))
+        {
+            return Falha(
+                CodigosErroArmazenamento.SchemaIncompativel,
+                "O banco não está na versão de schema esperada.");
+        }
+        catch (SqliteException)
+        {
+            return Falha(
+                CodigosErroArmazenamento.DadosPersistidosInvalidos,
+                "O banco contém dados de vendas inconsistentes.");
+        }
+        catch (Exception excecao) when (excecao is FormatException or InvalidCastException or OverflowException)
+        {
+            return Falha(
+                CodigosErroArmazenamento.DadosPersistidosInvalidos,
+                "O banco contém dados de vendas inconsistentes.");
+        }
+    }
+
+    internal async Task<ResultadoArmazenamento<SnapshotVendas>> CarregarNaTransacaoAtualAsync(
+        VendasDbContext contexto,
+        DateOnly referencia,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
             var estados = await contexto.Set<EstadoArmazenamentoLinha>()
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
@@ -159,7 +216,6 @@ internal sealed class LeitorVendasSqlite
                 throw new DadosPersistidosInvalidosException();
             }
 
-            await transacao.CommitAsync(cancellationToken);
             return ResultadoArmazenamento<SnapshotVendas>.CriarSucesso(
                 new SnapshotVendas(conjuntoValido.Valor, estados[0].Revisao));
         }

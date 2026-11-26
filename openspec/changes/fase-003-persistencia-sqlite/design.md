@@ -13,10 +13,11 @@ factory design-time e migration, com testes temporários de constraints; SQL-02/
 implementou inicializador explícito e SQL-02/2.2 abertura por operação com comparação
 do schema físico; SQL-03/3.1 implementou leitura transacional sem tracking e
 reidratação validada; SQL-03/3.2 cobriu entrada, lote, correção, ordem e relatórios
-em fixtures SQL. Testes cobriram arquivo novo, repetição, recusa de bancos
-desconhecidos/futuros, modo sem criação, lock, liberação de conexão e cenários de
-leitura. A decisão de remover a referência preexistente Api → Infraestrutura foi
-confirmada no Harness.
+em fixtures SQL; SQL-04/4.1 implementou adaptador interno e gravação com transação não
+diferida, revisão condicional, reconciliação por ID e round-trip em fixture sintética.
+Testes cobriram arquivo novo, repetição, recusa de bancos desconhecidos/futuros, modo
+sem criação, lock, liberação de conexão, leitura e gravação. A decisão de remover a
+referência preexistente Api → Infraestrutura foi confirmada no Harness.
 
 Inspeção realizada:
 
@@ -27,8 +28,9 @@ Inspeção realizada:
 - `ConjuntoVendas.cs`: valida IDs entre tipos e raízes e totais de todos os status;
   não substitui validação de cada histórico. Não publica/persiste candidatos.
 - Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura tem contexto,
-  entidades de linha, configurações, migration, inicializador, sessão validada e leitor
-  interno. Ainda não há implementação do contrato nem gravação.
+  entidades de linha, configurações, migration, inicializador, sessão validada e
+  implementação interna do contrato. SQL-04/4.1 persiste por transação SQLite imediata
+  e reutiliza o leitor no mesmo contexto para validar a revisão/conjunto atuais.
   API referencia somente Aplicacao; testes de persistência
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
@@ -205,8 +207,9 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 3. SQL-02/2.2: abrir por operação sem criação implícita, validar schema/migration,
    foreign_keys, timeout e descarte de conexão; concluído em arquivos temporários. Não
    há base anterior a converter.
-4. SQL-03: leitura fiel e inválida testada; SQL-04: gravação/revisão com rollback,
-   concorrência, cancelamento e preservação. Testes/documentação em cada entrega.
+4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1 implementou gravação/revisão e
+   round-trip; 4.2–4.4 ainda cobrem preservação detalhada, rollback, concorrência e
+   cancelamento. Testes/documentação em cada entrega.
 5. SQL-05: restore bloqueado, build Release, toda suíte MSTest, format, smoke real
    health/loopback/404 sem banco, frontend test/build com API desligada e evidências
    reais. E2E/visual/zoom não executados sem UI; não alegar homologação.

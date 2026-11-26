@@ -32,7 +32,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 ## 4. SQL-04 — Escrita atômica, revisão e preservação
 
-- [ ] 4.1 Implementar gravação do conjunto validado em transação de escrita não diferida, conferindo integridade atual, revisão esperada e limite da revisão; atualizar token condicionalmente e persistir todas as linhas no mesmo commit. Reconciliar por ID sem apagar/recriar toda a base, evitando colisões temporárias de ordens. MSTest fecha/reabre arquivo após salvar e confere round-trip completo de 3.1/3.2, revisão +1 e snapshot idêntico com revisão atual sem duplicação. Documentar garantias/custo do snapshot no README.
+- [x] 4.1 Implementar gravação do conjunto validado em transação de escrita não diferida, conferindo integridade atual, revisão esperada e limite da revisão; atualizar token condicionalmente e persistir todas as linhas no mesmo commit. Reconciliar por ID sem apagar/recriar toda a base, evitando colisões temporárias de ordens. MSTest fecha/reabre arquivo após salvar e confere round-trip completo de 3.1/3.2, revisão +1 e snapshot idêntico com revisão atual sem duplicação. Documentar garantias/custo do snapshot no README.
 - [ ] 4.2 Proteger vendas existentes e histórico: recusar omissão de raiz, remoção de parcela/recebimento, alteração de contrato-base/entrada/lote e perda de identidade/alocação Individual. Testar cada recusa sem mudança de dados/revisão e sucessos por operações de cliente/status/baixa/correção do domínio, preservando outras vendas. Testar candidato com IDs globais colidentes ou overflow sem gravar, usando coleção candidata validável que permita informar falha, sem burlar encapsulamento do domínio. Atualizar README e executar regressões de armazenamento.
 - [ ] 4.3 Cobrir dois consumidores/conexões na mesma revisão com sincronização determinística: no máximo um commit, revisão obsoleta recusa e recarga mostra versão íntegra. Testar leitura consistente durante escrita, timeout de banco ocupado sem auto-retry e limite long.MaxValue sem overflow. Executar casos concorrentes com arquivo isolado e registrar resultados, sem alegar concorrência operacional homologada.
 - [ ] 4.4 Testar rollback após primeira alteração e antes do commit por composição/interceptor exclusivo de teste; nova conexão deve observar estado/revisão anteriores e nova operação válida deve confirmar. Cobrir token previamente cancelado, cancelamento observado antes do commit, token tardio após commit confirmado, exceção inesperada propagada e confirmação indeterminada sem retry/alegação falsa de rollback. Testar mensagens sem SQL/CPF/telefone/caminho pessoal e sensitive-data logging desligado. Documentar códigos/limites no README e executar toda a suíte de persistência.
@@ -106,6 +106,18 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   de defesa usam apenas PRAGMA local de teste. Teste direcionado: 17/17 contando a
   colisão de ID; suíte `FullyQualifiedName~Persistencia`: 39/39; build Release (zero
   avisos/erros). README registra a matriz, os comandos e HIS-005–007 → SQL-HIS-02.
+- SQL-04/4.1: implementação interna do contrato delega a `GravadorVendasSqlite`; abre
+  transação SQLite não diferida, lê/valida estado atual na mesma transação e faz revisão
+  condicional + upserts por ID para raízes/filhos, sem exclusões. Ordens antigas passam
+  por faixa temporária dentro da transação para respeitar índices únicos. Teste com
+  fixture de 4 vendas cobre entrada, lote, correção Individual/data, ordem, Inativa e
+  Prejuízo; grava em banco preparado vazio, fecha/reabre, compara profundamente todos
+  os campos e salva o mesmo snapshot na revisão atual: revisão 1→2, sem linhas duplicadas.
+  Teste focado: 1/1; suíte `FullyQualifiedName~Persistencia`: 40/40; build Release (zero
+  avisos/erros); `dotnet format --verify-no-changes` passou. A primeira execução
+  identificou contenção ao validar por uma segunda conexão; o leitor foi extraído para
+  aceitar o contexto/transação corrente e a execução repetida passou. README registra
+  garantias e custo proporcional à leitura e reconciliação do snapshot completo.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências
