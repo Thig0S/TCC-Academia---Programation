@@ -158,11 +158,35 @@ public sealed class VendaReconstrucaoTests
     [TestMethod]
     public void Reconstruir_AceitaEntradaExataEConciliaProjecaoConjuntoEPeriodo()
     {
+        var dadosInvalidos = CriarDadosComEntradaDeDuasParcelas(9_999);
+        var recebimentosInvalidosOriginais = dadosInvalidos.Recebimentos.ToArray();
+        var alocacoesInvalidasOriginais = dadosInvalidos.Recebimentos[0].Alocacoes.ToArray();
         var dadosOriginais = CriarDadosComEntradaDeDuasParcelas(10_000);
         var recebimentosOriginais = dadosOriginais.Recebimentos.ToArray();
         var alocacoesOriginais = dadosOriginais.Recebimentos[0].Alocacoes.ToArray();
+        Assert.AreEqual(dadosInvalidos.Id, dadosOriginais.Id);
+        CollectionAssert.AreEqual(
+            dadosInvalidos.Parcelas.Select(parcela => parcela.Id).ToArray(),
+            dadosOriginais.Parcelas.Select(parcela => parcela.Id).ToArray());
+        CollectionAssert.AreEqual(
+            dadosInvalidos.Recebimentos.Select(recebimento => recebimento.Id).ToArray(),
+            dadosOriginais.Recebimentos.Select(recebimento => recebimento.Id).ToArray());
         var vendaExistente = ObterSucesso(Venda.Reconstruir(CriarDadosSemEntrada(), Referencia));
         var conjuntoAnterior = ObterSucesso(ConjuntoVendas.Criar([vendaExistente]));
+
+        var resultadoInvalido = Venda.Reconstruir(dadosInvalidos, Referencia);
+        var falha = Assert.IsInstanceOfType<ResultadoDominio<Venda>.Falha>(resultadoInvalido).Erro;
+
+        Assert.AreEqual(CategoriaErroDominio.Validacao, falha.Categoria);
+        Assert.AreEqual("historico-invalido", falha.Codigo);
+        Assert.AreEqual("recebimentos.alocacoes", falha.Campo);
+        Assert.IsNull(typeof(ResultadoDominio<Venda>.Falha).GetProperty("Valor"));
+        Assert.AreEqual(10_000, dadosInvalidos.Recebimentos[0].Valor.Centavos);
+        Assert.AreEqual(9_999, dadosInvalidos.Recebimentos[0].Alocacoes[0].Valor.Centavos);
+        CollectionAssert.AreEqual(recebimentosInvalidosOriginais, dadosInvalidos.Recebimentos.ToArray());
+        CollectionAssert.AreEqual(alocacoesInvalidasOriginais, dadosInvalidos.Recebimentos[0].Alocacoes.ToArray());
+        Assert.AreEqual(1, conjuntoAnterior.Vendas.Count);
+        Assert.AreSame(vendaExistente, conjuntoAnterior.Vendas[0]);
 
         var venda = ObterSucesso(Venda.Reconstruir(dadosOriginais, Referencia));
         var projecao = ObterSucesso(venda.Projetar(Referencia));
@@ -192,6 +216,9 @@ public sealed class VendaReconstrucaoTests
         CollectionAssert.AreEqual(
             new[] { vendaExistente.Id, venda.Id },
             periodo.Vendas.Select(item => item.Id).ToArray());
+        Assert.AreEqual(9_999, dadosInvalidos.Recebimentos[0].Alocacoes[0].Valor.Centavos);
+        CollectionAssert.AreEqual(recebimentosInvalidosOriginais, dadosInvalidos.Recebimentos.ToArray());
+        CollectionAssert.AreEqual(alocacoesInvalidasOriginais, dadosInvalidos.Recebimentos[0].Alocacoes.ToArray());
         CollectionAssert.AreEqual(recebimentosOriginais, dadosOriginais.Recebimentos.ToArray());
         CollectionAssert.AreEqual(alocacoesOriginais, dadosOriginais.Recebimentos[0].Alocacoes.ToArray());
     }
