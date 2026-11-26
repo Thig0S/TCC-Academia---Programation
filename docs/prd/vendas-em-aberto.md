@@ -8,7 +8,7 @@ temporária fora de `backend/`; nesse contexto, não encontra o mapeamento
 O aviso `NU1503` decorre do projeto não carregado e não é, isoladamente, a causa.
 
 **Objetivo e aceite:** tornar a versão do SDK de teste resolvível pelo próprio
-projeto, sem mudar framework, runner ou baseline. CA-049: ambos os projetos de
+projeto, sem mudar framework, runner ou baseline. CA-053: ambos os projetos de
 teste declaram MSTest.Sdk 4.5.3, igual ao mapeamento em `global.json`; restore e
 testes iniciados com a solução versionada em `backend/` resolvem os projetos, e
 as instruções distinguem esse pin do SDK .NET requerido (10.0.404 ou patch
@@ -17,13 +17,23 @@ quando disponível; sem ela, não alegar verificação no VS Code.
 
 **Escopo:** somente configuração do projeto, instruções e verificações de
 restore/build/testes. Sem atualização de versões, instalação local por agente,
-alteração de CI ou comportamento funcional. Rastreabilidade: TDD/DEC-038 e
-OpenSpec `corrigir-resolucao-sdk-mstest`.
+alteração de CI ou comportamento funcional. Origem FON-042. Rastreabilidade:
+TDD/DEC-039 e OpenSpec `corrigir-resolucao-sdk-mstest`.
 
 **Resultado observado nesta Change:** restore `--locked-mode`, build Release e
 203 testes passaram usando a instalação temporária .NET SDK 10.0.404. A extensão
 do VS Code na máquina do solicitante não foi executada neste ambiente; sua
 confirmação permanece pendente.
+
+**Reconciliação de rastreabilidade e período (26/11/2026):** referências históricas
+à correção MSTest como FON-041/CA-049/TDD-DEC-038 passam a ser aliases históricos
+de FON-042/CA-053/TDD-DEC-039. Os identificadores canônicos FON-041/CA-049/DEC-038
+permanecem reservados à persistência SQLite abaixo. Esta correção documental não
+altera critérios nem resultados já registrados. Em RF-023/RN-026 e TDD/DEC-037,
+`ConsultarPeriodo.Vendas` corresponde às vendas Ativas com data civil dentro do
+intervalo inclusivo; os recebimentos permanecem de todos os status, pela data
+efetiva, inclusive os de vendas Inativas ou Prejuízo. Trata-se da explicitação
+coerente de regra existente, não de novo critério de aceite.
 
 ## Fase 003 do backend — persistência SQLite (25/11/2026)
 
