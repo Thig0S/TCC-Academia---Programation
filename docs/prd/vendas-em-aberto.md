@@ -1,5 +1,25 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Correção da descoberta dos testes de backend (26/11/2026)
+
+**Problema:** a extensão C# do VS Code pode iniciar o restore por uma solução
+temporária fora de `backend/`; nesse contexto, não encontra o mapeamento
+`MSTest.Sdk` em `backend/global.json` e falha ao carregar os projetos de teste.
+O aviso `NU1503` decorre do projeto não carregado e não é, isoladamente, a causa.
+
+**Objetivo e aceite:** tornar a versão do SDK de teste resolvível pelo próprio
+projeto, sem mudar framework, runner ou baseline. CA-049: ambos os projetos de
+teste declaram MSTest.Sdk 4.5.3, igual ao mapeamento em `global.json`; restore e
+testes iniciados com a solução versionada em `backend/` resolvem os projetos, e
+as instruções distinguem esse pin do SDK .NET requerido (10.0.404 ou patch
+permitido na mesma feature band). A resolução da extensão deve ser confirmada
+quando disponível; sem ela, não alegar verificação no VS Code.
+
+**Escopo:** somente configuração do projeto, instruções e verificações de
+restore/build/testes. Sem atualização de versões, instalação local por agente,
+alteração de CI ou comportamento funcional. Rastreabilidade: TDD/DEC-038 e
+OpenSpec `corrigir-resolucao-sdk-mstest`.
+
 ## Fase 003 do backend — persistência SQLite (25/11/2026)
 
 **FON-041:** pedido de avaliar a correção recente e planejar a fase 003; no Harness,
