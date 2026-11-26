@@ -113,8 +113,6 @@ inclui ferramentas locais no grafo da solução. Para `dotnet-ef`, foram conferi
 seus metadados, ausência de dependências declaradas e `.deps.json`; resultados de
 advisories dependem das fontes NuGet no momento da execução.
 
-## Contrato de armazenamento
-
 ## Dependências dos casos de uso (APP-01/1.1)
 
 As dependências dos casos de uso ficam em `VendasEmAberto.Aplicacao`: MediatR
@@ -163,6 +161,43 @@ as fontes NuGet disponíveis. A listagem confirmou as dependências diretas/tran
 e que o grafo da API não contém EF Core/SQLite. A avaliação de advisories é um retrato
 das fontes consultadas em 26/11/2026, não uma auditoria estática de código ou do binário
 nativo SQLite.
+
+## Contratos compartilhados dos casos de uso (APP-01/1.2)
+
+`Comum/Erros/` converte categorias de domínio explicitamente, preservando código,
+mensagem pública e campo. Erros de armazenamento são classificados por código estável:
+caminho/candidato inválido como validação; conflito de revisão/exclusão/histórico como
+conflito; falhas de banco/schema/dados/bloqueio/limite como infraestrutura; e
+`confirmacao-indeterminada` como estado indeterminado. Código ou categoria desconhecidos
+propagam exceção técnica genérica, sem converter falha em sucesso nem publicar o snapshot
+candidato. Cancelamento e exceções inesperadas não são capturados pelos conversores.
+
+`Contratos/` contém somente o cliente, resumo e detalhe da venda necessários ao cadastro
+e à consulta inicial. Os valores monetários são `long` em centavos; datas usam `DateOnly`;
+descrição e dados de pagamento ainda não existentes mantêm nulabilidade. Enums próprios
+da Aplicacao são convertidos por `switch` exaustivo. O mapper transporta as projeções do
+domínio sem recalcular valores, associa a projeção à raiz pelo ID e mantém as ordens de
+parcelas, recebimentos e alocações. As coleções de resposta são cópias somente leitura;
+nenhuma resposta contém entidade de domínio, EF Core ou contrato HTTP.
+
+`IGeradorIdentificadores` é a abstração de geração, sem impor formato aos IDs existentes.
+A implementação concreta e a política GUID formato N pertencem à composição da
+Infraestrutura (APP-01/1.3).
+
+Evidência direcionada em 26/11/2026, com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter "FullyQualifiedName~ConversorErrosAplicacaoTests|FullyQualifiedName~MapeadorVendaRespostaTests"
+```
+
+Resultado: 9 testes passaram, 0 falhas. Cobrem as quatro categorias de domínio, todos
+os códigos de armazenamento conhecidos, código/categoria desconhecidos, falha sem
+acesso a `Result.Value`, resposta candidata não publicada, centavos/datas/nulabilidade,
+DTOs sem tipos de domínio/infra/HTTP e coleções defensivas. Esta etapa não implementa
+handlers nem mapeamento HTTP.
+
+## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
 EF Core, HTTP ou handlers. `IArmazenamentoVendas` oferece:
