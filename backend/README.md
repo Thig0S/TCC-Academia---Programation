@@ -272,9 +272,32 @@ ID corrigido, demonstrando a data final persistida sem duplicidade. Prejuízo co
 histórico permanece separado; total agregado de Prejuízo = 0 conforme regra vigente.
 
 O teste direcionado `LeitorHistoricoVendasSqliteTests` passou 1/1; a suíte de
-persistência passou 22/22. São fixtures sintéticas/oráculos do domínio, não evidência
-de migração ou escrita de produção. HIS-02, rejeição/restauração após fixture inválida
-e gravação continuam pendentes em SQL-03/3.3 e SQL-04.
+persistência passou 22/22 naquele marco. São fixtures sintéticas/oráculos do domínio,
+não evidência de migração ou escrita de produção.
+
+### Rejeição de histórico inválido (SQL-03/3.3)
+
+`LeitorDadosInvalidosVendasSqliteTests` cobre 16 adulterações controladas em fixtures
+sintéticas, com uma venda Ativa com entrada, uma Inativa e uma em Prejuízo. As alocações
+de entrada 9.999 e 10.001 contra recebimento/base 10.000 são rejeitadas. Também são
+rejeitados data civil impossível, forma/status desconhecidos, ID vazio, registro de ID
+com tipo errado/ausente, lacunas nas ordens globais/de recebimentos/de alocações,
+alocação cruzada, observação nula, total-base zero e somas globais inseguras ao levar
+uma venda Inativa ou em Prejuízo ao limite individual de centavos.
+
+Cada caso verifica `Falha(dados-persistidos-invalidos)` sem snapshot, consulta o arquivo
+para provar que o leitor não reparou nem omitiu a linha inválida, restaura explicitamente
+os valores da fixture e faz nova leitura (nova sessão/conexão), que recupera as três
+vendas e a revisão zero. Para enum inválido, ID ausente e vínculo cruzado, primeiro se
+comprova a recusa normal por CHECK/FK; só então a fixture de defesa de leitura usa
+`ignore_check_constraints` ou `foreign_keys=OFF` na conexão de teste, nunca no leitor.
+Uma colisão de ID entre tipos também é recusada pela PK global e a fixture segue legível.
+
+SQL-HIS-02/HIS-005–007: tentativas de entrada divergente falham antes da publicação do
+conjunto; restauração explícita permite reler sem estado residual. Teste focado: 17/17;
+suíte `FullyQualifiedName~Persistencia`: 39/39; build Release sem avisos ou erros.
+A adulteração é exclusiva das fixtures temporárias e não representa uma operação
+pública de reparo.
 
 ## Estado de verificação
 

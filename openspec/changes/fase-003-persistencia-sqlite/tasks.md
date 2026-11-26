@@ -28,7 +28,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 - [x] 3.1 Implementar mapeador/leitura transacional sem tracking e com ordenação persistida; usar fábricas de valores/cliente, Venda.Reconstruir e ConjuntoVendas.Criar antes de entregar snapshot. Preparar fixtures por SQL de teste usando a migration, sem depender da escrita ainda não implementada. MSTest compara todos os campos, revisão, coleção vazia, mesma identificação em duas vendas, datas civis extremas válidas, centavos extremos, descrição nula e observação Unicode. Não normalizar dados inválidos; registrar oráculos SQL-REP-01 e contrato de carga no README.
 - [x] 3.2 Cobrir SQL-HIS-01/SQL-COR-01/SQL-ORD-01 em arquivos reais: entrada 10.000 em base 20.000/2; lote sintético; Individual base 10.000 corrigido 11.000→10.500 e data em outro mês; ordem de histórico não determinada pela data. Conferir IDs/alocações/origens, recebido/saldo/acréscimo, universos de status e soma mensal/diária por valores explícitos. Executar testes direcionados e documentar fixtures/resultados sintéticos no README.
-- [ ] 3.3 Implementar/testar rejeição integral de dados persistidos inválidos: SQL-HIS-02 com alocação 9.999 e 10.001 contra entrada recebida/base 10.000, sem snapshot parcial; após cada falha restaurar explicitamente fixture válida e reler com nova conexão. Acrescentar data/enum/identificação/ordem/vínculo/registro de IDs inválidos e soma global insegura, inclusive em Inativas/Prejuízo. Quando constraint impedir fixture inválida, comprovar a rejeição pela constraint e usar adulteração controlada de teste apenas para provar a defesa na carga. Verificar ausência de reparo/omissão e registrar rastreabilidade HIS-005–007 → SQL-HIS-02 no README.
+- [x] 3.3 Implementar/testar rejeição integral de dados persistidos inválidos: SQL-HIS-02 com alocação 9.999 e 10.001 contra entrada recebida/base 10.000, sem snapshot parcial; após cada falha restaurar explicitamente fixture válida e reler com nova conexão. Acrescentar data/enum/identificação/ordem/vínculo/registro de IDs inválidos e soma global insegura, inclusive em Inativas/Prejuízo. Quando constraint impedir fixture inválida, comprovar a rejeição pela constraint e usar adulteração controlada de teste apenas para provar a defesa na carga. Verificar ausência de reparo/omissão e registrar rastreabilidade HIS-005–007 → SQL-HIS-02 no README.
 
 ## 4. SQL-04 — Escrita atômica, revisão e preservação
 
@@ -96,6 +96,16 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   fevereiro fecha 11.000 e não contém o ID corrigido. Teste direcionado: 1/1; suíte de
   persistência: 22/22; build Release sem avisos/erros. Não há escrita de produção; a
   fixture representa o estado final, sem persistir a versão antiga da correção.
+- SQL-03/3.3: 16 adulterações de leitura em fixtures descartáveis (entrada 9.999/10.001,
+  data impossível, forma/status desconhecidos, ID vazio/tipo incorreto/ausente, lacunas
+  nas três ordens, alocação cruzada, observação nula, total-base zero e soma global
+  insegura separadamente em Inativa e Prejuízo). Para cada adulteração o leitor retorna
+  `dados-persistidos-invalidos`; SQL confirma que não houve reparo/omissão; a fixture é
+  restaurada explicitamente e relida por nova conexão com três vendas e revisão zero.
+  CHECK/FK e PK globais também são exercitados: constraints recusam primeiro e alterações
+  de defesa usam apenas PRAGMA local de teste. Teste direcionado: 17/17 contando a
+  colisão de ID; suíte `FullyQualifiedName~Persistencia`: 39/39; build Release (zero
+  avisos/erros). README registra a matriz, os comandos e HIS-005–007 → SQL-HIS-02.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências
