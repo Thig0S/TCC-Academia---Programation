@@ -1,5 +1,34 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-038 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
+
+**Problema observado:** o C# Dev Kit reporta que não consegue resolver
+`MSTest.Sdk` ao restaurar uma solução temporária sob `AppData\\Roaming\\Code`,
+embora `backend/global.json` mapeie `MSTest.Sdk` para 4.5.3. Como a solução
+temporária está fora da árvore `backend/`, o resolver NuGet da extensão pode não
+consultar esse mapeamento. `NU1503` nos projetos é consequência do carregamento
+inválido.
+
+**Decisão:** fixar explicitamente `MSTest.Sdk/4.5.3` no atributo `Project Sdk`
+dos projetos UnitTests e IntegrationTests. A documentação oficial do MSTest
+permite a versão no atributo ou em `global.json`; o pin local do projeto atende
+resolvers iniciados fora da pasta da solução sem trocar versão. Manter o
+mapeamento 4.5.3 no `global.json` para a CLI e orientar abrir
+`backend/VendasEmAberto.slnx` no VS Code.
+
+**Distinção de pré-requisitos:** o SDK MSTest não é o SDK .NET. `backend/global.json`
+continua exigindo .NET SDK 10.0.404 com `latestPatch`, portanto 10.0.103 não
+satisfaz a baseline; a instalação do SDK .NET adequado deve ser feita pelo
+desenvolvedor. A correção não rebaixa a versão, não instala ferramentas, não
+muda pacotes/runner e não afeta a aplicação. PRD/CA-049 e Change
+`corrigir-resolucao-sdk-mstest` detalham aceite e verificações.
+
+**Verificação:** restore, build e testes da solução versionada partindo de
+`backend/`; conferir a igualdade da versão nos três locais. A validação pela
+extensão VS Code é separada e só pode ser declarada após execução observada na
+máquina do solicitante. FON-041: erro apresentado pelo usuário; Context7
+`/microsoft/testfx` v4.5.3 confirma as formas aceitas de pin do MSTest SDK.
+
 ## DEC-038 — Persistência SQLite isolada da fase 003 (25/11/2026)
 
 ### Situação, fontes e entrevista
