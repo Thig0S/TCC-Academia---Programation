@@ -270,6 +270,95 @@ e 430 testes/build do frontend estão detalhados acima. O smoke confirma somente
 técnica (`/health` em loopback e `/vendas` 404); não é aceite operacional. E2E,
 inspeção visual e zoom não foram executados porque a interface não mudou.
 
+### Reprodução da divergência na entrada — Change `corrigir-reconstrucao-entrada`
+
+Na revisão da reconstrução, `Venda.Reconstruir` verificava que o recebimento Entrada
+correspondia à base da primeira parcela, mas copiava sua alocação sem comparar o valor
+alocado. A projeção posterior compara recebimentos com alocações e pode então rejeitar
+um agregado que a fábrica aceitou.
+
+Para reproduzir a lacuna antes da correção, foram adicionados três testes MSTest com
+venda sintética de 20.000 centavos em duas parcelas de 10.000, entrada recebida de
+10.000 e alocações divergentes de 1, 9.999 e 10.001 centavos. Executados com SDK
+isolado 10.0.404 em `backend/`:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~Reconstruir_RejeitaAlocacaoDeEntradaDiferenteDoValorRecebido"
+```
+
+**Evidência de 25/11/2026:** build do projeto passou com aviso `MSTEST0044` porque o
+primeiro rascunho usava `[DataTestMethod]`; a execução descobriu os três valores e
+falhou nos três, pois obteve `Sucesso` onde esperava `Falha`. Código de saída do MTP:
+2. O aviso foi eliminado em seguida, substituindo os casos parametrizados por três
+`[TestMethod]` nomeados. A reprodução foi repetida sem avisos com o filtro:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~Reconstruir_RejeitaAlocacaoDeEntrada"
+```
+
+Os três testes nomeados falharam como esperado na versão pré-correção: os resultados
+foram `Sucesso` em vez de `Falha`; MTP informou 3 falhas, 0 sucessos e código de saída
+2. Esta reprodução confirma a lacuna, não é resultado dos testes após o conserto.
+
+**Correção e verificação local de 25/11/2026:** a validação do ramo Entrada agora
+exige que a única alocação seja igual em centavos ao recebimento e à base da parcela.
+Os casos HIS-005/006 passaram após a alteração: 3 aprovados, 0 falhas, 0 ignorados,
+sem avisos de compilação. A suíte completa de `VendaReconstrucaoTests` passou: 11
+aprovados, 0 falhas, 0 ignorados; inclui os testes negativos, os históricos entrada/
+lote existentes e HIS-007, que confere entrada exata em projeção, conjunto e período.
+Estas são execuções direcionadas, não substituem as verificações integradas das
+demais tarefas desta Change.
+
+Após a inclusão do caso positivo HIS-007, a suíte UnitTests completa foi executada
+em Release com SDK isolado 10.0.404 e `--no-restore`: 135 aprovados, 0 falhas e
+0 ignorados. Isso cobre também as regressões técnicas e as classes existentes de
+projeção, conjunto, pagamento individual e cadastro.
+
+**Verificação integrada da Change `corrigir-reconstrucao-entrada` — 25/11/2026:**
+executada em `backend/` com SDK isolado 10.0.404 e runtimes 10.0.15, pois o `dotnet`
+do PATH seleciona 10.0.103, abaixo da baseline de `global.json`. Comandos executados
+sequencialmente (códigos de saída 0, exceto onde indicado):
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" --info
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" restore VendasEmAberto.slnx --locked-mode
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" build VendasEmAberto.slnx -c Release --no-restore
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test --solution VendasEmAberto.slnx -c Release --no-build
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Restore bloqueado passou; build Release passou com 0 avisos e 0 erros; a solução
+descobriu e aprovou 143 testes (135 UnitTests + 8 IntegrationTests), 0 falhas e
+0 ignorados. A primeira verificação integral de formato apontou LF nos dois arquivos
+C# alterados pela Change (exit code 1). `dotnet format whitespace` foi aplicado
+somente a `src/VendasEmAberto.Dominio/Vendas/Venda.Reconstrucao.cs` e
+`tests/VendasEmAberto.UnitTests/Dominio/Vendas/VendaReconstrucaoTests.cs`; a
+verificação integral posterior listada acima passou (exit code 0). Nenhum pacote ou
+baseline foi alterado.
+
+**Smoke real da API e frontend — Change `corrigir-reconstrucao-entrada`:** a DLL
+Release foi iniciada em processo separado com SDK 10.0.404, sem launch profile, na
+porta temporária `62421`. A API abriu somente `127.0.0.1`; `curl.exe` confirmou
+`GET /health` como HTTP 200 com corpo `Healthy` (o log Kestrel confirmou
+`text/plain`) e `GET /vendas` como HTTP 404. O processo iniciado (PID 5580) foi
+encerrado; a porta ficou livre e `Backend__Porta` foi restaurada. Nenhum listener
+permaneceu.
+
+Com a API desligada, a partir de `frontend/`, foram executados `npm.cmd test --
+--watch=false` e `npm.cmd run build`, ambos com exit code 0. Os testes aprovaram 33
+arquivos/430 testes; o build Angular produziu `frontend/dist/vendas-em-aberto`.
+Como a mudança não altera a interface, E2E, inspeção visual e zoom não foram
+executados; esta evidência não equivale a homologação operacional.
+
+Fechamento da Change `corrigir-reconstrucao-entrada`: PRD/RF-023/CA-046–048 e
+TDD/DEC-037 foram reutilizados sem alteração; rastreabilidade do delta para HIS-005–007,
+testes e evidências está em `openspec/changes/corrigir-reconstrucao-entrada/` e no
+catálogo de paridade. `openspec validate corrigir-reconstrucao-entrada --strict` e
+`git diff --check` foram executados após revisar o diff; produção alterada somente
+na igualdade do ramo Entrada, sem mudança de pacote, frontend, dados reais ou sync/
+archive alheio. Nenhuma rota de negócio, persistência ou camada de aplicação é
+introduzida por esta correção.
+
 Validações finais executadas na revisão 7.5:
 
 - `openspec validate fase-002-dominio --strict` — aprovado.
