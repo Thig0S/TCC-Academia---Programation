@@ -87,7 +87,20 @@ public static class MapeadorVendaResposta
         return new VendaDetalheResposta(resumo, parcelas, recebimentos);
     }
 
-    private static StatusAdministrativoResposta Mapear(StatusAdministrativoVenda status) => status switch
+    internal static ParcelaDetalheResposta MapearParcela(ProjecaoParcelaVenda parcela) => new(
+        parcela.Id,
+        parcela.Numero,
+        parcela.ValorBase.Centavos,
+        parcela.Acrescimo.Centavos,
+        parcela.ValorEfetivo.Centavos,
+        parcela.ValorRecebido.Centavos,
+        parcela.Saldo.Centavos,
+        parcela.Vencimento,
+        Mapear(parcela.Situacao),
+        parcela.DataPagamento,
+        parcela.FormaPagamento is { } forma ? Mapear(forma) : null);
+
+    internal static StatusAdministrativoResposta Mapear(StatusAdministrativoVenda status) => status switch
     {
         StatusAdministrativoVenda.Ativo => StatusAdministrativoResposta.Ativo,
         StatusAdministrativoVenda.Inativo => StatusAdministrativoResposta.Inativo,
@@ -95,7 +108,7 @@ public static class MapeadorVendaResposta
         _ => throw new InvalidOperationException("Status administrativo não reconhecido.")
     };
 
-    private static SituacaoVendaResposta Mapear(SituacaoVendaProjetada situacao) => situacao switch
+    internal static SituacaoVendaResposta Mapear(SituacaoVendaProjetada situacao) => situacao switch
     {
         SituacaoVendaProjetada.Quitada => SituacaoVendaResposta.Quitada,
         SituacaoVendaProjetada.Atrasada => SituacaoVendaResposta.Atrasada,
@@ -104,7 +117,7 @@ public static class MapeadorVendaResposta
         _ => throw new InvalidOperationException("Situação financeira da venda não reconhecida.")
     };
 
-    private static SituacaoParcelaResposta Mapear(SituacaoParcelaProjetada situacao) => situacao switch
+    internal static SituacaoParcelaResposta Mapear(SituacaoParcelaProjetada situacao) => situacao switch
     {
         SituacaoParcelaProjetada.Paga => SituacaoParcelaResposta.Paga,
         SituacaoParcelaProjetada.Atrasada => SituacaoParcelaResposta.Atrasada,
@@ -113,7 +126,7 @@ public static class MapeadorVendaResposta
         _ => throw new InvalidOperationException("Situação financeira da parcela não reconhecida.")
     };
 
-    private static FormaPagamentoResposta Mapear(FormaPagamento forma) => forma switch
+    internal static FormaPagamentoResposta Mapear(FormaPagamento forma) => forma switch
     {
         FormaPagamento.Dinheiro => FormaPagamentoResposta.Dinheiro,
         FormaPagamento.Pix => FormaPagamentoResposta.Pix,
@@ -122,7 +135,7 @@ public static class MapeadorVendaResposta
         _ => throw new InvalidOperationException("Forma de pagamento não reconhecida.")
     };
 
-    private static OrigemRecebimentoResposta Mapear(OrigemRecebimento origem) => origem switch
+    internal static OrigemRecebimentoResposta Mapear(OrigemRecebimento origem) => origem switch
     {
         OrigemRecebimento.Entrada => OrigemRecebimentoResposta.Entrada,
         OrigemRecebimento.Individual => OrigemRecebimentoResposta.Individual,
