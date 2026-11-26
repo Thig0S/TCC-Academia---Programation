@@ -23,7 +23,7 @@ Uma busca por `ConsultarPeriodo` em `backend/**/*.cs` localizou os consumidores 
 
 **Goals:** filtro operacional consistente sem perda de recebimentos; teste sequencial independente de ordem da suíte; referências documentais inequívocas com histórico preservado; alteração de produção mínima.
 
-**Non-Goals:** generalizar consultas com parâmetros de status, adicionar novo DTO/serviço, reescrever relatório, alterar a validação de entrada já corrigida, abrir persistência à API, instalar bibliotecas, mudar schema ou tratar dados reais. A confirmação da extensão VS Code continua pendente e fora deste recorte.
+**Non-Goals:** generalizar consultas com parâmetros de status, adicionar novo DTO/serviço, reescrever relatório, alterar a validação de entrada já corrigida, abrir persistência à API, adicionar/atualizar dependências ou editar manifestos/lockfiles, mudar schema ou tratar dados reais. Exceção autorizada no Harness em 26/11/2026: `npm ci` em `frontend/` para reconstruir `node_modules` estritamente a partir do `package-lock.json` existente, se necessário à verificação. A confirmação da extensão VS Code continua pendente e fora deste recorte.
 
 ## Decisions
 
@@ -75,6 +75,10 @@ Alternativa de renumerar SQLite foi rejeitada pelo maior alcance de referências
 No apply, acrescentar ao README uma seção desta correção com comandos, SDK realmente usado, contagens, resultados e limitações. Não mudar os números anteriores para fingir que já cobriam o novo cenário. Atualizar CON-008 e HIS-007 preservando seus IDs e acrescentar entradas identificadas para casos novos sem colisões.
 
 Regressão planejada: testes direcionados das duas classes, relatório/projeções e suíte completa incluindo persistência; restore bloqueado, Release e format verify com baseline existente, sequencialmente. Preservar o smoke real da API (loopback/health/404, sem banco e sem processo próprio residual) e testes/build frontend com API desligada; se o ambiente impedir execução, documentar bloqueio real sem declarar aprovação. Sem UI nova, E2E visual/zoom não se aplicam. Não atualizar SDK/pacotes como contorno.
+
+### D6 — Restaurar somente dependências frontend já travadas
+
+Na execução inicial de VER-01/4.2, `npm test` não encontrou o builder `@angular/build:unit-test`, embora `@angular/build@22.2.6` esteja declarado em `frontend/package.json` e `package-lock.json`; Node `v24.21.0` e npm `11.19.0` atendem aos `engines`/`packageManager`. O Harness autorizou em 26/11/2026 a preparação do ambiente por `npm ci`, que substitui `node_modules` e restaura apenas a árvore exata do lockfile. Executar em `frontend/`, sem `npm install` ad hoc, `npm update` ou alteração de `package.json`/`package-lock.json`; conferir o diff desses manifestos vazio. Registrar o erro inicial, versões de Node/npm, restauração, nova execução de testes/build e seus códigos/contagens reais. A instalação não altera dependências escolhidas nem o escopo funcional.
 
 ## Risks / Trade-offs
 
