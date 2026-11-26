@@ -287,6 +287,35 @@ inválido e revisão obsoleta não alteraram snapshot nem revisão. Bancos e con
 restritos ao diretório temporário da fixture, removido no cleanup; não foi usada base
 real nem houve seed.
 
+## Consulta de detalhe da venda (APP-02/2.3)
+
+`ConsultarVendaQuery` recebe `VendaId` opaco e `Referencia`, lê exatamente um snapshot
+e localiza o ID com comparação ordinal. ID vazio falha como validação antes da carga;
+venda ausente no snapshot falha como `Inexistencia`/`venda-inexistente`, enquanto falhas
+do armazenamento (incluindo banco ausente) mantêm seus próprios códigos/categorias.
+Para venda existente, a projeção financeira é calculada uma vez pelo domínio e combinada
+por ID ao contrato e ao histórico raiz via `MapeadorVendaResposta`; a Query não prepara,
+grava nem gera identificadores. A resposta inclui revisão/referência do snapshot e cópias
+defensivas em ordem de parcelas, recebimentos e alocações.
+
+Testes direcionados:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarVendaHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarVendaSqliteTests
+```
+
+Resultado: 4 unitários e 2 de integração passaram. O histórico sintético preserva
+entrada, lote e Individual, notas Unicode e datas de recebimento fora de ordem (o lote
+tem data posterior ao pagamento Individual, mas permanece na ordem de registro). Os
+testes conferem cliente completo/nulabilidade, data/status/centavos, projeções das
+parcelas pagas, acréscimo, saldo, formas/origens, IDs e alocações; identificador vazio,
+venda inexistente e distinção de banco ausente. A integração gravou em arquivo SQLite
+temporário, consultou via `ISender` em provider novo e confirmou revisão inalterada,
+sem mutar respostas já entregues. Os arquivos e pools foram limpos pela fixture.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
