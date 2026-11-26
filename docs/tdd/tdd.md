@@ -16,8 +16,9 @@ sem tracking e reidratação; SQL-03/3.2 cobriu entrada, lote, correção e rela
 SQL-03/3.3 verificou rejeição de corrupção e releitura após restauração; SQL-04/4.1
 implementou gravador transacional com revisão condicional e round-trip; SQL-04/4.2
 protege contrato, identidade e histórico existente; SQL-04/4.3 cobre escritores
-concorrentes, leitura deferred consistente, timeout sem retry e revisão máxima.
-Rollback/cancelamento ainda estão pendentes.
+concorrentes, leitura deferred consistente, timeout sem retry e revisão máxima; SQL-04/4.4
+verifica rollback, exceções, cancelamento e confirmação indeterminada. SQL-05 é a única
+etapa de implementação ainda pendente.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
@@ -179,15 +180,15 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3 e SQL-04/4.1–4.3 foram executados sob apply autorizado;
-SQL-04/4.4 e SQL-05 permanecem pendentes e são executados conforme as dependências:
+SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3 e SQL-04/4.1–4.4 foram executados sob apply autorizado;
+SQL-05 permanece pendente e será executado conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
 | SQL-01 | Dependências, isolamento da API, contrato e schema/migration inicial (1.1–1.3 concluídos) | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
 | SQL-02 | Inicializador explícito e abertura por operação (2.1–2.2 concluídos) | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem sobrescrita; abertura não cria arquivo e confere schema |
 | SQL-03 | Leitura, histórico e dados inválidos (3.1–3.3 concluídos) | Campos/ordem/extremos, HIS-01/COR-01/ORD-01 e rejeição integral HIS-005–007 |
-| SQL-04 | Escrita, revisão, preservação e concorrência (4.1–4.3 concluídos; 4.4 pendente) | Round-trip, histórico protegido, um único commit; rollback e cancelamento |
+| SQL-04 | Escrita, revisão, preservação, concorrência e falhas (4.1–4.4 concluídos) | Round-trip, histórico protegido, um commit; rollback/cancelamento e confirmação incerta |
 | SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
 
 Executar builds/testes sequencialmente na mesma saída. Cada funcionalidade inclui
@@ -214,8 +215,8 @@ criar arquivo no caminho de design-time, `has-pending-model-changes` e cinco tes
 SQLite de schema/constraints. SQL-02/2.1 executou seis testes de inicialização;
 SQL-02/2.2, seis testes de abertura/sessão; SQL-03/3.1 adicionou quatro testes,
 SQL-03/3.2 um cenário, SQL-03/3.3 dezessete casos, SQL-04/4.1 um round-trip,
-SQL-04/4.2 cinco testes adicionais de preservação e SQL-04/4.3 quatro testes de
-concorrência; a suíte de persistência passou 49/49. Cobertos
+SQL-04/4.2 cinco testes adicionais de preservação, SQL-04/4.3 quatro de concorrência e
+SQL-04/4.4 cinco de falhas/cancelamento; a suíte de persistência passou 54/54. Cobertos
 estado vazio/revisão, campos/ordem, CPF repetido, descrição nula, Unicode, datas
 extremas, centavos máximos, entrada, lote, correção, status, totais mensais/diários,
 corrupção, recusa por constraints/restauração, round-trip, histórico protegido,
@@ -237,13 +238,15 @@ em arquivos temporários; cinco testes de schema/constraints passaram e não há
 pendente do modelo. SQL-02/2.1 executou seis testes de inicialização, SQL-02/2.2 seis
 testes de abertura, SQL-03/3.1 quatro testes de leitura, SQL-03/3.2 um cenário integrado,
 SQL-03/3.3 dezessete casos de corrupção/restauração, SQL-04/4.1 um round-trip,
-SQL-04/4.2 cinco testes de preservação e SQL-04/4.3 quatro testes concorrentes; a suíte
-de persistência passou 49/49.
+SQL-04/4.2 cinco testes de preservação, SQL-04/4.3 quatro testes concorrentes e
+SQL-04/4.4 cinco de rollback/cancelamento/confirmação; a suíte de persistência passou
+54/54.
 Leitura/gravação cobrem vazio/revisão, campos, ordem, CPF repetido, datas extremas,
 limite de centavos, descrição nula, Unicode, entrada, lote, correção, status, oráculos
 mensais/diários, rejeição integral, reabertura completa, histórico imutável,
 atualizações permitidas, concorrência com revisão global, leitura deferred consistente,
-timeout de lock (5,248 s para timeout configurado em 5 s) e limite da revisão.
+timeout de lock (5,197 s para timeout configurado em 5 s), limite da revisão, rollback,
+cancelamento e confirmação indeterminada.
 Não houve acesso a dados reais ou operacionais.
 Restore bloqueado e auditoria foram executados em SQL-01/1.1.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
