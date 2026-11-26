@@ -2,6 +2,30 @@
 
 ## Baseline e segurança
 
+### Abrir e executar os testes
+
+No VS Code, abra a solução versionada `backend/VendasEmAberto.slnx` (ou abra
+`backend/` como workspace), em vez de iniciar a descoberta por uma solução
+temporária do workspace. Os projetos de teste fixam `MSTest.Sdk/4.5.3` no
+próprio `.csproj`, para que o resolvedor do MSBuild também encontre essa versão
+quando a solução da extensão estiver fora da pasta do repositório. O mesmo número
+permanece em `global.json` para a CLI; os dois valores devem ficar alinhados.
+
+O SDK MSTest é distinto do SDK .NET: antes de rodar os comandos, instale o SDK
+.NET selecionado por `global.json` (10.0.404 ou patch permitido na mesma feature
+band). A partir de `backend/`, execute:
+
+```powershell
+dotnet --version
+dotnet restore .\VendasEmAberto.slnx --locked-mode
+dotnet test --solution .\VendasEmAberto.slnx -c Release
+```
+
+Se `dotnet --version` não selecionar o SDK exigido, instale-o pelos canais
+oficiais; não altere o pin para contornar a configuração local. Se somente a
+extensão falhar, recarregue a janela após abrir a solução versionada e confira
+os logs de restore para garantir que ela carregou os projetos do repositório.
+
 O backend tem como alvo `.NET 10` (`net10.0`). Baseline planejada em 25/11/2026:
 
 - SDK `10.0.404`, `rollForward=latestPatch`, `allowPrerelease=false`.
