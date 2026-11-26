@@ -342,6 +342,31 @@ das demais vendas após reabertura; validação inválida e venda ausente sem al
 no-op após normalização sem avanço de revisão; e revisão obsoleta que conflita antes
 do no-op. SQLite e fixtures usam apenas arquivos temporários removidos ao término.
 
+## Alteração de status administrativo (APP-03/3.2)
+
+`AlterarStatusVendaCommand` valida revisão, ID e enum antes da carga; após ler snapshot,
+confere a revisão antes de localizar a venda ou decidir no-op. O domínio autoriza Ativo
+para Inativo, Ativo para Prejuízo somente com saldo, e retorno de Inativo/Prejuízo para
+Ativo. Outras transições são falhas de regra de negócio. Repetir o status corrente
+devolve o detalhe e a revisão observada sem gravar; revisão obsoleta conflita antes
+desse no-op. Mudança substitui apenas a venda na posição original, valida o conjunto,
+pré-mapeia a resposta e grava uma vez. Projeções usam os status existentes do domínio;
+nenhuma Query adicional ou regra financeira foi introduzida.
+
+Verificações direcionadas:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~AlterarStatusVendaHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~AlterarStatusVendaSqliteTests
+```
+
+Resultado: 4 testes unitários e 1 integração passaram. Cobrem a matriz permitida e
+proibida, Ativo quitado não marcado como Prejuízo, enum inválido, no-op sem avanço,
+conflito obsoleto inclusive no no-op, venda ausente e preservação de IDs/alocações do
+histórico após reabertura. A integração usou apenas arquivo temporário.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
