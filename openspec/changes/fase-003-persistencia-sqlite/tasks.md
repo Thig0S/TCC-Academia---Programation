@@ -2,7 +2,7 @@
 
 Rastreabilidade: PRD/FON-041/RF-024–026/CA-049–052 → TDD/DEC-038 →
 proposal → `specs/persistencia-vendas/spec.md` → design/D1–D6 → SQL-01–05.
-Apply autorizado. SQL-01/1.1–1.3 estão concluídos; itens restantes seguem a ordem abaixo.
+Apply autorizado. SQL-01/1.1–1.3 e SQL-02/2.1 estão concluídos; itens restantes seguem a ordem abaixo.
 Não há decisão de produto bloqueante. Verificar segurança/disponibilidade dos pacotes
 antes de implementar código dependente; se precisar alterar baseline, revisar
 PRD/TDD/SDD primeiro.
@@ -21,7 +21,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 ## 2. SQL-02 — Preparação explícita e ciclo de arquivo
 
-- [ ] 2.1 Implementar inicializador interno com caminho absoluto/pai existente e migrations explícitas, sem EnsureCreated/seed/CLI e sem chamada no host. MSTest comprova criação em caminho novo, revisão zero, inicialização repetida preservando dados, caminho relativo/pai ausente recusados e banco alheio/schema futuro desconhecido intocados. Documentar operação, códigos e exemplos com caminhos sintéticos no README.
+- [x] 2.1 Implementar inicializador interno com caminho absoluto/pai existente e migrations explícitas, sem EnsureCreated/seed/CLI e sem chamada no host. MSTest comprova criação em caminho novo, revisão zero, inicialização repetida preservando dados, caminho relativo/pai ausente recusados e banco alheio/schema futuro desconhecido intocados. Documentar operação, códigos e exemplos com caminhos sintéticos no README.
 - [ ] 2.2 Implementar abertura por operação com foreign_keys, timeout finito de 5 s e modo que não crie arquivo na carga/escrita; conferir schema atual antes do uso. Testar arquivo ausente sem criação, arquivo ilegível/incompatível, bloqueio conhecido e liberação das conexões. Verificar que preparar/testar banco não altera Program.cs nem contrato health; documentar limites de acesso, lock de migration e ausência de recuperação automática.
 
 ## 3. SQL-03 — Reidratação integral e fidelidade
@@ -59,7 +59,15 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   cinco testes temporários de schema/constraints, format verify, `has-pending-model-
   changes` sem alterações e `openspec validate --strict` passaram. Scaffolding exigiu
   caminho absoluto e não criou o arquivo de design-time; detalhes e comandos em
-  `backend/README.md`. Ainda não há inicializador, leitura ou gravação executável.
+  `backend/README.md`. O inicializador foi entregue em SQL-02/2.1; leitura e gravação
+  executáveis permanecem pendentes.
+- SQL-02/2.1: inicializador interno validou caminho absoluto/pai, arquivo vazio ou
+  schema com histórico conhecido e migration futura/alheia sem alterações. Cria o
+  schema por `MigrateAsync` e insere a linha técnica de revisão zero sem seed de vendas;
+  repetição preserva revisão. Seis testes direcionados e os cinco testes de schema
+  passaram. Build Release da solução (zero avisos/erros), `dotnet format --verify-no-changes`,
+  validação estrita e `git diff --check` passaram após a implementação. API e contrato
+  de health não foram alterados. Carga/gravação permanecem pendentes.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

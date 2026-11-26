@@ -9,7 +9,8 @@ Base: PRD/FON-041/RF-024–026/CA-049–052, DEC-033/036/037 e correção
 separados, migrations explícitas, caminho absoluto fornecido, revisão global e
 ausência de exclusão. Apply da Change autorizado; SQL-01/1.1–1.3 concluíram
 dependências, isolamento da API, contrato, snapshot, resultados, schema e migration
-inicial, com testes direcionados. Inicialização, leitura e gravação ainda não foram
+inicial. SQL-02/2.1 implementou inicialização explícita, reconhecimento de schema e
+revisão zero. Abertura para carga/gravação, leitura e escrita ainda não foram
 implementadas.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
@@ -17,8 +18,9 @@ e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Cri
 valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
 validação de conjunto para provar integridade interna: a correção da entrada
 demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura,
-SQL-01/1.2 contrato puro em Aplicacao e SQL-01/1.3 contexto/modelos/migration em
-Infraestrutura. Ainda não há inicializador, mapeador, leitura ou gravação.
+SQL-01/1.2 contrato puro em Aplicacao, SQL-01/1.3 contexto/modelos/migration e
+SQL-02/2.1 inicializador em Infraestrutura. Ainda não há mapeador, abertura para
+operação de leitura/gravação, leitura ou escrita.
 Integração usa MSTest, referencia API e adiciona referência direta à Infraestrutura.
 README contém trechos históricos dizendo que não há
 domínio: prevalecem fontes e seção recente de evidências, sem reescrever o histórico.
@@ -83,7 +85,7 @@ Modelo relacional criado pela migration inicial (nomes sem acentos):
 
 | Tabela | Chave e conteúdo |
 | --- | --- |
-| EstadoArmazenamento | No máximo uma linha Id=1, Revisao long não negativa; inicializador SQL-02 deverá inserir revisão 0 |
+| EstadoArmazenamento | No máximo uma linha Id=1, Revisao long não negativa; SQL-02/2.1 insere revisão 0 idempotentemente |
 | Identificadores | Id TEXT BINARY global, Tipo Venda/Parcela/Recebimento |
 | Vendas | Id FK registro, Ordem única, status e quatro campos cliente, data e total-base |
 | Parcelas | Id FK registro, VendaId FK, Numero único por venda, base e vencimento |
@@ -170,13 +172,13 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.3 foram executados sob apply autorizado; SQL-02–5.3 permanecem
+SQL-01/1.1–1.3 e SQL-02/2.1 foram executados sob apply autorizado; SQL-02/2.2–5.3 permanecem
 pendentes e são executados conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
 | SQL-01 | Dependências, isolamento da API, contrato e schema/migration inicial (1.1–1.3 concluídos) | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
-| SQL-02 | Inicializador e ciclo de arquivo; depende SQL-01 | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem criação implícita |
+| SQL-02 | Inicializador explícito (2.1 concluído) e abertura por operação (2.2 pendente) | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem sobrescrita; operações não criam arquivo |
 | SQL-03 | Mapeamento e leitura integral; depende SQL-02 | Round-trip fiel, ordem, extremos, HIS-005–007 e leitura sem parcial |
 | SQL-04 | Escrita e revisão global; depende SQL-03 | Rollback, concorrência, cancelamento, sem exclusão/histórico perdido |
 | SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
@@ -216,16 +218,18 @@ Design/dotnet-ef 10.0.15 e SQLitePCLRaw 2.1.14.
 Confirmam token gerenciado, ausência de rowversion SQLite, migrations distintas de
 EnsureCreated e factory de design-time. SQL-01/1.3 criou e aplicou a migration inicial
 em arquivos temporários; cinco testes de schema/constraints passaram e não há mudança
-pendente do modelo. Não houve inicializador de produção, teste de leitura/gravação ou
-acesso a banco operacional. Restore bloqueado e auditoria foram executados em SQL-01/1.1.
+pendente do modelo. SQL-02/2.1 executou seis testes de inicialização em arquivos
+temporários, incluindo preservação byte a byte de bancos desconhecidos/futuros e
+revisão não reiniciada. Não houve carga/gravação de vendas nem acesso operacional.
+Restore bloqueado e auditoria foram executados em SQL-01/1.1.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
 DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
 bloqueantes remanescentes; implementação segue após esta atualização dos artefatos.
 
-Verificação documental desta proposta: `openspec validate fase-003-persistencia-sqlite
---strict` aprovado e `git diff --check` sem erro de whitespace (avisos LF→CRLF).
-Todos os quatro artefatos de planejamento existem; isso não comprova execução das
-tarefas ou compatibilidade binária das novas dependências.
+As validações estritas da Change e de whitespace foram executadas nas etapas aplicadas;
+os resultados de implementação estão discriminados em `tasks.md` e no README. O estado
+das tarefas ainda não representa conclusão da Change, e nenhuma verificação equivale a
+homologação operacional ou acesso a dados reais.
 
 ## DEC-037 — Domínio C# completo e independente (25/11/2026)
 

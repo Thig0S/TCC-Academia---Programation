@@ -112,10 +112,10 @@ depois do commit. Falha/conflito não entrega revisão nova. A interface é ass�
 por contrato, sem prometer I/O SQLite verdadeiramente assíncrono ou cancelamento
 imediato do provider.
 
-Em 25/11/2026, `ArmazenamentoVendasContractTests` passou: 6 testes direcionados,
-zero falhas; o build Release da solução passou com zero avisos/erros. SQL-01/1.2
-implementa somente contrato e tipos; ainda não há inicializador, leitura ou gravação
-de vendas.
+Ao concluir SQL-01/1.2 em 25/11/2026, `ArmazenamentoVendasContractTests` passou:
+6 testes direcionados, zero falhas; o build Release da solução passou com zero
+avisos/erros. Essa etapa implementou somente contrato e tipos; a inicialização foi
+entregue separadamente em SQL-02/2.1.
 
 ## Modelo SQLite e migration (SQL-01/1.3)
 
@@ -161,8 +161,43 @@ O caminho de scaffolding foi conferido inexistente antes e depois da geração; 
 base de desenvolvimento foi aberta. `has-pending-model-changes` informou que não há
 alteração entre modelo e snapshot. Os cinco testes MSTest de schema/migration passaram
 em arquivo temporário: criação das tabelas/tipos, factory sem criação, IDs globais,
-ordens, CHECK monetário, CPF repetido e FKs compostas. Não há ainda inicializador de
-produção nem leitura/gravação de snapshots.
+ordens, CHECK monetário, CPF repetido e FKs compostas. SQL-01/1.3 não incluía
+inicializador, leitura ou gravação; veja a entrega posterior SQL-02/2.1 abaixo.
+
+## Inicialização explícita (SQL-02/2.1)
+
+`InicializadorSqlite` é interno à Infraestrutura; não é registrado nem chamado pelo
+host da API e não expõe CLI. Exige caminho absoluto e diretório pai já existente.
+Quando o arquivo não existe, reserva o caminho com criação exclusiva; não substitui
+arquivo concorrente. Também aceita arquivo SQLite vazio. Antes de migrar qualquer
+arquivo não vazio, confere `application_id`/`user_version`, objetos SQLite, formato do
+histórico e se as migrations aplicadas formam um prefixo conhecido. Tabelas, índices,
+views/triggers alheios, migration futura ou schema não reconhecido retornam
+`schema-incompativel` sem executar migration nem alterar o arquivo. Códigos de caminho
+inválido e acesso/bloqueio também retornam mensagens seguras sem expor caminho ou SQL.
+
+Usa `Database.MigrateAsync` somente nesta operação explícita; nunca chama
+`EnsureCreated`, não aplica migrations na API e não cria dados de vendas de exemplo.
+Após as migrations, cria idempotentemente a linha de controle `Id=1, Revisao=0` com
+`ON CONFLICT DO NOTHING`; essa linha é estado técnico, não seed de vendas. Repetir a
+inicialização mantém a revisão atual e não altera registros existentes. Não apaga
+automaticamente `__EFMigrationsLock`: um lock com linha ativa resulta em
+`banco-ocupado`.
+
+Verificações da etapa em arquivos próprios sob `%TEMP%`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~InicializadorSqliteTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~VendasDbContextSchemaTests
+```
+
+Os seis testes do inicializador e os cinco testes de schema passaram. Cobrem arquivo
+novo/vazio, revisão zero, repetição sem reset, recusa de caminho relativo/pai ausente,
+banco alheio e histórico futuro byte a byte inalterados. Isso verifica somente a
+inicialização explícita; carga/gravação e abertura por operação sem criação pertencem
+às etapas seguintes.
 
 ## Estado de verificação
 
