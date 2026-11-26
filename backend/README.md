@@ -451,6 +451,32 @@ confirmam uma carga por chamada, caminho/referência/revisão, zero inicializaç
 consulta SQLite via `ISender` após reabertura preserva revisão e conjunto. Banco,
 conexões e providers dos testes usam temporários e cleanup.
 
+## Consulta do resumo financeiro (APP-05/5.2)
+
+`ConsultarResumoQuery` lê um snapshot com a referência recebida e delega integralmente
+a `ConjuntoVendas.Projetar`. `ResumoResposta` transporta, em centavos inteiros, total
+em aberto, valores em atraso, recebido no mês, quantidade de vendas Ativas (incluindo
+quitadas), revisão e referência. A camada de aplicação não recompõe nem recalcula os
+totais; recebimentos mensais de todos os status e os indicadores operacionais de Ativas
+mantêm a semântica do domínio. A consulta não prepara nem grava armazenamento.
+
+Verificações direcionadas, SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarResumoHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarResumoSqliteTests
+```
+
+Resultado: 2 unitários e 2 de integração passaram. Oráculo literal com entrada e lote
+na mesma venda reconcilia aberto 20.000, atrasado 10.000, recebido no mês 50.000 e
+3 vendas Ativas; o mês inclui recebimentos de vendas Ativas, Inativa e Prejuízo, com
+entrada e lote computados uma vez. UnitTests conferem uma carga, caminho/referência/
+revisão e zero Init/Save, conjunto vazio zerado e valor no limite seguro de centavos.
+SQLite em provider reaberto confirma revisão 1 e ausência de alteração; banco e pools
+foram temporários e limpos.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
