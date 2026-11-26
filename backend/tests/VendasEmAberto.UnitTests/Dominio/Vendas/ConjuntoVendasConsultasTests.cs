@@ -78,13 +78,114 @@ public sealed class ConjuntoVendasConsultasTests
 
         Assert.AreEqual(20_000, periodo.Recebidos.Centavos);
         CollectionAssert.AreEqual(
-            new[] { "venda-inicio", "venda-fim" },
+            new[] { "venda-inicio" },
             periodo.Vendas.Select(venda => venda.Id).ToArray());
-        Assert.AreEqual(StatusAdministrativoVenda.Inativo, periodo.Vendas[1].StatusAdministrativo);
         Assert.AreEqual(new DateOnly(2027, 2, 1), periodo.Inicio);
         Assert.AreEqual(new DateOnly(2027, 2, 28), periodo.Fim);
         Assert.ThrowsExactly<NotSupportedException>(() =>
             ((IList<Venda>)periodo.Vendas)[0] = anterior);
+    }
+
+    [TestMethod]
+    public void ConsultarPeriodo_FiltraVendasAtivasMasPreservaRecebimentosDeTodosOsStatusEOrdem()
+    {
+        var ativaQuitada = ObterSucesso(RegistrarPagamento(
+            CriarVenda("ativa-quitada", 10_000, 1, new DateOnly(2027, 2, 28)),
+            "recebimento-ativa-quitada",
+            new DateOnly(2027, 2, 28)));
+        var ativaAberta = ObterSucesso(RegistrarPagamento(
+            CriarVenda("ativa-aberta", 20_000, 2, new DateOnly(2027, 2, 1)),
+            "recebimento-ativa-aberta",
+            new DateOnly(2027, 2, 1)));
+        var inativa = ObterSucesso(ObterSucesso(RegistrarPagamento(
+                CriarVenda("inativa", 10_000, 1, new DateOnly(2027, 2, 10)),
+                "recebimento-inativa",
+                new DateOnly(2027, 2, 15)))
+            .AlterarStatusAdministrativo(StatusAdministrativoVenda.Inativo));
+        var prejuizo = ObterSucesso(ObterSucesso(RegistrarPagamento(
+                CriarVenda("prejuizo", 20_000, 2, new DateOnly(2027, 2, 12)),
+                "recebimento-prejuizo",
+                new DateOnly(2027, 2, 16)))
+            .AlterarStatusAdministrativo(StatusAdministrativoVenda.Prejuizo));
+        var ativaForaDoPeriodo = ObterSucesso(RegistrarPagamento(
+            CriarVenda("ativa-fora", 10_000, 1, new DateOnly(2027, 1, 31)),
+            "recebimento-ativa-fora",
+            new DateOnly(2027, 2, 20)));
+        var pagamentosForaDoPeriodo = ObterSucesso(RegistrarPagamento(
+            ObterSucesso(RegistrarPagamento(
+                CriarVenda("ativa-bordas-externas", 20_000, 2, new DateOnly(2027, 1, 31)),
+                "recebimento-antes",
+                new DateOnly(2027, 1, 31))),
+            "recebimento-depois",
+            new DateOnly(2027, 3, 1),
+            1));
+        var vendasOriginais = new[]
+        {
+            ativaQuitada,
+            ativaAberta,
+            inativa,
+            prejuizo,
+            ativaForaDoPeriodo,
+            pagamentosForaDoPeriodo
+        };
+        var conjunto = ObterSucesso(ConjuntoVendas.Criar(vendasOriginais));
+
+        var periodo = ObterSucesso(conjunto.ConsultarPeriodo(
+            new DateOnly(2027, 2, 1),
+            new DateOnly(2027, 2, 28)));
+        var periodoRepetido = ObterSucesso(conjunto.ConsultarPeriodo(
+            new DateOnly(2027, 2, 1),
+            new DateOnly(2027, 2, 28)));
+
+        Assert.AreEqual(50_000, periodo.Recebidos.Centavos);
+        CollectionAssert.AreEqual(
+            new[] { "ativa-quitada", "ativa-aberta" },
+            periodo.Vendas.Select(venda => venda.Id).ToArray());
+        Assert.AreEqual(50_000, periodoRepetido.Recebidos.Centavos);
+        CollectionAssert.AreEqual(
+            new[] { "ativa-quitada", "ativa-aberta" },
+            periodoRepetido.Vendas.Select(venda => venda.Id).ToArray());
+        Assert.AreEqual(6, conjunto.Vendas.Count);
+        for (var indice = 0; indice < vendasOriginais.Length; indice++)
+        {
+            Assert.AreSame(vendasOriginais[indice], conjunto.Vendas[indice]);
+        }
+
+        Assert.AreEqual(StatusAdministrativoVenda.Inativo, conjunto.Vendas[2].StatusAdministrativo);
+        Assert.AreEqual(StatusAdministrativoVenda.Prejuizo, conjunto.Vendas[3].StatusAdministrativo);
+        Assert.AreEqual(10_000, conjunto.Vendas[5].Recebimentos[0].Valor.Centavos);
+        Assert.AreEqual(new DateOnly(2027, 1, 31), conjunto.Vendas[5].Recebimentos[0].Data);
+        Assert.AreEqual(10_000, conjunto.Vendas[5].Recebimentos[1].Valor.Centavos);
+        Assert.AreEqual(new DateOnly(2027, 3, 1), conjunto.Vendas[5].Recebimentos[1].Data);
+    }
+
+    [TestMethod]
+    public void ConsultarPeriodo_SemVendasAtivasPreservaRecebimentosDeInativasEPrejuizo()
+    {
+        var inativa = ObterSucesso(ObterSucesso(RegistrarPagamento(
+                CriarVenda("somente-inativa", 10_000, 1, new DateOnly(2027, 2, 10)),
+                "recebimento-inativa-periodo",
+                new DateOnly(2027, 2, 15)))
+            .AlterarStatusAdministrativo(StatusAdministrativoVenda.Inativo));
+        var prejuizo = ObterSucesso(ObterSucesso(RegistrarPagamento(
+                CriarVenda("somente-prejuizo", 20_000, 2, new DateOnly(2027, 2, 12)),
+                "recebimento-prejuizo-periodo",
+                new DateOnly(2027, 2, 16)))
+            .AlterarStatusAdministrativo(StatusAdministrativoVenda.Prejuizo));
+        var conjunto = ObterSucesso(ConjuntoVendas.Criar([inativa, prejuizo]));
+
+        var periodo = ObterSucesso(conjunto.ConsultarPeriodo(
+            new DateOnly(2027, 2, 1),
+            new DateOnly(2027, 2, 28)));
+
+        Assert.AreEqual(0, periodo.Vendas.Count);
+        Assert.AreEqual(20_000, periodo.Recebidos.Centavos);
+        Assert.AreSame(inativa, conjunto.Vendas[0]);
+        Assert.AreSame(prejuizo, conjunto.Vendas[1]);
+        Assert.AreEqual(StatusAdministrativoVenda.Inativo, conjunto.Vendas[0].StatusAdministrativo);
+        Assert.AreEqual(StatusAdministrativoVenda.Prejuizo, conjunto.Vendas[1].StatusAdministrativo);
+        Assert.AreEqual(1, conjunto.Vendas[0].Recebimentos.Count);
+        Assert.AreEqual(1, conjunto.Vendas[1].Recebimentos.Count);
     }
 
     [TestMethod]
@@ -172,11 +273,12 @@ public sealed class ConjuntoVendasConsultasTests
     private static ResultadoDominio<Venda> RegistrarPagamento(
         Venda venda,
         string recebimentoId,
-        DateOnly data) =>
+        DateOnly data,
+        int indiceParcela = 0) =>
         venda.RegistrarPagamento(
             recebimentoId,
-            venda.Parcelas[0].Id,
-            DinheiroValido(venda.Parcelas[0].ValorBase.Centavos),
+            venda.Parcelas[indiceParcela].Id,
+            DinheiroValido(venda.Parcelas[indiceParcela].ValorBase.Centavos),
             data,
             FormaPagamento.Pix,
             ReferenciaCriacao);
