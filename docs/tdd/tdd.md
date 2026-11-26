@@ -259,7 +259,10 @@ novas/lockfiles; restore `--locked-mode`; build Release `--no-restore`; `dotnet 
 --no-restore`; auditoria transitiva e inspeção do grafo da API sem EF/SQLite. Smoke real
 mantém health/loopback/404/nenhum banco e encerra somente o processo próprio. Frontend
 test/build com API desligada; restauração lockfile-only se necessária, sem atualizar
-manifestos ou encerrar servidores alheios. Não instalar/rebaixar SDK para contornar erro.
+manifestos ou encerrar servidores alheios. Se o SDK definido em `backend/global.json`
+não estiver instalado, é permitido instalar a versão exata/compatível somente em
+`%LOCALAPPDATA%\\Temp\\opencode\\dotnet-10.0.404`, usando a distribuição oficial,
+sem alterar o pin, instalar/rebaixar SDK globalmente ou afetar outras ferramentas.
 Documentar resultados reais no README e tarefas durante apply, não nesta proposta.
 
 ### Roadmap de implementação — obrigatório

@@ -11,8 +11,10 @@ Cada funcionalidade deve ter testes unitários/integração pertinentes, documen
 no `backend/README.md`, atualização desta lista e commit próprio em português após
 verificação. Não juntar casos de uso independentes num único commit por marco.
 Planejamento tem commit separado; sem PR antecipado. Builds/testes sequenciais na
-mesma saída; sem SDK instalado/rebaixado, dados reais, serviços alheios encerrados
-ou alterações de outras Changes. Resolver bloqueio técnico antes de código dependente.
+mesma saída; sem dados reais, serviços alheios encerrados ou alterações de outras
+Changes. Se necessário, é permitido instalar somente o SDK 10.0.404 em
+`%LOCALAPPDATA%\\Temp\\opencode\\dotnet-10.0.404` pela distribuição oficial, sem
+alterar o pin nem a instalação global. Resolver bloqueio técnico antes de código dependente.
 
 ## 1. APP-01 — Dependências, contratos e composição interna
 
