@@ -2,7 +2,7 @@
 
 Rastreabilidade: PRD/FON-041/RF-024–026/CA-049–052 → TDD/DEC-038 →
 proposal → `specs/persistencia-vendas/spec.md` → design/D1–D6 → SQL-01–05.
-Apply autorizado. SQL-01/1.1–1.2 estão concluídos; itens restantes seguem a ordem abaixo.
+Apply autorizado. SQL-01/1.1–1.3 estão concluídos; itens restantes seguem a ordem abaixo.
 Não há decisão de produto bloqueante. Verificar segurança/disponibilidade dos pacotes
 antes de implementar código dependente; se precisar alterar baseline, revisar
 PRD/TDD/SDD primeiro.
@@ -17,7 +17,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 - [x] 1.1 Confirmar SDK 10.0.404/runtime 10.0.15/MSTest 4.5.3 conforme DEC-036 e revisar metadados/licenças/segurança de EF Core Sqlite/Design e dotnet-ef 10.0.15 e transitivas/nativas. Fixar pacotes apenas na Infraestrutura, Design privado e ferramenta local sob backend; remover a referência Api → Infraestrutura para que EF/SQLite não transitem ao host técnico. Gerar lockfiles e comprovar restore bloqueado, grafo da API sem dependência de persistência e auditoria sem vulnerabilidades conhecidas não tratadas. Registrar fontes, versões efetivas, comandos e limitações em backend/README.md; não instalar MediatR, FluentResults ou ferramenta global.
 - [x] 1.2 Criar contrato de armazenamento, snapshot imutável/revisão e resultados tipados em Aplicacao/Persistencia, sem HTTP/EF e sem handlers. Cobrir sucesso/falha sem valor na falha, códigos de DEC-038 e isolamento do snapshot em MSTest, com referência direta a Aplicacao quando necessária. Documentar assinatura e semântica de revisão no README; verificar build e testes direcionados.
-- [ ] 1.3 Criar modelos de linha, VendasDbContext/configurações e migration inicial/ModelSnapshot em Infraestrutura/Persistencia/Sqlite conforme D2/DEC-038. Incluir registro global de IDs, ordens, dinheiro INTEGER, datas TEXT, enums, cliente por venda, FKs compostas e exclusão restrita. Adicionar factory design-time sem iniciar API ou criar banco ao gerar migration. Conferir ausência de mudança pendente entre modelo/migration e inspecionar schema gerado; MSTest em arquivo temporário comprova FKs, colisões entre tipos, ordens únicas, CHECK monetário e CPF repetido permitido. Documentar modelo e comandos reais de scaffolding no README.
+- [x] 1.3 Criar modelos de linha, VendasDbContext/configurações e migration inicial/ModelSnapshot em Infraestrutura/Persistencia/Sqlite conforme D2/DEC-038. Incluir registro global de IDs, ordens, dinheiro INTEGER, datas TEXT, enums, cliente por venda, FKs compostas e exclusão restrita. Adicionar factory design-time sem iniciar API ou criar banco ao gerar migration. Conferir ausência de mudança pendente entre modelo/migration e inspecionar schema gerado; MSTest em arquivo temporário comprova FKs, colisões entre tipos, ordens únicas, CHECK monetário e CPF repetido permitido. Documentar modelo e comandos reais de scaffolding no README.
 
 ## 2. SQL-02 — Preparação explícita e ciclo de arquivo
 
@@ -52,9 +52,14 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   comandos e limitações registrados no `backend/README.md`.
 - SQL-01/1.2: contrato, snapshot/revisão, resultados e códigos estáveis criados em
   Aplicacao, sem HTTP/EF; seis testes direcionados passaram e o build Release da
-  solução passou sem avisos/erros. README documenta assinatura e semântica. Não há
-  contexto, migration, banco ou persistência executável; esses itens permanecem
-  pendentes.
+  solução passou sem avisos/erros. README documenta assinatura e semântica; esta
+  entrega isolada não incluía schema nem acesso a banco.
+- SQL-01/1.3: modelos de linha, contexto/configurações, factory design-time, migration
+  inicial e snapshot criados. Restore bloqueado, build Release (zero avisos/erros),
+  cinco testes temporários de schema/constraints, format verify, `has-pending-model-
+  changes` sem alterações e `openspec validate --strict` passaram. Scaffolding exigiu
+  caminho absoluto e não criou o arquivo de design-time; detalhes e comandos em
+  `backend/README.md`. Ainda não há inicializador, leitura ou gravação executável.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

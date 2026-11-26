@@ -7,18 +7,20 @@
 Base: PRD/FON-041/RF-024–026/CA-049–052, DEC-033/036/037 e correção
 `0280d3b`. Escopo/arquitetura confirmados no Harness: EF Core/SQLite, modelos
 separados, migrations explícitas, caminho absoluto fornecido, revisão global e
-ausência de exclusão. Apply da Change autorizado; SQL-01/1.1–1.2 concluíram
-dependências, isolamento da API, contrato, snapshot, resultados e testes direcionados.
-Schema/migration e armazenamento executável ainda não foram iniciados.
+ausência de exclusão. Apply da Change autorizado; SQL-01/1.1–1.3 concluíram
+dependências, isolamento da API, contrato, snapshot, resultados, schema e migration
+inicial, com testes direcionados. Inicialização, leitura e gravação ainda não foram
+implementadas.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
 valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
 validação de conjunto para provar integridade interna: a correção da entrada
-demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura e
-SQL-01/1.2 adicionou o contrato puro em Aplicacao; ainda não há contexto ou código
-executável de persistência.
-Integração usa MSTest e referencia API. README contém trechos históricos dizendo que não há
+demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura,
+SQL-01/1.2 contrato puro em Aplicacao e SQL-01/1.3 contexto/modelos/migration em
+Infraestrutura. Ainda não há inicializador, mapeador, leitura ou gravação.
+Integração usa MSTest, referencia API e adiciona referência direta à Infraestrutura.
+README contém trechos históricos dizendo que não há
 domínio: prevalecem fontes e seção recente de evidências, sem reescrever o histórico.
 
 ### Arquitetura e estrutura propostas
@@ -34,7 +36,8 @@ alterar health/endpoints. Em Aplicacao, SQL-01/1.2 criou o contrato
 `Persistencia/IArmazenamentoVendas.cs`, snapshot e resultados próprios de armazenamento;
 não são handlers nem substituem FluentResults dos futuros casos de uso. Em
 Infraestrutura, `Persistencia/Sqlite/` contém `VendasDbContext`, modelos de linha,
-configurações, mapeador, inicializador, implementação e `Migrations/`. Testes em
+configurações e migration inicial; mapeador, inicializador e implementação seguem
+pendentes. Testes em
 `IntegrationTests/Persistencia/`, com referência direta a Infraestrutura. Dominio
 permanece sem ORM/pacotes/setters públicos. API não registra nem chama persistência.
 
@@ -74,13 +77,13 @@ conjunto foi rejeitada por não garantir IDs/somas globais. Snapshot inteiro tem
 custo proporcional à base, aceito neste incremento sem promessa de escala; não
 introduzir cache, CQRS persistente ou repositório genérico.
 
-### Dados persistidos e restrições
+### Dados persistidos e restrições implementadas em SQL-01/1.3
 
-Modelo relacional proposto (nomes sem acentos):
+Modelo relacional criado pela migration inicial (nomes sem acentos):
 
 | Tabela | Chave e conteúdo |
 | --- | --- |
-| EstadoArmazenamento | Uma linha Id=1, Revisao long não negativa iniciando em 0 |
+| EstadoArmazenamento | No máximo uma linha Id=1, Revisao long não negativa; inicializador SQL-02 deverá inserir revisão 0 |
 | Identificadores | Id TEXT BINARY global, Tipo Venda/Parcela/Recebimento |
 | Vendas | Id FK registro, Ordem única, status e quatro campos cliente, data e total-base |
 | Parcelas | Id FK registro, VendaId FK, Numero único por venda, base e vencimento |
@@ -167,12 +170,12 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.2 foram executados sob apply autorizado; SQL-01/1.3–5.3 permanecem
+SQL-01/1.1–1.3 foram executados sob apply autorizado; SQL-02–5.3 permanecem
 pendentes e são executados conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
-| SQL-01 | Dependências e isolamento da API, contrato (1.1–1.2 concluídos), modelo, constraints e migration | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
+| SQL-01 | Dependências, isolamento da API, contrato e schema/migration inicial (1.1–1.3 concluídos) | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
 | SQL-02 | Inicializador e ciclo de arquivo; depende SQL-01 | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem criação implícita |
 | SQL-03 | Mapeamento e leitura integral; depende SQL-02 | Round-trip fiel, ordem, extremos, HIS-005–007 e leitura sem parcial |
 | SQL-04 | Escrita e revisão global; depende SQL-03 | Rollback, concorrência, cancelamento, sem exclusão/histórico perdido |
@@ -197,8 +200,10 @@ em `backend/`, além de tool restore e auditoria de transitivas/nativas; ferrame
 e pacotes novos exigem restore inicial e lockfiles atualizados antes do modo bloqueado.
 SQL-01/1.1 executou restore bloqueado, tool restore, versão da ferramenta, build
 Release, conferência do grafo da API e auditoria NuGet. SQL-01/1.2 executou build
-Release e seis testes direcionados do contrato; registrar execuções subsequentes e
-SDK/contagens reais no README.
+Release e seis testes direcionados do contrato. SQL-01/1.3 executou scaffolding sem
+criar arquivo no caminho de design-time, `has-pending-model-changes` e cinco testes
+SQLite de schema/constraints. Registrar execuções subsequentes e SDK/contagens reais
+no README.
 Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
 testes/build. E2E/visual/zoom não
 exigidos porque não há alteração UI, mas registrar os não executados. Benchmark,
@@ -209,9 +214,10 @@ guias SQLite limitations, concurrency, transactions, migrations/applying e
 cli/dbcontext-creation; NuGet `Microsoft.EntityFrameworkCore.Sqlite/10.0.15`,
 Design/dotnet-ef 10.0.15 e SQLitePCLRaw 2.1.14.
 Confirmam token gerenciado, ausência de rowversion SQLite, migrations distintas de
-EnsureCreated e factory de design-time. SQL-01/1.2 executou seis testes direcionados
-de contrato e build Release; ainda não houve migration, teste SQLite ou acesso a
-banco. Restore bloqueado e auditoria de dependências foram executados em SQL-01/1.1.
+EnsureCreated e factory de design-time. SQL-01/1.3 criou e aplicou a migration inicial
+em arquivos temporários; cinco testes de schema/constraints passaram e não há mudança
+pendente do modelo. Não houve inicializador de produção, teste de leitura/gravação ou
+acesso a banco operacional. Restore bloqueado e auditoria foram executados em SQL-01/1.1.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
 DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
 bloqueantes remanescentes; implementação segue após esta atualização dos artefatos.

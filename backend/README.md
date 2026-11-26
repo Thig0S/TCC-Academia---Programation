@@ -113,9 +113,56 @@ por contrato, sem prometer I/O SQLite verdadeiramente assíncrono ou cancelament
 imediato do provider.
 
 Em 25/11/2026, `ArmazenamentoVendasContractTests` passou: 6 testes direcionados,
-zero falhas; o build Release da solução passou com zero avisos/erros. Essa etapa
-implementa somente contratos e tipos: não há contexto EF, migration, conexão ou
-armazenamento executável.
+zero falhas; o build Release da solução passou com zero avisos/erros. SQL-01/1.2
+implementa somente contrato e tipos; ainda não há inicializador, leitura ou gravação
+de vendas.
+
+## Modelo SQLite e migration (SQL-01/1.3)
+
+EF e modelos de linha ficam em `VendasEmAberto.Infraestrutura/Persistencia/Sqlite/`;
+nenhum tipo persistente é entidade do domínio. A migration `Inicial` cria seis
+tabelas da aplicação; EF administra `__EFMigrationsHistory` separadamente:
+
+| Tabela | Conteúdo e garantias |
+| --- | --- |
+| `EstadoArmazenamento` | Chave fixa `Id=1`, revisão `INTEGER >= 0`; a migration não insere estado inicial. |
+| `Identificadores` | ID opaco `TEXT COLLATE BINARY` como chave global, tipo `INTEGER` restrito a Venda/Parcela/Recebimento. |
+| `Vendas` | Uma linha por venda, dados de cliente próprios, status enum validado, data civil `TEXT`, total-base em centavos `INTEGER` seguro e ordem global única. CPF não tem índice único. |
+| `Parcelas` | ID global, vínculo restrito à venda, número único por venda, base positiva em centavos e vencimento `TEXT`. |
+| `Recebimentos` | ID global, venda, ordem única por venda, data `TEXT`, forma/origem enum validados, valor/acréscimo em centavos e observação nullable. |
+| `Alocacoes` | Ordem como parte da chave primária; FKs compostas `(VendaId, RecebimentoId)` e `(VendaId, ParcelaId)` impedem cruzar vendas. Exclusões são restritas. |
+
+Todas as colunas monetárias são `INTEGER` com CHECK no intervalo seguro de centavos;
+datas são `TEXT` para `DateOnly`; enums persistem como `INTEGER` com CHECK de valores
+conhecidos. IDs usam collation BINARY. FKs e constraints impedem órfãos, duplicidade
+de ordem/número e alocações entre vendas. A validação de tipo da linha contra o tipo
+registrado também será repetida pelo mapeador de leitura; CPF pode se repetir entre
+vendas.
+
+`VendasDbContextFactory` de design-time exige `--database` e caminho absoluto; usa
+SQLite em modo `ReadWrite` e não chama migrations nem cria arquivo ao construir o
+contexto. Comandos executados em `backend/`:
+
+```powershell
+dotnet tool run dotnet-ef -- migrations add Inicial `
+  --project src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj `
+  --startup-project src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj `
+  --output-dir Persistencia/Sqlite/Migrations `
+  -- --database "$env:LOCALAPPDATA\Temp\opencode\fase003-schema-scaffold.db"
+dotnet tool run dotnet-ef -- migrations has-pending-model-changes `
+  --project src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj `
+  --startup-project src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj `
+  -- --database "$env:LOCALAPPDATA\Temp\opencode\fase003-schema-scaffold.db"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~VendasDbContextSchemaTests
+```
+
+O caminho de scaffolding foi conferido inexistente antes e depois da geração; nenhuma
+base de desenvolvimento foi aberta. `has-pending-model-changes` informou que não há
+alteração entre modelo e snapshot. Os cinco testes MSTest de schema/migration passaram
+em arquivo temporário: criação das tabelas/tipos, factory sem criação, IDs globais,
+ordens, CHECK monetário, CPF repetido e FKs compostas. Não há ainda inicializador de
+produção nem leitura/gravação de snapshots.
 
 ## Estado de verificação
 
