@@ -244,6 +244,26 @@ temporários descartados pelos testes. Em produção, somente
 `PreparacaoArmazenamentoVendas.PrepararAsync` chama `InicializarAsync`; nesta etapa,
 nenhum handler ou consulta usa o serviço de preparação.
 
+## Contrato HTTP comum (API-01/1.1)
+
+`Api/Contratos/` concentra leitura explícita de JSON/query e tipos exclusivos do fio,
+sem expor DTOs internos, domínio ou `Result`. O leitor de body reconhece apenas os
+campos declarados por cada endpoint; campos desconhecidos são ignorados, chaves
+conhecidas repetidas são recusadas e valores de ID/texto não passam por `Trim` ou
+segunda decodificação. Parâmetros query obrigatórios precisam ocorrer exatamente uma
+vez. Datas são civis `yyyy-MM-dd`; centavos aceitam token inteiro entre zero e
+`9.007.199.254.740.991`; enums aceitam somente nomes textuais conhecidos; revisão usa
+string decimal canônica até `long.MaxValue`. O wrapper `RevisaoApi` aplica a forma
+textual somente às revisões; não existe conversor global de `long`, então centavos
+continuam números JSON. Saídas usam camelCase, enums textuais e datas ISO exatas.
+
+Verificação direcionada desta funcionalidade: testes `ContratoApiJsonTests`,
+`LeitorObjetoJsonTests` e `ParametrosQueryApiTests` no projeto UnitTests cobrem os
+extremos, ausência/null/default, tipos incorretos, duplicatas, enums, IDs sem
+normalização e propriedades desconhecidas. O adaptador de erros HTTP e a tradução
+dessas falhas para Problem Details pertencem à tarefa API-01/1.2; endpoints e mappers
+específicos serão adicionados junto a cada operação.
+
 ## Cadastro de venda (APP-02/2.1)
 
 `CadastrarVendaCommand` recebe os quatro campos do cliente, data civil, total em
