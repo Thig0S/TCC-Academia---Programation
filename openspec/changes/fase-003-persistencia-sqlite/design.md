@@ -10,9 +10,10 @@ Apply autorizado. SQL-01/1.1 verificou versões/licenças, restore bloqueado, gr
 isolado da API, build Release e auditoria; SQL-01/1.2 implementou contrato, snapshot,
 resultados e testes direcionados; SQL-01/1.3 implementou modelo relacional, contexto,
 factory design-time e migration, com testes temporários de constraints; SQL-02/2.1
-implementou inicializador explícito e testes de arquivo novo, repetição e recusa de
-bancos desconhecidos/futuros. A decisão de remover a referência preexistente Api →
-Infraestrutura foi confirmada no Harness.
+implementou inicializador explícito e SQL-02/2.2 abertura por operação com comparação
+do schema físico. Testes cobriram arquivo novo, repetição, recusa de bancos
+desconhecidos/futuros, modo sem criação, lock e liberação de conexão. A decisão de
+remover a referência preexistente Api → Infraestrutura foi confirmada no Harness.
 
 Inspeção realizada:
 
@@ -23,8 +24,9 @@ Inspeção realizada:
 - `ConjuntoVendas.cs`: valida IDs entre tipos e raízes e totais de todos os status;
   não substitui validação de cada histórico. Não publica/persiste candidatos.
 - Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura tem contexto,
-  entidades de linha, configurações, migration inicial e inicializador interno. Ainda
-  não há repositório, leitura ou gravação. API referencia somente Aplicacao; testes de persistência
+  entidades de linha, configurações, migration inicial, inicializador interno e sessão
+  de abertura validada. Ainda não há implementação do contrato, leitura ou gravação.
+  API referencia somente Aplicacao; testes de persistência
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
   aprovados. Sem reexecução nesta revisão. O caso positivo HIS-007 é independente,
@@ -197,8 +199,9 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
    entregaram contrato/schema/migration inicial.
 2. SQL-02/2.1: implementar inicializador explícito, reconhecimento de banco e estado
    inicial; concluído em arquivos temporários.
-3. SQL-02/2.2: implementar abertura por operação sem criação implícita e conferir schema
-   com testes de arquivo vazio/reaplicação/recusa. Não há base anterior a converter.
+3. SQL-02/2.2: abrir por operação sem criação implícita, validar schema/migration,
+   foreign_keys, timeout e descarte de conexão; concluído em arquivos temporários. Não
+   há base anterior a converter.
 4. SQL-03: leitura fiel e inválida testada; SQL-04: gravação/revisão com rollback,
    concorrência, cancelamento e preservação. Testes/documentação em cada entrega.
 5. SQL-05: restore bloqueado, build Release, toda suíte MSTest, format, smoke real

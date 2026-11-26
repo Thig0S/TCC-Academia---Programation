@@ -2,7 +2,7 @@
 
 Rastreabilidade: PRD/FON-041/RF-024–026/CA-049–052 → TDD/DEC-038 →
 proposal → `specs/persistencia-vendas/spec.md` → design/D1–D6 → SQL-01–05.
-Apply autorizado. SQL-01/1.1–1.3 e SQL-02/2.1 estão concluídos; itens restantes seguem a ordem abaixo.
+Apply autorizado. SQL-01/1.1–1.3 e SQL-02/2.1–2.2 estão concluídos; itens restantes seguem a ordem abaixo.
 Não há decisão de produto bloqueante. Verificar segurança/disponibilidade dos pacotes
 antes de implementar código dependente; se precisar alterar baseline, revisar
 PRD/TDD/SDD primeiro.
@@ -22,7 +22,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 ## 2. SQL-02 — Preparação explícita e ciclo de arquivo
 
 - [x] 2.1 Implementar inicializador interno com caminho absoluto/pai existente e migrations explícitas, sem EnsureCreated/seed/CLI e sem chamada no host. MSTest comprova criação em caminho novo, revisão zero, inicialização repetida preservando dados, caminho relativo/pai ausente recusados e banco alheio/schema futuro desconhecido intocados. Documentar operação, códigos e exemplos com caminhos sintéticos no README.
-- [ ] 2.2 Implementar abertura por operação com foreign_keys, timeout finito de 5 s e modo que não crie arquivo na carga/escrita; conferir schema atual antes do uso. Testar arquivo ausente sem criação, arquivo ilegível/incompatível, bloqueio conhecido e liberação das conexões. Verificar que preparar/testar banco não altera Program.cs nem contrato health; documentar limites de acesso, lock de migration e ausência de recuperação automática.
+- [x] 2.2 Implementar abertura por operação com foreign_keys, timeout finito de 5 s e modo que não crie arquivo na carga/escrita; conferir schema atual antes do uso. Testar arquivo ausente sem criação, arquivo ilegível/incompatível, bloqueio conhecido e liberação das conexões. Verificar que preparar/testar banco não altera Program.cs nem contrato health; documentar limites de acesso, lock de migration e ausência de recuperação automática.
 
 ## 3. SQL-03 — Reidratação integral e fidelidade
 
@@ -68,6 +68,14 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   passaram. Build Release da solução (zero avisos/erros), `dotnet format --verify-no-changes`,
   validação estrita e `git diff --check` passaram após a implementação. API e contrato
   de health não foram alterados. Carga/gravação permanecem pendentes.
+- SQL-02/2.2: `AbridorVendasSqlite` abre sessão descartável apenas para arquivo
+  existente, em `ReadWrite`, foreign_keys habilitado e timeout de 5 s. Valida migration
+  completa e modelo físico (colunas, PK, índices, CHECKs e FKs), linha de revisão e
+  lock ativo; não cria banco, migra, limpa lock nem faz retry. Seis testes direcionados
+  passaram para ausência, arquivo incompatível sem alteração, schema corrente/adulterado,
+  lock preservado e liberação por descarte. Reexecutados os seis testes de 2.1 e cinco
+  de schema. Build Release (zero avisos/erros) e format verify passaram; diff confirma
+  que `Program.cs`/health não foram alterados. Ainda não há leitura ou gravação de vendas.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

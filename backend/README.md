@@ -196,8 +196,30 @@ dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTest
 Os seis testes do inicializador e os cinco testes de schema passaram. Cobrem arquivo
 novo/vazio, revisão zero, repetição sem reset, recusa de caminho relativo/pai ausente,
 banco alheio e histórico futuro byte a byte inalterados. Isso verifica somente a
-inicialização explícita; carga/gravação e abertura por operação sem criação pertencem
-às etapas seguintes.
+inicialização explícita; carga e gravação pertencem às etapas seguintes.
+
+## Abertura por operação (SQL-02/2.2)
+
+`AbridorVendasSqlite` abre uma sessão interna por operação e retorna `banco-ausente`
+sem criar arquivo quando o caminho não existe. Só aceita migration history completa
+e conhecida e schema físico corrente: confere tabelas/colunas, tipos, nulabilidade,
+chaves primárias, índices nomeados, CHECKs e FKs contra o modelo EF, além da linha de
+revisão. Não executa migrations nem tenta reparar schema. Banco vazio, parcial, futuro,
+adulterado ou ilegível é recusado antes de entregar a sessão.
+
+A conexão usa `Mode=ReadWrite` (nunca `ReadWriteCreate`), `ForeignKeys=true`, timeout
+finito de cinco segundos e pooling desabilitado. A sessão é `IAsyncDisposable`; seu
+contexto deve ser descartado ao final da operação. Linha ativa em
+`__EFMigrationsLock` retorna `banco-ocupado`; nenhuma linha/tabela de lock é apagada
+automaticamente. Timeout não aciona retry. O helper não está ligado à API nem torna
+leitura/gravação funcional: essas operações ainda aguardam seus marcos SQL-03/04.
+
+`AbridorVendasSqliteTests` passou com seis casos em arquivos temporários: ausência
+sem criação, arquivo não SQLite preservado, schema corrente com modo/FKs/timeout
+esperados, coluna alterada recusada, lock preservado como ocupado e liberação da
+conexão que permite mover o arquivo. Junto aos seis testes do inicializador e cinco
+de schema, são 17 testes direcionados aprovados. `Program.cs` e endpoints/health não
+foram alterados; a API permanece sem dependência da Infraestrutura.
 
 ## Estado de verificação
 
