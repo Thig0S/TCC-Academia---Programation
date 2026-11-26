@@ -27,7 +27,8 @@ leitura inválida seguida de leitura válida. README registra 143 testes backend
 430 frontend aprovados. São evidências anteriores, não reexecuções desta proposta.
 Na inspeção que fundamentou o planejamento, Aplicacao/Infraestrutura não tinham
 tipos de negócio ou pacotes de persistência. SQL-01/1.1 adicionou dependências
-somente à Infraestrutura; ainda não há contrato, contexto ou código de persistência.
+somente à Infraestrutura; SQL-01/1.2 adicionou o contrato em Aplicacao. Ainda não há
+contexto, migration ou implementação executável de persistência.
 
 ### Escopo, requisitos e prioridade
 
@@ -103,10 +104,10 @@ de apply, que foi concedida posteriormente para esta Change.
 
 Roadmap: contrato/schema → inicializador → leitura validada → gravação/revisão →
 regressão e evidências. FON-041 → RF-024–026/CA-049–052 → TDD/DEC-038 →
-`openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1 (dependências e
-isolamento do grafo da API) está aplicado; contrato e persistência ainda não foram
-implementados. Preservar histórico e IDs anteriores. PR único somente após escopo
-integral verificado; nenhum PR antecipado ou merge implícito.
+`openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1–1.2 (dependências,
+isolamento do grafo da API e contrato) estão aplicados; schema e persistência ainda
+não foram implementados. Preservar histórico e IDs anteriores. PR único somente após
+escopo integral verificado; nenhum PR antecipado ou merge implícito.
 
 ## Fase 002 — domínio C# independente (25/11/2026)
 
