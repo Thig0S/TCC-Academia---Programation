@@ -51,7 +51,7 @@ alterar o pin nem a instalação global. Resolver bloqueio técnico antes de có
 - [x] 6.2 Completar testes transversais de falhas/cancelamento: tokens prévios e antes de commit, token tardio após sucesso, código de confirmação indeterminada, demais falhas físicas e exceção inesperada/código desconhecido. Doubles provam encaminhamento dos argumentos, zero retry, ausência de leitura obrigatória após commit e falhas sem resposta candidata; manter regressão dos testes reais existentes de rollback/commit como prova do gravador, sem confundir double com falha nativa. Conferir mensagens/Reasons sem SQL/CPF/telefone/caminho e distinção banco ausente versus venda inexistente. Documentar evidências por nível e commit próprio.
 - [x] 6.3 Executar sequencialmente em backend, com SDK compatível efetivamente identificado: restore bloqueado, build Release sem restore, `dotnet test --solution VendasEmAberto.slnx -c Release --no-build`, descoberta não vazia e `dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore`; repetir auditoria de pacotes/transitivas e conferir grafo da API sem EF/SQLite. Registrar executável/versões/comandos/contagens/códigos de saída reais no README, sem fixar 205 como expectativa ou alegar teste VS Code não observado.
 - [x] 6.4 Executar smoke real da DLL Release em processo próprio sem banco: listener loopback, `/health` 200 text/plain Healthy, `/vendas` 404, nenhum arquivo criado/aberto pela composição técnica; encerrar somente esse processo e conferir porta liberada. Com API própria desligada, executar testes/build em frontend; se precisar restaurar dependências, usar apenas npm ci pelo lockfile, sem atualizar manifestos/lockfile ou encerrar servidores alheios. Registrar falhas/bloqueios/resultados reais no README; E2E/visual/zoom não aplicáveis sem UI alterada.
-- [ ] 6.5 Auditar todos os requisitos/cenários da delta contra testes e CA-054–060, incluindo DTO completo/imutabilidade, ordens, revisões, no-ops e confirmação indeterminada. Registrar matriz final no README, atualizar PRD/TDD/Change com estado realmente aplicado e evidências preservando histórico. Executar `openspec validate fase-004-aplicacao --strict` e `git diff --check`, revisar diff integral contra main atualizada e confirmar ausência de dados reais/bancos, endpoints, integração Angular, migrations e manutenção de outras Changes. Consolidar evidências transversais em commit documental próprio, sem declarar homologação operacional.
+- [x] 6.5 Auditar todos os requisitos/cenários da delta contra testes e CA-054–060, incluindo DTO completo/imutabilidade, ordens, revisões, no-ops e confirmação indeterminada. Registrar matriz final no README, atualizar PRD/TDD/Change com estado realmente aplicado e evidências preservando histórico. Executar `openspec validate fase-004-aplicacao --strict` e `git diff --check`, revisar diff integral contra main atualizada e confirmar ausência de dados reais/bancos, endpoints, integração Angular, migrations e manutenção de outras Changes. Consolidar evidências transversais em commit documental próprio, sem declarar homologação operacional.
 
 ## Acceptance Traceability
 
@@ -71,7 +71,7 @@ alterar o pin nem a instalação global. Resolver bloqueio técnico antes de có
 | Cancelamento e confirmação incerta preservados | CA-058 | 2.1–4.2, 6.2 |
 | Isolamento do host e da demonstração | CA-059/060 | 1.1, 1.3, 6.3–6.5 |
 
-## Planning Verification
+## Planning Verification — baseline da criação
 
 Em 26/11/2026, `openspec validate fase-004-aplicacao --strict` passou após a criação
 dos quatro tipos de artefatos. `git diff --check` passou; Git informou somente avisos
@@ -79,13 +79,13 @@ de normalização LF/CRLF nos documentos existentes. O diff rastreado contém ap
 inserções em PRD/TDD; os cinco arquivos novos pertencem somente a esta Change
 (metadata, proposal, spec, design e tasks). Conferidos caminhos sem links de diretório.
 
-Essa é verificação documental, não restore/build/testes/auditoria de dependências.
-Não há implementação, pacote instalado, tarefa aplicada, archive ou PR desta fase.
-As verificações executáveis permanecem integralmente pendentes nas tarefas acima.
+Essa verificação documentava somente a proposta no momento da criação; não era restore/
+build/teste/auditoria. Naquele baseline não havia implementação, pacote instalado, tarefa
+aplicada, archive ou PR. As evidências posteriores estão no README e no registro abaixo.
 
-## Workflow follow-up
+## Workflow follow-up — baseline do planejamento
 
-- Agora: revisar os artefatos e aguardar novo pedido explícito de apply. Não instalar
+- Naquele momento: revisar os artefatos e aguardar novo pedido explícito de apply. Não instalar
   pacotes, executar tarefas ou abrir PR como efeito da aprovação do planejamento.
 - Após apply integral e verificações aplicáveis, arquivar automaticamente **esta**
   Change conforme AGENTS.md e fluxo OpenSpec; conferir spec consolidada, arquivo de
@@ -96,3 +96,17 @@ As verificações executáveis permanecem integralmente pendentes nas tarefas ac
 - Revisão/aprovação exigidas e autorização explícita de merge continuam necessárias;
   não fazer push direto na main. Após integração autorizada, conferir PR/main antes
   de informar conclusão do fluxo.
+
+## Application Verification — 26/11/2026
+
+O apply foi autorizado e está na branch `feature/fase-004-aplicacao`. APP-01–05 e
+APP-06/6.1–6.5 estão concluídas: 19/19 tarefas. Restore bloqueado, build Release,
+285 testes backend, descoberta não vazia, formatação, auditoria NuGet/grafo da API,
+smoke loopback e 430 testes/build frontend passaram; detalhes e limitações estão em
+`backend/README.md` e nas atualizações PRD/TDD/design.
+
+APP-06/6.5 concluiu a matriz final; `openspec validate fase-004-aplicacao --strict`,
+`git diff --check` e revisão do diff contra `origion/main` atualizada passaram. O diff
+não contém dados reais/bancos, endpoints de negócio, integração Angular, migrations ou
+alteração de outras Changes. Com as verificações da Change concluídas, o archive
+automático é o próximo passo e precede o PR único.

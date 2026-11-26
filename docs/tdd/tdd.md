@@ -4,10 +4,10 @@
 
 ### Situação, origem e síntese da entrevista
 
-**Decisão de escopo confirmada; implementação não iniciada.** Base: PRD/FON-043/044,
-RF-027–030/CA-054–060, DEC-034/035/037/038. Autorização atual cobre somente planejamento
-PRD → TDD → SDD em `feature/fase-004-aplicacao`; apply depende de novo pedido explícito.
-Não é a FASE-004 histórica do Angular. Detalhes técnicos abaixo concretizam as decisões
+**Baseline desta revisão DEC-040:** escopo confirmado e apply ainda não autorizado
+naquele momento. Base: PRD/FON-043/044, RF-027–030/CA-054–060, DEC-034/035/037/038.
+A atualização de execução mais abaixo registra a autorização posterior e o estado
+atual. Não é a FASE-004 histórica do Angular. O desenho concretiza as decisões
 confirmadas, sem aprovar regras comerciais adicionais.
 
 | Tema | Resposta explícita no Harness |
@@ -35,8 +35,9 @@ combinar raiz e projeção por ID, não devolver somente aquela projeção finan
 
 API referencia somente Aplicacao, expõe health e não abre banco. UnitTests já referencia
 Aplicacao diretamente; IntegrationTests referencia Infraestrutura. Última evidência
-integrada registrada em `backend/README.md`/VER-01: 205 testes backend e 430 frontend.
-Não foram reexecutados nesta decisão. Specs de persistência ainda estão na Change 003,
+integrada pré-apply registrada em `backend/README.md`/VER-01: 205 testes backend e 430
+frontend. Não foram reexecutados ao redigir o desenho inicial. Specs de persistência
+ainda estão na Change 003,
 e outras Changes concluídas não arquivadas não se tornam tarefas desta fase.
 
 ### Arquitetura, fronteiras e estrutura propostas
@@ -267,9 +268,9 @@ Documentar resultados reais no README e tarefas durante apply, não nesta propos
 
 ### Roadmap de implementação — obrigatório
 
-Todas as fases abaixo estão **não implementadas** e dependem de apply explícito.
-Cada funcionalidade inclui testes, documentação, tarefas e commit próprio; APP-03/04
-devem ser divididas por caso de uso, não um commit grande por marco.
+No baseline do desenho, todas as fases abaixo estavam **não implementadas** e dependiam
+de apply explícito. Cada funcionalidade inclui testes, documentação, tarefas e commit
+próprio; APP-03/04 devem ser divididas por caso de uso, não um commit grande por marco.
 
 | Marco | Entrega | Dependência | Critério verificável |
 | --- | --- | --- | --- |
@@ -280,9 +281,9 @@ devem ser divididas por caso de uso, não um commit grande por marco.
 | APP-05 | Coleções, resumo, período e relatório mensal; entregas separadas | APP-02; regressão final após APP-03/04 | CA-057, vazios/ordens/universos e ausência de escrita |
 | APP-06 | Protocolo concorrente/falhas, regressão, smoke e auditoria PRD/TDD/SDD | Todos os anteriores | CA-058–060; evidências reais, limitações e tarefas completas |
 
-APP-03/04/05 podem avançar independentemente após APP-02; não executar builds/testes
-concorrentes na mesma saída. Não há pergunta de produto bloqueante remanescente neste
-recorte; gate técnico do APP-01 não está executado e pode exigir revisão antes de seguir.
+APP-03/04/05 podiam avançar independentemente após APP-02; builds/testes não devem
+compartilhar saída em paralelo. Não havia pergunta de produto bloqueante remanescente;
+o gate técnico do APP-01 foi executado no apply, conforme as evidências abaixo.
 Não inserir importação, dados reais, endpoints, Angular, autenticação, backup, IPC,
 instalador, CI ou archive de outras Changes neste roadmap.
 
@@ -309,13 +310,36 @@ Riscos/mitigações: linha antiga sem servicing → gate/revisão, não atualiza
 DTO omitindo cliente/histórico → teste por campo/ordem; sucesso falho após commit →
 pré-mapeamento e não rechecagem tardia de token; no-op em revisão velha → conferir antes;
 snapshot parcial → verificar candidato inteiro; categorias por texto → conversores tipados.
-Não se declara auditoria NuGet, compatibilidade compilada ou testes da fase executados.
+Na revisão inicial do desenho não se declaravam auditoria NuGet, compatibilidade
+compilada ou testes da fase executados; os resultados posteriores estão abaixo e em
+`backend/README.md`.
 
 Rastreabilidade: FON-043/044 → RF-027–030/CA-054–060 → DEC-040 →
 `openspec/changes/fase-004-aplicacao/` → APP-01–06. Complementa DEC-034/035 (adoção
 concreta/licença/retorno), DEC-037 (coordenação) e DEC-038 (consumo interno configurado);
 não muda invariantes financeiras, schema, contrato SQLite ou isolamento da API.
 Revisão inicial de 26/11/2026: planejamento após entrevista, sem implementação.
+
+### Aplicação e evidências da Change `fase-004-aplicacao` — 26/11/2026
+
+Após a revisão do PRD/TDD/SDD, o apply foi autorizado na branch
+`feature/fase-004-aplicacao`. APP-01–05 e APP-06/6.1–6.4 foram concluídas; tarefas
+6.1–6.4 estão commitadas na branch. A suíte completa executada com o SDK isolado
+10.0.404/runtime 10.0.15 passou com 285 testes (197 UnitTests e 88 IntegrationTests),
+0 falhas e 0 ignorados. Restore `--locked-mode`, build Release sem restore e format
+passaram; auditoria NuGet não encontrou vulnerabilidades nas fontes consultadas e o
+grafo da API contém somente FluentResults/MediatR/MediatR.Contracts, sem EF/SQLite.
+
+O smoke direto da DLL Release observou `/health` 200 `text/plain` `Healthy`, `/vendas`
+404 e listener apenas em loopback, sem `.db` novo; o processo próprio foi encerrado e
+a porta liberada. Com a API desligada, o frontend passou 430 testes/33 arquivos e build.
+A matriz CA-054–060, os testes por nível e os limites estão no README e na delta.
+
+APP-06/6.5 concluiu a auditoria documental, `openspec validate fase-004-aplicacao
+--strict`, `git diff --check` e revisão do diff contra `origion/main` atualizada. Todas
+as tarefas estão concluídas; archive automático desta Change é o próximo passo antes
+do PR único. Não alegar homologação operacional, uso de dados reais ou aprovação de
+produto; merge continua dependendo de autorização explícita.
 
 ## DEC-039 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
 
