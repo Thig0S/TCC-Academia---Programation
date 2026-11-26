@@ -424,6 +424,33 @@ de outra venda; entrada/lote, venda não Ativa/ausente e valor, forma, data e ob
 inválidos. SQLite temporário foi reaberto em provider novo, mantendo a revisão final,
 histórico e projeção reconciliáveis, sem alterar as demais vendas.
 
+## Consulta de coleções de vendas (APP-05/5.1)
+
+`ConsultarColecaoVendasQuery` recebe uma das quatro opções próprias: `Abertas`,
+`Quitadas`, `Inativas` ou `Prejuizo`, além da referência civil. A consulta lê um snapshot,
+projeta cada raiz uma vez com o domínio e classifica por status e saldo (Abertas/Quitadas
+incluem apenas Ativas), preservando a ordem do snapshot. Cada item usa
+`VendaResumoResposta`, que inclui os quatro campos do cliente e situação/valores
+projetados; a resposta da coleção inclui seletor, revisão e referência. Não há filtros,
+busca, paginação, ordenação parametrizável, inicialização, gravação ou geração de IDs.
+Coleções, inclusive vazias, são cópias somente leitura.
+
+Verificações direcionadas, com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarColecaoVendasHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConsultarColecaoVendasSqliteTests
+```
+
+Resultado: 2 testes unitários e 2 de integração passaram. Fixtures com status mistos
+conferem as quatro coleções e todos os IDs na ordem de origem, cliente/status/revisão/
+referência, coleção vazia bem-sucedida e enum desconhecido como validação. Os fakes
+confirmam uma carga por chamada, caminho/referência/revisão, zero inicialização e Save;
+consulta SQLite via `ISender` após reabertura preserva revisão e conjunto. Banco,
+conexões e providers dos testes usam temporários e cleanup.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
