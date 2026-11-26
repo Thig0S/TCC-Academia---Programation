@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace VendasEmAberto.Infraestrutura.Persistencia.Sqlite.DesignTime;
@@ -15,18 +14,6 @@ public sealed class VendasDbContextFactory : IDesignTimeDbContextFactory<VendasD
                 nameof(args));
         }
 
-        var connectionString = new SqliteConnectionStringBuilder
-        {
-            DataSource = args[1],
-            Mode = SqliteOpenMode.ReadWrite,
-            ForeignKeys = true,
-            DefaultTimeout = 5
-        }.ToString();
-
-        var options = new DbContextOptionsBuilder<VendasDbContext>()
-            .UseSqlite(connectionString)
-            .Options;
-
-        return new VendasDbContext(options);
+        return new VendasDbContext(OpcoesVendasDbContext.Criar(args[1], SqliteOpenMode.ReadWrite));
     }
 }
