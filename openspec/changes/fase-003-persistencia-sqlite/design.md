@@ -7,8 +7,9 @@ TDD/DEC-038 centraliza arquitetura, schema, versões, resultados, fluxos e roadm
 SQL-01–05; este desenho detalha como verificá-los na Change. Desenho confirmado
 no Harness, incluindo caminho explícito, inicializador interno e ausência de exclusão.
 Apply autorizado. SQL-01/1.1 verificou versões/licenças, restore bloqueado, grafo
-isolado da API, build Release e auditoria; a decisão de remover a referência
-preexistente Api → Infraestrutura foi confirmada no Harness.
+isolado da API, build Release e auditoria; SQL-01/1.2 implementou contrato, snapshot,
+resultados e testes direcionados. A decisão de remover a referência preexistente
+Api → Infraestrutura foi confirmada no Harness.
 
 Inspeção realizada:
 
@@ -18,8 +19,9 @@ Inspeção realizada:
   origens e somas; linha de entrada compara alocação/recebimento/base após `0280d3b`.
 - `ConjuntoVendas.cs`: valida IDs entre tipos e raízes e totais de todos os status;
   não substitui validação de cada histórico. Não publica/persiste candidatos.
-- Infraestrutura recebeu dependências em SQL-01/1.1; ainda não há banco, schema,
-  repositório ou código EF. API referencia somente Aplicacao; testes de persistência
+- Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura recebeu
+  dependências em SQL-01/1.1, mas ainda não há banco, schema, repositório ou código EF.
+  API referencia somente Aplicacao; testes de persistência
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
   aprovados. Sem reexecução nesta revisão. O caso positivo HIS-007 é independente,
@@ -51,6 +53,14 @@ resultado de armazenamento discrimina sucesso/falha sem HTTP ou pacotes de aplic
 Não duplicar `ResultadoDominio` para falhas de negócio: usar suas fábricas e
 encapsular falhas de reidratação como dados persistidos inválidos; candidato inválido
 é categoria distinta. Códigos e política completa estão em DEC-038.
+
+`IArmazenamentoVendas` usa `Task` com `CancellationToken`: inicialização retorna
+resultado de operação sem payload, carga retorna `SnapshotVendas`, e gravação retorna
+a revisão long confirmada no commit. Snapshot é classe imutável com `ConjuntoVendas`
+e revisão não negativa. `ResultadoOperacaoArmazenamento` e
+`ResultadoArmazenamento<T>` distinguem sucesso/falha; `ErroArmazenamento` carrega só
+código estável e mensagem segura, nunca exceção/SQL/caminho. Falha não contém valor.
+Cancelamento é propagado, não convertido em erro tipado.
 
 EF Core Sqlite/Design e dotnet-ef locais 10.0.15 fixados; Design privado. EF SQLite
 declara SQLitePCLRaw >=2.1.13, então fixar SQLitePCLRaw.bundle_e_sqlite3 2.1.14 na

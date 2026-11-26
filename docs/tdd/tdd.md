@@ -7,16 +7,17 @@
 Base: PRD/FON-041/RF-024–026/CA-049–052, DEC-033/036/037 e correção
 `0280d3b`. Escopo/arquitetura confirmados no Harness: EF Core/SQLite, modelos
 separados, migrations explícitas, caminho absoluto fornecido, revisão global e
-ausência de exclusão. Apply da Change autorizado; SQL-01/1.1 concluiu dependências,
-locks, documentação e isolamento do grafo da API. Implementação do contrato e do
-armazenamento ainda não iniciada.
+ausência de exclusão. Apply da Change autorizado; SQL-01/1.1–1.2 concluíram
+dependências, isolamento da API, contrato, snapshot, resultados e testes direcionados.
+Schema/migration e armazenamento executável ainda não foram iniciados.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
 valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
 validação de conjunto para provar integridade interna: a correção da entrada
-demonstrou essa diferença. Infraestrutura tinha apenas csproj, sem ORM; SQL-01/1.1
-adicionou somente referências de dependência, sem contexto ou código de persistência.
+demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura e
+SQL-01/1.2 adicionou o contrato puro em Aplicacao; ainda não há contexto ou código
+executável de persistência.
 Integração usa MSTest e referencia API. README contém trechos históricos dizendo que não há
 domínio: prevalecem fontes e seção recente de evidências, sem reescrever o histórico.
 
@@ -29,13 +30,28 @@ Aplicacao; `Program.cs` continua sem registrar, preparar, abrir ou chamar persis
 Testes de persistência em IntegrationTests devem adicionar referência direta a
 Infraestrutura quando necessária; não usar API como caminho indireto. Essa exceção
 preserva a decisão histórica de DEC-037 sobre camadas de domínio e atende RF-026 sem
-alterar health/endpoints. Em Aplicacao criar apenas o contrato
-`Persistencia/IArmazenamentoVendas.cs`, snapshots e resultados próprios de armazenamento;
+alterar health/endpoints. Em Aplicacao, SQL-01/1.2 criou o contrato
+`Persistencia/IArmazenamentoVendas.cs`, snapshot e resultados próprios de armazenamento;
 não são handlers nem substituem FluentResults dos futuros casos de uso. Em
 Infraestrutura, `Persistencia/Sqlite/` contém `VendasDbContext`, modelos de linha,
 configurações, mapeador, inicializador, implementação e `Migrations/`. Testes em
 `IntegrationTests/Persistencia/`, com referência direta a Infraestrutura. Dominio
 permanece sem ORM/pacotes/setters públicos. API não registra nem chama persistência.
+
+Contrato mínimo definido para SQL-01/1.2: `IArmazenamentoVendas` expõe operações
+assíncronas com `CancellationToken` e sem tipos HTTP/EF:
+`Task<ResultadoOperacaoArmazenamento> InicializarAsync(string caminhoAbsoluto, ...)`,
+`Task<ResultadoArmazenamento<SnapshotVendas>> CarregarAsync(string caminhoAbsoluto,
+DateOnly referencia, ...)` e
+`Task<ResultadoArmazenamento<long>> SalvarAsync(string caminhoAbsoluto,
+IEnumerable<Venda> candidatoCompleto, long revisaoEsperada, DateOnly referencia, ...)`.
+`SnapshotVendas` contém `ConjuntoVendas` e revisão `long` não negativa. Inicialização
+retorna sucesso sem valor de negócio; carga retorna o snapshot completo; gravação
+retorna a nova revisão somente após commit. Resultados são unions fechadas de sucesso
+e falha, com `ErroArmazenamento(Codigo, Mensagem)` e nenhuma propriedade de valor na
+falha; códigos estáveis vêm de constantes desta camada. Cancelamento continua sendo
+propagado, não convertido em falha tipada. Não se promete que o provider SQLite
+execute I/O verdadeiramente assíncrono nem cancelamento imediato.
 
 Adotar `Microsoft.EntityFrameworkCore.Sqlite` e `Microsoft.EntityFrameworkCore.Design`
 10.0.15 (Design com PrivateAssets=all), ferramenta local `dotnet-ef` 10.0.15 em
@@ -151,12 +167,12 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1 foi executado sob apply autorizado; SQL-01/1.2–5.3 permanecem
+SQL-01/1.1–1.2 foram executados sob apply autorizado; SQL-01/1.3–5.3 permanecem
 pendentes e são executados conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
-| SQL-01 | Dependências fixas e isoladas da API (1.1 concluído), contrato, modelo, constraints e migration | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
+| SQL-01 | Dependências e isolamento da API, contrato (1.1–1.2 concluídos), modelo, constraints e migration | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
 | SQL-02 | Inicializador e ciclo de arquivo; depende SQL-01 | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem criação implícita |
 | SQL-03 | Mapeamento e leitura integral; depende SQL-02 | Round-trip fiel, ordem, extremos, HIS-005–007 e leitura sem parcial |
 | SQL-04 | Escrita e revisão global; depende SQL-03 | Rollback, concorrência, cancelamento, sem exclusão/histórico perdido |
@@ -180,8 +196,9 @@ Reutilizar comandos de restore bloqueado/build Release/test MTP/format de DEC-03
 em `backend/`, além de tool restore e auditoria de transitivas/nativas; ferramentas
 e pacotes novos exigem restore inicial e lockfiles atualizados antes do modo bloqueado.
 SQL-01/1.1 executou restore bloqueado, tool restore, versão da ferramenta, build
-Release, conferência do grafo da API e auditoria NuGet; registrar execuções
-subsequentes e SDK/contagens reais no README.
+Release, conferência do grafo da API e auditoria NuGet. SQL-01/1.2 executou build
+Release e seis testes direcionados do contrato; registrar execuções subsequentes e
+SDK/contagens reais no README.
 Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
 testes/build. E2E/visual/zoom não
 exigidos porque não há alteração UI, mas registrar os não executados. Benchmark,
@@ -192,9 +209,10 @@ guias SQLite limitations, concurrency, transactions, migrations/applying e
 cli/dbcontext-creation; NuGet `Microsoft.EntityFrameworkCore.Sqlite/10.0.15`,
 Design/dotnet-ef 10.0.15 e SQLitePCLRaw 2.1.14.
 Confirmam token gerenciado, ausência de rowversion SQLite, migrations distintas de
-EnsureCreated e factory de design-time. Não houve migration, teste de aplicação ou
-acesso a banco; restore, build Release de verificação e auditoria de dependências
-executados em SQL-01/1.1. Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
+EnsureCreated e factory de design-time. SQL-01/1.2 executou seis testes direcionados
+de contrato e build Release; ainda não houve migration, teste SQLite ou acesso a
+banco. Restore bloqueado e auditoria de dependências foram executados em SQL-01/1.1.
+Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
 DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
 bloqueantes remanescentes; implementação segue após esta atualização dos artefatos.
 

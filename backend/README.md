@@ -89,6 +89,34 @@ inclui ferramentas locais no grafo da solução. Para `dotnet-ef`, foram conferi
 seus metadados, ausência de dependências declaradas e `.deps.json`; resultados de
 advisories dependem das fontes NuGet no momento da execução.
 
+## Contrato de armazenamento
+
+O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
+EF Core, HTTP ou handlers. `IArmazenamentoVendas` oferece:
+
+- `InicializarAsync(caminhoAbsoluto, cancellationToken)`: prepara schema somente por
+  chamada explícita e retorna `ResultadoOperacaoArmazenamento`.
+- `CarregarAsync(caminhoAbsoluto, referencia, cancellationToken)`: retorna
+  `ResultadoArmazenamento<SnapshotVendas>`; o snapshot contém `ConjuntoVendas`
+  imutável e revisão `long` não negativa.
+- `SalvarAsync(caminhoAbsoluto, candidatoCompleto, revisaoEsperada, referencia,
+  cancellationToken)`: recebe o conjunto completo e retorna
+  `ResultadoArmazenamento<long>` com a nova revisão, somente após confirmação do
+  commit.
+
+Falhas esperadas são `Falha(ErroArmazenamento)` com código de
+`CodigosErroArmazenamento` e mensagem segura. Variantes de falha não têm propriedade
+`Valor`; cancelamento e exceções inesperadas não são convertidos em erro comercial.
+Revisão inicia em zero em banco novo; gravação válida incrementa uma vez e apenas
+depois do commit. Falha/conflito não entrega revisão nova. A interface é assíncrona
+por contrato, sem prometer I/O SQLite verdadeiramente assíncrono ou cancelamento
+imediato do provider.
+
+Em 25/11/2026, `ArmazenamentoVendasContractTests` passou: 6 testes direcionados,
+zero falhas; o build Release da solução passou com zero avisos/erros. Essa etapa
+implementa somente contratos e tipos: não há contexto EF, migration, conexão ou
+armazenamento executável.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio
