@@ -33,8 +33,8 @@ Inspeção realizada:
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
   aprovados na Change anterior; esses números não foram reexecutados nesta revisão.
-  SQL-03/3.1 cobre fixtures válidas; falha seguida de restauração e nova leitura
-  permanece explicitamente em SQL-03/3.3, sem reabrir a Change anterior.
+  SQL-03/3.1–3.2 cobrem fixtures válidas; SQL-03/3.3 cobre falha, preservação da
+  linha corrompida, restauração explícita e nova leitura, sem reabrir a Change anterior.
 
 ## Goals / Non-Goals
 
