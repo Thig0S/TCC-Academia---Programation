@@ -5,9 +5,8 @@ namespace VendasEmAberto.Infraestrutura.Persistencia.Sqlite;
 
 internal static class OpcoesVendasDbContext
 {
-    public static DbContextOptions<VendasDbContext> Criar(string caminho, SqliteOpenMode modo)
-    {
-        var connectionString = new SqliteConnectionStringBuilder
+    public static string CriarStringConexao(string caminho, SqliteOpenMode modo) =>
+        new SqliteConnectionStringBuilder
         {
             DataSource = caminho,
             Mode = modo,
@@ -16,8 +15,10 @@ internal static class OpcoesVendasDbContext
             Pooling = false
         }.ToString();
 
+    public static DbContextOptions<VendasDbContext> Criar(string caminho, SqliteOpenMode modo)
+    {
         return new DbContextOptionsBuilder<VendasDbContext>()
-            .UseSqlite(connectionString)
+            .UseSqlite(CriarStringConexao(caminho, modo))
             .Options;
     }
 }

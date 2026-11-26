@@ -106,11 +106,12 @@ de apply, que foi concedida posteriormente para esta Change.
 
 Roadmap: contrato/schema → inicializador → leitura validada → gravação/revisão →
 regressão e evidências. FON-041 → RF-024–026/CA-049–052 → TDD/DEC-038 →
-`openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1–1.3 e SQL-02/2.1
-(dependências, isolamento da API, contrato, schema, migration e inicializador explícito)
-estão aplicados. A abertura de arquivo para leitura/gravação, carga e gravação/revisão
-permanecem pendentes. Preservar histórico e IDs anteriores. PR único somente após
-escopo integral verificado; nenhum PR antecipado ou merge implícito.
+`openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1–1.3 e SQL-02/2.1–2.2
+(dependências, isolamento da API, contrato, schema, migration, inicializador e sessão
+de abertura validada) estão aplicados. Carga e gravação/revisão permanecem pendentes;
+a sessão ainda não é consumida por uma implementação de `IArmazenamentoVendas`.
+Preservar histórico e IDs anteriores. PR único somente após escopo integral verificado;
+nenhum PR antecipado ou merge implícito.
 
 ## Fase 002 — domínio C# independente (25/11/2026)
 
