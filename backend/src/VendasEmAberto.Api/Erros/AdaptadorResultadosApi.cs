@@ -1,5 +1,4 @@
 using FluentResults;
-using Microsoft.AspNetCore.Http;
 using VendasEmAberto.Aplicacao.Comum.Erros;
 
 namespace VendasEmAberto.Api.Erros;
