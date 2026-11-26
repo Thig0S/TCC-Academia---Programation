@@ -115,6 +115,55 @@ advisories dependem das fontes NuGet no momento da execução.
 
 ## Contrato de armazenamento
 
+## Dependências dos casos de uso (APP-01/1.1)
+
+As dependências dos casos de uso ficam em `VendasEmAberto.Aplicacao`: MediatR
+`12.5.0` (Apache-2.0), FluentResults `4.0.0` (MIT),
+`Microsoft.Extensions.DependencyInjection.Abstractions` `10.0.15` (MIT) e
+`Microsoft.Extensions.Logging.Abstractions` `10.0.15` (MIT). Infraestrutura declara
+diretamente `Microsoft.Extensions.DependencyInjection.Abstractions` `10.0.15` (MIT),
+que consome em sua composição. Os lockfiles registram versões, dependências e hashes.
+Não foi adicionado pacote separado de DI do MediatR nem extensão ASP.NET do
+FluentResults. A API continua referenciando apenas Aplicacao; seu grafo inclui
+MediatR/FluentResults transitivamente, mas não EF Core nem SQLite.
+
+Os `.nuspec` obtidos do NuGet declaram as licenças acima. MediatR `12.5.0` oferece
+assets `net6.0` e `netstandard2.0`, declarando DI Abstractions `>=8.0.0`; FluentResults
+`4.0.0` oferece grupo `net9.0` (selecionado pelo consumidor `net10.0`) e declara
+Logging Abstractions `>=2.1.1`. As referências diretas Microsoft `10.0.15` alinham os
+contratos ao runtime escolhido. Restore bloqueado, build Release sem restore e
+auditoria NuGet transitiva passaram sem avisos de compatibilidade ou vulnerabilidades
+reportadas pelas fontes disponíveis em 26/11/2026. Isso não constitui garantia de
+suporte/servicing futuro: MediatR `12.5.0` é uma escolha explícita da linha Apache-2.0
+registrada na DEC-040, não uma afirmação de que a versão continuará recebendo correções.
+
+Fontes oficiais consultadas em 26/11/2026:
+
+- <https://www.nuget.org/packages/MediatR/12.5.0>
+- <https://github.com/LuckyPennySoftware/MediatR/tree/v12.5.0>
+- <https://www.nuget.org/packages/FluentResults/4.0.0>
+- <https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/10.0.15>
+- <https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/10.0.15>
+
+Verificações desta etapa, executadas com o SDK temporário `10.0.404` e runtime
+`10.0.15` em `%LOCALAPPDATA%\Temp\opencode\dotnet-10.0.404` (instalação global
+inalterada):
+
+```powershell
+dotnet restore VendasEmAberto.slnx
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+dotnet list VendasEmAberto.slnx package --include-transitive
+```
+
+O restore inicial e o bloqueado passaram. O build Release passou com zero avisos e
+zero erros. A auditoria não reportou vulnerabilidades nos seis projetos, considerando
+as fontes NuGet disponíveis. A listagem confirmou as dependências diretas/transitivas
+e que o grafo da API não contém EF Core/SQLite. A avaliação de advisories é um retrato
+das fontes consultadas em 26/11/2026, não uma auditoria estática de código ou do binário
+nativo SQLite.
+
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
 EF Core, HTTP ou handlers. `IArmazenamentoVendas` oferece:
 
