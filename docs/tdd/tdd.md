@@ -11,8 +11,9 @@ ausência de exclusão. Apply da Change autorizado; SQL-01/1.1–1.3 concluíram
 dependências, isolamento da API, contrato, snapshot, resultados, schema e migration
 inicial. SQL-02/2.1 implementou inicialização explícita, reconhecimento de schema e
 revisão zero; SQL-02/2.2 implementou sessão de abertura por operação, sem criação
-implícita e com validação física do schema. Mapeamento, carga e gravação ainda não
-foram implementados.
+implícita e com validação física do schema. SQL-03/3.1 implementou leitura transacional
+sem tracking, mapeamento e reidratação validada; histórico adversarial adicional e
+gravação ainda não foram implementados.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
@@ -20,8 +21,9 @@ valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
 validação de conjunto para provar integridade interna: a correção da entrada
 demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura,
 SQL-01/1.2 contrato puro em Aplicacao, SQL-01/1.3 contexto/modelos/migration e
-SQL-02/2.1–2.2 inicializador/abertura validada em Infraestrutura. Ainda não há
-mapeador, leitura ou escrita; a sessão interna não é implementação do contrato.
+SQL-02/2.1–2.2 inicializador/abertura validada e SQL-03/3.1 leitor interno em
+Infraestrutura. A leitura ainda não implementa o contrato da Aplicacao; escrita
+permanece pendente.
 Integração usa MSTest, referencia API e adiciona referência direta à Infraestrutura.
 README contém trechos históricos dizendo que não há
 domínio: prevalecem fontes e seção recente de evidências, sem reescrever o histórico.
@@ -39,8 +41,8 @@ alterar health/endpoints. Em Aplicacao, SQL-01/1.2 criou o contrato
 `Persistencia/IArmazenamentoVendas.cs`, snapshot e resultados próprios de armazenamento;
 não são handlers nem substituem FluentResults dos futuros casos de uso. Em
 Infraestrutura, `Persistencia/Sqlite/` contém `VendasDbContext`, modelos de linha,
-configurações e migration inicial; mapeador, inicializador e implementação seguem
-pendentes. Testes em
+configurações, migration, inicializador, abertura validada e leitor interno; ainda não
+há implementação do contrato nem gravação. Testes em
 `IntegrationTests/Persistencia/`, com referência direta a Infraestrutura. Dominio
 permanece sem ORM/pacotes/setters públicos. API não registra nem chama persistência.
 
@@ -173,14 +175,14 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.3 e SQL-02/2.1–2.2 foram executados sob apply autorizado; SQL-03–5.3 permanecem
-pendentes e são executados conforme as dependências:
+SQL-01/1.1–1.3, SQL-02/2.1–2.2 e SQL-03/3.1 foram executados sob apply autorizado;
+SQL-03/3.2–SQL-05 permanecem pendentes e são executados conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
 | SQL-01 | Dependências, isolamento da API, contrato e schema/migration inicial (1.1–1.3 concluídos) | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
 | SQL-02 | Inicializador explícito e abertura por operação (2.1–2.2 concluídos) | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem sobrescrita; abertura não cria arquivo e confere schema |
-| SQL-03 | Mapeamento e leitura integral; depende SQL-02 | Round-trip fiel, ordem, extremos, HIS-005–007 e leitura sem parcial |
+| SQL-03 | Leitura/reidratação (3.1 concluído); histórico/corrupção (3.2–3.3 pendentes) | Campos/ordem/extremos fiéis em leitura transacional; rejeição integral HIS-005–007 |
 | SQL-04 | Escrita e revisão global; depende SQL-03 | Rollback, concorrência, cancelamento, sem exclusão/histórico perdido |
 | SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
 
@@ -205,11 +207,12 @@ SQL-01/1.1 executou restore bloqueado, tool restore, versão da ferramenta, buil
 Release, conferência do grafo da API e auditoria NuGet. SQL-01/1.2 executou build
 Release e seis testes direcionados do contrato. SQL-01/1.3 executou scaffolding sem
 criar arquivo no caminho de design-time, `has-pending-model-changes` e cinco testes
-SQLite de schema/constraints. SQL-02/2.1 executou seis testes de inicialização; SQL-02/2.2
-executou seis testes de abertura/sessão e reexecutou os testes de schema e inicializador.
-As evidências incluem preservação byte a byte de bancos recusados, revisão não reiniciada,
-detecção de schema físico alterado, lock e liberação da conexão. Não houve carga/gravação
-de vendas nem acesso operacional. Registrar execuções subsequentes e contagens reais no README.
+SQLite de schema/constraints. SQL-02/2.1 executou seis testes de inicialização;
+SQL-02/2.2, seis testes de abertura/sessão; SQL-03/3.1 adicionou quatro testes de
+leitura SQL; a suíte completa de persistência passou com 21 testes. Cobertos estado
+vazio/revisão, campos/ordem, CPF repetido, descrição nula, Unicode, datas extremas e
+centavos máximos, além da integridade de schema/IDs/lock. Não houve escrita, dados
+reais ou acesso operacional. Evidências detalhadas no README.
 Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
 testes/build. E2E/visual/zoom não
 exigidos porque não há alteração UI, mas registrar os não executados. Benchmark,
@@ -222,14 +225,14 @@ Design/dotnet-ef 10.0.15 e SQLitePCLRaw 2.1.14.
 Confirmam token gerenciado, ausência de rowversion SQLite, migrations distintas de
 EnsureCreated e factory de design-time. SQL-01/1.3 criou e aplicou a migration inicial
 em arquivos temporários; cinco testes de schema/constraints passaram e não há mudança
-pendente do modelo. SQL-02/2.1 executou seis testes de inicialização em arquivos
-temporários, e SQL-02/2.2 seis testes de abertura/sessão. Houve preservação byte a byte
-de bancos recusados, revisão não reiniciada, recusa de schema físico alterado, lock
-preservado e liberação de conexão. Não houve carga/gravação ou acesso operacional.
+pendente do modelo. SQL-02/2.1 executou seis testes de inicialização, SQL-02/2.2 seis
+testes de abertura e SQL-03/3.1 quatro testes de leitura; a suíte de persistência passou
+21/21. A leitura cobre vazio/revisão, campos, ordem, CPF repetido, datas extremas,
+limite de centavos, descrição nula e Unicode. Não houve gravação ou acesso operacional.
 Restore bloqueado e auditoria foram executados em SQL-01/1.1.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
 DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
-bloqueantes remanescentes; implementação segue após esta atualização dos artefatos.
+bloqueantes remanescentes; a implementação continua nos marcos ainda pendentes da Change.
 
 As validações estritas da Change e de whitespace foram executadas nas etapas aplicadas;
 os resultados de implementação estão discriminados em `tasks.md` e no README. O estado

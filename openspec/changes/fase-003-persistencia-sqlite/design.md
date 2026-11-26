@@ -11,9 +11,11 @@ isolado da API, build Release e auditoria; SQL-01/1.2 implementou contrato, snap
 resultados e testes direcionados; SQL-01/1.3 implementou modelo relacional, contexto,
 factory design-time e migration, com testes temporários de constraints; SQL-02/2.1
 implementou inicializador explícito e SQL-02/2.2 abertura por operação com comparação
-do schema físico. Testes cobriram arquivo novo, repetição, recusa de bancos
-desconhecidos/futuros, modo sem criação, lock e liberação de conexão. A decisão de
-remover a referência preexistente Api → Infraestrutura foi confirmada no Harness.
+do schema físico; SQL-03/3.1 implementou leitura transacional sem tracking e
+reidratação validada. Testes cobriram arquivo novo, repetição, recusa de bancos
+desconhecidos/futuros, modo sem criação, lock, liberação de conexão e fixtures de
+leitura SQL. A decisão de remover a referência preexistente Api → Infraestrutura foi
+confirmada no Harness.
 
 Inspeção realizada:
 
@@ -24,14 +26,14 @@ Inspeção realizada:
 - `ConjuntoVendas.cs`: valida IDs entre tipos e raízes e totais de todos os status;
   não substitui validação de cada histórico. Não publica/persiste candidatos.
 - Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura tem contexto,
-  entidades de linha, configurações, migration inicial, inicializador interno e sessão
-  de abertura validada. Ainda não há implementação do contrato, leitura ou gravação.
+  entidades de linha, configurações, migration, inicializador, sessão validada e leitor
+  interno. Ainda não há implementação do contrato nem gravação.
   API referencia somente Aplicacao; testes de persistência
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
-  aprovados. Sem reexecução nesta revisão. O caso positivo HIS-007 é independente,
-  não sequenciado com a tentativa negativa no mesmo método: cobrir essa sequência
-  na nova leitura de integração, sem reabrir a Change anterior.
+  aprovados na Change anterior; esses números não foram reexecutados nesta revisão.
+  SQL-03/3.1 cobre fixtures válidas; falha seguida de restauração e nova leitura
+  permanece explicitamente em SQL-03/3.3, sem reabrir a Change anterior.
 
 ## Goals / Non-Goals
 

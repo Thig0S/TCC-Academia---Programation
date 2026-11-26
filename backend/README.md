@@ -135,9 +135,8 @@ tabelas da aplicação; EF administra `__EFMigrationsHistory` separadamente:
 Todas as colunas monetárias são `INTEGER` com CHECK no intervalo seguro de centavos;
 datas são `TEXT` para `DateOnly`; enums persistem como `INTEGER` com CHECK de valores
 conhecidos. IDs usam collation BINARY. FKs e constraints impedem órfãos, duplicidade
-de ordem/número e alocações entre vendas. A validação de tipo da linha contra o tipo
-registrado também será repetida pelo mapeador de leitura; CPF pode se repetir entre
-vendas.
+de ordem/número e alocações entre vendas. A validação de tipo da linha contra o registro
+global de IDs é repetida pelo leitor; CPF pode se repetir entre vendas.
 
 `VendasDbContextFactory` de design-time exige `--database` e caminho absoluto; usa
 SQLite em modo `ReadWrite` e não chama migrations nem cria arquivo ao construir o
@@ -211,8 +210,9 @@ A conexão usa `Mode=ReadWrite` (nunca `ReadWriteCreate`), `ForeignKeys=true`, t
 finito de cinco segundos e pooling desabilitado. A sessão é `IAsyncDisposable`; seu
 contexto deve ser descartado ao final da operação. Linha ativa em
 `__EFMigrationsLock` retorna `banco-ocupado`; nenhuma linha/tabela de lock é apagada
-automaticamente. Timeout não aciona retry. O helper não está ligado à API nem torna
-leitura/gravação funcional: essas operações ainda aguardam seus marcos SQL-03/04.
+automaticamente. Timeout não aciona retry. O helper não está ligado à API nem expõe
+ainda o contrato de armazenamento: o leitor interno foi entregue em SQL-03/3.1 e a
+gravação continua pendente em SQL-04.
 
 `AbridorVendasSqliteTests` passou com seis casos em arquivos temporários: ausência
 sem criação, arquivo não SQLite preservado, schema corrente com modo/FKs/timeout
@@ -220,6 +220,35 @@ esperados, coluna alterada recusada, lock preservado como ocupado e liberação 
 conexão que permite mover o arquivo. Junto aos seis testes do inicializador e cinco
 de schema, são 17 testes direcionados aprovados. `Program.cs` e endpoints/health não
 foram alterados; a API permanece sem dependência da Infraestrutura.
+
+## Leitura transacional (SQL-03/3.1)
+
+`LeitorVendasSqlite` usa a sessão de abertura validada e carrega, em uma transação de
+leitura e com `AsNoTracking`, o estado de revisão, o registro global de identificadores,
+vendas, parcelas, recebimentos e alocações. Mantém a ordem global das vendas e as ordens
+persistidas de recebimentos/alocações; parcelas são reconstituídas por número. Verifica
+sequências de ordem e correspondência de cada ID com seu tipo registrado antes de
+montar o snapshot.
+
+Dinheiro passa por `Dinheiro.Criar`; cliente por `DadosClienteVenda.Criar` e comparação
+ordinal com os campos armazenados (se a fábrica normalizaria algum campo, o leitor
+recusa em vez de alterar); cada venda passa por `Venda.Reconstruir` com a referência
+civil fornecida; o conjunto completo passa por `ConjuntoVendas.Criar`. Só depois de
+todas as validações a operação confirma a transação e entrega `SnapshotVendas` com a
+revisão lida na mesma transação. Histórico de domínio inconsistente retorna
+`dados-persistidos-invalidos` sem snapshot parcial. Observação nula é recusada; texto
+vazio e Unicode são preservados. Não há projeção persistida, reparo ou uso de valores
+reconstruídos por aproximação.
+
+O leitor permanece interno e não implementa ainda `IArmazenamentoVendas`; nenhuma
+leitura é ligada à API. Os quatro testes `LeitorVendasSqliteTests` preparam fixtures
+por SQL em arquivos temporários após inicializar a migration. Cobrem conjunto vazio e
+revisão corrente, todos os campos de uma venda com entrada e pagamento Individual,
+duas vendas com CPF repetido, descrição nula, notas Unicode e ordem, datas civis
+extremas válidas e `Dinheiro.LimiteCentavos`. O comando focado passou com 4/4 testes;
+a suíte `FullyQualifiedName~Persistencia` passou com 21/21 após a leitura.
+Oráculo SQL-REP-01: datas civis válidas permanecem exatas; o centavo máximo permanece
+inteiro, sem conversão por `REAL`, arredondamento ou reconstrução de datas por relógio.
 
 ## Estado de verificação
 

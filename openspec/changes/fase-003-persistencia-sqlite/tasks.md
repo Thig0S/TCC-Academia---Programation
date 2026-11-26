@@ -26,7 +26,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 ## 3. SQL-03 — Reidratação integral e fidelidade
 
-- [ ] 3.1 Implementar mapeador/leitura transacional sem tracking e com ordenação persistida; usar fábricas de valores/cliente, Venda.Reconstruir e ConjuntoVendas.Criar antes de entregar snapshot. Preparar fixtures por SQL de teste usando a migration, sem depender da escrita ainda não implementada. MSTest compara todos os campos, revisão, coleção vazia, mesma identificação em duas vendas, datas civis extremas válidas, centavos extremos, descrição nula e observação Unicode. Não normalizar dados inválidos; registrar oráculos SQL-REP-01 e contrato de carga no README.
+- [x] 3.1 Implementar mapeador/leitura transacional sem tracking e com ordenação persistida; usar fábricas de valores/cliente, Venda.Reconstruir e ConjuntoVendas.Criar antes de entregar snapshot. Preparar fixtures por SQL de teste usando a migration, sem depender da escrita ainda não implementada. MSTest compara todos os campos, revisão, coleção vazia, mesma identificação em duas vendas, datas civis extremas válidas, centavos extremos, descrição nula e observação Unicode. Não normalizar dados inválidos; registrar oráculos SQL-REP-01 e contrato de carga no README.
 - [ ] 3.2 Cobrir SQL-HIS-01/SQL-COR-01/SQL-ORD-01 em arquivos reais: entrada 10.000 em base 20.000/2; lote sintético; Individual base 10.000 corrigido 11.000→10.500 e data em outro mês; ordem de histórico não determinada pela data. Conferir IDs/alocações/origens, recebido/saldo/acréscimo, universos de status e soma mensal/diária por valores explícitos. Executar testes direcionados e documentar fixtures/resultados sintéticos no README.
 - [ ] 3.3 Implementar/testar rejeição integral de dados persistidos inválidos: SQL-HIS-02 com alocação 9.999 e 10.001 contra entrada recebida/base 10.000, sem snapshot parcial; após cada falha restaurar explicitamente fixture válida e reler com nova conexão. Acrescentar data/enum/identificação/ordem/vínculo/registro de IDs inválidos e soma global insegura, inclusive em Inativas/Prejuízo. Quando constraint impedir fixture inválida, comprovar a rejeição pela constraint e usar adulteração controlada de teste apenas para provar a defesa na carga. Verificar ausência de reparo/omissão e registrar rastreabilidade HIS-005–007 → SQL-HIS-02 no README.
 
@@ -59,15 +59,16 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   cinco testes temporários de schema/constraints, format verify, `has-pending-model-
   changes` sem alterações e `openspec validate --strict` passaram. Scaffolding exigiu
   caminho absoluto e não criou o arquivo de design-time; detalhes e comandos em
-  `backend/README.md`. O inicializador foi entregue em SQL-02/2.1; leitura e gravação
-  executáveis permanecem pendentes.
+  `backend/README.md`. O inicializador foi entregue em SQL-02/2.1 e o leitor interno
+  em SQL-03/3.1; a gravação permanece pendente.
 - SQL-02/2.1: inicializador interno validou caminho absoluto/pai, arquivo vazio ou
   schema com histórico conhecido e migration futura/alheia sem alterações. Cria o
   schema por `MigrateAsync` e insere a linha técnica de revisão zero sem seed de vendas;
   repetição preserva revisão. Seis testes direcionados e os cinco testes de schema
   passaram. Build Release da solução (zero avisos/erros), `dotnet format --verify-no-changes`,
   validação estrita e `git diff --check` passaram após a implementação. API e contrato
-  de health não foram alterados. Carga/gravação permanecem pendentes.
+  de health não foram alterados. Naquele marco, carga/gravação ainda permaneciam
+  pendentes; leitura validada foi concluída em SQL-03/3.1.
 - SQL-02/2.2: `AbridorVendasSqlite` abre sessão descartável apenas para arquivo
   existente, em `ReadWrite`, foreign_keys habilitado e timeout de 5 s. Valida migration
   completa e modelo físico (colunas, PK, índices, CHECKs e FKs), linha de revisão e
@@ -75,7 +76,17 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   passaram para ausência, arquivo incompatível sem alteração, schema corrente/adulterado,
   lock preservado e liberação por descarte. Reexecutados os seis testes de 2.1 e cinco
   de schema. Build Release (zero avisos/erros) e format verify passaram; diff confirma
-  que `Program.cs`/health não foram alterados. Ainda não há leitura ou gravação de vendas.
+  que `Program.cs`/health não foram alterados. Leitura validada foi entregue em
+  SQL-03/3.1; gravação permanece pendente.
+- SQL-03/3.1: `LeitorVendasSqlite` carrega estado e linhas em transação, com
+  `AsNoTracking` e revisão na mesma transação. Confere sequência de ordens e registro
+  global de IDs/tipos; reconstrói dinheiro, cliente sem normalização, vendas e conjunto
+  pelas fábricas do domínio antes de construir o snapshot. Quatro fixtures SQL
+  sintéticas cobrem conjunto vazio/revisão, todos os campos, ordem, duas vendas com CPF
+  repetido, descrição nula, nota Unicode, datas extremas e centavos no limite.
+  `LeitorVendasSqliteTests`: 4/4; suíte `FullyQualifiedName~Persistencia`: 21/21;
+  build Release sem avisos/erros. README registra SQL-REP-01 e limita que o leitor ainda
+  não implementa `IArmazenamentoVendas`.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências
