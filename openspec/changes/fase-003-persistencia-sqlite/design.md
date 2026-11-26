@@ -12,9 +12,10 @@ resultados e testes direcionados; SQL-01/1.3 implementou modelo relacional, cont
 factory design-time e migration, com testes temporários de constraints; SQL-02/2.1
 implementou inicializador explícito e SQL-02/2.2 abertura por operação com comparação
 do schema físico; SQL-03/3.1 implementou leitura transacional sem tracking e
-reidratação validada. Testes cobriram arquivo novo, repetição, recusa de bancos
-desconhecidos/futuros, modo sem criação, lock, liberação de conexão e fixtures de
-leitura SQL. A decisão de remover a referência preexistente Api → Infraestrutura foi
+reidratação validada; SQL-03/3.2 cobriu entrada, lote, correção, ordem e relatórios
+em fixtures SQL. Testes cobriram arquivo novo, repetição, recusa de bancos
+desconhecidos/futuros, modo sem criação, lock, liberação de conexão e cenários de
+leitura. A decisão de remover a referência preexistente Api → Infraestrutura foi
 confirmada no Harness.
 
 Inspeção realizada:
