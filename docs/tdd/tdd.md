@@ -29,6 +29,15 @@ extensão VS Code é separada e só pode ser declarada após execução observad
 máquina do solicitante. FON-041: erro apresentado pelo usuário; Context7
 `/microsoft/testfx` v4.5.3 confirma as formas aceitas de pin do MSTest SDK.
 
+**Resultado da Change em 26/11/2026:** com a instalação temporária
+`%LOCALAPPDATA%\\Temp\\opencode\\dotnet-10.0.404`, restore bloqueado, build Release
+e 203 testes (unitários + integração) passaram. `openspec validate
+corrigir-resolucao-sdk-mstest --strict` e `git diff --check` passaram. A extensão
+do VS Code no ambiente do solicitante não foi exercitada; não se declara ainda
+reprodução local resolvida por observação direta. O comando `dotnet` global
+continua selecionando 10.0.103 fora da pasta configurada; para o projeto, usar
+SDK instalado compatível com `backend/global.json`.
+
 ## DEC-038 — Persistência SQLite isolada da fase 003 (25/11/2026)
 
 ### Situação, fontes e entrevista

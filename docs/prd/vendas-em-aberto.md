@@ -20,6 +20,11 @@ restore/build/testes. Sem atualização de versões, instalação local por agen
 alteração de CI ou comportamento funcional. Rastreabilidade: TDD/DEC-038 e
 OpenSpec `corrigir-resolucao-sdk-mstest`.
 
+**Resultado observado nesta Change:** restore `--locked-mode`, build Release e
+203 testes passaram usando a instalação temporária .NET SDK 10.0.404. A extensão
+do VS Code na máquina do solicitante não foi executada neste ambiente; sua
+confirmação permanece pendente.
+
 ## Fase 003 do backend — persistência SQLite (25/11/2026)
 
 **FON-041:** pedido de avaliar a correção recente e planejar a fase 003; no Harness,
