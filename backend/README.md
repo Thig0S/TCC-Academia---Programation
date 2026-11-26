@@ -505,7 +505,7 @@ no período da data efetiva. O mesmo teste HIS-007 deve provar rejeição sem mu
 sucesso subsequente. A rastreabilidade canônica é DEC-039/CA-053/FON-042 para MSTest
 e DEC-038/CA-049/FON-041 para persistência. Referências históricas e resultados de
 Changes concluídas são preservados; detalhes e critérios estão em `docs/prd/vendas-em-aberto.md`,
-`docs/tdd/tdd.md` e `openspec/changes/corrigir-contratos-e-rastreabilidade/`.
+`docs/tdd/tdd.md` e na Change OpenSpec `corrigir-contratos-e-rastreabilidade`.
 
 **Execução registrada nesta atualização:** MAN-01 remapeou as referências MSTest no
 PRD/TDD e documentou a reconciliação com RF-023/RN-026/DEC-037. A inspeção de referências
@@ -556,6 +556,57 @@ Executados em `backend/`, sequencialmente: classe `VendaReconstrucaoTests`, 11/1
 aprovados; UnitTests completa, 143/143 aprovados; zero falhas ou ignorados em ambas.
 Esses resultados são direcionados à reconstrução/domínio, não substituem a regressão
 integrada de toda a solução.
+
+**Regressão integrada VER-01/4.1 — 26/11/2026:** executada em `backend/` com SDK
+isolado .NET 10.0.404 (host/runtime 10.0.15, Windows x64). O `dotnet` do PATH seleciona
+10.0.103 e não satisfaz `global.json`; nenhum SDK foi instalado ou alterado. Comandos,
+em sequência, todos com código de saída 0:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" --info
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" restore VendasEmAberto.slnx --locked-mode
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" build VendasEmAberto.slnx -c Release --no-restore
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test --solution VendasEmAberto.slnx -c Release --no-build
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Restore bloqueado e format verify passaram; build Release passou com 0 avisos/erros;
+as suítes não vazias UnitTests e IntegrationTests aprovaram 205 testes no total,
+0 falhas e 0 ignorados. Os critérios cobrem domínio, API e persistência SQLite.
+
+**Smoke VER-01/4.2 — 26/11/2026:** a DLL Release foi iniciada diretamente, sem launch
+profile, com `Backend__Porta=62741`, em loopback. `/health` respondeu HTTP 200,
+`text/plain`, `Healthy`; `/vendas` respondeu HTTP 404. Nenhum arquivo `.db`, `.sqlite`
+ou `.sqlite3` foi criado. O processo próprio (PID 6820) foi encerrado e a porta ficou
+livre.
+
+Com a API parada, foi tentado `npm.cmd test -- --watch=false` em `frontend/`; terminou
+com código 1 porque não encontra o pacote/builder `@angular/build:unit-test`
+(`Node packages may not be installed`). Embora exista diretório `node_modules`, a
+dependência de teste estava indisponível. Após autorização Harness para preparar o
+ambiente e atualizar D6/VER-01, foi executado `npm.cmd ci` em `frontend/`: 301 pacotes
+adicionados, 308 auditados e nenhuma vulnerabilidade reportada. npm avisou que quatro
+pacotes têm scripts de instalação ainda não cobertos por `allowScripts`. Node `v24.21.0`
+e npm `11.19.0` correspondem aos requisitos do manifesto; `@angular/build` e seu
+`builders.json` agora existem em `node_modules`. `package.json` e `package-lock.json`
+permanecem sem diff. Após a restauração, `npm.cmd test -- --watch=false` passou com
+430 testes em 33 arquivos e `npm.cmd run build` concluiu, ambos em `frontend/` com
+código de saída 0; o bundle foi gerado em `frontend/dist/vendas-em-aberto`. O aviso de
+quatro scripts ainda não cobertos por `allowScripts` permaneceu, mas não impediu testes
+ou build. Não houve alteração de fontes frontend.
+
+**Auditoria final VER-01/4.3 — 26/11/2026:** os cenários da delta estão ligados aos
+testes CON-008/012/013 e HIS-007 no catálogo; a documentação mantém DEC-038/CA-049/
+FON-041 para SQLite e DEC-039/CA-053/FON-042 para MSTest, com aliases antigos
+qualificados. `openspec validate corrigir-contratos-e-rastreabilidade --strict`,
+`openspec validate corrigir-resolucao-sdk-mstest --strict`, `git diff --check` e a
+checagem de whitespace contra `origion/main` passaram. A `main` local está sincronizada
+com `origion/main`; o diff da feature contém somente arquivos e áreas previstos pela
+Change.
+Limitações: a extensão VS Code não foi verificada; E2E visual/zoom não se aplicam por
+não haver alteração de UI. O aviso npm de scripts não cobertos por `allowScripts` foi
+preservado acima; testes e build frontend ainda assim passaram. Não há alterações em
+dependências/manifests, persistência ou API de negócio.
 
 ## Estado de verificação
 
