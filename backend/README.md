@@ -533,6 +533,28 @@ com posição não vazia, valida parâmetros, consulta anos 0001/9999 e usa o co
 correção para mover um recebimento de março a abril: só a movimentação muda, mantendo
 referência, revisão e posição financeira. Fixtures usam SQLite temporário e cleanup.
 
+## Concorrência transversal dos Commands (APP-06/6.1)
+
+Os cinco Commands mutáveis (`CadastrarVenda`, `EditarClienteVenda`,
+`AlterarStatusVenda`, `RegistrarPagamento` e `CorrigirPagamento`) rejeitam revisão
+negativa. Testes SQLite aplicam, antes de cada tentativa obsoleta, uma edição bem
+sucedida em outra venda; todas as tentativas com a revisão anterior retornam
+`conflito-revisao`, sem aplicar o candidato. Uma corrida determinística inicia dois
+consumidores/providers independentes, usa um double delegante apenas para liberar as
+duas cargas antes de `SaveAsync` e então delega as gravações ao SQLite real. De duas
+alterações de vendas distintas, somente uma confirma; cada consumidor chama Save uma
+vez (sem retry), o reaberto preserva o conjunto completo e a edição/revisão do vencedor,
+e rejeita os dados do perdedor. O double não substitui os testes de transação SQLite.
+
+Verificação, SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~ConcorrenciaCommandsSqliteTests
+```
+
+Resultado: 2 testes passaram; arquivos SQLite e pools são temporários e limpos.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
