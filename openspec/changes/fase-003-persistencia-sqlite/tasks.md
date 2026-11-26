@@ -34,7 +34,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 
 - [x] 4.1 Implementar gravação do conjunto validado em transação de escrita não diferida, conferindo integridade atual, revisão esperada e limite da revisão; atualizar token condicionalmente e persistir todas as linhas no mesmo commit. Reconciliar por ID sem apagar/recriar toda a base, evitando colisões temporárias de ordens. MSTest fecha/reabre arquivo após salvar e confere round-trip completo de 3.1/3.2, revisão +1 e snapshot idêntico com revisão atual sem duplicação. Documentar garantias/custo do snapshot no README.
 - [x] 4.2 Proteger vendas existentes e histórico: recusar omissão de raiz, remoção de parcela/recebimento, alteração de contrato-base/entrada/lote e perda de identidade/alocação Individual. Testar cada recusa sem mudança de dados/revisão e sucessos por operações de cliente/status/baixa/correção do domínio, preservando outras vendas. Testar candidato com IDs globais colidentes ou overflow sem gravar, usando coleção candidata validável que permita informar falha, sem burlar encapsulamento do domínio. Atualizar README e executar regressões de armazenamento.
-- [ ] 4.3 Cobrir dois consumidores/conexões na mesma revisão com sincronização determinística: no máximo um commit, revisão obsoleta recusa e recarga mostra versão íntegra. Testar leitura consistente durante escrita, timeout de banco ocupado sem auto-retry e limite long.MaxValue sem overflow. Executar casos concorrentes com arquivo isolado e registrar resultados, sem alegar concorrência operacional homologada.
+- [x] 4.3 Cobrir dois consumidores/conexões na mesma revisão com sincronização determinística: no máximo um commit, revisão obsoleta recusa e recarga mostra versão íntegra. Testar leitura consistente durante escrita, timeout de banco ocupado sem auto-retry e limite long.MaxValue sem overflow. Executar casos concorrentes com arquivo isolado e registrar resultados, sem alegar concorrência operacional homologada.
 - [ ] 4.4 Testar rollback após primeira alteração e antes do commit por composição/interceptor exclusivo de teste; nova conexão deve observar estado/revisão anteriores e nova operação válida deve confirmar. Cobrir token previamente cancelado, cancelamento observado antes do commit, token tardio após commit confirmado, exceção inesperada propagada e confirmação indeterminada sem retry/alegação falsa de rollback. Testar mensagens sem SQL/CPF/telefone/caminho pessoal e sensitive-data logging desligado. Documentar códigos/limites no README e executar toda a suíte de persistência.
 
 ## 5. SQL-05 — Verificação integrada e fechamento de evidências
@@ -130,6 +130,17 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   (um teste de round-trip de 4.1 e cinco novos testes de 4.2);
   suíte `FullyQualifiedName~Persistencia`: 45/45; build Release sem avisos/erros e format
   verify passaram. Detalhes e limitações permanecem no README.
+- SQL-04/4.3: dois consumidores aguardam barreira determinística e salvam candidatos
+  diferentes com revisão 0; exatamente um retorna sucesso, o outro conflito, revisão
+  final é 1 e o conjunto relido corresponde integralmente ao vencedor. Repetição com
+  revisão antiga conflita sem alterar estado. Leitura usa transação deferred: sob writer
+  imediato com cliente/revisão alterados mas não confirmados, lê conjunto/revisão
+  anteriores; após commit, lê ambos os novos. Timeout de writer concorrente retorna
+  `banco-ocupado` em 5,248 s (limite configurado 5 s), sem nova tentativa; revisão e
+  dados permanecem iguais. `long.MaxValue` retorna `limite-revisao-excedido` sem overflow
+  ou alteração. Os 4 testes novos passam; classe do gravador 10/10, suíte de persistência
+  49/49, build Release sem avisos/erros e format verify aprovados. São testes locais em
+  arquivos temporários, não homologação de concorrência operacional.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using System.Diagnostics;
 using VendasEmAberto.Aplicacao.Persistencia;
 using VendasEmAberto.Dominio.Recebimentos;
 using VendasEmAberto.Dominio.Valores;
@@ -366,6 +367,155 @@ public sealed class GravadorVendasSqliteTests
         Assert.AreEqual("prejuizo-parcela-2", vendaQuitada.Recebimentos[1].Alocacoes.Single().ParcelaId);
     }
 
+    [TestMethod]
+    public async Task Salvar_DoisConsumidoresNaMesmaRevisaoConfirmamUmaUnicaVersaoIntegra()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidatoA = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Concorrente A",
+            "52998224725",
+            "1190000001");
+        var candidatoB = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Concorrente B",
+            "11144477735",
+            "1190000002");
+        var liberar = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var ambosProntos = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var prontos = 0;
+
+        Task<ResultadoArmazenamento<long>> SalvarAposBarreiraAsync(Venda[] candidato) => SalvarAposBarreiraLocalAsync(candidato);
+
+        async Task<ResultadoArmazenamento<long>> SalvarAposBarreiraLocalAsync(Venda[] candidato)
+        {
+            if (Interlocked.Increment(ref prontos) == 2)
+            {
+                ambosProntos.SetResult();
+            }
+
+            await liberar.Task;
+            return await _armazenamento.SalvarAsync(
+                _caminhoFixture,
+                candidato,
+                inicial.Revisao,
+                Referencia);
+        }
+
+        var tarefaA = SalvarAposBarreiraAsync(candidatoA);
+        var tarefaB = SalvarAposBarreiraAsync(candidatoB);
+        await ambosProntos.Task;
+        liberar.SetResult();
+        var resultados = await Task.WhenAll(tarefaA, tarefaB);
+
+        Assert.AreEqual(1, resultados.Count(resultado => resultado is ResultadoArmazenamento<long>.Sucesso));
+        Assert.AreEqual(1, resultados.Count(resultado =>
+            resultado is ResultadoArmazenamento<long>.Falha falha &&
+            falha.Erro.Codigo == CodigosErroArmazenamento.ConflitoRevisao));
+
+        var final = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao + 1, final.Revisao);
+        var vencedor = final.Conjunto.Vendas[0].Cliente.Nome == "Concorrente A"
+            ? candidatoA
+            : candidatoB;
+        Assert.IsTrue(final.Conjunto.Vendas[0].Cliente.Nome is "Concorrente A" or "Concorrente B");
+        AssertConjuntosIguais(ExigirConjunto(vencedor), final.Conjunto);
+
+        var tentativaObsoleta = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            vencedor == candidatoA ? candidatoB : candidatoA,
+            inicial.Revisao,
+            Referencia);
+        ExigirErro(tentativaObsoleta, CodigosErroArmazenamento.ConflitoRevisao);
+        var aposRecusaObsoleta = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(final.Revisao, aposRecusaObsoleta.Revisao);
+        AssertConjuntosIguais(final.Conjunto, aposRecusaObsoleta.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Carregar_DuranteEscritaNaoConfirmadaVeSnapshotAnteriorEAposCommitVeSnapshotNovo()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        await using var conexaoEscrita = CriarConexaoSqlite(_caminhoFixture);
+        await conexaoEscrita.OpenAsync();
+        await using var transacao = conexaoEscrita.BeginTransaction(deferred: false);
+        await using (var comando = conexaoEscrita.CreateCommand())
+        {
+            comando.Transaction = transacao;
+            comando.CommandText = """
+                UPDATE Vendas SET ClienteNome = 'Alteração ainda não confirmada' WHERE Id = 'venda-entrada';
+                UPDATE EstadoArmazenamento SET Revisao = 1 WHERE Id = 1 AND Revisao = 0;
+                """;
+            Assert.AreEqual(2, await comando.ExecuteNonQueryAsync());
+        }
+
+        var duranteEscrita = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao, duranteEscrita.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, duranteEscrita.Conjunto);
+
+        await transacao.CommitAsync();
+        var aposCommit = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(1L, aposCommit.Revisao);
+        Assert.AreEqual("Alteração ainda não confirmada", aposCommit.Conjunto.Vendas[0].Cliente.Nome);
+        Assert.AreEqual(inicial.Conjunto.Vendas.Count, aposCommit.Conjunto.Vendas.Count);
+        for (var indice = 1; indice < inicial.Conjunto.Vendas.Count; indice++)
+        {
+            AssertVendaIgual(inicial.Conjunto.Vendas[indice], aposCommit.Conjunto.Vendas[indice]);
+        }
+    }
+
+    [TestMethod]
+    public async Task Salvar_RetornaBancoOcupadoAposTimeoutSemRetryAutomatico()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        await using var bloqueador = CriarConexaoSqlite(_caminhoFixture);
+        await bloqueador.OpenAsync();
+        await using var transacaoBloqueadora = bloqueador.BeginTransaction(deferred: false);
+        var cronometro = Stopwatch.StartNew();
+
+        var resultado = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            inicial.Conjunto.Vendas,
+            inicial.Revisao,
+            Referencia);
+
+        cronometro.Stop();
+        ExigirErro(resultado, CodigosErroArmazenamento.BancoOcupado);
+        Assert.IsTrue(
+            cronometro.Elapsed >= TimeSpan.FromSeconds(4),
+            $"O bloqueio deveria aguardar o timeout configurado de cinco segundos; decorrido: {cronometro.Elapsed}.");
+        Assert.IsTrue(
+            cronometro.Elapsed < TimeSpan.FromSeconds(12),
+            $"A operação parece ter repetido automaticamente após o timeout: {cronometro.Elapsed}.");
+
+        await transacaoBloqueadora.RollbackAsync();
+        var aposTimeout = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao, aposTimeout.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, aposTimeout.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_RecusaRevisaoLongMaxValueSemOverflowNemAlteracao()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        await ExecutarSqlAsync("UPDATE EstadoArmazenamento SET Revisao = 9223372036854775807 WHERE Id = 1;");
+
+        var resultado = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            inicial.Conjunto.Vendas,
+            long.MaxValue,
+            Referencia);
+
+        ExigirErro(resultado, CodigosErroArmazenamento.LimiteRevisaoExcedido);
+        var aposLimite = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(long.MaxValue, aposLimite.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, aposLimite.Conjunto);
+    }
+
     private async Task PrepararFixtureComHistoricoAsync()
     {
         var inicializacao = await _armazenamento.InicializarAsync(_caminhoFixture);
@@ -424,19 +574,21 @@ public sealed class GravadorVendasSqliteTests
 
     private async Task ExecutarSqlAsync(string sql)
     {
-        await using var conexao = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = _caminhoFixture,
-            Mode = SqliteOpenMode.ReadWrite,
-            ForeignKeys = true,
-            DefaultTimeout = 5,
-            Pooling = false
-        }.ToString());
+        await using var conexao = CriarConexaoSqlite(_caminhoFixture);
         await conexao.OpenAsync();
         await using var comando = conexao.CreateCommand();
         comando.CommandText = sql;
         await comando.ExecuteNonQueryAsync();
     }
+
+    private static SqliteConnection CriarConexaoSqlite(string caminho) => new(new SqliteConnectionStringBuilder
+    {
+        DataSource = caminho,
+        Mode = SqliteOpenMode.ReadWrite,
+        ForeignKeys = true,
+        DefaultTimeout = 5,
+        Pooling = false
+    }.ToString());
 
     private static Venda ReconstruirVenda(
         Venda original,
@@ -494,6 +646,30 @@ public sealed class GravadorVendasSqliteTests
             1,
             [parcelaId],
             Referencia));
+    }
+
+    private static Venda[] CriarCandidatoComClienteEditado(
+        ConjuntoVendas conjunto,
+        string nome,
+        string cpf,
+        string telefone)
+    {
+        var original = conjunto.Vendas.Single(venda => venda.Id == "venda-entrada");
+        var editado = ExigirVenda(original.EditarCliente(nome, cpf, telefone, "concorrente"));
+        return conjunto.Vendas
+            .Select(venda => venda.Id == original.Id ? editado : venda)
+            .ToArray();
+    }
+
+    private static ConjuntoVendas ExigirConjunto(IEnumerable<Venda> vendas)
+    {
+        var resultado = ConjuntoVendas.Criar(vendas);
+        if (resultado is ResultadoDominio<ConjuntoVendas>.Falha falha)
+        {
+            Assert.Fail($"{falha.Erro.Codigo}: {falha.Erro.Mensagem}");
+        }
+
+        return Assert.IsInstanceOfType<ResultadoDominio<ConjuntoVendas>.Sucesso>(resultado).Valor;
     }
 
     private static Dinheiro CriarDinheiro(long centavos)

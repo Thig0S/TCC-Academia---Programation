@@ -1,4 +1,3 @@
-using System.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using VendasEmAberto.Aplicacao.Persistencia;
@@ -28,17 +27,30 @@ internal sealed class LeitorVendasSqlite
 
         try
         {
-            await using var transacao = await contexto.Database.BeginTransactionAsync(
-                IsolationLevel.Serializable,
+            var conexao = (SqliteConnection)contexto.Database.GetDbConnection();
+            await using var transacaoSqlite = conexao.BeginTransaction(deferred: true);
+            var transacao = await contexto.Database.UseTransactionAsync(
+                transacaoSqlite,
                 cancellationToken);
-            var resultado = await CarregarNaTransacaoAtualAsync(contexto, referencia, cancellationToken);
-            if (resultado is ResultadoArmazenamento<SnapshotVendas>.Falha)
+            if (transacao is null)
             {
-                return resultado;
+                throw new InvalidOperationException("A transação SQLite não foi associada ao contexto.");
             }
 
-            await transacao.CommitAsync(cancellationToken);
-            return resultado;
+            await using (transacao)
+            {
+                // A leitura deferred adquire o snapshot no primeiro SELECT. Com journal
+                // DELETE, ela pode ler a versão confirmada enquanto um writer imediato
+                // mantém alterações não confirmadas, sem competir pelo lock de escrita.
+                var resultado = await CarregarNaTransacaoAtualAsync(contexto, referencia, cancellationToken);
+                if (resultado is ResultadoArmazenamento<SnapshotVendas>.Falha)
+                {
+                    return resultado;
+                }
+
+                await transacao.CommitAsync(cancellationToken);
+                return resultado;
+            }
         }
         catch (OperationCanceledException)
         {
