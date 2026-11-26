@@ -337,9 +337,10 @@ A matriz CA-054–060, os testes por nível e os limites estão no README e na d
 
 APP-06/6.5 concluiu a auditoria documental, `openspec validate fase-004-aplicacao
 --strict`, `git diff --check` e revisão do diff contra `origion/main` atualizada. Todas
-as tarefas estão concluídas; archive automático desta Change é o próximo passo antes
-do PR único. Não alegar homologação operacional, uso de dados reais ou aprovação de
-produto; merge continua dependendo de autorização explícita.
+as tarefas estão concluídas; specs foram sincronizadas e a Change está arquivada em
+`openspec/changes/archive/2026-11-26-fase-004-aplicacao/`. O PR único é o próximo passo.
+Não alegar homologação operacional, uso de dados reais ou aprovação de produto; merge
+continua dependendo de autorização explícita.
 
 ## DEC-039 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
 

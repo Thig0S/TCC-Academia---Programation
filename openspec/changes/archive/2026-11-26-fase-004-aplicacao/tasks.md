@@ -108,5 +108,5 @@ smoke loopback e 430 testes/build frontend passaram; detalhes e limitações est
 APP-06/6.5 concluiu a matriz final; `openspec validate fase-004-aplicacao --strict`,
 `git diff --check` e revisão do diff contra `origion/main` atualizada passaram. O diff
 não contém dados reais/bancos, endpoints de negócio, integração Angular, migrations ou
-alteração de outras Changes. Com as verificações da Change concluídas, o archive
-automático é o próximo passo e precede o PR único.
+alteração de outras Changes. A spec principal foi sincronizada e a Change foi arquivada
+em `openspec/changes/archive/2026-11-26-fase-004-aplicacao/`; o PR único vem depois.

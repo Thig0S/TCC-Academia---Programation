@@ -48,6 +48,6 @@ consumida sem alterar schema/contrato; não sincronizar/arquivar outras Changes 
 - Rastreabilidade: PRD/FON-043/044 → RF-027–030/CA-054–060 → TDD/DEC-040 → esta Change.
   Baseline de planejamento foi atualizada após o apply autorizado; o estado e as
   evidências verificadas estão em tasks/design e `backend/README.md`.
-- Branch `feature/fase-004-aplicacao`. APP-06/6.1–6.5 passou; archive automático desta
-  Change e PR único são as próximas etapas conforme AGENTS.md. Merge depende de
-  autorização explícita.
+- Branch `feature/fase-004-aplicacao`. APP-06/6.1–6.5 passou; specs foram sincronizadas
+  e esta Change foi arquivada conforme AGENTS.md. O PR único é a próxima etapa; merge
+  depende de autorização explícita.

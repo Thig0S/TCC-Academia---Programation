@@ -150,9 +150,9 @@ As evidências cobrem CA-054–060 por testes unitários, SQLite temporário, do
 protocolo e execução real do host/frontend, conforme matriz final no README. Isso
 comprova verificações técnicas, não homologação operacional, aceite da loja ou uso com
 vendas reais. Permanecem fora do escopo endpoints, integração Angular e alterações de
-schema/migration. A Change foi validada em modo estrito e revisada contra `origion/main`
-atualizada; archive e PR único são os próximos passos do fluxo. Nenhuma autorização de
-merge é inferida.
+schema/migration. A Change passou pela validação estrita, foi sincronizada e arquivada
+em `openspec/changes/archive/2026-11-26-fase-004-aplicacao/`; a abertura do PR único é
+o próximo passo do fluxo. Nenhuma autorização de merge é inferida.
 
 ## Correção da descoberta dos testes de backend (26/11/2026)
 
