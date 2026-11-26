@@ -8,8 +8,9 @@ SQL-01–05; este desenho detalha como verificá-los na Change. Desenho confirma
 no Harness, incluindo caminho explícito, inicializador interno e ausência de exclusão.
 Apply autorizado. SQL-01/1.1 verificou versões/licenças, restore bloqueado, grafo
 isolado da API, build Release e auditoria; SQL-01/1.2 implementou contrato, snapshot,
-resultados e testes direcionados. A decisão de remover a referência preexistente
-Api → Infraestrutura foi confirmada no Harness.
+resultados e testes direcionados; SQL-01/1.3 implementou modelo relacional, contexto,
+factory design-time e migration, com testes temporários de constraints. A decisão de
+remover a referência preexistente Api → Infraestrutura foi confirmada no Harness.
 
 Inspeção realizada:
 
@@ -19,9 +20,9 @@ Inspeção realizada:
   origens e somas; linha de entrada compara alocação/recebimento/base após `0280d3b`.
 - `ConjuntoVendas.cs`: valida IDs entre tipos e raízes e totais de todos os status;
   não substitui validação de cada histórico. Não publica/persiste candidatos.
-- Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura recebeu
-  dependências em SQL-01/1.1, mas ainda não há banco, schema, repositório ou código EF.
-  API referencia somente Aplicacao; testes de persistência
+- Aplicacao contém contrato/snapshot/resultados sem EF; Infraestrutura tem contexto,
+  entidades de linha, configurações e migration inicial. Não há inicializador, repositório,
+  leitura ou gravação. API referencia somente Aplicacao; testes de persistência
   devem referenciar Infraestrutura diretamente quando necessária.
 - `backend/README.md` e tasks da correção registram regressões e 143 testes backend
   aprovados. Sem reexecução nesta revisão. O caso positivo HIS-007 é independente,
@@ -75,7 +76,7 @@ contrato genérico de CRUD rejeitado por esconder revisão e validação do conj
 
 ### D2 — Schema preserva identidade e ordem, não derivados
 
-Usar as sete tabelas e constraints de DEC-038: EstadoArmazenamento,
+Usar seis tabelas da aplicação e constraints de DEC-038: EstadoArmazenamento,
 Identificadores, Vendas, Parcelas, Recebimentos, Alocacoes e tabela de histórico de
 migrations gerenciada pelo EF. Registro de IDs com PK TEXT BINARY garante unicidade
 entre tipos; garantir Tipo correto também na leitura. FKs compostas de alocação
@@ -190,8 +191,9 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 ## Migration Plan
 
 1. Revisar PRD/TDD e todos os artefatos, validar proposta e obter autorização explícita
-   de apply. Concluído; SQL-01/1.1 auditou dependências e isolou o grafo da API.
-2. SQL-01/02: concluir contrato/schema/migration inicial e inicializador
+   de apply. Concluído; SQL-01/1.1–1.3 auditaram dependências, isolaram a API e
+   entregaram contrato/schema/migration inicial.
+2. SQL-02: implementar inicializador explícito
    com testes de arquivo vazio/reaplicação/recusa. Não há base anterior a converter.
 3. SQL-03: leitura fiel e inválida testada; SQL-04: gravação/revisão com rollback,
    concorrência, cancelamento e preservação. Testes/documentação em cada entrega.
@@ -206,7 +208,8 @@ Rollback desta biblioteca consiste em interromper seu consumo e reverter o códi
 por PR revisado; não apagar/rebaixar arquivo com dados automaticamente. Testes limpam
 somente arquivos próprios. Recuperação operacional/backup exige planejamento próprio.
 
-Fontes e resultados de consulta estão em DEC-038: Context7 EF Core (SQLite,
-concorrência, migrations e factory) e NuGet 10.0.15. Restore bloqueado e build
-Release de verificação foram executados para SQL-01/1.1; migration, testes de
-persistência e acesso a banco ainda não foram executados.
+Fontes e resultados de consulta estão em DEC-038 e nas consultas Context7 EF Core
+(SQLite, chaves compostas, CHECK constraints, DateOnly, migrations e factory), além
+do NuGet 10.0.15. Restore bloqueado e auditoria ocorreram em SQL-01/1.1; migration,
+`has-pending-model-changes`, build e cinco testes de schema com banco temporário
+ocorreram em SQL-01/1.3. Nenhum acesso a banco operacional foi executado.

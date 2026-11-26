@@ -45,5 +45,5 @@ banco. Frontend/Pages permanecem exclusivamente demonstrativos e independentes.
 
 Branch: `feature/fase-003-persistencia-sqlite`, criada da main limpa e sincronizada
 com `origin/main`. Revisão recente foi por inspeção, não reexecução dos 143 testes
-backend e 430 frontend registrados. SQL-01/1.1 está concluído; SQL-01/1.2–SQL-05
+backend e 430 frontend registrados. SQL-01/1.1–1.3 estão concluídos; SQL-02–SQL-05
 permanecem pendentes.

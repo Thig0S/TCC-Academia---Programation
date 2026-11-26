@@ -8,6 +8,7 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.15" />
     <ProjectReference Include="..\..\src\VendasEmAberto.Api\VendasEmAberto.Api.csproj" />
+    <ProjectReference Include="..\..\src\VendasEmAberto.Infraestrutura\VendasEmAberto.Infraestrutura.csproj" />
   </ItemGroup>
 
 </Project>
