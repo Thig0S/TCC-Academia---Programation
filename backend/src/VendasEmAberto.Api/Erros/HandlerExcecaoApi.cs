@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using VendasEmAberto.Api.Contratos;
 
 namespace VendasEmAberto.Api.Erros;
