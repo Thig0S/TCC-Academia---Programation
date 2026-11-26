@@ -653,8 +653,11 @@ foram observados nesta execução. `openspec validate fase-004-aplicacao --stric
 `git diff --check` passaram; a revisão completa contra `origion/main` atualizada
 encontrou 82 arquivos da Change e nenhum dado real, arquivo de banco, endpoint de
 negócio, integração Angular, migration/schema ou alteração de outra Change. Não houve
-achado bloqueante na matriz CA-054–060. Archive automático desta Change precede o PR
-único; não declarar homologação operacional nem aprovação de produto.
+achado bloqueante na matriz CA-054–060. A spec `casos-de-uso-vendas` foi sincronizada
+para `openspec/specs/casos-de-uso-vendas/spec.md`; `openspec validate --specs` aprovou
+11 specs, 0 falhas, com 3 avisos de descrições de requisito acima de 500 caracteres.
+A Change foi arquivada em `openspec/changes/archive/2026-11-26-fase-004-aplicacao/`;
+resta o PR único. Não declarar homologação operacional nem aprovação de produto.
 
 ## Contrato de armazenamento
 

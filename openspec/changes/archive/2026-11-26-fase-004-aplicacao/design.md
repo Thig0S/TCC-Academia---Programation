@@ -233,5 +233,6 @@ continua sem endpoints comerciais e sem acesso ao SQLite; não houve alteração
 migration, Angular, dados reais ou outras Changes.
 
 APP-06/6.5 concluiu a matriz de aceite, validação OpenSpec estrita e revisão do diff;
-archive automático desta Change é o próximo passo antes do PR único. Esses resultados
-técnicos não equivalem a homologação operacional ou aprovação de produto.
+specs foram sincronizadas e esta Change está arquivada em
+`openspec/changes/archive/2026-11-26-fase-004-aplicacao/`. O PR único é o próximo passo.
+Esses resultados técnicos não equivalem a homologação operacional ou aprovação de produto.
