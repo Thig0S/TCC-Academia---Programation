@@ -510,8 +510,35 @@ Changes concluídas são preservados; detalhes e critérios estão em `docs/prd/
 **Execução registrada nesta atualização:** MAN-01 remapeou as referências MSTest no
 PRD/TDD e documentou a reconciliação com RF-023/RN-026/DEC-037. A inspeção de referências
 não encontrou IDs adicionais a alterar na Change MSTest ou neste README antes desta seção.
-Implementação do filtro, complemento HIS-007 e verificações integradas ainda estão
-pendentes; esta nota não declara testes de aplicação executados ou aceite final.
+COR-01 restringiu `ConsultarPeriodo.Vendas` a Ativas vendidas no intervalo, sem filtrar
+recebimentos por status. Em `backend/`, a classe direcionada passou com SDK isolado
+10.0.404:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\opencode\dotnet-10.0.404\dotnet.exe" test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConjuntoVendasConsultasTests"
+```
+
+Resultado: 7 aprovados, 0 falhas e 0 ignorados. Isso cobre a consulta por período,
+incluindo os casos adicionados CON-012/013; não é a regressão integrada. HIS-007 e as
+verificações integradas permanecem pendentes; estes resultados não declaram aceite
+final nem substituem as evidências históricas acima.
+
+**Regressões COR-01 executadas em sequência**, também em `backend/` com o mesmo SDK
+10.0.404, Release e `--no-restore`:
+
+| Filtro MSTest | Aprovados | Falhas/ignorados |
+| --- | ---: | ---: |
+| `FullyQualifiedName~RelatorioMensalVendasTests` | 5 | 0/0 |
+| `FullyQualifiedName~VendaProjecaoTests` | 4 | 0/0 |
+| `FullyQualifiedName~ConjuntoVendasTests` | 7 | 0/0 |
+| `FullyQualifiedName~LeitorHistoricoVendasSqliteTests` | 1 | 0/0 |
+
+Cada filtro foi executado por `dotnet test` no respectivo projeto UnitTests (três
+primeiros) ou IntegrationTests (último). Os casos de relatório confirmam vendas
+operacionais somente Ativas e recebimentos históricos de todos os status, sem alterar
+as posições/regras de persistência. A produção alterada nesta entrega é somente o
+predicado de seleção de vendas em `ConjuntoVendas.Consultas.cs`; nenhum relatório,
+validador global ou contrato SQLite foi refatorado.
 
 ## Estado de verificação
 

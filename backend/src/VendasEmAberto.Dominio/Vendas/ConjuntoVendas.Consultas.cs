@@ -87,7 +87,8 @@ public sealed partial class ConjuntoVendas
         }
 
         var vendasNoPeriodo = Vendas
-            .Where(venda => venda.DataVenda >= inicio && venda.DataVenda <= fim)
+            .Where(venda => venda.StatusAdministrativo == StatusAdministrativoVenda.Ativo &&
+                venda.DataVenda >= inicio && venda.DataVenda <= fim)
             .ToArray();
         long recebidos = 0;
         foreach (var recebimento in Vendas.SelectMany(venda => venda.Recebimentos))
