@@ -609,6 +609,23 @@ consultado por `dotnet list src/VendasEmAberto.Api/VendasEmAberto.Api.csproj pac
 não exigiu alteração dos lockfiles. Esses resultados são da auditoria nas fontes
 consultadas nesta execução, não uma garantia futura sobre novos advisories.
 
+## Smoke da API e independência do frontend (APP-06/6.4)
+
+Smoke executado com a DLL Release em processo próprio, diretamente pelo SDK isolado
+`10.0.404`, sem launch profile e sem banco configurado. Na porta temporária `5097`,
+`GET /health` respondeu `200`, `text/plain`, corpo exato `Healthy`; `GET /vendas`
+respondeu `404`. O listener observado foi exclusivamente `127.0.0.1`; nenhum arquivo
+`.db` novo foi criado no diretório `backend/`. O próprio processo (PID `20640`) foi
+encerrado após as verificações e a porta foi conferida liberada. A composição técnica
+do host permanece sem uso de armazenamento.
+
+Com a API própria desligada, frontend verificado em `frontend/` com Node `v24.21.0`
+e npm `11.19.0` (compatíveis com os engines do projeto). `node_modules` já estava
+presente, portanto não foi necessário `npm ci`; `npm.cmd test -- --watch=false`
+passou com 33 arquivos/430 testes e `npm.cmd run build` concluiu sem erros. Nenhum
+manifesto ou lockfile foi atualizado. E2E, auditoria visual e zoom não se aplicam,
+pois esta Change não alterou a UI.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
