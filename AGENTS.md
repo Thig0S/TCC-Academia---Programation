@@ -28,6 +28,14 @@ artefatos existentes quando eles já cobrirem o escopo:
    não executadas e explicitar limitações. Para mudanças exclusivamente documentais, a
    conclusão considera todo o escopo documental solicitado, sem autorizar implementação.
 
+- Ao concluir integralmente uma Change do OpenSpec — com todas as tarefas autorizadas e
+  verificações aplicáveis concluídas — arquivá-la automaticamente com o fluxo/comando de
+  archive do OpenSpec, antes de abrir o PR. Conferir o resultado do archive e incluir a
+  mudança arquivada no PR único. Artefatos de proposal prontos para revisão, tarefas
+  incompletas, bloqueios ou verificações pendentes não significam Change concluída e não
+  devem ser arquivados; mudanças exclusivamente documentais podem ser arquivadas quando
+  todo o escopo documental solicitado e suas verificações forem concluídos.
+
 - Não iniciar implementação com requisitos ou decisões bloqueantes em aberto. Resolver as
   dependências dos casos afetados antes de executá-los; não inventar regras para avançar.
 - Se uma decisão posterior alterar requisitos ou arquitetura, atualizar primeiro o PRD e/ou
