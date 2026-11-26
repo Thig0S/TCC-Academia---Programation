@@ -16,11 +16,13 @@ com a FASE-004 histórica do protótipo Angular.
 MediatR/FluentResults, detalhada em TDD/DEC-040. A opção inicialmente apresentada como
 versão anterior MIT foi corrigida: MediatR 12.5.0 é Apache-2.0; o solicitante aceitou
 explicitamente essa licença e versão, com FluentResults 4.0.0 MIT. Não se presume
-licença comercial, suporte da linha antiga ou auditoria executada.
+licença comercial ou suporte da linha antiga. No baseline do PRD, a auditoria ainda
+não havia sido executada; seu resultado posterior consta na atualização de execução.
 
-**Situação:** planejamento confirmado para o recorte; implementação não iniciada.
-Sem aceite operacional, dados reais ou autorização de apply. Responsáveis por
-homologação continuam fora desta definição; não se inventam participantes ou prazos.
+**Situação no baseline deste PRD:** planejamento confirmado para o recorte; naquele
+momento, implementação não iniciada e apply não autorizado. A atualização de execução
+registrada ao fim deste documento prevalece para o estado atual. Não há aceite
+operacional, dados reais ou responsáveis de homologação definidos.
 
 ### Problema, objetivos, público e estado observado
 
@@ -128,10 +130,29 @@ autenticação, Tauri/IPC, importação, dados reais, seed, backup operacional, 
 instalador, CI e manutenção/archive de outras Changes. Pendências do legado e aceite
 da loja continuam futuras e não bloqueiam biblioteca interna sintética.
 
-Roadmap: contratos/composição → cadastro/consulta → cliente/status → recebimentos →
-demais Queries → regressão/evidências. Todas as entregas estão não implementadas.
-Revisar artefatos antes de apply explícito; PR único somente após concluir toda a
-Change implementada/verificada e arquivá-la conforme AGENTS.md; merge exige autorização.
+Roadmap original: contratos/composição → cadastro/consulta → cliente/status → recebimentos
+→ demais Queries → regressão/evidências. No baseline do PRD, todas as entregas estavam
+não implementadas. O estado aplicado atualizado está registrado abaixo; PR único
+somente após concluir/verificar a Change e arquivá-la conforme AGENTS.md; merge exige
+autorização.
+
+### Atualização de execução da Fase 004 — 26/11/2026
+
+O apply de `fase-004-aplicacao` foi autorizado após revisão dos artefatos. As tarefas
+APP-01 a APP-05 e APP-06/6.1–6.5 estão implementadas e verificadas. A suíte completa
+backend passou com 285 testes, 0 falhas e 0 ignorados; discovery contou 197 UnitTests e
+88 IntegrationTests. Restore bloqueado, build Release, format, auditoria NuGet e grafo
+isolado da API estão registrados em `backend/README.md`. Smoke real confirmou health
+textual em loopback e 404 para `/vendas`; com a API desligada, frontend passou 430 testes
+em 33 arquivos e build. A versão usada foi o SDK isolado `10.0.404` (runtime `10.0.15`).
+
+As evidências cobrem CA-054–060 por testes unitários, SQLite temporário, doubles de
+protocolo e execução real do host/frontend, conforme matriz final no README. Isso
+comprova verificações técnicas, não homologação operacional, aceite da loja ou uso com
+vendas reais. Permanecem fora do escopo endpoints, integração Angular e alterações de
+schema/migration. A Change foi validada em modo estrito e revisada contra `origion/main`
+atualizada; archive e PR único são os próximos passos do fluxo. Nenhuma autorização de
+merge é inferida.
 
 ## Correção da descoberta dos testes de backend (26/11/2026)
 

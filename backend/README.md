@@ -626,6 +626,36 @@ passou com 33 arquivos/430 testes e `npm.cmd run build` concluiu sem erros. Nenh
 manifesto ou lockfile foi atualizado. E2E, auditoria visual e zoom não se aplicam,
 pois esta Change não alterou a UI.
 
+## Auditoria final de requisitos — fase-004-aplicacao (APP-06/6.5)
+
+Matriz de rastreabilidade revisada contra `specs/casos-de-uso-vendas/spec.md`,
+PRD/CA-054–060, TDD/DEC-040 e testes executados:
+
+| Requisito da delta | Aceite | Evidência principal |
+| --- | --- | --- |
+| Destino e preparação explícita | CA-059 | `ComposicaoInternaTests`, `DestinoArmazenamentoVendasTests`, `ConsultarVendaSqliteTests`; DI real, destino ausente não cria arquivo e preparação separada/idempotente. |
+| Referência civil e identidade | CA-054/056/057 | Testes dos cinco Commands, Queries e integração; referência/token/caminho conferidos, IDs opacos preservados e IDs novos somente nos fluxos autorizados. |
+| Cadastro sem publicação parcial | CA-054 | `CadastrarVendaHandlerTests` e `CadastrarVendaSqliteTests`; distribuição literal, entrada, colisões/overflow, falha sem Save e reabertura. |
+| Edição cadastral e status | CA-055 | `EditarClienteVendaHandlerTests`/`EditarClienteVendaSqliteTests` e `AlterarStatusVendaHandlerTests`/`AlterarStatusVendaSqliteTests`; campos isolados, CPF repetido, matriz e histórico. |
+| Baixa e correção individuais | CA-056 | `RegistrarPagamentoHandlerTests`/`RegistrarPagamentoSqliteTests` e `CorrigirPagamentoHandlerTests`/`CorrigirPagamentoSqliteTests`; alvo explícito, identidade/alocação preservadas e movimentação mensal. |
+| Revisão e gravação única | CA-058 | `ConcorrenciaCommandsSqliteTests`, cobertura unitária de cada Command e `GravadorVendasSqliteTests`; obsolescência, corrida pós-carga, um vencedor, sem retry e conjunto completo. |
+| No-op | CA-055/058 | Testes de edição/status provam zero Save/revisão avançada; revisão antiga falha antes do no-op; correção idêntica segue gravação conforme testes de recebimento. |
+| Consultas completas e sem escrita | CA-057 | Testes de detalhe, coleções, resumo e período unitários/SQLite; snapshot/revisão, ordem, clientes/histórico, vazio, imutabilidade e zero escrita. |
+| Período/mês reconciliáveis | CA-057 | `ConsultarPeriodoHandlerTests`/`ConsultarPeriodoSqliteTests` e `ConsultarRelatorioMensalHandlerTests`/`ConsultarRelatorioMensalSqliteTests`; bordas, todos os status, série diária, totais, extremos e correção entre meses. |
+| Respostas próprias e protegidas | CA-054–057 | Testes de `MapeadorVendaResposta`, DTOs de consultas e reaberturas SQLite; centavos inteiros, datas, nulabilidade, ordens, vínculo do cliente e coleções protegidas. |
+| Falhas tipadas e seguras | CA-058 | `ConversorErrosAplicacaoTests`, testes dos handlers e `HandlersFalhasCancelamentoTests`; códigos/categorias, Reasons sem dados técnicos/pessoais, exceção/código desconhecido e banco ausente distinto de venda ausente. |
+| Cancelamento/commit incerto | CA-058 | `HandlersFalhasCancelamentoTests` valida protocolo; `GravadorVendasSqliteTests` comprova rollback, sucesso tardio e confirmação indeterminada com SQLite real. |
+| Isolamento host/frontend | CA-059/060 | Smoke documentado acima, auditoria transitiva da API sem EF/SQLite e teste/build frontend com API desligada. |
+
+Fechamento APP-06: restore bloqueado, build Release, 285 testes backend (88 integração
++ 197 unitários), format, auditoria NuGet, smoke da API e 430 testes/build frontend
+foram observados nesta execução. `openspec validate fase-004-aplicacao --strict` e
+`git diff --check` passaram; a revisão completa contra `origion/main` atualizada
+encontrou 82 arquivos da Change e nenhum dado real, arquivo de banco, endpoint de
+negócio, integração Angular, migration/schema ou alteração de outra Change. Não houve
+achado bloqueante na matriz CA-054–060. Archive automático desta Change precede o PR
+único; não declarar homologação operacional nem aprovação de produto.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a

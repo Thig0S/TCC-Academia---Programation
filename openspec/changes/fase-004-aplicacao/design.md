@@ -4,10 +4,12 @@
 
 Motivação em `proposal.md`/Why. Base normativa: PRD/FON-043/044/RF-027–030/CA-054–060
 e TDD/DEC-040, que centraliza contratos, versões, conversão de falhas e roadmap.
-Situação: somente planejamento autorizado; nenhuma funcionalidade desta Change existe.
+Situação no baseline deste desenho: somente planejamento autorizado; naquela revisão
+nenhuma funcionalidade desta Change existia. A atualização de aplicação ao final registra
+o estado posterior, sem reescrever os fatos observados no planejamento.
 
-Inspeção de produção/testes: `Aplicacao/Persistencia/` já define armazenamento,
-snapshot/revisão e resultados; não há handlers. Dominio tem operações imutáveis e
+Inspeção no baseline: `Aplicacao/Persistencia/` já definia armazenamento,
+snapshot/revisão e resultados; ainda não havia handlers. Dominio tem operações imutáveis e
 projeções; Infraestrutura implementa adaptador SQLite internal com acesso de teste
 por InternalsVisibleTo. UnitTests referencia Aplicacao diretamente. A API não referencia
 Infraestrutura e permanece health-only; Angular continua em memória.
@@ -197,23 +199,39 @@ Não usar contagens históricas como expectativa fixa ou declarar homologação 
 
 ## Migration Plan
 
-Não há alteração de schema/migration nem migração de dados. No apply, adicionar pacotes/
-lockfiles e composição interna; verificar com temporários próprios. A API não ativa o
-novo código: não há deploy operacional ou preparação automática para reverter.
+Não houve alteração de schema/migration nem migração de dados. O apply adicionou
+dependências/lockfiles e composição interna, verificados com temporários próprios. A API
+não ativa os casos de uso: não houve deploy operacional ou preparação automática para
+reverter.
 
-Se o gate técnico falhar, parar antes do código dependente e revisar DEC-040/artefatos.
-Correção/reversão de implementação futura ocorre por nova alteração revisada, nunca
-reset/downgrade/remoção de arquivo de banco. Não apagar histórico ou dados para testar.
+O gate técnico passou nas verificações registradas em `backend/README.md`; não foi
+necessário rever dependências por vulnerabilidade observada. Correção/reversão de código
+ocorre por nova alteração revisada, nunca reset/downgrade/remoção de arquivo de banco.
+Não apagar histórico ou dados para testar.
 
 Roadmap completo em TDD/DEC-040: APP-01 contratos/composição → APP-02 cadastro/detalhe →
 APP-03 cliente/status e APP-04 recebimentos → APP-05 Queries → APP-06 regressão/evidências.
 APP-03/04/05 podem avançar após APP-02, mas builds não compartilham saída em paralelo.
 Cada caso de uso é commit próprio com testes/docs; um PR só após toda a Change aplicada,
-verificada e arquivada. Nenhum archive/PR agora; aguardar revisão e apply explícito.
+verificada e arquivada. No baseline deste desenho, archive/PR aguardavam autorização de
+apply; o estado atual está registrado ao final deste documento.
 
 ## Open Questions
 
-Nenhuma decisão material em aberto no recorte confirmado. Restore/build/auditoria das
-dependências são verificações futuras bloqueantes do APP-01, não compatibilidade já
-demonstrada. Contratos HTTP, proteção IPC e importação são fora de escopo, não tarefas
-indefinidas desta implementação.
+Nenhuma decisão material de produto/arquitetura permanece em aberto. Restore/build/
+auditoria do APP-01 foram executados; os resultados e suas limitações estão no README.
+Contratos HTTP, proteção IPC e importação são fora de escopo, não tarefas indefinidas
+desta implementação. Resta somente o fechamento documental da tarefa 6.5.
+
+## Implementação e estado de verificação — 26/11/2026
+
+O apply autorizado implementou APP-01–05 e completou APP-06/6.1–6.4 na branch
+`feature/fase-004-aplicacao`, com commits por funcionalidade. A suíte completa backend
+passou com 285 testes, sem falhas/ignorados; restore bloqueado, build Release, format,
+auditoria de pacotes, smoke loopback e testes/build do frontend também passaram. A API
+continua sem endpoints comerciais e sem acesso ao SQLite; não houve alteração de schema,
+migration, Angular, dados reais ou outras Changes.
+
+APP-06/6.5 concluiu a matriz de aceite, validação OpenSpec estrita e revisão do diff;
+archive automático desta Change é o próximo passo antes do PR único. Esses resultados
+técnicos não equivalem a homologação operacional ou aprovação de produto.

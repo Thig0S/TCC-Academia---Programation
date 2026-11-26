@@ -38,7 +38,7 @@ consumida sem alterar schema/contrato; não sincronizar/arquivar outras Changes 
 
 ## Impact
 
-- Futuro código em `backend/src/VendasEmAberto.Aplicacao/`, composição/gerador na
+- Código aplicado em `backend/src/VendasEmAberto.Aplicacao/`, composição/gerador na
   Infraestrutura, respectivos projetos/lockfiles e testes MSTest unitários/integração.
 - API continua sem referência a Infraestrutura/EF/SQLite, sem registro dos casos de uso,
   sem abertura de banco e com `/health`/404 preservados. MediatR/FluentResults podem
@@ -46,7 +46,8 @@ consumida sem alterar schema/contrato; não sincronizar/arquivar outras Changes 
 - Sem endpoints, mapper HTTP, Angular, importação, dados reais, seed, autenticação,
   Tauri/IPC, backup operacional, instalador ou CI.
 - Rastreabilidade: PRD/FON-043/044 → RF-027–030/CA-054–060 → TDD/DEC-040 → esta Change.
-  Arquivos de planejamento são a única entrega autorizada agora; não houve implementação.
-- Branch `feature/fase-004-aplicacao`; sem PR ou archive por planejamento pronto.
-  Após apply integral/verificações, archive desta Change e PR único conforme AGENTS.md;
-  merge depende de autorização explícita.
+  Baseline de planejamento foi atualizada após o apply autorizado; o estado e as
+  evidências verificadas estão em tasks/design e `backend/README.md`.
+- Branch `feature/fase-004-aplicacao`. APP-06/6.1–6.5 passou; archive automático desta
+  Change e PR único são as próximas etapas conforme AGENTS.md. Merge depende de
+  autorização explícita.
