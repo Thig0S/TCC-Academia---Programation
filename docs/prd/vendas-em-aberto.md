@@ -30,8 +30,10 @@ tipos de negócio ou pacotes de persistência. SQL-01/1.1 adicionou dependência
 somente à Infraestrutura; SQL-01/1.2 adicionou o contrato em Aplicacao e SQL-01/1.3
 o modelo relacional, `VendasDbContext` e migration inicial. SQL-02/2.1 implementou
 inicializador explícito/revisão zero; SQL-03/3.1–3.3 implementou leitura transacional,
-cobertura de histórico/relatórios e rejeição adversarial em fixtures SQL. A leitura
-ainda não está exposta pelo contrato de produção; gravação permanece pendente.
+cobertura de histórico/relatórios e rejeição adversarial em fixtures SQL; SQL-04/4.1
+implementou a primeira gravação atômica e round-trip. A persistência continua interna,
+sem registro na API; proteções de histórico, concorrência, falhas/cancelamento e
+verificação final permanecem pendentes.
 
 ### Escopo, requisitos e prioridade
 
@@ -108,9 +110,10 @@ de apply, que foi concedida posteriormente para esta Change.
 Roadmap: contrato/schema → inicializador → leitura validada → gravação/revisão →
 regressão e evidências. FON-041 → RF-024–026/CA-049–052 → TDD/DEC-038 →
 `openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1–1.3, SQL-02/2.1–2.2 e
-SQL-03/3.1–3.3 (dependências, isolamento da API, contrato, schema, inicializador,
-abertura validada, leitura fiel e rejeição de dados inválidos) estão aplicados.
-Integração ao contrato e gravação/revisão permanecem pendentes.
+SQL-03/3.1–3.3 e SQL-04/4.1 (dependências, isolamento da API, contrato, schema,
+inicializador, abertura validada, leitura fiel, rejeição de dados inválidos e gravação
+transacional com round-trip) estão aplicados. Proteções detalhadas do histórico,
+concorrência, falhas/cancelamento e verificação final permanecem pendentes.
 Preservar histórico e IDs anteriores. PR único somente após escopo integral verificado;
 nenhum PR antecipado ou merge implícito.
 
