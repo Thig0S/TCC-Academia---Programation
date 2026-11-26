@@ -354,6 +354,27 @@ permanecem preservados. Testes da classe `GravadorVendasSqliteTests`: 6/6; suít
 `FullyQualifiedName~Persistencia`: 45/45; build Release sem avisos/erros e format verify
 passaram. Tudo em arquivos sintéticos temporários.
 
+### Concorrência e leitura consistente (SQL-04/4.3)
+
+Com journal DELETE padrão e sem WAL obrigatório, o gravador mantém transação SQLite
+imediata. O leitor agora inicia transação deferred e adquire seu snapshot no primeiro
+SELECT: assim, enquanto um writer mantém atualização de cliente e revisão sem commit, a
+leitura observa integralmente a versão anterior; após commit, nova leitura observa
+integralmente a versão nova. Não há exposição de linhas intermediárias.
+
+Uma barreira libera dois consumidores com candidatos diferentes e a mesma revisão:
+exatamente um confirma revisão 1 e o outro recebe `conflito-revisao`; o snapshot final
+corresponde integralmente ao candidato vencedor. Uma nova tentativa com revisão antiga
+também conflita e preserva o estado. Sob uma conexão que mantém `BEGIN IMMEDIATE`, uma
+gravação concorrente retorna `banco-ocupado` após 5,248 s para timeout configurado de
+5 s; não há retry automático nem alteração da revisão/snapshot. Revisão `long.MaxValue`
+é recusada com `limite-revisao-excedido`, sem overflow ou escrita.
+
+Os quatro testes novos de SQL-04/4.3 passaram; a classe do gravador passou 10/10 e a
+suíte `FullyQualifiedName~Persistencia` 49/49. Build Release sem avisos/erros e
+`dotnet format --verify-no-changes --no-restore` passaram. A concorrência é coberta em
+arquivos sintéticos temporários; isso não constitui homologação operacional.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio
