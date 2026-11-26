@@ -1,5 +1,7 @@
 using Microsoft.Data.Sqlite;
 using VendasEmAberto.Aplicacao.Persistencia;
+using VendasEmAberto.Dominio.Recebimentos;
+using VendasEmAberto.Dominio.Valores;
 using VendasEmAberto.Dominio.Vendas;
 using VendasEmAberto.Infraestrutura.Persistencia.Sqlite;
 
@@ -68,6 +70,300 @@ public sealed class GravadorVendasSqliteTests
             await _armazenamento.CarregarAsync(_caminhoDestino, Referencia));
         Assert.AreEqual(2L, aposSegundaReabertura.Revisao);
         AssertConjuntosIguais(snapshotEsperado.Conjunto, aposSegundaReabertura.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_RecusaOmissaoDeVendaSemAlterarDadosNemRevisao()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidato = inicial.Conjunto.Vendas
+            .Where(venda => venda.Id != "venda-inativa")
+            .ToArray();
+
+        var resultado = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia);
+
+        ExigirErro(resultado, CodigosErroArmazenamento.ExclusaoNaoPermitida);
+        var aposFalha = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao, aposFalha.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, aposFalha.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_RecusaAlteracoesDeContratoEntradaLoteEIdentidadeIndividualSemGravar()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var entrada = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-entrada");
+        var lote = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-lote");
+        var prejuizo = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-prejuizo");
+
+        var contratoSemParcela = ExigirVenda(Venda.Cadastrar(
+            prejuizo.Id,
+            prejuizo.Cliente,
+            prejuizo.DataVenda,
+            prejuizo.ValorTotalBase,
+            quantidadeParcelas: 1,
+            ["parcela-substituta"],
+            Referencia));
+        var contratoComBaseAlterada = ReconstruirVenda(
+            prejuizo,
+            valorTotalBaseCentavos: 12_000,
+            parcelas:
+            [
+                new DadosReconstrucaoParcela(
+                    prejuizo.Parcelas[0].Id,
+                    1,
+                    CriarDinheiro(6_000),
+                    prejuizo.Parcelas[0].Vencimento),
+                new DadosReconstrucaoParcela(
+                    prejuizo.Parcelas[1].Id,
+                    2,
+                    CriarDinheiro(6_000),
+                    prejuizo.Parcelas[1].Vencimento)
+            ],
+            recebimentos:
+            [
+                new DadosReconstrucaoRecebimento(
+                    "receb-prejuizo",
+                    new DateOnly(2027, 4, 1),
+                    FormaPagamento.Pix,
+                    CriarDinheiro(6_000),
+                    OrigemRecebimento.Individual,
+                    CriarDinheiro(0),
+                    "",
+                    [new DadosReconstrucaoAlocacao("prejuizo-parcela-1", CriarDinheiro(6_000))])
+            ]);
+        var recebimentoRemovido = ReconstruirVenda(prejuizo, recebimentos: []);
+        var entradaReescrita = ReconstruirVenda(
+            entrada,
+            recebimentos: entrada.Recebimentos.Select(recebimento =>
+                recebimento.Origem == OrigemRecebimento.Entrada
+                    ? NovoDadosRecebimento(recebimento, forma: FormaPagamento.Dinheiro)
+                    : NovoDadosRecebimento(recebimento)));
+        var loteReescrito = ReconstruirVenda(
+            lote,
+            recebimentos: lote.Recebimentos.Select(recebimento =>
+                recebimento.Origem == OrigemRecebimento.HistoricoLote
+                    ? NovoDadosRecebimento(recebimento, data: new DateOnly(2027, 3, 21))
+                    : NovoDadosRecebimento(recebimento)));
+        var individualComOutraIdentidade = ReconstruirVenda(
+            entrada,
+            recebimentos: entrada.Recebimentos.Select(recebimento =>
+                recebimento.Id == "receb-individual-corrigido"
+                    ? NovoDadosRecebimento(recebimento, id: "receb-individual-substituto")
+                    : NovoDadosRecebimento(recebimento)));
+
+        (string Descricao, string VendaId, Venda Candidata)[] alteracoes =
+        [
+            ("remoção/substituição de parcela", prejuizo.Id, contratoSemParcela),
+            ("alteração de contrato-base e valores de parcelas", prejuizo.Id, contratoComBaseAlterada),
+            ("remoção de recebimento", prejuizo.Id, recebimentoRemovido),
+            ("reescrita da entrada", entrada.Id, entradaReescrita),
+            ("reescrita de lote histórico", lote.Id, loteReescrito),
+            ("perda da identidade do Individual", entrada.Id, individualComOutraIdentidade)
+        ];
+
+        foreach (var (descricao, vendaId, vendaCandidata) in alteracoes)
+        {
+            var candidato = inicial.Conjunto.Vendas
+                .Select(venda => venda.Id == vendaId ? vendaCandidata : venda)
+                .ToArray();
+            var resultado = await _armazenamento.SalvarAsync(
+                _caminhoFixture,
+                candidato,
+                inicial.Revisao,
+                Referencia);
+
+            ExigirErro(resultado, CodigosErroArmazenamento.AlteracaoHistoricoNaoPermitida, descricao);
+            var aposFalha = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+            Assert.AreEqual(inicial.Revisao, aposFalha.Revisao, descricao);
+            AssertConjuntosIguais(inicial.Conjunto, aposFalha.Conjunto);
+        }
+    }
+
+    [TestMethod]
+    public async Task Salvar_RecusaColisaoGlobalEOverflowDoCandidatoSemAlterarEstado()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+
+        var vendaComIdCompartilhado = CriarVendaSimples("id-global-compartilhado", "parcela-unica-a", 10_000);
+        var vendaComParcelaColidente = CriarVendaSimples("venda-b", "id-global-compartilhado", 10_000);
+        var colisoes = new[] { vendaComIdCompartilhado, vendaComParcelaColidente };
+        var limite = Dinheiro.LimiteCentavos;
+        var conjuntoComOverflow = new[]
+        {
+            CriarVendaSimples("venda-limite-a", "parcela-limite-a", limite),
+            CriarVendaSimples("venda-limite-b", "parcela-limite-b", limite)
+        };
+
+        foreach (var candidato in new[] { colisoes, conjuntoComOverflow })
+        {
+            var resultado = await _armazenamento.SalvarAsync(
+                _caminhoFixture,
+                candidato,
+                inicial.Revisao,
+                Referencia);
+            ExigirErro(resultado, CodigosErroArmazenamento.CandidatoInvalido);
+
+            var aposFalha = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+            Assert.AreEqual(inicial.Revisao, aposFalha.Revisao);
+            AssertConjuntosIguais(inicial.Conjunto, aposFalha.Conjunto);
+        }
+    }
+
+    [TestMethod]
+    public async Task Salvar_RecusaTrocarIdentidadeEParcelaAlocadaEntreIndividualSemAlterarEstado()
+    {
+        var inicializacao = await _armazenamento.InicializarAsync(_caminhoFixture);
+        Assert.IsInstanceOfType<ResultadoOperacaoArmazenamento.Sucesso>(inicializacao);
+        var clienteResult = DadosClienteVenda.Criar(
+            "Venda de dois pagamentos",
+            "12345678909",
+            "1198765432",
+            null);
+        var cliente = Assert.IsInstanceOfType<ResultadoDominio<DadosClienteVenda>.Sucesso>(clienteResult).Valor;
+        var venda = ExigirVenda(Venda.Cadastrar(
+            "venda-duas-individuais",
+            cliente,
+            new DateOnly(2027, 1, 15),
+            CriarDinheiro(20_000),
+            2,
+            ["parcela-individual-1", "parcela-individual-2"],
+            Referencia));
+        venda = ExigirVenda(venda.RegistrarPagamento(
+            "receb-individual-1",
+            "parcela-individual-1",
+            CriarDinheiro(10_000),
+            new DateOnly(2027, 2, 10),
+            FormaPagamento.Dinheiro,
+            Referencia));
+        venda = ExigirVenda(venda.RegistrarPagamento(
+            "receb-individual-2",
+            "parcela-individual-2",
+            CriarDinheiro(10_000),
+            new DateOnly(2027, 3, 10),
+            FormaPagamento.Pix,
+            Referencia));
+
+        var revisaoSalva = ExigirRevisaoSalva(await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            [venda],
+            0,
+            Referencia));
+        Assert.AreEqual(1L, revisaoSalva);
+        var persistida = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var primeiro = venda.Recebimentos[0];
+        var segundo = venda.Recebimentos[1];
+        var candidatoComIdentidadesTrocadas = ReconstruirVenda(
+            venda,
+            recebimentos:
+            [
+                new DadosReconstrucaoRecebimento(
+                    segundo.Id,
+                    segundo.Data,
+                    segundo.Forma,
+                    segundo.Valor,
+                    OrigemRecebimento.Individual,
+                    segundo.Acrescimo,
+                    segundo.Observacao,
+                    [new DadosReconstrucaoAlocacao("parcela-individual-1", segundo.Valor)]),
+                new DadosReconstrucaoRecebimento(
+                    primeiro.Id,
+                    primeiro.Data,
+                    primeiro.Forma,
+                    primeiro.Valor,
+                    OrigemRecebimento.Individual,
+                    primeiro.Acrescimo,
+                    primeiro.Observacao,
+                    [new DadosReconstrucaoAlocacao("parcela-individual-2", primeiro.Valor)])
+            ]);
+
+        var resultado = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            [candidatoComIdentidadesTrocadas],
+            persistida.Revisao,
+            Referencia);
+
+        ExigirErro(resultado, CodigosErroArmazenamento.AlteracaoHistoricoNaoPermitida);
+        var aposFalha = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(persistida.Revisao, aposFalha.Revisao);
+        AssertConjuntosIguais(persistida.Conjunto, aposFalha.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_AceitaEdicaoClienteStatusBaixaECorrecaoPreservandoDemaisVendas()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var vendaEntrada = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-entrada");
+        var vendaInativa = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-inativa");
+        var vendaPrejuizo = inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-prejuizo");
+
+        var correcao = ExigirVenda(vendaEntrada.CorrigirPagamento(
+            "receb-individual-corrigido",
+            CriarDinheiro(10_200),
+            new DateOnly(2027, 3, 6),
+            FormaPagamento.Pix,
+            Referencia,
+            inicial.Conjunto.Vendas,
+            "ajustado"));
+        var vendaEditada = ExigirVenda(correcao.EditarCliente(
+            "Entrada Editada",
+            "52998224725",
+            "1190000000",
+            "cliente atualizado"));
+        var vendaReativada = ExigirVenda(vendaInativa.AlterarStatusAdministrativo(StatusAdministrativoVenda.Ativo));
+        var prejuizoReativado = ExigirVenda(vendaPrejuizo.AlterarStatusAdministrativo(StatusAdministrativoVenda.Ativo));
+        var baixaFinal = ExigirVenda(prejuizoReativado.RegistrarPagamento(
+            "receb-prejuizo-final",
+            "prejuizo-parcela-2",
+            CriarDinheiro(5_000),
+            new DateOnly(2027, 4, 10),
+            FormaPagamento.Dinheiro,
+            Referencia,
+            "baixa final"));
+
+        var candidato = inicial.Conjunto.Vendas.Select(venda => venda.Id switch
+        {
+            "venda-entrada" => vendaEditada,
+            "venda-inativa" => vendaReativada,
+            "venda-prejuizo" => baixaFinal,
+            _ => venda
+        }).ToArray();
+        var resultado = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia);
+
+        Assert.AreEqual(1L, ExigirRevisaoSalva(resultado));
+        var salvo = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(1L, salvo.Revisao);
+        CollectionAssert.AreEqual(
+            inicial.Conjunto.Vendas.Select(venda => venda.Id).ToArray(),
+            salvo.Conjunto.Vendas.Select(venda => venda.Id).ToArray());
+        Assert.AreEqual("Entrada Editada", salvo.Conjunto.Vendas[0].Cliente.Nome);
+        Assert.AreEqual("cliente atualizado", salvo.Conjunto.Vendas[0].Cliente.Descricao);
+        Assert.AreEqual("receb-individual-corrigido", salvo.Conjunto.Vendas[0].Recebimentos[1].Id);
+        Assert.AreEqual("parcela-futura", salvo.Conjunto.Vendas[0].Recebimentos[1].Alocacoes[0].ParcelaId);
+        Assert.AreEqual(10_200L, salvo.Conjunto.Vendas[0].Recebimentos[1].Valor.Centavos);
+        Assert.AreEqual(200L, salvo.Conjunto.Vendas[0].Recebimentos[1].Acrescimo.Centavos);
+        Assert.AreEqual(new DateOnly(2027, 3, 6), salvo.Conjunto.Vendas[0].Recebimentos[1].Data);
+        Assert.AreEqual(StatusAdministrativoVenda.Ativo, salvo.Conjunto.Vendas[2].StatusAdministrativo);
+        AssertVendaIgual(
+            inicial.Conjunto.Vendas.Single(venda => venda.Id == "venda-lote"),
+            salvo.Conjunto.Vendas.Single(venda => venda.Id == "venda-lote"));
+        var vendaQuitada = salvo.Conjunto.Vendas.Single(venda => venda.Id == "venda-prejuizo");
+        Assert.AreEqual(StatusAdministrativoVenda.Ativo, vendaQuitada.StatusAdministrativo);
+        Assert.AreEqual(2, vendaQuitada.Recebimentos.Count);
+        Assert.AreEqual("receb-prejuizo-final", vendaQuitada.Recebimentos[1].Id);
+        Assert.AreEqual("prejuizo-parcela-2", vendaQuitada.Recebimentos[1].Alocacoes.Single().ParcelaId);
     }
 
     private async Task PrepararFixtureComHistoricoAsync()
@@ -142,6 +438,99 @@ public sealed class GravadorVendasSqliteTests
         await comando.ExecuteNonQueryAsync();
     }
 
+    private static Venda ReconstruirVenda(
+        Venda original,
+        long? valorTotalBaseCentavos = null,
+        IEnumerable<DadosReconstrucaoParcela>? parcelas = null,
+        IEnumerable<DadosReconstrucaoRecebimento>? recebimentos = null)
+    {
+        var dados = new DadosReconstrucaoVenda(
+            original.Id,
+            original.StatusAdministrativo,
+            original.Cliente,
+            original.DataVenda,
+            CriarDinheiro(valorTotalBaseCentavos ?? original.ValorTotalBase.Centavos),
+            (parcelas ?? original.Parcelas.Select(parcela => new DadosReconstrucaoParcela(
+                parcela.Id,
+                parcela.Numero,
+                parcela.ValorBase,
+                parcela.Vencimento)).ToArray()).ToArray(),
+            (recebimentos ?? original.Recebimentos.Select(recebimento => NovoDadosRecebimento(recebimento)))
+                .ToArray());
+
+        return ExigirVenda(Venda.Reconstruir(dados, Referencia));
+    }
+
+    private static DadosReconstrucaoRecebimento NovoDadosRecebimento(
+        RecebimentoVenda recebimento,
+        string? id = null,
+        DateOnly? data = null,
+        FormaPagamento? forma = null) =>
+        new(
+            id ?? recebimento.Id,
+            data ?? recebimento.Data,
+            forma ?? recebimento.Forma,
+            recebimento.Valor,
+            recebimento.Origem,
+            recebimento.Acrescimo,
+            recebimento.Observacao,
+            recebimento.Alocacoes.Select(alocacao => new DadosReconstrucaoAlocacao(
+                alocacao.ParcelaId,
+                alocacao.Valor)).ToArray());
+
+    private static Venda CriarVendaSimples(string id, string parcelaId, long valorBaseCentavos)
+    {
+        var resultadoCliente = DadosClienteVenda.Criar(
+            $"Cliente {id}",
+            "12345678909",
+            "1198765432",
+            null);
+        var cliente = Assert.IsInstanceOfType<ResultadoDominio<DadosClienteVenda>.Sucesso>(resultadoCliente).Valor;
+        return ExigirVenda(Venda.Cadastrar(
+            id,
+            cliente,
+            new DateOnly(2027, 1, 15),
+            CriarDinheiro(valorBaseCentavos),
+            1,
+            [parcelaId],
+            Referencia));
+    }
+
+    private static Dinheiro CriarDinheiro(long centavos)
+    {
+        var resultado = Dinheiro.Criar(centavos);
+        if (resultado is ResultadoDominio<Dinheiro>.Falha falha)
+        {
+            Assert.Fail($"{falha.Erro.Codigo}: {falha.Erro.Mensagem}");
+        }
+
+        return Assert.IsInstanceOfType<ResultadoDominio<Dinheiro>.Sucesso>(resultado).Valor;
+    }
+
+    private static Venda ExigirVenda(ResultadoDominio<Venda> resultado)
+    {
+        if (resultado is ResultadoDominio<Venda>.Falha falha)
+        {
+            Assert.Fail($"{falha.Erro.Codigo}: {falha.Erro.Mensagem}");
+        }
+
+        return Assert.IsInstanceOfType<ResultadoDominio<Venda>.Sucesso>(resultado).Valor;
+    }
+
+    private static void ExigirErro(
+        ResultadoArmazenamento<long> resultado,
+        string codigoEsperado,
+        string? contexto = null)
+    {
+        if (resultado is not ResultadoArmazenamento<long>.Falha falha)
+        {
+            Assert.Fail($"A operação deveria falhar com '{codigoEsperado}'. {contexto}");
+            return;
+        }
+
+        Assert.AreEqual(codigoEsperado, falha.Erro.Codigo, contexto);
+    }
+
     private static SnapshotVendas ExigirSnapshot(ResultadoArmazenamento<SnapshotVendas> resultado)
     {
         if (resultado is ResultadoArmazenamento<SnapshotVendas>.Falha falha)
@@ -167,50 +556,53 @@ public sealed class GravadorVendasSqliteTests
         Assert.AreEqual(esperado.Vendas.Count, atual.Vendas.Count);
         for (var indiceVenda = 0; indiceVenda < esperado.Vendas.Count; indiceVenda++)
         {
-            var vendaEsperada = esperado.Vendas[indiceVenda];
-            var vendaAtual = atual.Vendas[indiceVenda];
-            Assert.AreEqual(vendaEsperada.Id, vendaAtual.Id);
-            Assert.AreEqual(vendaEsperada.StatusAdministrativo, vendaAtual.StatusAdministrativo);
-            Assert.AreEqual(vendaEsperada.Cliente.Nome, vendaAtual.Cliente.Nome);
-            Assert.AreEqual(vendaEsperada.Cliente.Cpf, vendaAtual.Cliente.Cpf);
-            Assert.AreEqual(vendaEsperada.Cliente.Telefone, vendaAtual.Cliente.Telefone);
-            Assert.AreEqual(vendaEsperada.Cliente.Descricao, vendaAtual.Cliente.Descricao);
-            Assert.AreEqual(vendaEsperada.DataVenda, vendaAtual.DataVenda);
-            Assert.AreEqual(vendaEsperada.ValorTotalBase.Centavos, vendaAtual.ValorTotalBase.Centavos);
+            AssertVendaIgual(esperado.Vendas[indiceVenda], atual.Vendas[indiceVenda]);
+        }
+    }
 
-            Assert.AreEqual(vendaEsperada.Parcelas.Count, vendaAtual.Parcelas.Count);
-            for (var indiceParcela = 0; indiceParcela < vendaEsperada.Parcelas.Count; indiceParcela++)
-            {
-                var parcelaEsperada = vendaEsperada.Parcelas[indiceParcela];
-                var parcelaAtual = vendaAtual.Parcelas[indiceParcela];
-                Assert.AreEqual(parcelaEsperada.Id, parcelaAtual.Id);
-                Assert.AreEqual(parcelaEsperada.Numero, parcelaAtual.Numero);
-                Assert.AreEqual(parcelaEsperada.ValorBase.Centavos, parcelaAtual.ValorBase.Centavos);
-                Assert.AreEqual(parcelaEsperada.Vencimento, parcelaAtual.Vencimento);
-            }
+    private static void AssertVendaIgual(Venda esperada, Venda atual)
+    {
+        Assert.AreEqual(esperada.Id, atual.Id);
+        Assert.AreEqual(esperada.StatusAdministrativo, atual.StatusAdministrativo);
+        Assert.AreEqual(esperada.Cliente.Nome, atual.Cliente.Nome);
+        Assert.AreEqual(esperada.Cliente.Cpf, atual.Cliente.Cpf);
+        Assert.AreEqual(esperada.Cliente.Telefone, atual.Cliente.Telefone);
+        Assert.AreEqual(esperada.Cliente.Descricao, atual.Cliente.Descricao);
+        Assert.AreEqual(esperada.DataVenda, atual.DataVenda);
+        Assert.AreEqual(esperada.ValorTotalBase.Centavos, atual.ValorTotalBase.Centavos);
 
-            Assert.AreEqual(vendaEsperada.Recebimentos.Count, vendaAtual.Recebimentos.Count);
-            for (var indiceRecebimento = 0; indiceRecebimento < vendaEsperada.Recebimentos.Count; indiceRecebimento++)
+        Assert.AreEqual(esperada.Parcelas.Count, atual.Parcelas.Count);
+        for (var indiceParcela = 0; indiceParcela < esperada.Parcelas.Count; indiceParcela++)
+        {
+            var parcelaEsperada = esperada.Parcelas[indiceParcela];
+            var parcelaAtual = atual.Parcelas[indiceParcela];
+            Assert.AreEqual(parcelaEsperada.Id, parcelaAtual.Id);
+            Assert.AreEqual(parcelaEsperada.Numero, parcelaAtual.Numero);
+            Assert.AreEqual(parcelaEsperada.ValorBase.Centavos, parcelaAtual.ValorBase.Centavos);
+            Assert.AreEqual(parcelaEsperada.Vencimento, parcelaAtual.Vencimento);
+        }
+
+        Assert.AreEqual(esperada.Recebimentos.Count, atual.Recebimentos.Count);
+        for (var indiceRecebimento = 0; indiceRecebimento < esperada.Recebimentos.Count; indiceRecebimento++)
+        {
+            var recebimentoEsperado = esperada.Recebimentos[indiceRecebimento];
+            var recebimentoAtual = atual.Recebimentos[indiceRecebimento];
+            Assert.AreEqual(recebimentoEsperado.Id, recebimentoAtual.Id);
+            Assert.AreEqual(recebimentoEsperado.Data, recebimentoAtual.Data);
+            Assert.AreEqual(recebimentoEsperado.Forma, recebimentoAtual.Forma);
+            Assert.AreEqual(recebimentoEsperado.Valor.Centavos, recebimentoAtual.Valor.Centavos);
+            Assert.AreEqual(recebimentoEsperado.Origem, recebimentoAtual.Origem);
+            Assert.AreEqual(recebimentoEsperado.Acrescimo.Centavos, recebimentoAtual.Acrescimo.Centavos);
+            Assert.AreEqual(recebimentoEsperado.Observacao, recebimentoAtual.Observacao);
+            Assert.AreEqual(recebimentoEsperado.Alocacoes.Count, recebimentoAtual.Alocacoes.Count);
+            for (var indiceAlocacao = 0; indiceAlocacao < recebimentoEsperado.Alocacoes.Count; indiceAlocacao++)
             {
-                var recebimentoEsperado = vendaEsperada.Recebimentos[indiceRecebimento];
-                var recebimentoAtual = vendaAtual.Recebimentos[indiceRecebimento];
-                Assert.AreEqual(recebimentoEsperado.Id, recebimentoAtual.Id);
-                Assert.AreEqual(recebimentoEsperado.Data, recebimentoAtual.Data);
-                Assert.AreEqual(recebimentoEsperado.Forma, recebimentoAtual.Forma);
-                Assert.AreEqual(recebimentoEsperado.Valor.Centavos, recebimentoAtual.Valor.Centavos);
-                Assert.AreEqual(recebimentoEsperado.Origem, recebimentoAtual.Origem);
-                Assert.AreEqual(recebimentoEsperado.Acrescimo.Centavos, recebimentoAtual.Acrescimo.Centavos);
-                Assert.AreEqual(recebimentoEsperado.Observacao, recebimentoAtual.Observacao);
-                Assert.AreEqual(recebimentoEsperado.Alocacoes.Count, recebimentoAtual.Alocacoes.Count);
-                for (var indiceAlocacao = 0; indiceAlocacao < recebimentoEsperado.Alocacoes.Count; indiceAlocacao++)
-                {
-                    Assert.AreEqual(
-                        recebimentoEsperado.Alocacoes[indiceAlocacao].ParcelaId,
-                        recebimentoAtual.Alocacoes[indiceAlocacao].ParcelaId);
-                    Assert.AreEqual(
-                        recebimentoEsperado.Alocacoes[indiceAlocacao].Valor.Centavos,
-                        recebimentoAtual.Alocacoes[indiceAlocacao].Valor.Centavos);
-                }
+                Assert.AreEqual(
+                    recebimentoEsperado.Alocacoes[indiceAlocacao].ParcelaId,
+                    recebimentoAtual.Alocacoes[indiceAlocacao].ParcelaId);
+                Assert.AreEqual(
+                    recebimentoEsperado.Alocacoes[indiceAlocacao].Valor.Centavos,
+                    recebimentoAtual.Alocacoes[indiceAlocacao].Valor.Centavos);
             }
         }
     }

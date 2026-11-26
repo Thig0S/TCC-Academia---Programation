@@ -14,8 +14,9 @@ revisão zero; SQL-02/2.2 implementou sessão de abertura por operação, sem cr
 implícita e com validação física do schema. SQL-03/3.1 implementou leitura transacional
 sem tracking e reidratação; SQL-03/3.2 cobriu entrada, lote, correção e relatórios;
 SQL-03/3.3 verificou rejeição de corrupção e releitura após restauração; SQL-04/4.1
-implementou gravador transacional com revisão condicional e round-trip. Proteções
-detalhadas do histórico, concorrência e rollback/cancelamento ainda estão pendentes.
+implementou gravador transacional com revisão condicional e round-trip; SQL-04/4.2
+protege contrato, identidade e histórico existente. Concorrência e rollback/cancelamento
+ainda estão pendentes.
 
 Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
 e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
@@ -23,8 +24,8 @@ valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
 validação de conjunto para provar integridade interna: a correção da entrada
 demonstrou essa diferença. SQL-01/1.1 adicionou dependências na Infraestrutura,
 SQL-01/1.2 contrato puro em Aplicacao, SQL-01/1.3 contexto/modelos/migration e
-SQL-02/2.1–2.2 inicializador/abertura validada, SQL-03/3.1 leitor e SQL-04/4.1
-gravador/adaptador interno em Infraestrutura. Leitura e gravação não estão registradas
+SQL-02/2.1–2.2 inicializador/abertura validada, SQL-03/3.1 leitor e SQL-04/4.1–4.2
+gravador/adaptador e proteção interna em Infraestrutura. Leitura e gravação não estão registradas
 nem expostas pela API.
 Integração usa MSTest, referencia API e adiciona referência direta à Infraestrutura.
 README contém trechos históricos dizendo que não há
@@ -177,15 +178,15 @@ importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes
 
 ### Roadmap de implementação
 
-SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3 e SQL-04/4.1 foram executados sob apply autorizado;
-SQL-04/4.2–4.4 e SQL-05 permanecem pendentes e são executados conforme as dependências:
+SQL-01/1.1–1.3, SQL-02/2.1–2.2, SQL-03/3.1–3.3 e SQL-04/4.1–4.2 foram executados sob apply autorizado;
+SQL-04/4.3–4.4 e SQL-05 permanecem pendentes e são executados conforme as dependências:
 
 | Marco | Entregas e dependências | Critério verificável |
 | --- | --- | --- |
 | SQL-01 | Dependências, isolamento da API, contrato e schema/migration inicial (1.1–1.3 concluídos) | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
 | SQL-02 | Inicializador explícito e abertura por operação (2.1–2.2 concluídos) | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem sobrescrita; abertura não cria arquivo e confere schema |
 | SQL-03 | Leitura, histórico e dados inválidos (3.1–3.3 concluídos) | Campos/ordem/extremos, HIS-01/COR-01/ORD-01 e rejeição integral HIS-005–007 |
-| SQL-04 | Escrita e revisão global (4.1 concluído; 4.2–4.4 pendentes) | Round-trip/revisão +1; rollback, concorrência, cancelamento, preservação detalhada |
+| SQL-04 | Escrita, revisão e preservação (4.1–4.2 concluídos; 4.3–4.4 pendentes) | Round-trip, histórico protegido; rollback, concorrência e cancelamento |
 | SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
 
 Executar builds/testes sequencialmente na mesma saída. Cada funcionalidade inclui
@@ -211,11 +212,12 @@ Release e seis testes direcionados do contrato. SQL-01/1.3 executou scaffolding 
 criar arquivo no caminho de design-time, `has-pending-model-changes` e cinco testes
 SQLite de schema/constraints. SQL-02/2.1 executou seis testes de inicialização;
 SQL-02/2.2, seis testes de abertura/sessão; SQL-03/3.1 adicionou quatro testes,
-SQL-03/3.2 um cenário, SQL-03/3.3 dezessete casos e SQL-04/4.1 um round-trip; a suíte
-de persistência passou 40/40. Cobertos estado vazio/revisão, campos/ordem, CPF repetido, descrição
-nula, Unicode, datas extremas, centavos máximos, entrada, lote, correção, status,
-totais mensais/diários, corrupção, recusa por constraints/restauração e round-trip de
-escrita sintética. Não houve acesso a dados reais ou operacionais. Evidências detalhadas
+SQL-03/3.2 um cenário, SQL-03/3.3 dezessete casos, SQL-04/4.1 um round-trip e
+SQL-04/4.2 cinco testes adicionais de preservação; a suíte de persistência passou 45/45. Cobertos
+estado vazio/revisão, campos/ordem, CPF repetido, descrição nula, Unicode, datas
+extremas, centavos máximos, entrada, lote, correção, status, totais mensais/diários,
+corrupção, recusa por constraints/restauração, round-trip, histórico protegido e
+mutações válidas. Não houve acesso a dados reais ou operacionais. Evidências detalhadas
 no README.
 Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
 testes/build. E2E/visual/zoom não
@@ -231,10 +233,12 @@ EnsureCreated e factory de design-time. SQL-01/1.3 criou e aplicou a migration i
 em arquivos temporários; cinco testes de schema/constraints passaram e não há mudança
 pendente do modelo. SQL-02/2.1 executou seis testes de inicialização, SQL-02/2.2 seis
 testes de abertura, SQL-03/3.1 quatro testes de leitura, SQL-03/3.2 um cenário integrado,
-SQL-03/3.3 dezessete casos de corrupção/restauração e SQL-04/4.1 um round-trip de escrita;
-a suíte de persistência passou 40/40. Leitura/gravação cobrem vazio/revisão, campos,
-ordem, CPF repetido, datas extremas, limite de centavos, descrição nula, Unicode, entrada,
-lote, correção, status, oráculos mensais/diários, rejeição integral e reabertura completa.
+SQL-03/3.3 dezessete casos de corrupção/restauração, SQL-04/4.1 um round-trip e
+SQL-04/4.2 cinco testes de preservação; a suíte de persistência passou 45/45.
+Leitura/gravação cobrem vazio/revisão, campos, ordem, CPF repetido, datas extremas,
+limite de centavos, descrição nula, Unicode, entrada, lote, correção, status, oráculos
+mensais/diários, rejeição integral, reabertura completa, histórico imutável e
+atualizações permitidas.
 Não houve acesso a dados reais ou operacionais.
 Restore bloqueado e auditoria foram executados em SQL-01/1.1.
 Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →

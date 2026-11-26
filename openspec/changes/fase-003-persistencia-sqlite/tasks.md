@@ -33,7 +33,7 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
 ## 4. SQL-04 — Escrita atômica, revisão e preservação
 
 - [x] 4.1 Implementar gravação do conjunto validado em transação de escrita não diferida, conferindo integridade atual, revisão esperada e limite da revisão; atualizar token condicionalmente e persistir todas as linhas no mesmo commit. Reconciliar por ID sem apagar/recriar toda a base, evitando colisões temporárias de ordens. MSTest fecha/reabre arquivo após salvar e confere round-trip completo de 3.1/3.2, revisão +1 e snapshot idêntico com revisão atual sem duplicação. Documentar garantias/custo do snapshot no README.
-- [ ] 4.2 Proteger vendas existentes e histórico: recusar omissão de raiz, remoção de parcela/recebimento, alteração de contrato-base/entrada/lote e perda de identidade/alocação Individual. Testar cada recusa sem mudança de dados/revisão e sucessos por operações de cliente/status/baixa/correção do domínio, preservando outras vendas. Testar candidato com IDs globais colidentes ou overflow sem gravar, usando coleção candidata validável que permita informar falha, sem burlar encapsulamento do domínio. Atualizar README e executar regressões de armazenamento.
+- [x] 4.2 Proteger vendas existentes e histórico: recusar omissão de raiz, remoção de parcela/recebimento, alteração de contrato-base/entrada/lote e perda de identidade/alocação Individual. Testar cada recusa sem mudança de dados/revisão e sucessos por operações de cliente/status/baixa/correção do domínio, preservando outras vendas. Testar candidato com IDs globais colidentes ou overflow sem gravar, usando coleção candidata validável que permita informar falha, sem burlar encapsulamento do domínio. Atualizar README e executar regressões de armazenamento.
 - [ ] 4.3 Cobrir dois consumidores/conexões na mesma revisão com sincronização determinística: no máximo um commit, revisão obsoleta recusa e recarga mostra versão íntegra. Testar leitura consistente durante escrita, timeout de banco ocupado sem auto-retry e limite long.MaxValue sem overflow. Executar casos concorrentes com arquivo isolado e registrar resultados, sem alegar concorrência operacional homologada.
 - [ ] 4.4 Testar rollback após primeira alteração e antes do commit por composição/interceptor exclusivo de teste; nova conexão deve observar estado/revisão anteriores e nova operação válida deve confirmar. Cobrir token previamente cancelado, cancelamento observado antes do commit, token tardio após commit confirmado, exceção inesperada propagada e confirmação indeterminada sem retry/alegação falsa de rollback. Testar mensagens sem SQL/CPF/telefone/caminho pessoal e sensitive-data logging desligado. Documentar códigos/limites no README e executar toda a suíte de persistência.
 
@@ -118,6 +118,18 @@ sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
   identificou contenção ao validar por uma segunda conexão; o leitor foi extraído para
   aceitar o contexto/transação corrente e a execução repetida passou. README registra
   garantias e custo proporcional à leitura e reconciliação do snapshot completo.
+- SQL-04/4.2: preserva data/base e toda a sequência de parcelas por ID/número/valor/
+  vencimento; recibos existentes permanecem no prefixo e ordem originais. Entrada e
+  lote são imutáveis incluindo metadados/alocações; Individual conserva ID, origem e
+  parcela, permitindo campos corrigíveis pela regra do domínio. Novos recebimentos em
+  venda existente só podem ser Individual. Testes rejeitam omissão de raiz, remoção ou
+  troca de parcela, base alterada, remoção de recebimento, reescrita de entrada/lote,
+  ID/alocação Individual trocados, colisão global e overflow; cada recusa mantém revisão
+  e snapshot. Sucesso exercita edição de cliente, status, baixa e correção Individual,
+  preserva venda não alterada e as demais raízes. A classe do gravador passou 6/6
+  (um teste de round-trip de 4.1 e cinco novos testes de 4.2);
+  suíte `FullyQualifiedName~Persistencia`: 45/45; build Release sem avisos/erros e format
+  verify passaram. Detalhes e limitações permanecem no README.
 - `openspec validate --strict` passou após a revisão de cada etapa.
 - Após conclusão integral, publicar a mesma feature
   branch e abrir PR único para main com `.github/pull_request_template.md`, referências

@@ -327,9 +327,32 @@ corrigido com nova data, ordem não cronológica, Inativa e Prejuízo. Grava em 
 preparado vazio, fecha a operação e relê por nova conexão; compara profundamente raízes,
 clientes, status, datas, parcelas, recebimentos, acréscimos, observações, origens e
 alocações. Salvar o mesmo candidato na revisão 1 retorna revisão 2 sem duplicação.
-Teste focado: 1/1; suíte `FullyQualifiedName~Persistencia`: 40/40; build Release com zero
-avisos/erros; `dotnet format --verify-no-changes --no-restore` passou. Fixtures e arquivos
-são próprios/temporários; não houve escrita ou acesso em banco operacional ou com dados reais.
+Na entrega SQL-04/4.1, o teste focado passou 1/1 e a suíte
+`FullyQualifiedName~Persistencia` passou 40/40; build Release com zero avisos/erros e
+`dotnet format --verify-no-changes --no-restore` passaram. Fixtures e arquivos são
+próprios/temporários; nenhuma operação usou banco operacional ou dados reais.
+
+### Preservação de contratos e histórico (SQL-04/4.2)
+
+Antes de qualquer DML, o gravador compara cada venda existente pelo ID. Não aceita
+omissão de raiz; preserva data/base da venda e a coleção ordenada de parcelas (ID,
+número, valor-base e vencimento). Recebimentos existentes têm de permanecer no mesmo
+prefixo e ordem. Entrada e lote são imutáveis, incluindo ID, data, forma, valores,
+observação e alocações. Individual pode ser corrigido conforme o domínio, mas mantém
+ID, origem, ordem e parcela alocada; campos corrigíveis e valor da alocação podem mudar
+somente se a venda candidata continuar válida. Recebimentos novos em venda já existente
+devem ser Individual. Novas vendas podem trazer entrada na formação inicial.
+
+Testes de recusa verificam omissão de venda, remoção/troca de parcela, alteração do
+contrato-base, remoção de recebimento, reescrita de entrada/lote e troca de identidade
+ou parcela vinculada a Individual. Candidatos com IDs colidentes entre tipos ou overflow
+do total global são construídos pelas fábricas públicas do domínio e recusados como
+`candidato-invalido`. Cada falha é seguida de releitura que compara todo o conjunto e
+revisão anterior. No sucesso, operações reais do domínio editam cliente, reativam status,
+registram baixa e corrigem Individual; a venda não alterada e as demais raízes/históricos
+permanecem preservados. Testes da classe `GravadorVendasSqliteTests`: 6/6; suíte
+`FullyQualifiedName~Persistencia`: 45/45; build Release sem avisos/erros e format verify
+passaram. Tudo em arquivos sintéticos temporários.
 
 ## Estado de verificação
 
