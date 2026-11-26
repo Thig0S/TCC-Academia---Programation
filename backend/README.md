@@ -367,6 +367,34 @@ proibida, Ativo quitado não marcado como Prejuízo, enum inválido, no-op sem a
 conflito obsoleto inclusive no no-op, venda ausente e preservação de IDs/alocações do
 histórico após reabertura. A integração usou apenas arquivo temporário.
 
+## Registro de pagamento individual (APP-04/4.1)
+
+`RegistrarPagamentoCommand` exige `VendaId` e `ParcelaId` explícitos; o cliente não
+envia o ID do recebimento. Depois das validações escalares e da revisão do snapshot,
+o handler gera um ID, delega à regra de domínio a seleção estrita da primeira parcela
+pendente, cria um recebimento Individual, substitui a venda na posição existente,
+valida o conjunto completo e grava uma vez. Não desloca parcela nem repete o comando
+automaticamente. A resposta financeira é projetada antes do commit e só é entregue
+com a revisão confirmada. Observações contam valores escalares Unicode, máximo 20.
+
+Verificações direcionadas:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~RegistrarPagamentoHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~RegistrarPagamentoSqliteTests
+```
+
+Resultado: 5 testes unitários e 2 de integração passaram. Cobrem acréscimo de 1.000
+centavos sobre parcela-base de 10.000, saldo-base e projeção, preservação do conjunto,
+IDs e revisão; baixa da primeira pendente futura; seleção explícita sem avanço em
+repetição/salto/parcela desconhecida ou de outra venda; venda ausente/não Ativa; valor,
+forma, data e observação inválidos; limite Unicode de 20 scalars; e revisão obsoleta
+antes do gerador. A integração gravou dois pagamentos via `ISender`, reabriu com
+provider novo e confirmou IDs, acréscimo, base/recebido/saldo e revisão 3. Falhas de
+seleção/status não alteraram snapshot. SQLite/fixtures ficaram em arquivos temporários.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
