@@ -203,7 +203,8 @@ public sealed partial class Venda
                     }
 
                     if (!ValidarAlocacao(alocacoesInformadas[0], parcelas, proximaParcela, out var valorBaseEntrada) ||
-                        recebimento.Valor.Centavos != valorBaseEntrada.Centavos)
+                        recebimento.Valor.Centavos != valorBaseEntrada.Centavos ||
+                        alocacoesInformadas[0].Valor.Centavos != recebimento.Valor.Centavos)
                     {
                         return FalhaReconstrucao("historico-invalido", "O recebimento da entrada não corresponde à primeira parcela.", "recebimentos.alocacoes");
                     }
