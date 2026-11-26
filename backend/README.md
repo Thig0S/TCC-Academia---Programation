@@ -490,6 +490,29 @@ Não houve acesso a planilha ou banco real. A Change OpenSpec registra a matriz
 completa: `openspec/changes/fase-003-persistencia-sqlite/`, vinculada ao PRD/FON-041/
 RF-024–026/CA-049–052 e TDD/DEC-038.
 
+## Correção de contratos e rastreabilidade (OpenSpec)
+
+**Inspeção que originou a Change `corrigir-contratos-e-rastreabilidade`:** a consulta
+por período selecionava vendas pela data, sem restringir o status, embora os relatórios
+operacionais usem somente Ativas; o cálculo de recebimentos percorre os contratos de
+todos os status. O teste de reconstrução HIS-007 cobria entrada válida, mas ainda não
+uma tentativa inválida seguida de válida no mesmo método. PRD/TDD também reutilizavam
+IDs entre a correção MSTest e a persistência SQLite.
+
+**Plano aprovado:** `ConsultarPeriodo.Vendas` deve retornar somente Ativas vendidas no
+intervalo civil inclusivo, preservando a ordem; recebimentos de todos os status ficam
+no período da data efetiva. O mesmo teste HIS-007 deve provar rejeição sem mutação e
+sucesso subsequente. A rastreabilidade canônica é DEC-039/CA-053/FON-042 para MSTest
+e DEC-038/CA-049/FON-041 para persistência. Referências históricas e resultados de
+Changes concluídas são preservados; detalhes e critérios estão em `docs/prd/vendas-em-aberto.md`,
+`docs/tdd/tdd.md` e `openspec/changes/corrigir-contratos-e-rastreabilidade/`.
+
+**Execução registrada nesta atualização:** MAN-01 remapeou as referências MSTest no
+PRD/TDD e documentou a reconciliação com RF-023/RN-026/DEC-037. A inspeção de referências
+não encontrou IDs adicionais a alterar na Change MSTest ou neste README antes desta seção.
+Implementação do filtro, complemento HIS-007 e verificações integradas ainda estão
+pendentes; esta nota não declara testes de aplicação executados ou aceite final.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio

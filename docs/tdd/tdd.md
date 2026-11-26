@@ -1,6 +1,6 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
-## DEC-038 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
+## DEC-039 — Resolução reproduzível de MSTest no VS Code (26/11/2026)
 
 **Problema observado:** o C# Dev Kit reporta que não consegue resolver
 `MSTest.Sdk` ao restaurar uma solução temporária sob `AppData\\Roaming\\Code`,
@@ -20,13 +20,13 @@ mapeamento 4.5.3 no `global.json` para a CLI e orientar abrir
 continua exigindo .NET SDK 10.0.404 com `latestPatch`, portanto 10.0.103 não
 satisfaz a baseline; a instalação do SDK .NET adequado deve ser feita pelo
 desenvolvedor. A correção não rebaixa a versão, não instala ferramentas, não
-muda pacotes/runner e não afeta a aplicação. PRD/CA-049 e Change
+muda pacotes/runner e não afeta a aplicação. PRD/CA-053 e Change
 `corrigir-resolucao-sdk-mstest` detalham aceite e verificações.
 
 **Verificação:** restore, build e testes da solução versionada partindo de
 `backend/`; conferir a igualdade da versão nos três locais. A validação pela
 extensão VS Code é separada e só pode ser declarada após execução observada na
-máquina do solicitante. FON-041: erro apresentado pelo usuário; Context7
+máquina do solicitante. FON-042: erro apresentado pelo usuário; Context7
 `/microsoft/testfx` v4.5.3 confirma as formas aceitas de pin do MSTest SDK.
 
 **Resultado da Change em 26/11/2026:** com a instalação temporária
@@ -37,6 +37,15 @@ do VS Code no ambiente do solicitante não foi exercitada; não se declara ainda
 reprodução local resolvida por observação direta. O comando `dotnet` global
 continua selecionando 10.0.103 fora da pasta configurada; para o projeto, usar
 SDK instalado compatível com `backend/global.json`.
+
+**Nota de rastreabilidade e contrato (26/11/2026):** referências históricas à
+correção MSTest como DEC-038/CA-049/FON-041 são aliases de DEC-039/CA-053/FON-042.
+DEC-038/CA-049/FON-041 continuam sendo as identificações canônicas de persistência
+SQLite, documentada abaixo e no PRD. Em PRD/RF-023/RN-026, vendas em períodos
+operacionais são somente Ativas cuja data civil de venda está no intervalo inclusivo;
+recebimentos continuam abrangendo todos os status pela data efetiva, mesmo quando
+a venda é Inativa ou Prejuízo. A regra já decorre de DEC-037, e esta nota apenas
+reconcilia sua aplicação à consulta por período; não altera os resultados históricos.
 
 ## DEC-038 — Persistência SQLite isolada da fase 003 (25/11/2026)
 
