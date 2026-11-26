@@ -20,8 +20,8 @@ A página oficial de downloads do .NET 10 consultada em 25/11/2026 identifica
 `10.0.15` como patch de segurança, publicado em 10/11/2026, e SDK `10.0.404`; a
 política oficial indica suporte ao .NET 10 até 14/11/2028. Advisories ASP.NET Core
 publicados em 10/11/2026 incluem versões até `10.0.14` como afetadas e `10.0.15`
-como corrigida. As versões exatas dos pacotes acima estão publicadas no NuGet; isso
-não substitui a auditoria do grafo transitivo a executar durante o restore.
+como corrigida. As versões exatas dos pacotes acima estão publicadas no NuGet; a
+auditoria do grafo transitivo realizada durante o restore está registrada abaixo.
 
 Referências consultadas em 25/11/2026:
 
@@ -31,6 +31,63 @@ Referências consultadas em 25/11/2026:
   aplicáveis novamente ao atualizar a baseline.
 - <https://www.nuget.org/packages/MSTest.Sdk/4.5.3>
 - <https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.15>
+
+## Dependências de persistência SQLite
+
+As dependências de produção ficam somente em `VendasEmAberto.Infraestrutura`:
+`Microsoft.EntityFrameworkCore.Sqlite` e `Microsoft.EntityFrameworkCore.Design`
+`10.0.15`; Design usa `PrivateAssets=all`. A ferramenta `dotnet-ef` `10.0.15` é
+local ao diretório `backend` (`dotnet-tools.json`), sem instalação global. O pacote
+EF SQLite declara SQLitePCLRaw `>= 2.1.13`; foi fixado o patch `2.1.14` do bundle
+para obter a revisão mais recente da linha compatível sem adotar a major 3. As
+transitivas restantes são reproduzidas pelos `packages.lock.json`.
+
+Em 25/11/2026, foram conferidos no NuGet os metadados de versão, framework, licença
+e dependências. O grafo bloqueado da Infraestrutura contém 40 pacotes: 36 com licença
+MIT e quatro SQLitePCLRaw (`bundle_e_sqlite3`, `core`, `lib.e_sqlite3` e
+`provider.e_sqlite3`) com Apache-2.0. `dotnet-ef` declara licença MIT e não declara
+dependências NuGet; seu `.deps.json` contém somente o próprio pacote. As versões e
+hashes efetivos constam em
+`src/VendasEmAberto.Infraestrutura/packages.lock.json`; ferramenta e versão estão em
+`dotnet-tools.json`.
+
+Para manter a API técnica sem persistência transitiva, `Api.csproj` referencia apenas
+Aplicacao. EF Core/SQLite não aparece no grafo de pacotes nem no diretório Release da
+API; a suíte de persistência adicionará referência direta à Infraestrutura quando os
+testes forem introduzidos.
+
+Fontes oficiais consultadas:
+
+- <https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Sqlite/10.0.15>
+- <https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Design/10.0.15>
+- <https://www.nuget.org/packages/dotnet-ef/10.0.15>
+- <https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/2.1.14>
+- <https://www.nuget.org/packages/SQLitePCLRaw.core/2.1.14>
+- <https://www.nuget.org/packages/SQLitePCLRaw.provider.e_sqlite3/2.1.14>
+- <https://www.nuget.org/packages/SQLitePCLRaw.lib.e_sqlite3/2.1.14>
+
+Verificações executadas com o SDK isolado `10.0.404` (runtime `10.0.15`):
+
+```powershell
+dotnet restore VendasEmAberto.slnx --force-evaluate
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet tool restore
+dotnet tool run dotnet-ef --version
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet list src/VendasEmAberto.Infraestrutura/VendasEmAberto.Infraestrutura.csproj package --include-transitive
+dotnet list src/VendasEmAberto.Api/VendasEmAberto.Api.csproj package --include-transitive
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+```
+
+Restore bloqueado e build Release passaram; a ferramenta informou `10.0.15`. O
+list de pacotes da API não encontrou pacote algum, e a pasta Release não contém
+assemblies EF/SQLite. A auditoria NuGet, nas fontes disponíveis, não reportou
+pacotes vulneráveis nos seis projetos da solução, incluindo transitivas e o pacote
+nativo SQLite. Essa consulta não é análise
+estática do binário nativo nem auditoria geral; `dotnet list package` também não
+inclui ferramentas locais no grafo da solução. Para `dotnet-ef`, foram conferidos
+seus metadados, ausência de dependências declaradas e `.deps.json`; resultados de
+advisories dependem das fontes NuGet no momento da execução.
 
 ## Estado de verificação
 

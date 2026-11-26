@@ -10,13 +10,6 @@
       },
       "vendasemaberto.dominio": {
         "type": "Project"
-      },
-      "vendasemaberto.infraestrutura": {
-        "type": "Project",
-        "dependencies": {
-          "VendasEmAberto.Aplicacao": "[1.0.0, )",
-          "VendasEmAberto.Dominio": "[1.0.0, )"
-        }
       }
     }
   }

@@ -109,8 +109,7 @@
       "vendasemaberto.api": {
         "type": "Project",
         "dependencies": {
-          "VendasEmAberto.Aplicacao": "[1.0.0, )",
-          "VendasEmAberto.Infraestrutura": "[1.0.0, )"
+          "VendasEmAberto.Aplicacao": "[1.0.0, )"
         }
       },
       "vendasemaberto.aplicacao": {
@@ -121,13 +120,6 @@
       },
       "vendasemaberto.dominio": {
         "type": "Project"
-      },
-      "vendasemaberto.infraestrutura": {
-        "type": "Project",
-        "dependencies": {
-          "VendasEmAberto.Aplicacao": "[1.0.0, )",
-          "VendasEmAberto.Dominio": "[1.0.0, )"
-        }
       }
     }
   }

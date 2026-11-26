@@ -1,5 +1,208 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-038 — Persistência SQLite isolada da fase 003 (25/11/2026)
+
+### Situação, fontes e entrevista
+
+Base: PRD/FON-041/RF-024–026/CA-049–052, DEC-033/036/037 e correção
+`0280d3b`. Escopo/arquitetura confirmados no Harness: EF Core/SQLite, modelos
+separados, migrations explícitas, caminho absoluto fornecido, revisão global e
+ausência de exclusão. Apply da Change autorizado; SQL-01/1.1 concluiu dependências,
+locks, documentação e isolamento do grafo da API. Implementação do contrato e do
+armazenamento ainda não iniciada.
+
+Inspeção: `Venda` tem construtor privado e filhos imutáveis; `DadosReconstrucaoVenda`
+e `Venda.Reconstruir` oferecem a fronteira de reidratação. `ConjuntoVendas.Criar`
+valida unicidade global e somas mesmo de Inativas/Prejuízo. Não usar apenas a
+validação de conjunto para provar integridade interna: a correção da entrada
+demonstrou essa diferença. Infraestrutura tinha apenas csproj, sem ORM; SQL-01/1.1
+adicionou somente referências de dependência, sem contexto ou código de persistência.
+Integração usa MSTest e referencia API. README contém trechos históricos dizendo que não há
+domínio: prevalecem fontes e seção recente de evidências, sem reescrever o histórico.
+
+### Arquitetura e estrutura propostas
+
+Manter Aplicacao → Dominio e Infraestrutura → Aplicacao/Dominio, mas remover a
+referência preexistente Api → Infraestrutura: API não consome tipos de Infraestrutura
+e a dependência faria EF/SQLite transitarem para o host técnico. API referencia somente
+Aplicacao; `Program.cs` continua sem registrar, preparar, abrir ou chamar persistência.
+Testes de persistência em IntegrationTests devem adicionar referência direta a
+Infraestrutura quando necessária; não usar API como caminho indireto. Essa exceção
+preserva a decisão histórica de DEC-037 sobre camadas de domínio e atende RF-026 sem
+alterar health/endpoints. Em Aplicacao criar apenas o contrato
+`Persistencia/IArmazenamentoVendas.cs`, snapshots e resultados próprios de armazenamento;
+não são handlers nem substituem FluentResults dos futuros casos de uso. Em
+Infraestrutura, `Persistencia/Sqlite/` contém `VendasDbContext`, modelos de linha,
+configurações, mapeador, inicializador, implementação e `Migrations/`. Testes em
+`IntegrationTests/Persistencia/`, com referência direta a Infraestrutura. Dominio
+permanece sem ORM/pacotes/setters públicos. API não registra nem chama persistência.
+
+Adotar `Microsoft.EntityFrameworkCore.Sqlite` e `Microsoft.EntityFrameworkCore.Design`
+10.0.15 (Design com PrivateAssets=all), ferramenta local `dotnet-ef` 10.0.15 em
+manifesto sob `backend/`, sem ferramenta global. EF SQLite declara SQLitePCLRaw
+`>=2.1.13`; usar `SQLitePCLRaw.bundle_e_sqlite3` 2.1.14 explicitamente na
+Infraestrutura para fixar o patch mais novo compatível, sem a major 3. Pacotes de
+persistência não devem aparecer no grafo de dependências da API. SDK/runtime/MSTest
+de DEC-036 permanecem. Na execução de 1.1, SDK/runtime, ferramenta e licenças foram
+confirmados; restore bloqueado passou e a auditoria NuGet não reportou vulneráveis
+nos seis projetos. Lockfiles contêm 40 pacotes da Infraestrutura (36 MIT, quatro
+SQLitePCLRaw Apache-2.0); README registra fontes e limitações, inclusive que a
+auditoria NuGet não é análise estática do binário nativo nem de ferramentas locais.
+Reexecutar auditoria ao atualizar dependências; vulnerabilidade relevante bloqueia
+código dependente e exige revisar esta decisão.
+
+Alternativas: mapear entidades do domínio diretamente exigiria materialização que
+pode contornar fábricas; serializar JSON dificulta vínculos/ordem/constraints;
+SQL manual é viável, mas EF foi confirmado. Gravação isolada por venda sem validar
+conjunto foi rejeitada por não garantir IDs/somas globais. Snapshot inteiro tem
+custo proporcional à base, aceito neste incremento sem promessa de escala; não
+introduzir cache, CQRS persistente ou repositório genérico.
+
+### Dados persistidos e restrições
+
+Modelo relacional proposto (nomes sem acentos):
+
+| Tabela | Chave e conteúdo |
+| --- | --- |
+| EstadoArmazenamento | Uma linha Id=1, Revisao long não negativa iniciando em 0 |
+| Identificadores | Id TEXT BINARY global, Tipo Venda/Parcela/Recebimento |
+| Vendas | Id FK registro, Ordem única, status e quatro campos cliente, data e total-base |
+| Parcelas | Id FK registro, VendaId FK, Numero único por venda, base e vencimento |
+| Recebimentos | Id FK registro, VendaId FK, Ordem única por venda, data, forma, origem, valor, acrescimo, observacao |
+| Alocacoes | PK RecebimentoId/Ordem; VendaId, ParcelaId, valor; vínculo composto assegura mesma venda |
+
+Registro global impede colisão entre tipos; validar correspondência Tipo/tabela no
+mapeador. FKs compostas usam chaves alternativas (VendaId, Id) nos dois pais.
+Referências com exclusão restrita; nenhum cascade para apagar histórico.
+Centavos INTEGER long com CHECK 0..9.007.199.254.740.991 e positivos onde exigido.
+Não usar REAL/decimal nem SUM SQL como validador de limites globais. Datas TEXT ISO
+`yyyy-MM-dd` de cultura invariável, parse exato DateOnly 0001–9999, sem UTC/relógio.
+Enums com valores explícitos e CHECK conhecidos; CPF/telefone TEXT, sem índice único.
+Descrição nula preservada; nota vazia e Unicode preservados. IDs opacos com comparação
+ordinal/BINARY; não gerar nem converter em GUID de negócio. Ordem de vendas,
+recebimentos e alocações persistida explicitamente; parcelas por Numero. Não ordenar
+histórico por data, pois correção pode alterar a cronologia. Não persistir saldos,
+situação financeira, totais projetados ou série mensal.
+
+### Contratos e fluxos propostos
+
+- `Inicializar(caminhoAbsoluto, cancellationToken)`: pai deve existir, sem criar
+  diretórios arbitrários. Aceita arquivo inexistente ou banco vazio/próprio conhecido;
+  aplica migrations explicitamente, nunca EnsureCreated. Banco alheio, migrations
+  desconhecidas ou versão futura são recusados antes de alterar. Idempotente no
+  schema atual, sem seed. Validar caminho antes de abrir; não aceitar string de
+  conexão arbitrária. Sem auto-migration no host e sem wrapper de transação de
+  negócio ao redor de Migrate, que gerencia o próprio mecanismo.
+- `Carregar(caminho, referencia, cancellationToken)`: abrir somente arquivo existente,
+  verificar schema exatamente atual e ler snapshot consistente numa transação de
+  leitura. Usar consultas sem tracking e ordem explícita. Converter linhas validando
+  dinheiro/data/enums/identificação, chamar `Venda.Reconstruir` em **todas** as raízes
+  e `ConjuntoVendas.Criar`; só então devolver snapshot com revisão e conjunto.
+  Falha em uma linha invalida a leitura inteira, sem corrigir ou pular a linha.
+- `Salvar(caminho, candidatoCompleto, revisaoEsperada, referencia, cancellationToken)`:
+  receber coleção de raízes candidatas, materializar defensivamente e validar/reconstruir
+  candidato e conjunto; não exigir conjunto já aceito para poder informar colisão ou
+  overflow do candidato como falha. Abrir arquivo existente, conferir schema,
+  iniciar transação de escrita não diferida (equivalente BEGIN IMMEDIATE) antes de
+  ler estado atual; conferir integridade atual, revisão e inclusão de todos os IDs
+  de vendas persistidos. Atualizar linha de revisão condicionalmente pela esperada;
+  exigir uma linha afetada. Revisão long.MaxValue falha sem transbordo.
+  Inserir novas raízes e atualizar existentes; reconciliar filhos por ID, preservando
+  identidade, ordem e vínculos. Não apagar/reinserir indiscriminadamente a base.
+  Nunca aceitar remoção de parcelas/recebimentos de venda existente; comparar IDs e
+  contrato-base/entrada/lotes imutáveis com estado atual antes de DML. Alteração de
+  cliente/status/Individual deve respeitar invariantes vigentes, sem oferecer novos
+  comandos comerciais. Commit confirma dados e revisão +1 juntos. Mesmo snapshot
+  salvo com revisão atual é aceito e incrementa revisão; não promete deduplicação.
+
+Snapshot de leitura é imutável. Usar contexto/conexão por operação, sem singleton
+DbContext nem transação compartilhada. Configurar foreign_keys em toda conexão,
+timeout de bloqueio finito de 5 segundos e journal DELETE padrão; sem WAL obrigatório
+ou retry de escrita automático. Leitura não deve criar arquivo (modo ReadWrite).
+Não executar EF paralelo no mesmo contexto. Operações SQLite podem usar I/O síncrono
+internamente; não prometer cancelamento instantâneo de chamada nativa.
+
+Resultados de armazenamento: sucesso tipado; falhas esperadas com código estável e
+mensagem pt-BR, sem HTTP ou ErroDominio para falha física. Códigos:
+`caminho-invalido`, `banco-ausente`, `schema-incompativel`, `dados-persistidos-invalidos`,
+`candidato-invalido`, `conflito-revisao`, `exclusao-nao-permitida`,
+`alteracao-historico-nao-permitida`, `banco-ocupado`, `armazenamento-indisponivel`,
+`limite-revisao-excedido`. Traduzir apenas exceções conhecidas de acesso/SQLite;
+exceção inesperada propaga, sem catch-all ou Result.Fail(ex.Message). Cancelamento
+propaga como cancelamento e desfaz transação antes do commit; depois de confirmado,
+não relatar rollback por token tardio. Falha de confirmação de commit é estado
+indeterminado: código `confirmacao-indeterminada`, sem retry, exigir recarga e
+conferência da revisão. Não prometer recuperar arquivo corrompido.
+
+### Preparação, privacidade e migração
+
+Não há banco anterior a migrar. Entregar migration inicial e ModelSnapshot; testar
+aplicação em arquivo vazio e reaplicação sem perda. Factory de design-time reutiliza
+modelo/provider, exige caminho explícito e não inicia API; scaffolding não deve
+abrir banco real. Não entregar CLI própria ou comando destrutivo de reset/downgrade.
+Banco de desenvolvimento fica fora do Git por ignore local de backend; testes usam
+somente diretórios temporários próprios e liberam conexões antes da limpeza.
+
+Sem criptografia ou backup operacional nesta fase: caminho fornecido não garante
+ACL adequada. Documentar proteção pelo SO e proibição de dados reais. Desabilitar
+sensitive-data logging e não emitir valores/CPF/telefone/caminho pessoal em falhas
+públicas. Sem nova UI: acessibilidade/temas/zoom não são alterados. Backups confiáveis,
+importação, IPC, handlers/FluentResults e endpoints pertencem a outras Changes.
+
+### Roadmap de implementação
+
+SQL-01/1.1 foi executado sob apply autorizado; SQL-01/1.2–5.3 permanecem
+pendentes e são executados conforme as dependências:
+
+| Marco | Entregas e dependências | Critério verificável |
+| --- | --- | --- |
+| SQL-01 | Dependências fixas e isoladas da API (1.1 concluído), contrato, modelo, constraints e migration | API sem EF/SQLite; migration/modelo coerentes, testes de constraints |
+| SQL-02 | Inicializador e ciclo de arquivo; depende SQL-01 | Ausente/vazio/repetido/futuro/alheio/relativo cobertos sem criação implícita |
+| SQL-03 | Mapeamento e leitura integral; depende SQL-02 | Round-trip fiel, ordem, extremos, HIS-005–007 e leitura sem parcial |
+| SQL-04 | Escrita e revisão global; depende SQL-03 | Rollback, concorrência, cancelamento, sem exclusão/histórico perdido |
+| SQL-05 | Regressão, README e evidências; depende todos | CA-049–052, smoke/Angular, validação estrita e diff revisados |
+
+Executar builds/testes sequencialmente na mesma saída. Cada funcionalidade inclui
+testes/documentação e commit em português; planejamento pode ter commit separado,
+sem PR antecipado. Um PR único ao completar todo o apply; merge somente autorizado.
+
+### Estratégia de verificação e rastreabilidade
+
+MSTest com SQLite real em arquivos temporários (não EF InMemory como substituto),
+reabertura com conexões novas e dois consumidores para concorrência. Injetar falha
+de teste após primeira mudança e antes do commit sem gancho público de produção.
+Cobrir centavos extremos, datas 0001/9999 válidas, caracteres Unicode, dois clientes
+com mesmo CPF, correção entre meses, todos os status, lotes e universos mensais.
+Adulterar fixture controlada por SQL para testar histórico inválido que passa por
+constraints simples; após a falha restaurar explicitamente a fixture e reler.
+
+Reutilizar comandos de restore bloqueado/build Release/test MTP/format de DEC-033
+em `backend/`, além de tool restore e auditoria de transitivas/nativas; ferramentas
+e pacotes novos exigem restore inicial e lockfiles atualizados antes do modo bloqueado.
+SQL-01/1.1 executou restore bloqueado, tool restore, versão da ferramenta, build
+Release, conferência do grafo da API e auditoria NuGet; registrar execuções
+subsequentes e SDK/contagens reais no README.
+Smoke real continua health e 404 de negócio sem banco; frontend com API desligada:
+testes/build. E2E/visual/zoom não
+exigidos porque não há alteração UI, mas registrar os não executados. Benchmark,
+teste de queda de energia e homologação operacional não são prometidos.
+
+Fontes externas consultadas em 25/11/2026: Context7 `/dotnet/entityframework.docs`,
+guias SQLite limitations, concurrency, transactions, migrations/applying e
+cli/dbcontext-creation; NuGet `Microsoft.EntityFrameworkCore.Sqlite/10.0.15`,
+Design/dotnet-ef 10.0.15 e SQLitePCLRaw 2.1.14.
+Confirmam token gerenciado, ausência de rowversion SQLite, migrations distintas de
+EnsureCreated e factory de design-time. Não houve migration, teste de aplicação ou
+acesso a banco; restore, build Release de verificação e auditoria de dependências
+executados em SQL-01/1.1. Rastreabilidade: FON-041 → RF-024–026/CA-049–052 →
+DEC-038 → `fase-003-persistencia-sqlite` → SQL-01–05. Sem decisões de produto
+bloqueantes remanescentes; implementação segue após esta atualização dos artefatos.
+
+Verificação documental desta proposta: `openspec validate fase-003-persistencia-sqlite
+--strict` aprovado e `git diff --check` sem erro de whitespace (avisos LF→CRLF).
+Todos os quatro artefatos de planejamento existem; isso não comprova execução das
+tarefas ou compatibilidade binária das novas dependências.
+
 ## DEC-037 — Domínio C# completo e independente (25/11/2026)
 
 ### Contexto, origem e situação

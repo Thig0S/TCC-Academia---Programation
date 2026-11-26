@@ -1,0 +1,61 @@
+# Tasks
+
+Rastreabilidade: PRD/FON-041/RF-024–026/CA-049–052 → TDD/DEC-038 →
+proposal → `specs/persistencia-vendas/spec.md` → design/D1–D6 → SQL-01–05.
+Apply autorizado. SQL-01/1.1 está concluído; itens restantes seguem a ordem abaixo.
+Não há decisão de produto bloqueante. Verificar segurança/disponibilidade dos pacotes
+antes de implementar código dependente; se precisar alterar baseline, revisar
+PRD/TDD/SDD primeiro.
+
+Usar `feature/fase-003-persistencia-sqlite`. Cada funcionalidade coerente deve levar
+testes, README e atualização de tarefas no próprio commit em português, após suas
+verificações. Planejamento independente pode ter commit próprio. Um único PR apenas
+após todo o escopo aplicado; nenhum PR antecipado ou merge implícito. Builds/testes
+sequenciais na mesma saída. Fixtures sempre sintéticas e arquivos próprios.
+
+## 1. SQL-01 — Contratos, dependências e schema
+
+- [x] 1.1 Confirmar SDK 10.0.404/runtime 10.0.15/MSTest 4.5.3 conforme DEC-036 e revisar metadados/licenças/segurança de EF Core Sqlite/Design e dotnet-ef 10.0.15 e transitivas/nativas. Fixar pacotes apenas na Infraestrutura, Design privado e ferramenta local sob backend; remover a referência Api → Infraestrutura para que EF/SQLite não transitem ao host técnico. Gerar lockfiles e comprovar restore bloqueado, grafo da API sem dependência de persistência e auditoria sem vulnerabilidades conhecidas não tratadas. Registrar fontes, versões efetivas, comandos e limitações em backend/README.md; não instalar MediatR, FluentResults ou ferramenta global.
+- [ ] 1.2 Criar contrato de armazenamento, snapshot imutável/revisão e resultados tipados em Aplicacao/Persistencia, sem HTTP/EF e sem handlers. Cobrir sucesso/falha sem valor na falha, códigos de DEC-038 e isolamento do snapshot em MSTest, com referência direta a Aplicacao quando necessária. Documentar assinatura e semântica de revisão no README; verificar build e testes direcionados.
+- [ ] 1.3 Criar modelos de linha, VendasDbContext/configurações e migration inicial/ModelSnapshot em Infraestrutura/Persistencia/Sqlite conforme D2/DEC-038. Incluir registro global de IDs, ordens, dinheiro INTEGER, datas TEXT, enums, cliente por venda, FKs compostas e exclusão restrita. Adicionar factory design-time sem iniciar API ou criar banco ao gerar migration. Conferir ausência de mudança pendente entre modelo/migration e inspecionar schema gerado; MSTest em arquivo temporário comprova FKs, colisões entre tipos, ordens únicas, CHECK monetário e CPF repetido permitido. Documentar modelo e comandos reais de scaffolding no README.
+
+## 2. SQL-02 — Preparação explícita e ciclo de arquivo
+
+- [ ] 2.1 Implementar inicializador interno com caminho absoluto/pai existente e migrations explícitas, sem EnsureCreated/seed/CLI e sem chamada no host. MSTest comprova criação em caminho novo, revisão zero, inicialização repetida preservando dados, caminho relativo/pai ausente recusados e banco alheio/schema futuro desconhecido intocados. Documentar operação, códigos e exemplos com caminhos sintéticos no README.
+- [ ] 2.2 Implementar abertura por operação com foreign_keys, timeout finito de 5 s e modo que não crie arquivo na carga/escrita; conferir schema atual antes do uso. Testar arquivo ausente sem criação, arquivo ilegível/incompatível, bloqueio conhecido e liberação das conexões. Verificar que preparar/testar banco não altera Program.cs nem contrato health; documentar limites de acesso, lock de migration e ausência de recuperação automática.
+
+## 3. SQL-03 — Reidratação integral e fidelidade
+
+- [ ] 3.1 Implementar mapeador/leitura transacional sem tracking e com ordenação persistida; usar fábricas de valores/cliente, Venda.Reconstruir e ConjuntoVendas.Criar antes de entregar snapshot. Preparar fixtures por SQL de teste usando a migration, sem depender da escrita ainda não implementada. MSTest compara todos os campos, revisão, coleção vazia, mesma identificação em duas vendas, datas civis extremas válidas, centavos extremos, descrição nula e observação Unicode. Não normalizar dados inválidos; registrar oráculos SQL-REP-01 e contrato de carga no README.
+- [ ] 3.2 Cobrir SQL-HIS-01/SQL-COR-01/SQL-ORD-01 em arquivos reais: entrada 10.000 em base 20.000/2; lote sintético; Individual base 10.000 corrigido 11.000→10.500 e data em outro mês; ordem de histórico não determinada pela data. Conferir IDs/alocações/origens, recebido/saldo/acréscimo, universos de status e soma mensal/diária por valores explícitos. Executar testes direcionados e documentar fixtures/resultados sintéticos no README.
+- [ ] 3.3 Implementar/testar rejeição integral de dados persistidos inválidos: SQL-HIS-02 com alocação 9.999 e 10.001 contra entrada recebida/base 10.000, sem snapshot parcial; após cada falha restaurar explicitamente fixture válida e reler com nova conexão. Acrescentar data/enum/identificação/ordem/vínculo/registro de IDs inválidos e soma global insegura, inclusive em Inativas/Prejuízo. Quando constraint impedir fixture inválida, comprovar a rejeição pela constraint e usar adulteração controlada de teste apenas para provar a defesa na carga. Verificar ausência de reparo/omissão e registrar rastreabilidade HIS-005–007 → SQL-HIS-02 no README.
+
+## 4. SQL-04 — Escrita atômica, revisão e preservação
+
+- [ ] 4.1 Implementar gravação do conjunto validado em transação de escrita não diferida, conferindo integridade atual, revisão esperada e limite da revisão; atualizar token condicionalmente e persistir todas as linhas no mesmo commit. Reconciliar por ID sem apagar/recriar toda a base, evitando colisões temporárias de ordens. MSTest fecha/reabre arquivo após salvar e confere round-trip completo de 3.1/3.2, revisão +1 e snapshot idêntico com revisão atual sem duplicação. Documentar garantias/custo do snapshot no README.
+- [ ] 4.2 Proteger vendas existentes e histórico: recusar omissão de raiz, remoção de parcela/recebimento, alteração de contrato-base/entrada/lote e perda de identidade/alocação Individual. Testar cada recusa sem mudança de dados/revisão e sucessos por operações de cliente/status/baixa/correção do domínio, preservando outras vendas. Testar candidato com IDs globais colidentes ou overflow sem gravar, usando coleção candidata validável que permita informar falha, sem burlar encapsulamento do domínio. Atualizar README e executar regressões de armazenamento.
+- [ ] 4.3 Cobrir dois consumidores/conexões na mesma revisão com sincronização determinística: no máximo um commit, revisão obsoleta recusa e recarga mostra versão íntegra. Testar leitura consistente durante escrita, timeout de banco ocupado sem auto-retry e limite long.MaxValue sem overflow. Executar casos concorrentes com arquivo isolado e registrar resultados, sem alegar concorrência operacional homologada.
+- [ ] 4.4 Testar rollback após primeira alteração e antes do commit por composição/interceptor exclusivo de teste; nova conexão deve observar estado/revisão anteriores e nova operação válida deve confirmar. Cobrir token previamente cancelado, cancelamento observado antes do commit, token tardio após commit confirmado, exceção inesperada propagada e confirmação indeterminada sem retry/alegação falsa de rollback. Testar mensagens sem SQL/CPF/telefone/caminho pessoal e sensitive-data logging desligado. Documentar códigos/limites no README e executar toda a suíte de persistência.
+
+## 5. SQL-05 — Verificação integrada e fechamento de evidências
+
+- [ ] 5.1 Em backend, executar sequencialmente tool restore, restore da solução em modo bloqueado, build Release sem restore, dotnet test --solution VendasEmAberto.slnx -c Release --no-build e dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore. Confirmar descoberta não vazia dos testes de domínio/técnicos/SQLite e ausência de regressão; registrar comandos exatos, versões, contagens, códigos de saída e auditoria de dependências. Conferir ignore limitado a artefatos locais do backend, ausência de bancos/dados reais no diff e limpeza somente de temporários próprios.
+- [ ] 5.2 Iniciar DLL Release como processo real sem banco preparado, conferir listener apenas loopback, /health 200 text/plain Healthy e /vendas 404, sem criação/acesso a banco; conferir que o grafo da API continua sem Infraestrutura/EF/SQLite. Encerrar apenas o processo iniciado e conferir porta liberada. Com API desligada, executar em frontend npm.cmd test -- --watch=false e npm.cmd run build. Registrar evidências novas no README; E2E/visual/zoom não executados por não haver UI alterada, sem alegar homologação operacional.
+- [ ] 5.3 Auditar cada requisito/cenário da delta contra testes e CA-049–052, com matriz final no README; verificar que todos os resultados registrados são execuções reais e que não há handlers/endpoints/Angular/importação/dados reais/sync ou archive alheios. Executar openspec validate fase-003-persistencia-sqlite --strict e git diff --check; revisar diff e marcar tarefas somente com evidências. Atualizar estado de execução no PRD/TDD e Change ao concluir o apply, preservando a distinção entre plano original e entrega.
+
+## Workflow follow-up
+
+- SQL-01/1.1: SDK/runtime/MSTest confirmados; EF/Design/dotnet-ef 10.0.15 e
+  SQLitePCLRaw 2.1.14 fixados; lockfiles atualizados; restore bloqueado, tool restore,
+  build Release e auditoria NuGet passaram sem vulneráveis reportados. API não tem
+  referência de projeto a Infraestrutura nem dependência EF/SQLite. Licenças/fontes,
+  comandos e limitações registrados no `backend/README.md`.
+- Persistência ainda não tem contrato, contexto, migration, banco ou testes próprios;
+  esses itens permanecem pendentes. `openspec validate --strict` passou após a revisão.
+- Após conclusão integral, publicar a mesma feature
+  branch e abrir PR único para main com `.github/pull_request_template.md`, referências
+  PRD/FON-041/RF-024–026/CA-049–052, TDD/DEC-038, esta Change e verificações/limitações.
+- Não abrir PR apenas pelo planejamento. Merge exige autorização explícita e revisão
+  exigida; não fazer push direto na main.
+- Sync/archive somente em etapa solicitada. Não sincronizar ou arquivar Changes
+  anteriores como requisito artificial para implementar esta persistência.
