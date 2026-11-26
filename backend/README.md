@@ -395,6 +395,35 @@ antes do gerador. A integração gravou dois pagamentos via `ISender`, reabriu c
 provider novo e confirmou IDs, acréscimo, base/recebido/saldo e revisão 3. Falhas de
 seleção/status não alteraram snapshot. SQLite/fixtures ficaram em arquivos temporários.
 
+## Correção de pagamento individual (APP-04/4.2)
+
+`CorrigirPagamentoCommand` recebe venda e recebimento explicitamente, sem solicitar ID
+novo. O handler valida dados escalares, carrega um snapshot e confere a revisão antes
+de localizar a venda. Entrega ao domínio o recebimento existente e a coleção completa
+das vendas para distinguir ID inexistente de recebimento pertencente a outra venda.
+Somente Individual de venda Ativa é corrigível; entrada/lote são recusados. O domínio
+preserva ID e alocação e recalcula o acréscimo. A aplicação substitui a raiz na posição
+original, valida o conjunto e projeta/mapeia a resposta antes de uma única gravação.
+Correção idêntica não é no-op: grava e retorna a revisão confirmada, sem duplicar
+recebimento.
+
+Verificações direcionadas, com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~CorrigirPagamentoHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~CorrigirPagamentoSqliteTests
+```
+
+Resultado: 5 testes unitários e 2 de integração passaram. Cobrem recebimento de
+11.000 corrigido para 10.500 em parcela-base de 10.000, acréscimo de 500, data movida
+de fevereiro para março, preservação de IDs/alocações/ordem e saldo das outras
+parcelas; correção idêntica com uma gravação e revisão +1; recebimento ausente versus
+de outra venda; entrada/lote, venda não Ativa/ausente e valor, forma, data e observação
+inválidos. SQLite temporário foi reaberto em provider novo, mantendo a revisão final,
+histórico e projeção reconciliáveis, sem alterar as demais vendas.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
