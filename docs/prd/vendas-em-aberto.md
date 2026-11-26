@@ -1,5 +1,113 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fase 003 do backend — persistência SQLite (25/11/2026)
+
+**FON-041:** pedido de avaliar a correção recente e planejar a fase 003; no Harness,
+o solicitante escolheu persistência SQLite e aprovou EF Core, modelos persistentes
+separados, migrations explícitas e gravação transacional do conjunto com revisão
+global. Confirmou caminho absoluto fornecido pelo consumidor, inicializador interno
+sem CLI e proibição de excluir vendas omitidas. A autorização inicial cobria somente
+planejamento; o apply foi autorizado posteriormente no Harness.
+Não confundir com a FASE-003 histórica de navegação Angular.
+
+### Problema, objetivo, público e evidências
+
+O domínio imutável existe, mas seu estado não sobrevive ao encerramento do processo.
+Preparar armazenamento local fiel para a evolução offline da equipe da loja, sem
+transformar a demonstração Angular em aplicação operacional. Reutilizar OBJ-001–004
+e regras de RF-023: identidade, centavos, datas civis, entrada única e histórico.
+Consumidor imediato é código interno/testes, não um operador via nova tela.
+
+Inspeção do commit `0280d3b`: a reconstrução agora rejeita alocação de entrada
+divergente do recebimento/base antes de criar o agregado; preserva o ramo Individual.
+Testes cobrem 1/9.999/10.001 contra 10.000 e round-trip de projeção/conjunto/período.
+O caso positivo não executa tentativa inválida anterior no mesmo método, apesar do
+texto do planejamento anterior; não invalida a guarda, mas a nova integração cobrirá
+leitura inválida seguida de leitura válida. README registra 143 testes backend e
+430 frontend aprovados. São evidências anteriores, não reexecuções desta proposta.
+Na inspeção que fundamentou o planejamento, Aplicacao/Infraestrutura não tinham
+tipos de negócio ou pacotes de persistência. SQL-01/1.1 adicionou dependências
+somente à Infraestrutura; ainda não há contrato, contexto ou código de persistência.
+
+### Escopo, requisitos e prioridade
+
+**RF-024 — Armazenamento local fiel (Essencial):** dado um conjunto válido e uma
+referência civil explícita, permitir preparar banco SQLite vazio, gravar e recuperar
+vendas, cliente por venda, parcelas, recebimentos e alocações preservando IDs,
+ordem, origens, valores-base/efetivos, formas, observações e datas. Reconstruir pelas
+fábricas vigentes e validar o conjunto antes de devolver sucesso; banco vazio
+preparado retorna conjunto vazio. Histórico inválido não é normalizado, ignorado ou
+parcialmente devolvido. Origem FON-041, escopo confirmado; desenho em DEC-038.
+
+**RF-025 — Gravação atômica e proteção de estado (Essencial):** o consumidor fornece
+snapshot completo e revisão esperada. Aceitar novas vendas e atualizações sem
+omitir vendas já armazenadas; conflito de revisão, candidato inválido, falha antes
+do commit ou cancelamento confirmado antes do commit não publicam estado parcial.
+Sucesso só após commit confirmado. Revisão obsoleta exige recarregar, nunca repetir
+automaticamente a escrita. Revisão protege o conjunto, inclusive somas e IDs globais.
+Não oferece exclusão, estorno, histórico de auditoria nem deduplicação de transporte.
+
+**RF-026 — Preparação controlada e isolamento (Essencial):** consumidor informa
+caminho absoluto e chama operação interna explícita de migrations; leitura/gravação
+não criam banco ou atualizam schema implicitamente. Banco ausente, incompatível,
+ilegível ou inconsistente gera falha identificável e segura, sem reset ou reparo
+automático. API permanece só técnica, sem criar/abrir banco ao iniciar; `/health`
+não passa a representar disponibilidade financeira. Prioridade essencial para
+evitar gravação no local errado e perda silenciosa; origem FON-041 confirmada.
+
+### Jornadas e critérios de aceite
+
+Fluxo técnico: preparar caminho temporário → inicializar → carregar snapshot/revisão
+→ produzir candidato com domínio → salvar com revisão esperada → fechar conexões
+→ reabrir e conferir. Alternativas: arquivo ausente, conflito, inválido, bloqueio e
+cancelamento retornam sem substituir o snapshot anterior; recuperação é explícita.
+
+- **CA-049 (RF-024):** dado banco preparado e fixtures sintéticas sem/com entrada,
+  Individual com acréscimo e lote, quando gravar, fechar e reabrir, então todos os
+  campos e a ordem reconciliam; base 20.000/entrada 10.000 mantém pago 10.000, saldo
+  10.000 e 1/2 paga. Correção 11.000→10.500 em parcela-base 10.000 preserva IDs e
+  altera recebido/acréscimo e mês conforme a data; status e coleções permanecem fiéis.
+- **CA-050 (RF-024/025):** dado banco válido, quando houver revisão obsoleta, omissão
+  de venda, colisão global, overflow agregado, falha intermediária ou cancelamento
+  antes do commit, então não há escrita parcial nem avanço da revisão. Dois
+  escritores com a mesma revisão não podem ambos confirmar. Após falha, leitura por
+  nova conexão preserva o estado; nova operação válida pode concluir.
+- **CA-051 (RF-024/026):** dado arquivo ausente, schema desconhecido ou linha inválida
+  (inclusive alocação de entrada 9.999/10.001 contra 10.000), quando carregar, então
+  falhar sem conjunto parcial, reparo ou recriação; após restauração explícita da
+  fixture válida, nova leitura funciona. Inicialização repetida do schema atual
+  preserva dados; caminho relativo é recusado. Banco vazio inicializado é válido.
+- **CA-052 (RF-026):** dado apply autorizado, quando executar MSTest com SQLite real
+  em arquivos temporários, restore bloqueado, build e format, então comprovar os
+  critérios anteriores e preservar testes de domínio/API. Smoke mantém loopback,
+  health e `/vendas` 404 sem acesso ao banco. Frontend independente conserva testes e
+  build; documentar resultados reais, limitações e testes não executados.
+
+### Restrições, riscos, validação e próximos passos
+
+Não incluir MediatR/FluentResults, handlers, endpoints, Angular, Tauri/IPC, importação
+XLSX, carga real, seed automático, backup operacional, criptografia, autenticação,
+instalador ou CI. Persistência não torna dados reais autorizados. Interface,
+acessibilidade, foco, temas, BRL e apresentação de datas não mudam; mensagens internas
+públicas continuam pt-BR. Não armazenar projeções derivadas nem criar cliente mestre.
+
+Riscos: round-trip que reordena recebimentos, contorna reconstrução ou perde centavos;
+gravação concorrente que invalida somas; arquivo técnico confundido com base homologada.
+Mitigar com CA-049–052 e dados exclusivamente sintéticos, sem logs de CPF/telefone,
+SQL com valores ou caminhos pessoais. Sem nova meta de latência/volume ou telemetria;
+sucesso é verificável pelos critérios, não por ganho operacional ainda não medido.
+Backup/restauração de produção e conciliação legada continuam dependências de fase
+posterior, não bloqueiam esta biblioteca técnica isolada. Não há decisão de produto
+bloqueante neste recorte; aprovação do desenho por si só não equivale a autorização
+de apply, que foi concedida posteriormente para esta Change.
+
+Roadmap: contrato/schema → inicializador → leitura validada → gravação/revisão →
+regressão e evidências. FON-041 → RF-024–026/CA-049–052 → TDD/DEC-038 →
+`openspec/changes/fase-003-persistencia-sqlite/`. SQL-01/1.1 (dependências e
+isolamento do grafo da API) está aplicado; contrato e persistência ainda não foram
+implementados. Preservar histórico e IDs anteriores. PR único somente após escopo
+integral verificado; nenhum PR antecipado ou merge implícito.
+
 ## Fase 002 — domínio C# independente (25/11/2026)
 
 **FON-040:** solicitação `fase-002-dominio` e duas respostas no Harness: planejar
