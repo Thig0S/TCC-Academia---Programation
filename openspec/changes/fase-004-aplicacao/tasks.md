@@ -30,7 +30,7 @@ alterar o pin nem a instalação global. Resolver bloqueio técnico antes de có
 
 ## 3. APP-03 — Cliente e situação administrativa
 
-- [ ] 3.1 Implementar EditarClienteVenda com handler explícito e candidato completo. MSTest unitário e integração via ISender/reabertura verificam edição somente dos quatro campos em Ativa aberta/quitada, Inativa e Prejuízo, CPF repetido sem propagação e preservação integral de contrato/histórico/outras vendas. Testar cliente inválido, venda ausente e no-op por quatro campos normalizados idênticos sem Save/avanço de revisão; revisão obsoleta falha antes do no-op. Executar testes direcionados, documentar evidências/no-op no README e commit próprio.
+- [x] 3.1 Implementar EditarClienteVenda com handler explícito e candidato completo. MSTest unitário e integração via ISender/reabertura verificam edição somente dos quatro campos em Ativa aberta/quitada, Inativa e Prejuízo, CPF repetido sem propagação e preservação integral de contrato/histórico/outras vendas. Testar cliente inválido, venda ausente e no-op por quatro campos normalizados idênticos sem Save/avanço de revisão; revisão obsoleta falha antes do no-op. Executar testes direcionados, documentar evidências/no-op no README e commit próprio.
 - [ ] 3.2 Implementar AlterarStatusVenda com handler explícito. UnitTests e integração verificam matriz completa, Ativo→Prejuízo somente com saldo, retorno a Ativo, enum inválido, mesmo status sem Save, revisão obsoleta inclusive no no-op e preservação do histórico. Conferir efeitos nas projeções existentes sem adicionar Query nova neste item; no-op devolve revisão observada sem prometer reserva. Registrar comandos/resultados no README e commit próprio.
 
 ## 4. APP-04 — Baixa e correção individuais

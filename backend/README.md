@@ -316,6 +316,32 @@ venda inexistente e distinção de banco ausente. A integração gravou em arqui
 temporário, consultou via `ISender` em provider novo e confirmou revisão inalterada,
 sem mutar respostas já entregues. Os arquivos e pools foram limpos pela fixture.
 
+## Edição dos dados do cliente (APP-03/3.1)
+
+`EditarClienteVendaCommand` valida revisão, ID e os quatro campos pela factory do domínio
+antes de carregar. Depois lê snapshot único, confere a revisão antes de localizar venda
+ou tratar no-op e distingue `venda-inexistente`. A comparação de no-op usa os campos já
+normalizados (nome/CPF/telefone/descrição); equivalente retorna detalhe e revisão
+observada sem `SalvarAsync`. Mudança edita somente o cliente, substitui a raiz na posição
+existente, valida o conjunto todo, mapeia antes de gravar e retorna a revisão confirmada.
+CPF pode se repetir em outra venda. Status, contrato, parcelas, recebimentos e demais
+vendas são preservados.
+
+Verificações direcionadas, SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~EditarClienteVendaHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~EditarClienteVendaSqliteTests
+```
+
+Resultado: 4 testes unitários e 2 de integração passaram. Cobrem venda Ativa aberta e
+quitada, Inativa e Prejuízo; CPF repetido; preservação financeira/histórica e posição
+das demais vendas após reabertura; validação inválida e venda ausente sem alteração;
+no-op após normalização sem avanço de revisão; e revisão obsoleta que conflita antes
+do no-op. SQLite e fixtures usam apenas arquivos temporários removidos ao término.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
