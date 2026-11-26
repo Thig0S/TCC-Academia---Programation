@@ -375,6 +375,30 @@ suíte `FullyQualifiedName~Persistencia` 49/49. Build Release sem avisos/erros e
 `dotnet format --verify-no-changes --no-restore` passaram. A concorrência é coberta em
 arquivos sintéticos temporários; isso não constitui homologação operacional.
 
+### Rollback, cancelamento e confirmação (SQL-04/4.4)
+
+Um seam interno `IIntervencaoTransacionalGravacaoSqlite`, usado somente pela composição
+de testes, pausa/falha após a primeira alteração (token de revisão) e envolve a
+confirmação sem alterar o contrato da Aplicacao ou registrar serviço na API. Uma falha
+inesperada nesse ponto propaga a mesma exceção; a transação descartada reverte revisão e
+snapshot. Nova conexão confirma o estado anterior, e uma gravação válida posterior pode
+confirmar normalmente.
+
+Cancelamento já solicitado antes da abertura e cancelamento observado depois da primeira
+alteração propagam `OperationCanceledException` e deixam revisão/dados anteriores. Se o
+commit completou e o token é cancelado depois, o método retorna sucesso com revisão
+confirmada; não relata rollback de estado já publicado. Exceção durante a confirmação é
+tratada como `confirmacao-indeterminada`, com instrução para recarregar e conferir revisão,
+sem retry automático. O teste simula perda do ACK após o commit real: resposta fica
+indeterminada, uma única confirmação é invocada e a recarga encontra o conjunto salvo.
+
+Mensagens de `banco-ocupado` e confirmação indeterminada são verificadas sem SQL, CPF,
+telefone ou caminho pessoal. `OpcoesVendasDbContext` mantém logging de dados sensíveis
+desativado. Cinco testes novos de SQL-04/4.4: classe do gravador 15/15; suíte
+`FullyQualifiedName~Persistencia` 54/54; build Release sem avisos/erros e
+`dotnet format --verify-no-changes --no-restore` passaram. A injeção é interna e não
+compõe uma rota ou contrato de produção.
+
 ## Estado de verificação
 
 ### Contrato de resultados do domínio

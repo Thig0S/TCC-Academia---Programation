@@ -13,6 +13,16 @@ internal sealed class GravadorVendasSqlite
 {
     private readonly AbridorVendasSqlite _abridor = new();
     private readonly LeitorVendasSqlite _leitor = new();
+    private readonly IIntervencaoTransacionalGravacaoSqlite? _intervencaoTeste;
+
+    public GravadorVendasSqlite()
+    {
+    }
+
+    internal GravadorVendasSqlite(IIntervencaoTransacionalGravacaoSqlite intervencaoTeste)
+    {
+        _intervencaoTeste = intervencaoTeste ?? throw new ArgumentNullException(nameof(intervencaoTeste));
+    }
 
     public async Task<ResultadoArmazenamento<long>> SalvarAsync(
         string caminhoAbsoluto,
@@ -98,6 +108,11 @@ internal sealed class GravadorVendasSqlite
                         "A revisão do armazenamento mudou; carregue novamente antes de salvar.");
                 }
 
+                if (_intervencaoTeste is not null)
+                {
+                    await _intervencaoTeste.DepoisDaPrimeiraAlteracaoAsync(cancellationToken);
+                }
+
                 await MoverOrdensParaFaixaTemporariaAsync(conexao, transacaoSqlite, atual.Conjunto, cancellationToken);
                 await GravarIdentificadoresAsync(conexao, transacaoSqlite, conjunto, cancellationToken);
                 await GravarVendasAsync(conexao, transacaoSqlite, conjunto, cancellationToken);
@@ -111,7 +126,26 @@ internal sealed class GravadorVendasSqlite
                     cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
-                await transacaoContexto.CommitAsync(cancellationToken);
+                try
+                {
+                    if (_intervencaoTeste is null)
+                    {
+                        await transacaoContexto.CommitAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        await _intervencaoTeste.ConfirmarAsync(transacaoContexto, cancellationToken);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Uma falha no protocolo de confirmação não prova que o SQLite
+                    // deixou a transação sem commit; exigir releitura, nunca retry cego.
+                    return Falha(
+                        CodigosErroArmazenamento.ConfirmacaoIndeterminada,
+                        "A confirmação da gravação é indeterminada; recarregue o armazenamento antes de tentar novamente.");
+                }
+
                 return ResultadoArmazenamento<long>.CriarSucesso(novaRevisao);
             }
         }

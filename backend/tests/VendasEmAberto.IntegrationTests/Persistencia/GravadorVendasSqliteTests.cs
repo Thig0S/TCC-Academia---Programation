@@ -1,4 +1,6 @@
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Diagnostics;
 using VendasEmAberto.Aplicacao.Persistencia;
 using VendasEmAberto.Dominio.Recebimentos;
@@ -484,6 +486,8 @@ public sealed class GravadorVendasSqliteTests
 
         cronometro.Stop();
         ExigirErro(resultado, CodigosErroArmazenamento.BancoOcupado);
+        var falha = Assert.IsInstanceOfType<ResultadoArmazenamento<long>.Falha>(resultado);
+        AssertMensagemDeErroSegura(falha.Erro.Mensagem);
         Assert.IsTrue(
             cronometro.Elapsed >= TimeSpan.FromSeconds(4),
             $"O bloqueio deveria aguardar o timeout configurado de cinco segundos; decorrido: {cronometro.Elapsed}.");
@@ -514,6 +518,167 @@ public sealed class GravadorVendasSqliteTests
         var aposLimite = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
         Assert.AreEqual(long.MaxValue, aposLimite.Revisao);
         AssertConjuntosIguais(inicial.Conjunto, aposLimite.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_PropagaFalhaInesperadaAposPrimeiraAlteracaoReverteEPermiteNovaGravacao()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidato = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Após rollback",
+            "52998224725",
+            "1190000003");
+        var excecaoEsperada = new InvalidOperationException("falha inesperada injetada");
+        var intervencao = new IntervencaoTransacionalGravacaoSqlite(
+            depoisDaPrimeiraAlteracao: _ => Task.FromException(excecaoEsperada));
+        var gravador = new GravadorVendasSqlite(intervencao);
+        InvalidOperationException? capturada = null;
+
+        try
+        {
+            await gravador.SalvarAsync(
+                _caminhoFixture,
+                candidato,
+                inicial.Revisao,
+                Referencia);
+        }
+        catch (InvalidOperationException excecao)
+        {
+            capturada = excecao;
+        }
+
+        Assert.AreSame(excecaoEsperada, capturada);
+        var aposRollback = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao, aposRollback.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, aposRollback.Conjunto);
+
+        var gravacaoValida = await _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia);
+        Assert.AreEqual(inicial.Revisao + 1, ExigirRevisaoSalva(gravacaoValida));
+        var aposNovaGravacao = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        AssertConjuntosIguais(ExigirConjunto(candidato), aposNovaGravacao.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_CancelamentoPreviamenteSolicitadoOuAntesDoCommitReverteEstado()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidato = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Cancelada",
+            "52998224725",
+            "1190000004");
+
+        using var cancelamentoPrevio = new CancellationTokenSource();
+        cancelamentoPrevio.Cancel();
+        var preCancelada = await CapturarCancelamentoAsync(() => _armazenamento.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia,
+            cancelamentoPrevio.Token));
+        Assert.AreEqual(cancelamentoPrevio.Token, preCancelada.CancellationToken);
+
+        var cancelamentoDuranteTransacao = new CancellationTokenSource();
+        var intervencao = new IntervencaoTransacionalGravacaoSqlite(
+            depoisDaPrimeiraAlteracao: _ =>
+            {
+                cancelamentoDuranteTransacao.Cancel();
+                return Task.FromCanceled(cancelamentoDuranteTransacao.Token);
+            });
+        var gravador = new GravadorVendasSqlite(intervencao);
+        var canceladaAntesCommit = await CapturarCancelamentoAsync(() => gravador.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia,
+            cancelamentoDuranteTransacao.Token));
+        Assert.AreEqual(cancelamentoDuranteTransacao.Token, canceladaAntesCommit.CancellationToken);
+
+        var aposCancelamentos = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao, aposCancelamentos.Revisao);
+        AssertConjuntosIguais(inicial.Conjunto, aposCancelamentos.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_CancelamentoDepoisDeCommitConfirmadoRetornaSucessoERevisaoConfirmada()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidato = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Commit confirmado",
+            "52998224725",
+            "1190000005");
+        using var cancelamento = new CancellationTokenSource();
+        var intervencao = new IntervencaoTransacionalGravacaoSqlite(
+            confirmar: async (transacao, cancellationToken) =>
+            {
+                await transacao.CommitAsync(cancellationToken);
+                cancelamento.Cancel();
+            });
+        var gravador = new GravadorVendasSqlite(intervencao);
+
+        var resultado = await gravador.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia,
+            cancelamento.Token);
+
+        Assert.IsTrue(cancelamento.IsCancellationRequested);
+        Assert.AreEqual(inicial.Revisao + 1, ExigirRevisaoSalva(resultado));
+        var aposCommit = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao + 1, aposCommit.Revisao);
+        AssertConjuntosIguais(ExigirConjunto(candidato), aposCommit.Conjunto);
+    }
+
+    [TestMethod]
+    public async Task Salvar_FalhaNaConfirmacaoRetornaIndeterminadaSemRetryNemFalsoRollback()
+    {
+        await PrepararFixtureComHistoricoAsync();
+        var inicial = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        var candidato = CriarCandidatoComClienteEditado(
+            inicial.Conjunto,
+            "Commit sem confirmação recebida",
+            "52998224725",
+            "1190000006");
+        var intervencao = new IntervencaoTransacionalGravacaoSqlite(
+            confirmar: async (transacao, cancellationToken) =>
+            {
+                await transacao.CommitAsync(cancellationToken);
+                throw new IOException("acknowledgement perdido com dados sensíveis simulados");
+            });
+        var gravador = new GravadorVendasSqlite(intervencao);
+
+        var resultado = await gravador.SalvarAsync(
+            _caminhoFixture,
+            candidato,
+            inicial.Revisao,
+            Referencia);
+
+        var falha = Assert.IsInstanceOfType<ResultadoArmazenamento<long>.Falha>(resultado);
+        Assert.AreEqual(CodigosErroArmazenamento.ConfirmacaoIndeterminada, falha.Erro.Codigo);
+        Assert.AreEqual(1, intervencao.QuantidadeConfirmacoes);
+        AssertMensagemDeErroSegura(falha.Erro.Mensagem);
+        var aposConfirmacao = ExigirSnapshot(await _armazenamento.CarregarAsync(_caminhoFixture, Referencia));
+        Assert.AreEqual(inicial.Revisao + 1, aposConfirmacao.Revisao);
+        AssertConjuntosIguais(ExigirConjunto(candidato), aposConfirmacao.Conjunto);
+    }
+
+    [TestMethod]
+    public void OpcoesVendasDbContext_LoggingDeDadosSensiveisPermaneceDesativado()
+    {
+        var opcoes = OpcoesVendasDbContext.Criar(_caminhoFixture, SqliteOpenMode.ReadWrite);
+        var extensaoNucleo = opcoes.Extensions.OfType<CoreOptionsExtension>().Single();
+
+        Assert.IsFalse(extensaoNucleo.IsSensitiveDataLoggingEnabled);
     }
 
     private async Task PrepararFixtureComHistoricoAsync()
@@ -672,6 +837,42 @@ public sealed class GravadorVendasSqliteTests
         return Assert.IsInstanceOfType<ResultadoDominio<ConjuntoVendas>.Sucesso>(resultado).Valor;
     }
 
+    private static async Task<OperationCanceledException> CapturarCancelamentoAsync(
+        Func<Task<ResultadoArmazenamento<long>>> operacao)
+    {
+        try
+        {
+            await operacao();
+        }
+        catch (OperationCanceledException excecao)
+        {
+            return excecao;
+        }
+
+        Assert.Fail("A operação deveria propagar o cancelamento.");
+        return new OperationCanceledException();
+    }
+
+    private void AssertMensagemDeErroSegura(string mensagem)
+    {
+        var dadosProibidos = new[]
+        {
+            _caminhoFixture,
+            "12345678909",
+            "1198765432",
+            "SELECT",
+            "UPDATE",
+            "EstadoArmazenamento"
+        };
+
+        foreach (var dado in dadosProibidos)
+        {
+            Assert.IsFalse(
+                mensagem.Contains(dado, StringComparison.OrdinalIgnoreCase),
+                $"A mensagem de armazenamento expôs dado sensível ou SQL: {dado}.");
+        }
+    }
+
     private static Dinheiro CriarDinheiro(long centavos)
     {
         var resultado = Dinheiro.Criar(centavos);
@@ -780,6 +981,33 @@ public sealed class GravadorVendasSqliteTests
                     recebimentoEsperado.Alocacoes[indiceAlocacao].Valor.Centavos,
                     recebimentoAtual.Alocacoes[indiceAlocacao].Valor.Centavos);
             }
+        }
+    }
+
+    private sealed class IntervencaoTransacionalGravacaoSqlite : IIntervencaoTransacionalGravacaoSqlite
+    {
+        private readonly Func<CancellationToken, Task>? _depoisDaPrimeiraAlteracao;
+        private readonly Func<IDbContextTransaction, CancellationToken, Task>? _confirmar;
+
+        public int QuantidadeConfirmacoes { get; private set; }
+
+        public IntervencaoTransacionalGravacaoSqlite(
+            Func<CancellationToken, Task>? depoisDaPrimeiraAlteracao = null,
+            Func<IDbContextTransaction, CancellationToken, Task>? confirmar = null)
+        {
+            _depoisDaPrimeiraAlteracao = depoisDaPrimeiraAlteracao;
+            _confirmar = confirmar;
+        }
+
+        public Task DepoisDaPrimeiraAlteracaoAsync(CancellationToken cancellationToken) =>
+            _depoisDaPrimeiraAlteracao?.Invoke(cancellationToken) ?? Task.CompletedTask;
+
+        public Task ConfirmarAsync(
+            IDbContextTransaction transacao,
+            CancellationToken cancellationToken)
+        {
+            QuantidadeConfirmacoes++;
+            return _confirmar?.Invoke(transacao, cancellationToken) ?? transacao.CommitAsync(cancellationToken);
         }
     }
 }

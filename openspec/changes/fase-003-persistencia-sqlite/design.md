@@ -17,7 +17,8 @@ em fixtures SQL; SQL-04/4.1 implementou adaptador interno e gravação com trans
 diferida, revisão condicional, reconciliação por ID e round-trip em fixture sintética;
 SQL-04/4.2 protege contrato, ordem, entrada/lote e identidade/alocação Individual;
 SQL-04/4.3 verifica serialização de escritores, leitura consistente deferred, timeout,
-revisão obsoleta e limite long.MaxValue. Testes cobriram arquivo novo, repetição, recusa
+revisão obsoleta e limite long.MaxValue; SQL-04/4.4 cobre rollback/cancelamento e
+confirmação indeterminada por seam interno de teste. Testes cobriram arquivo novo, repetição, recusa
 de bancos desconhecidos/futuros, modo sem criação, lock, liberação de conexão, leitura e gravação. A decisão de remover a
 referência preexistente Api → Infraestrutura foi confirmada no Harness.
 
@@ -179,11 +180,14 @@ sem SQL, CPF/telefone ou caminho pessoal; sensitive-data logging desligado.
 Cancelamento antes de commit reverte; depois de commit confirmado não vira falsa
 falha. Commit sem confirmação confiável informa `confirmacao-indeterminada`, exige
 recarregar/conferir revisão e não permite retry automático. Não alegar restauração
-quando não for comprovável.
+quando não for comprovável. Falha inesperada antes do commit propaga após descarte da
+transação; apenas exceções do protocolo de confirmação são reduzidas a estado
+indeterminado, sem expor conteúdo da exceção.
 
 Testes MSTest usam provider SQLite real e arquivo temporário por fixture; nova conexão
-após fechar/reabrir, dois contextos/conexões para concorrência. Injeção de falha antes
-de commit por composição/interceptor exclusivo de teste, não switch público ou rota.
+após fechar/reabrir, dois contextos/conexões para concorrência. Injeção de falha após
+primeira alteração e interceptação da confirmação por composição exclusiva de teste,
+não switch público ou rota.
 Inspecionar schema/constraints por SQL parametrizado de teste. Não usar EF InMemory
 ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 
@@ -212,9 +216,9 @@ ou apenas um banco `:memory:` como prova de reabertura/durabilidade.
 3. SQL-02/2.2: abrir por operação sem criação implícita, validar schema/migration,
    foreign_keys, timeout e descarte de conexão; concluído em arquivos temporários. Não
    há base anterior a converter.
-4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1–4.3 implementaram gravação,
-   revisão, round-trip, preservação detalhada e concorrência; 4.4 ainda cobre rollback
-   e cancelamento. Testes/documentação em cada entrega.
+4. SQL-03: leitura fiel e inválida testada; SQL-04/4.1–4.4 implementaram gravação,
+   revisão, round-trip, preservação detalhada, concorrência, rollback, cancelamento e
+   confirmação indeterminada. Testes/documentação em cada entrega.
 5. SQL-05: restore bloqueado, build Release, toda suíte MSTest, format, smoke real
    health/loopback/404 sem banco, frontend test/build com API desligada e evidências
    reais. E2E/visual/zoom não executados sem UI; não alegar homologação.
