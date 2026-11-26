@@ -555,6 +555,39 @@ dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTest
 
 Resultado: 2 testes passaram; arquivos SQLite e pools são temporários e limpos.
 
+## Falhas e cancelamento transversais (APP-06/6.2)
+
+`HandlersFalhasCancelamentoTests` percorre os cinco Commands com armazenamento
+controlado: token previamente cancelado (zero carga/Save/IDs), cancelamento em
+`SaveAsync` antes da confirmação (propaga `OperationCanceledException` ou subtipo,
+preserva token/argumentos e não devolve resposta), cancelamento depois do sucesso
+confirmado (devolve resposta com revisão confirmada, uma carga/Save e sem recarga),
+falhas físicas `banco-ocupado`/`armazenamento-indisponivel` e
+`confirmacao-indeterminada` (categorias corretas, sem retry/carga posterior/candidato),
+exceção inesperada e código de armazenamento desconhecido (propagam sem Save). Os
+testes também verificam todas as mensagens e Reasons públicas contra SQL, CPF,
+telefone e caminho de banco.
+
+O double comprova somente o protocolo da aplicação. A garantia transacional permanece
+verificada por SQLite real nos testes do gravador: cancelamento prévio/durante a
+transação preserva revisão e conjunto; cancelamento depois do commit retorna sucesso e
+revisão confirmada; falha de confirmação resulta em `confirmacao-indeterminada` sem
+retry, e a recarga constata o estado realmente confirmado. A integração existente
+`ConsultarVendaAusenteDistingueAusenciaDeFalhaDeArmazenamento` separa `banco-ausente`
+de `venda-inexistente`.
+
+Verificações com SDK `10.0.404`: build Release da solução sem restore (0 avisos/erros),
+5 testes unitários transversais, 4 regressões SQLite direcionadas (incluindo as três
+do gravador e a distinção de inexistência), `dotnet format --verify-no-changes` sem
+alterações pendentes. Os comandos direcionados são:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~HandlersFalhasCancelamentoTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-build --filter 'FullyQualifiedName~Salvar_CancelamentoPreviamenteSolicitadoOuAntesDoCommitReverteEstado|FullyQualifiedName~Salvar_CancelamentoDepoisDeCommitConfirmadoRetornaSucessoERevisaoConfirmada|FullyQualifiedName~Salvar_FalhaNaConfirmacaoRetornaIndeterminadaSemRetryNemFalsoRollback|FullyQualifiedName~ConsultarVendaAusenteDistingueAusenciaDeFalhaDeArmazenamento'
+```
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
