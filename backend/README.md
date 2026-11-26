@@ -244,6 +244,49 @@ temporários descartados pelos testes. Em produção, somente
 `PreparacaoArmazenamentoVendas.PrepararAsync` chama `InicializarAsync`; nesta etapa,
 nenhum handler ou consulta usa o serviço de preparação.
 
+## Cadastro de venda (APP-02/2.1)
+
+`CadastrarVendaCommand` recebe os quatro campos do cliente, data civil, total em
+centavos, quantidade total de parcelas, referência, revisão esperada e entrada opcional.
+O handler valida cliente, dinheiro, quantidade, datas/limites do calendário e entrada
+antes de carregar/gravar ou gerar IDs. Carrega um snapshot com destino/referência/token,
+compara a revisão e somente então solicita IDs ao `IGeradorIdentificadores`. Cria a
+venda pelas fábricas do domínio, adiciona-a às demais raízes do snapshot, valida o
+conjunto completo (incluindo unicidade global de IDs e limites financeiros), pré-mapeia
+a resposta e chama `SalvarAsync` uma única vez. A resposta só é devolvida após sucesso
+da gravação e contém a revisão confirmada; falha não devolve resposta candidata nem
+dispara retry.
+
+Testes unitários direcionados em 26/11/2026:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~CadastrarVendaHandlerTests
+```
+
+Unitários: 5 testes passaram. Com gerador determinístico, comprovam distribuição
+10.000/3 em 3.334, 3.333, 3.333; entrada 10.000 em venda de 20.000/2 com uma única
+origem Entrada; IDs distintos; ordem e vencimentos; preservação de venda existente;
+mesma referência/token/destino; revisão confirmada; validações de cliente, dinheiro,
+entrada, quantidade e calendário sem carga/IDs; revisão obsoleta antes do gerador; ID
+colidente e overflow do conjunto completo sem gravação, inclusive uma venda em Prejuízo.
+
+Integração por `ISender` com SQLite real preparado em diretório temporário e leitura
+posterior por provider novo:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj `
+  -c Release --no-restore --filter FullyQualifiedName~CadastrarVendaSqliteTests
+```
+
+Resultado: 3 testes passaram. Reabertura confirmou revisão 2, duas vendas com CPF
+repetido, nome/descrição Unicode e descrição nula; IDs de venda/parcela e ordem,
+vencimentos civis, valores-base, recebido/saldo, alocação única da entrada e preservação
+do conjunto. Cadastro sem preparação retornou `banco-ausente` sem criar arquivo; cliente
+inválido e revisão obsoleta não alteraram snapshot nem revisão. Bancos e conexões ficaram
+restritos ao diretório temporário da fixture, removido no cleanup; não foi usada base
+real nem houve seed.
+
 ## Contrato de armazenamento
 
 O contrato puro está em `VendasEmAberto.Aplicacao/Persistencia/`, sem referência a
