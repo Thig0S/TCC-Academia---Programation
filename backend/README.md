@@ -264,6 +264,54 @@ normalização e propriedades desconhecidas. O adaptador de erros HTTP e a tradu
 dessas falhas para Problem Details pertencem à tarefa API-01/1.2; endpoints e mappers
 específicos serão adicionados junto a cada operação.
 
+## Falhas HTTP e Problem Details (API-01/1.2)
+
+`AdaptadorResultadosApi` é o ponto único de tradução de `Result` para HTTP. Categorias
+conhecidas são mapeadas sem ler `Result.Value` em falha; somente códigos/campos
+permitidos atravessam a fronteira. Validações múltiplas coerentes retornam uma lista
+segura. Código/categoria/campo desconhecido, erros mistos ou falha sem erro tipado
+resultam em 500 genérico, sem serializar `Reasons`. A mensagem de infraestrutura não
+é propagada: o detalhe HTTP é fixo. Falhas inesperadas e binding não ecoam mensagem de
+exceção nem valores recebidos.
+
+| Situação | Status | `codigo` / detalhe |
+| --- | ---: | --- |
+| JSON, query ou validação tipada inválida | 400 | Código conhecido; validações múltiplas usam `erros-validacao` |
+| Credencial técnica ausente/inválida | 401 | `acesso-local-negado` |
+| Recurso inexistente | 404 | Código conhecido, por exemplo `venda-inexistente` |
+| Conflito de revisão/histórico | 409 | Código conhecido |
+| Regra comercial não atendida | 422 | Código conhecido |
+| Armazenamento indisponível | 503 | Código conhecido e detalhe fixo |
+| Confirmação indeterminada | 500 | `confirmacao-indeterminada`, `resultadoOperacao: "indeterminado"` |
+| Exceção inesperada, categoria/código desconhecido ou categorias mistas | 500 | `falha-interna`, detalhe genérico |
+| Método, tamanho ou tipo de conteúdo não aceito | 405 / 413 / 415 | `metodo-nao-permitido` / `conteudo-muito-grande` / `tipo-conteudo-nao-suportado` |
+
+As respostas de erro usam `application/problem+json`, `type: about:blank`, status
+coerente com o status HTTP, `codigo` e, quando seguro e fornecido, `campo`; não incluem
+`instance` com query. O corpo recebe `Cache-Control: no-store`. Em .NET 10, o handler
+trata explicitamente `BadHttpRequestException` para preservar 400/405/413/415 em vez
+de convertê-los em 500; `UseStatusCodePages` cobre 405/413 produzidos pelo pipeline.
+Não se promete tradução de códigos ou categorias que não estejam allowlisted: eles
+falham fechados como erro interno genérico. A verificação desta tarefa cobre respostas
+em Development e Production; a auditoria de logging automático e marcadores nos logs
+fica para a tarefa transversal API-05/5.2.
+
+Verificações executadas em 26/11/2026 com o SDK isolado `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AdaptadorResultadosApiTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~FalhasTecnicasTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+```
+
+Resultados observados: 7 testes unitários e 10 de integração passaram; o build Release
+passou com 0 avisos e 0 erros. A cobertura verifica 400/404/409/422/503, 401 técnico,
+500 genérico/indeterminado, 405/413/415, status HTTP e corpo em Development/Production,
+campos allowlisted, validações múltiplas/mistas, `Result.Value` não acessado em falha e
+ausência de marcadores sintéticos de entrada/exceção nas respostas. Os testes host-level
+injetam `BadHttpRequestException` para simular os status de binding nesta etapa; ainda
+não há endpoint comercial que permita exercitar o binding real ponta a ponta.
+
 ## Cadastro de venda (APP-02/2.1)
 
 `CadastrarVendaCommand` recebe os quatro campos do cliente, data civil, total em
