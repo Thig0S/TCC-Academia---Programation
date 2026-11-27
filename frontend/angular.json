@@ -52,6 +52,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/configuracoes/provedores-fonte-vendas.ts",
+                  "with": "src/configuracoes/provedores-fonte-vendas.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

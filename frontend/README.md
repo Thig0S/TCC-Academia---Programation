@@ -417,6 +417,46 @@ persistidos. `npm run build` padrão passou com bundle inicial de 316,87 kB. Pre
 alteração de lockfile ou instalação de dependência. A prova cobre a infraestrutura do
 proxy, não a composição/fonte HTTP local nem aceite funcional das telas.
 
+### Apply `fase-006-integracao-angular` — tarefa 2.1 — fronteira e composição de fontes (27/11/2026)
+
+`FonteVendas` define as consultas de coleção, detalhe, Visão Geral e relatório mensal,
+além dos cinco comandos, todos com retornos `Observable` tipados. `modelos-leitura.ts`
+separa as representações de tela das entidades demonstrativas e reserva a revisão textual
+para a fonte persistida; o adaptador demo publica `revisao: null`. `FonteVendasDemonstracao`
+reutiliza `ServicoDemonstracao`, `selecionar*` e `calcularRelatorio`, sem remover fórmulas,
+projeções ou testes existentes. Leituras e comandos são diferidos até a assinatura; o
+coordenador que limita comandos a uma subscription permanece na tarefa 2.3.
+
+O `app.config.ts` usa os providers demonstrativos por padrão. O build configuration
+`local` exercita `fileReplacement` para o provider local, que encaminha `FONTE_VENDAS` a
+`FONTE_VENDAS_LOCAL`; o token permanece sem implementação concreta até a tarefa 2.2 e
+falha sem fallback se consumido sem provider. Testes substituem o token local e comprovam
+que a composição não instancia `ServicoDemonstracao`. **Isso ainda não é um modo local
+operacional:** `serve:local` continua apontando para `build:development` e serve demo mais
+proxy apenas como smoke de transporte. Nenhuma tela consome `FonteVendas` nesta etapa; a
+ativação da fonte HTTP depende das tarefas 2.2 e 3.1–3.5. Nenhum segredo ou cliente HTTP
+foi adicionado ao build padrão.
+
+`REFERENCIA_SESSAO` captura a data civil local uma vez por injector e não grava storage;
+`REFERENCIA_DEMONSTRACAO` delega a esse token, sem mudar a referência fixada na sessão
+existente. Testes cobrem virada à meia-noite e nova abertura com a referência renovada.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/composicao-fonte-vendas.spec.ts --include src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+```
+
+Resultado: **7/7 testes direcionados** e **437/437 testes em 35 arquivos**; build padrão
+aprovado (322,04 kB iniciais) e build da configuração `local` aprovado (1,48 MB sem
+otimização). O segundo build comprova somente o `fileReplacement`, não inicialização local,
+uso de HTTP ou integração das telas. Prettier direcionado aos arquivos TS/JSON e
+`git diff --check` passaram. Sem E2E novo, alteração de dependências, API, armazenamento,
+`start:local` ou ativação da fonte HTTP.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
