@@ -90,6 +90,7 @@ public static class AdaptadorResultadosApi
         "telefone",
         "valor",
         "valorRecebido",
+        "valorRecebidoCentavos",
         "valorTotal",
         "valorTotalBase",
         "vendaId",

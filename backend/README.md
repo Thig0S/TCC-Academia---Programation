@@ -2204,3 +2204,57 @@ e numérico recusados, no-op e revisão obsoleta. Resumo/painel após as mudanç
 de todos os status; o SQLite reaberto confirma revisão 5 e preserva valores, parcelas,
 recebimentos e alocações. Dados e arquivos são sintéticos/temporários; não houve acesso a
 banco operacional.
+
+## Baixa HTTP de recebimento individual (API-04/4.4)
+
+`POST /api/v1/recebimentos` exige Bearer e `application/json`, com `vendaId`, `parcelaId`,
+`valorRecebidoCentavos` (inteiro em centavos), `data`, `forma`, `referencia` e
+`revisaoEsperada` (string decimal canônica); `observacao` é opcional/nullable. A forma é
+um dos textos `Dinheiro`, `Pix`, `CartaoDebito` ou `CartaoCredito`; enums numéricos e
+desconhecidos são recusados no binding. O domínio exige venda Ativa e que o ID de parcela
+corresponda à primeira pendente, mesmo que o vencimento seja futuro; pagamento menor que
+o valor-base, salto/repetição, data/forma ou observação inválidas não são persistidos.
+Observação comporta até 20 valores escalares Unicode. Valor acima do base registra
+acréscimo individual sem alterar o contrato-base. Sucesso confirmado retorna 200 com o
+detalhe completo e revisão nova; ID de recebimento é gerado no servidor. Não existe
+recurso GET individual para o recebimento, portanto não há `Location`.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "parcelaId": "parcela-1",
+  "valorRecebidoCentavos": 11000,
+  "data": "2027-03-12",
+  "forma": "Pix",
+  "observacao": "Acréscimo aplicado",
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "5"
+}
+```
+
+O contrato não oferece idempotency key nem retry automático. Em timeout/desconexão, o
+consumidor deve consultar o detalhe/revisão antes de decidir nova ação; uma repetição cega
+pode atingir parcela já paga ou causar conflito se o primeiro comando foi confirmado.
+Todas as respostas comerciais incluem `Cache-Control: no-store`.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~RegistrarPagamentoEndpointTests|FullyQualifiedName~RegistrarPagamentoSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~RegistrarPagamentoHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes HTTP/SQLite (dois novos de endpoint e os dois de aplicação SQLite)
+e 5 unitários do handler aprovados; build Release com 0 avisos/erros e verificação de
+formato aprovados. Testes confirmam baixa da terceira parcela futura após duas anteriores,
+acréscimo de 1.000 sobre base 10.000, nota de 20 emojis (valores escalares), revisão/IDs/
+alocações após reabertura, ausência de `Location` e ID gerado mesmo com propriedade extra
+`recebimentoId`. Salto, repetição, valor menor, data após referência, formas inválidas,
+nota acima do limite e venda Inativa falham sem save; uma baixa válida posterior confirma
+que a primeira parcela continua sendo o alvo. Centavos enviados como string retornam 400
+com campo público `valorRecebidoCentavos`. Fixtures/SQLite são sintéticos e temporários;
+não houve acesso a banco operacional.
