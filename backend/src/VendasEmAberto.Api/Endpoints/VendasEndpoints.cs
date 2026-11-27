@@ -6,6 +6,7 @@ using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.CadastrarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarColecaoVendas;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
+using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.EditarClienteVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
 using VendasEmAberto.Aplicacao.Funcionalidades.VisaoGeral.ConsultarVisaoGeral;
@@ -19,6 +20,7 @@ public static class VendasEndpoints
     {
         ArgumentNullException.ThrowIfNull(grupo);
         grupo.MapPost("/vendas", CadastrarVendaAsync);
+        grupo.MapPut("/vendas/cliente", EditarClienteAsync);
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
@@ -77,6 +79,32 @@ public static class VendasEndpoints
                 + detalhe.Resumo.Referencia.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             return Results.Created(location, MapeadorVendaDetalheApi.Mapear(detalhe));
         });
+    }
+
+    private static async Task<IResult> EditarClienteAsync(HttpContext contexto, ISender sender)
+    {
+        if (!contexto.Request.HasJsonContentType())
+        {
+            return ProblemasApi.TipoConteudoNaoSuportado();
+        }
+
+        var corpo = await LeitorObjetoJson.LerAsync(
+            contexto.Request,
+            ["vendaId", "nome", "cpf", "telefone", "descricao", "referencia", "revisaoEsperada"],
+            contexto.RequestAborted);
+        var comando = new EditarClienteVendaCommand(
+            corpo.LerTextoObrigatorio("vendaId"),
+            corpo.LerTextoObrigatorio("nome"),
+            corpo.LerTextoObrigatorio("cpf"),
+            corpo.LerTextoObrigatorio("telefone"),
+            corpo.LerTextoOpcional("descricao"),
+            corpo.LerDataObrigatoria("referencia"),
+            corpo.LerRevisaoObrigatoria("revisaoEsperada"));
+        var resultado = await sender.Send(comando, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            detalhe => Results.Json(MapeadorVendaDetalheApi.Mapear(detalhe)));
     }
 
     private static async Task<IResult> ConsultarPeriodoAsync(HttpContext contexto, ISender sender)
