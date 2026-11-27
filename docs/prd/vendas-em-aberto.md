@@ -196,6 +196,214 @@ exactly-once; proxy: ferramenta apenas de desenvolvimento. Revisão de 27/11/202
 acrescenta FON-047/048, RF-037–043 e CA-069–078, reservando os IDs FON-045/046,
 RF-031–036, CA-061–068 e DEC-041 para a fase 005 ainda no PR #41; preserva histórico.
 
+## Fase 005 do backend — contrato e API local (26/11/2026)
+
+### 1. Identificação e resumo executivo
+
+Planejamento original de `fase-005-contrato-e-api-local`, elaborado sem autorização
+de implementação; a autorização e execução posteriores estão registradas na atualização
+de 27/11/2026 abaixo.
+O objetivo é disponibilizar os casos de uso persistidos a consumidores HTTP locais,
+incluindo uma consulta consolidada da Visão Geral. Público imediato: desenvolvedor,
+testes e futuro host desktop; beneficiários futuros: funcionários da loja.
+Responsáveis por homologação operacional continuam não definidos.
+
+### 2. Contexto, problema e fontes
+
+| Fonte | Referência | Evidência e limite |
+| --- | --- | --- |
+| FON-045 | Solicitação desta Change e respostas no Harness em 26/11/2026 | Confirmados: API dos casos existentes + Visão Geral; preparação explícita ao iniciar; segredo técnico obrigatório; referência fornecida por operação; revisão textual no JSON; IDs em query/body; CORS desligado; caminho absoluto com pai existente; planejamento em PRD/TDD/SDD, sem código. |
+| FON-046 | Documentação ASP.NET Core via Context7 `/dotnet/aspnetcore.docs`, consultada em 26/11/2026 | Problem Details, falhas de binding em .NET 10, configuração por ambiente e esquema de autenticação customizado; fundamentação técnica em DEC-041. Não comprova execução local. |
+| FON-043/044 | Seção da fase 004 e Change arquivada | Aplicação interna implementada; evidências anteriores de 285 testes backend e 430 frontend, não repetidas neste planejamento. |
+
+Inspeção confirma API somente com `/health`, `Api.csproj` sem Infraestrutura e Angular
+com `ServicoDemonstracao`. O PR #40 da fase 004 foi integrado, conforme consulta ao
+GitHub; menções anteriores a PR pendente são registros históricos, não estado atual.
+Ainda não existem endpoints comerciais ou integração desktop.
+
+### 3. Objetivos e não objetivos
+
+Reutiliza OBJ-001–004: consultar e alterar vendas sem duplicar coordenação financeira
+nos consumidores. Resultado técnico esperado: cadastrar, baixar, consultar e reabrir
+via HTTP local, com revisão e valores preservados. Não objetiva conectar Angular,
+entregar Tauri, permitir acesso em rede ou homologar uso operacional.
+
+### 4. Público e necessidades
+
+Consumidor técnico precisa de contratos verificáveis, identificação segura das falhas
+e persistência entre reinicializações. Não introduz perfis humanos, login ou permissões
+por funcionário. Acessibilidade visual não muda porque nenhuma tela será alterada.
+
+### 5. Escopo e prioridades
+
+Essenciais: cinco comandos e cinco consultas da fase 004; consulta de Visão Geral;
+contrato externo; proteção técnica; composição e preparação do banco pelo host;
+testes HTTP reais e de integração. A prioridade decorre da dependência das próximas
+etapas de integração. Autorização é apenas de planejamento.
+
+Fora: Angular/SDK cliente, Tauri/sidecar, instalador, CORS para navegador, login/JWT,
+TLS de distribuição, descoberta de porta, importação, seed, dados reais, exportação,
+backup/restauração operacional, mudanças de schema e manutenção de outras Changes.
+Esses itens são evolução futura, não compromissos desta fase.
+
+### 6. Jornadas técnicas desta fase
+
+- Inicialização (RF-031/032): fornecer destino e segredo → validar configuração →
+  preparar explicitamente o banco → disponibilizar API. Falha impede servir requisições.
+- Operação (RF-033/034): consultar revisão → enviar comando autenticado → receber
+  representação confirmada ou falha identificável → reconsultar em consumidor novo.
+- Painel (RF-035): consultar uma referência → receber indicadores e três resumos do
+  mesmo snapshot, sem chamadas por venda e sem alterar dados.
+
+### 7. Requisitos funcionais
+
+Todos Essenciais; origem FON-045. O escopo foi confirmado; os detalhes do contrato
+ficam propostos para revisão em TDD/DEC-041, sem alegar aprovação operacional.
+
+| ID | Entradas e pré-condições | Comportamento e resultado | Alternativas/aceite |
+| --- | --- | --- | --- |
+| RF-031 | Host local, caminho absoluto de banco em pai existente e segredo válido fornecidos externamente | Validar configuração antes de I/O; compor aplicação/infraestrutura e preparar explicitamente o banco antes de aceitar requisições. Banco novo fica vazio, sem seed. | Repetir preserva revisão/dados; destino relativo, pai ausente, segredo ausente ou schema incompatível impedem inicialização. CA-061. |
+| RF-032 | Requisição comercial em loopback com credencial técnica | Exigir segredo por execução em header, sem contas/cookies/redirecionamento; manter health textual sem credencial e CORS desabilitado. | Sem credencial válida, recusar antes de executar caso de uso; segredo nunca em URL, corpo de erro ou logs. CA-062. |
+| RF-033 | Commands da fase 004 com referência, revisão observada e IDs existentes quando necessários | Expor cadastro, edição de cliente, status, baixa e correção individuais, com o mesmo domínio, atomicidade e no-op; devolver somente representação confirmada e revisão. | Sem exclusão, retry automático, edição contratual ou baixa em lote. Recusa sem efeitos e conflito exigem nova decisão do consumidor. CA-063/066. |
+| RF-034 | Consultas autenticadas, referência explícita e seletores pertinentes | Expor detalhe, quatro coleções completas, resumo, período e mês, com revisão do snapshot. Datas civis, centavos seguros, revisão textual e IDs opacos preservados no transporte. | Vazio é sucesso; detalhe ausente é inexistência; binding inválido é validação. Não serializar resultados internos. CA-064/067. |
+| RF-035 | Consulta autenticada de Visão Geral com referência | Devolver quatro indicadores e até cinco itens em cada resumo, selecionados das Ativas e derivados de um snapshot único; recibos mensais incluem todos os status. | Respeitar regras vigentes de ordem, empate e bordas; bloco vazio independente. Sem filtro/paginação novos. CA-065. |
+| RF-036 | Falha esperada, falha técnica ou cancelamento na fronteira HTTP | Distinguir validação, inexistência, conflito, regra comercial, indisponibilidade e confirmação indeterminada, com código/mensagem segura e campo pertinente. | Falha inesperada não vira validação; desconexão não prova rollback; nenhuma repetição automática. CA-066/068. |
+
+### 8. Regras e dados conceituais
+
+Preservar RF-023–030 e RN-025/026: venda é raiz; identificação/histórico/contrato
+mantidos; dinheiro exato; entrada e recebimentos sem dupla contagem. A API adapta,
+não recalcula. Revisão continua global e não negativa; sua representação externa
+não altera o tipo interno. A referência não é inferida do relógio pelo handler.
+
+Visão Geral reutiliza `openspec/specs/visao-geral/spec.md`: recentes Ativas por data
+decrescente; parcelas pendentes Ativas próximas de hoje a +7 inclusive e atrasadas
+antes da referência, por vencimento crescente. Até cinco após selecionar/ordenar;
+empates seguem ordem de vendas e parcelas; recentes incluem Ativas quitadas.
+Nenhuma alteração financeira ou nova regra comercial é autorizada.
+
+### 9. Restrições não funcionais
+
+Aplicar RNF-001/005/008 quanto a pt-BR, integridade e separação. RNF-004/010 do
+protótipo continuam valendo para o Angular demonstrativo, mas não proíbem a evolução
+backend explicitamente solicitada. Exceção delimitada à API local: acesso SQLite
+pelo host via Infraestrutura e preparação explícita na inicialização (DEC-041).
+
+Verificações: falhas/logs sem dados pessoais, segredo ou SQL; listener apenas
+loopback; nenhuma criação em consultas; testes com temporários sintéticos; restore
+bloqueado/build/test/format e auditoria no apply. Não há meta nova de latência,
+benchmark, proteção contra comprometimento do usuário local ou criptografia prometida.
+
+### 10. Experiência e estados
+
+Nenhuma UI muda. Os contratos distinguem vazio, erro, conflito e confirmação incerta
+para futura apresentação; esta fase não implementa foco, loading ou mensagens nas
+telas. O aviso demonstrativo e a independência Angular permanecem.
+
+### 11. Critérios de aceite
+
+- **CA-061 (RF-031):** dado destino absoluto em pai existente e segredo válido,
+  quando iniciar host novo, então preparar banco vazio antes de servir; reiniciar
+  conserva registros/revisão. Configuração inválida falha antes de I/O; banco alheio,
+  futuro ou inválido não é sobrescrito. Pai ausente não é criado implicitamente.
+- **CA-062 (RF-032):** dada API em loopback, quando acessar operação sem segredo ou
+  com segredo incorreto, então obter 401 sem executar handler nem alterar revisão;
+  segredo válido libera. Health continua 200 `text/plain` `Healthy`, sem cookies;
+  origem arbitrária não recebe permissão CORS. Credencial anterior falha após troca.
+- **CA-063 (RF-033):** dado banco vazio preparado, quando cadastrar, editar cliente,
+  mudar status, baixar e corrigir via HTTP, então recuperar em nova conexão os mesmos
+  IDs/valores/histórico, com revisão confirmada. No-op válido não avança revisão;
+  comando obsoleto falha inclusive no no-op, sem retry ou deslocar parcela-alvo.
+- **CA-064 (RF-034):** dado estado misto com entrada/lote sintético/Individual,
+  quando consultar detalhe, coleções, resumo, período e mês, então reconciliar com
+  regras vigentes, incluindo todos os dias do mês, ordens e universos; vazio retorna
+  sucesso, ID ausente falha e nenhuma consulta prepara ou grava armazenamento.
+- **CA-065 (RF-035):** dado mais de cinco itens por bloco e status mistos, quando
+  consultar painel, então indicadores e três resumos têm mesma referência/revisão,
+  uma carga e zero escrita. Selecionar e ordenar antes de limitar, preservar empates,
+  excluir não Ativas dos resumos e manter seus recebimentos mensais nos indicadores.
+  Cobrir ontem/hoje/+7/+8, pagas, blocos vazios e anos 0001/9999 sem transbordo.
+- **CA-066 (RF-033/036):** dados concorrência e falhas de confirmação, quando enviar
+  comandos, então no máximo um confirma a revisão disputada; conflito não grava.
+  Confirmação indeterminada não anuncia sucesso/rollback e exige conferência, sem
+  reenviar automaticamente. Desconexão após commit não autoriza repetir cadastro/baixa.
+- **CA-067 (RF-034):** dados IDs com barras/caracteres reservados, datas extremas,
+  nulabilidade, centavos máximos e revisão maior que o inteiro seguro JavaScript,
+  quando transportar pelo contrato, então preservar valores literalmente; revisão
+  numérica, formato de data inválido e enum desconhecido são recusados sem negócio.
+- **CA-068 (RF-036):** dado JSON malformado, binding inválido, tipo incompatível,
+  falha conhecida ou exceção inesperada em Development/Production, quando chamar API,
+  então retornar status e Problem Details coerentes e seguros, sem serializar Result,
+  Reasons, exceção, SQL, token ou dados pessoais. Cancelamento não vira erro comercial.
+
+Rastreabilidade: OBJ-001–004 → FON-045/046 → RF-031–036/CA-061–068 → DEC-041 →
+`openspec/changes/fase-005-contrato-e-api-local/`. Cada tarefa deve identificar
+cenários/testes que comprovem seu aceite, sem contagens históricas como expectativa fixa.
+
+### 12. Sucesso e validação
+
+Sucesso técnico: cenários CA-061–068 demonstrados e resultados reais registrados no
+apply. Métricas são os resultados verificáveis dos cenários, não telemetria ou ganho
+comercial medido. Homologação com a loja fica fora; responsáveis e uso real indefinidos.
+
+### Atualização de execução da Change — 27/11/2026
+
+O apply autorizado de `fase-005-contrato-e-api-local` foi concluído na feature
+`feature/fase-005-contrato-e-api-local`: 21/21 tarefas verificadas, com specs e
+evidências detalhadas em `backend/README.md` e na Change. O smoke da DLL Release em
+Production usou segredo aleatório no ambiente, banco sintético temporário e loopback;
+confirmou preparação antes do health, health 200 textual, 401 sem credencial, cadastro
+201 com Location, consulta, recebimento da única parcela/revisão 2, reinício conservando
+venda/recebimento e rejeitando o segredo anterior. Os processos próprios foram
+encerrados, a porta temporária liberada e arquivos de smoke removidos; a saída dos
+processos não continha os marcadores sintéticos auditados.
+
+| Critério | Evidência principal registrada | Resultado |
+| --- | --- | --- |
+| CA-061 — inicialização/persistência | `ConfiguracaoHostApiTests`, `Primeiro uso e reinicialização`, `Configuração inválida antes de I/O`, `Destino indisponível ou incompatível`, `Conservar fronteira de rede`; smoke real de startup/reinício/loopback | Atendido nos cenários sintéticos; sem acesso a banco operacional. |
+| CA-062 — proteção local/health/CORS | `AutenticacaoBearerLocalTests`, `HealthEndpointTests`, `RotasNaoImplementadasTests`; `Negar antes de executar operação`, `Aceitar credencial da execução corrente`, `Body inválido sem autenticação`, cenários de health/rotas; smoke 401 e rotação | Atendido em testes e smoke técnico; não é garantia contra comprometimento do processo/usuário local. |
+| CA-063 — comandos confirmados | Testes HTTP/SQLite de cadastro, cliente, status, recebimento e correção; cenários `Rotas e entradas dos comandos`, `Cadastrar e reabrir pela localização confirmada`, `No-op e conflito`, `Receber e corrigir sem alterar identidade`; smoke cadastro/Location/baixa/reabertura | Atendido com dados sintéticos e revisão confirmada. |
+| CA-064 — consultas | Testes HTTP/SQLite de detalhe, coleções, resumo, período e mensal; cenários `Rotas e seletores das consultas`, `Consulta vazia e detalhe inexistente`, `Respeitar universos e período` | Atendido; consultas verificadas sem mutação/preparação implícita. |
+| CA-065 — Visão Geral | Testes unitários/SQLite/HTTP do handler e endpoint; cenários de indicadores, banco vazio, ordenação/desempate, bordas/calendário e mudança administrativa na delta de casos de uso | Atendido com snapshot único, listas protegidas, limites e bordas. |
+| CA-066 — concorrência/certeza | `ConcorrenciaCommandsEndpointTests`; cenários `Dois consumidores disputam revisão`, `Confirmação indeterminada`, `Cancelamento e desconexão` | Atendido para concorrência SQLite e double controlado de confirmação incerta; não simula falha nativa de commit nem prova entrega após desconexão real. |
+| CA-067 — tipos exatos | Testes de contrato/query e endpoints; cenários de revisão/dinheiro, ID reservado, data/referência, enums/nulabilidade e binding estrutural | Atendido; revisões textuais, centavos inteiros, IDs e datas preservados/recusados conforme contrato. |
+| CA-068 — falhas privadas | `FalhasTecnicasTests`, `PrivacidadeHttpTests`, `AdaptadorResultadosApiTests`; cenários de binding/content type, categorias, falha técnica, corpo/cache; auditoria Development/Production | Atendido para os casos cobertos; logs futuros/provedores externos, telemetria, dumps e desconexão física estão fora da prova automatizada. |
+
+A validação integral/backend/frontend e as limitações estão registradas no README; o
+frontend não foi conectado à API, não houve mudança de schema, Tauri, seed ou dados
+operacionais, e não se afirma homologação/aceite da ótica. A Change foi arquivada em
+`openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`. A conclusão
+técnica não equivale a merge ou autorização para uso real.
+
+### 13. Riscos e mitigação
+
+Segredo em ambiente não protege de processo comprometido do mesmo usuário; restringir
+escopo local/sintético e não alegar isolamento de SO. Escrever após timeout/desconexão
+pode duplicar operações se consumidor repetir: exigir conferência, sem retry. Snapshot
+completo continua proporcional à base; painel deve usar uma carga, sem N+1. Mudança da
+composição invalida smoke antigo sem banco: atualizar os testes afetados, não apagá-los.
+
+### 14. Decisões e pendências
+
+Escolhas materiais foram confirmadas no Harness/FON-045. API concreta, códigos HTTP
+e estrutura são desenho proposto em DEC-041 para revisão. Não há regra comercial
+bloqueante nova; integração Angular, porta dinâmica, proteção desktop, backup e
+homologação permanecem fora. Aprovação do desenho não autoriza apply.
+
+### 15. Entregas e próximos passos
+
+Contrato/composição → Visão Geral interna → consultas HTTP → comandos HTTP →
+regressão/smoke/auditoria. Implementação depende de pedido novo de apply após revisão.
+Um commit por funcionalidade coerente; archive e PR único somente quando todo o escopo
+implementado e verificado estiver concluído, nunca ao concluir apenas este planejamento.
+
+### 16. Glossário e revisão
+
+Credencial técnica identifica acesso ao processo, não funcionário; preparação é chamada
+explícita do host antes de servir; revisão é versão global do snapshot; TDD é desenho
+técnico. Revisão de 26/11/2026 acrescenta RF-031–036/CA-061–068/FON-045/046, preserva
+IDs e evidências históricos e reconhece integração da fase 004 pelo PR #40.
+
 ## Fase 004 do backend — aplicação interna (26/11/2026)
 
 ### Identificação, fontes e situação

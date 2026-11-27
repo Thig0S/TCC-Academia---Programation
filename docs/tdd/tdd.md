@@ -334,6 +334,353 @@ Verificações aqui são documentais; nenhum build/teste/auditoria de código fo
 27/11/2026: acrescenta DEC-042 após PRD da fase 006; reserva DEC-041 da fase 005,
 preserva decisões/histórico existentes e distingue main integrada de PR aberto.
 
+## DEC-041 — Contrato e API local da fase 005 (26/11/2026)
+
+### 1. Identificação, situação e limites
+
+Desenho para `fase-005-contrato-e-api-local`, baseado no PRD/FON-045/046,
+RF-031–036 e CA-061–068. Escopo e escolhas materiais confirmados no Harness;
+contrato detalhado abaixo foi **proposto para revisão no planejamento original**.
+Na elaboração, nada estava implementado e o planejamento não autorizava apply; a
+execução autorizada posterior e seu estado estão registrados ao final desta decisão.
+Não é a FASE-005 histórica
+do Angular. Homologação operacional e responsáveis por ela não foram definidos.
+
+### 2. Contexto e objetivo
+
+Expor casos existentes por HTTP local e acrescentar consulta consolidada de painel,
+sem regra comercial nova ou lógica financeira no transporte. Preservar DEC-034/035,
+037/038/040 no que não for explicitamente revisado abaixo. Não conectar Angular,
+adicionar Tauri, SDK, instalador, importação, seed, banco operacional ou novo schema.
+
+### 3. Fontes e estado observado
+
+Aplicacao oferece cinco Commands e cinco Queries, DTOs protegidos e composição pública;
+Infraestrutura oferece `AdicionarPersistenciaSqlite`. `Api/Program.cs` só expõe health;
+`Api.csproj` só referencia Aplicacao. Testes HTTP usam `WebApplicationFactory<Program>`
+sem configuração de banco; devem evoluir com a nova inicialização. Os testes de rotas
+404 não podem ser simplesmente eliminados: `/vendas`, `/pagamentos`, Swagger, OpenAPI
+e rota de falha de teste continuam ausentes no host de produção.
+
+Visão Geral existente: spec `visao-geral` completa e arquivos
+`frontend/src/app/funcionalidades/visao-geral/visao-geral.calculos.ts` e componente.
+O seletor recebe projeções da fonte, e o backend deve filtrar explicitamente Ativas
+conforme a spec, não transportar cegamente qualquer coleção. `ConsultarResumo` usa
+`ConjuntoVendas.Projetar`; não contém os três resumos de cinco itens.
+
+Evidências anteriores: PR #40 integrado; 285 testes backend e 430 frontend registrados
+na fase 004, não reexecutados aqui. As marcações antigas de PR pendente são históricas.
+
+### 4. Síntese da entrevista
+
+| Tema | Decisão explícita em FON-045 |
+| --- | --- |
+| Escopo | Expor casos existentes e incluir consulta consolidada da Visão Geral |
+| Banco | Host prepara explicitamente ao iniciar, antes de aceitar operações |
+| Credencial | Segredo técnico obrigatório, fornecido pelo iniciador/desenvolvedor; sem login |
+| Contrato | Referência por operação; revisão textual; IDs opacos em query/body |
+| Fronteiras | CORS desabilitado; caminho absoluto com pai existente; API compõe Infraestrutura |
+| Autorização | Revisar PRD/TDD e gerar SDD na feature; sem código/apply/archive/PR antecipado |
+
+### 5. Arquitetura e revisão das fronteiras históricas
+
+Proposta:
+
+```text
+Consumidor HTTP local --> Api --> ISender --> Aplicacao --> Dominio
+                          |                     |
+                          |                     v
+                          +--> Infraestrutura --> SQLite
+                               [composicao]
+```
+
+Adicionar referência **Api → Infraestrutura** para compor o adaptador público, sem
+expor DbContext/modelos/EF nos endpoints. Aplicacao continua → Dominio; Infraestrutura
+continua → Aplicacao/Dominio. Não ampliar InternalsVisibleTo nem criar projeto extra.
+Na API: `Configuracao/`, `Seguranca/`, `Contratos/`, `Erros/` e `Endpoints/` por recurso.
+Na Aplicacao: `Funcionalidades/VisaoGeral/ConsultarVisaoGeral/` e DTOs necessários.
+Nomes próprios em português sem acentos; não criar repository/base handler genéricos.
+
+**Revisão delimitada:** substitui apenas a obrigação de host sem persistência/negócio
+de DEC-038/040 e spec `casos-de-uso-vendas/Isolamento do host e da demonstração`.
+Preparar continua explícito, agora por composição do host, nunca em queries/commands.
+EF/SQLite passarão a existir no grafo da API deliberadamente; auditar essa presença,
+em vez de manter o antigo teste de ausência. Angular permanece independente.
+
+### 6. Baseline e bibliotecas
+
+Manter net10.0, SDK 10.0.404/latestPatch, runtime 10.0.15, MSTest.Sdk 4.5.3,
+MediatR 12.5.0/Apache-2.0, FluentResults 4.0.0/MIT e EF/SQLite de DEC-038.
+Usar Minimal APIs, System.Text.Json, autenticação customizada e Problem Details do
+framework compartilhado, sem JWT, FluentResults.Extensions.AspNetCore ou biblioteca
+de validação/mapeamento. Nenhuma dependência instalada durante o planejamento.
+No apply, confirmar grafo/lockfiles, compatibilidade e auditoria sem atualização incidental.
+
+### 7. Inicialização e configuração
+
+Manter `Backend:Porta`/`Backend__Porta`, default 5070, intervalo 1024–65535 e
+listener `IPAddress.Loopback`. Sem porta zero, LAN, TLS ou descoberta dinâmica.
+Acrescentar `Backend:CaminhoBanco` (ambiente `Backend__CaminhoBanco`): obrigatório,
+absoluto, pai existente, sem default/caminho relativo, sem diretório automático.
+
+Credencial: variável de ambiente **`Backend__SegredoLocal`**, lida diretamente do
+ambiente do processo, sem fallback a argumento/appsettings. Conteúdo canônico Base64
+de 32 bytes aleatórios fornecidos pelo iniciador; nunca gerar/fixar segredo público
+de fallback. Validar formato/tamanho sem afirmar que é possível provar sua entropia.
+Futuro Tauri será responsável por gerar segredo novo; nesta fase testes/iniciador
+fornecem um novo por execução. Não persistir, imprimir ou devolver a credencial.
+
+Ordem: validar endpoints/porta, caminho e segredo → registrar Aplicacao/Infraestrutura
+→ construir provider/host → aguardar `PrepararAsync` explicitamente **antes de Run**.
+Não aceitar tráfego enquanto prepara. Banco incompatível/indisponível falha a partida
+com diagnóstico público genérico e código seguro, sem caminho/SQL/exceção. Arquivo
+novo fica vazio; preparação repetida conserva dados. Pai ausente não é criado.
+Descarte e cancellation token do host devem ser observados; sem endpoint técnico
+de preparar/reset nem migration disparada por uma requisição comercial.
+
+### 8. Contrato externo v1
+
+JSON UTF-8, camelCase; sucesso `application/json`; falhas `application/problem+json`.
+DTOs HTTP próprios, projetados da Aplicacao; não devolver `Result`, domínio ou EF.
+Corpos são objetos, nunca wrapper de Result. Todos os parâmetros da tabela são
+obrigatórios, exceto `descricao`, `observacao` e `entrada` nullable/ausentes.
+Todas as respostas comerciais, inclusive falhas, recebem `Cache-Control: no-store`.
+
+#### Tipos e binding
+
+- Datas em body/query: exatamente `yyyy-MM-dd`, anos 0001–9999, cultura invariável;
+  campo obrigatório ausente não vira DateOnly.MinValue e não há relógio implícito.
+- Centavos: token JSON inteiro entre 0 e 9.007.199.254.740.991, com restrições comerciais
+  adicionais no domínio. Não aceitar string, fração ou conversão de reais. Quantidades,
+  ano e mês são inteiros; binding estrutural distingue ausência de zero.
+- `revisao` e `revisaoEsperada`: **string decimal canônica** `0` ou dígitos sem zero
+  inicial, sem sinal/espaço, até 9223372036854775807. Rejeitar token numérico. Converter
+  explicitamente só esses campos; não aplicar conversor global de long a dinheiro.
+- IDs: strings opacas; query exige URL encoding uma vez, body conserva literalmente.
+  Nunca usar ID como segmento de rota nem trim/converter para GUID. Conferir barras,
+  `%`, `+`, `?`, `#` e Unicode; preservar as validações de vazio do caso de uso.
+- Enums textuais exatos, sem número/cast implícito: coleções `Abertas`, `Quitadas`,
+  `Inativas`, `Prejuizo`; status `Ativo`, `Inativo`, `Prejuizo`; formas `Dinheiro`,
+  `Pix`, `CartaoDebito`, `CartaoCredito`; situações `Quitada`, `Atrasada`,
+  `ProximosDias`, `EmAberto`; parcela usa `Paga` em vez de `Quitada`; origem
+  `Entrada`, `Individual`, `HistoricoLote`. Mapear explicitamente os enums internos.
+- Campos obrigatórios null, JSON malformado, tipos/enum/data/revisão inválidos: 400
+  antes de ISender. `descricao` null continua null; observação ausente/null segue a
+  normalização vigente do domínio, cuja resposta é string. Listas são arrays, nunca null.
+- Propriedades JSON desconhecidas são ignoradas nesta v1; não autorizam alteração de
+  nenhum campo extra. Chaves repetidas conhecidas são recusadas com 400 para evitar
+  interpretações divergentes. Parâmetro query obrigatório repetido também é 400.
+
+#### Endpoints e entradas
+
+Todo prefixo `/api/v1` exige Bearer; health não faz parte do grupo.
+
+| Método e caminho | Query ou body | Caso de uso e sucesso |
+| --- | --- | --- |
+| GET `/api/v1/vendas` | Query `colecao`, `referencia` | ConsultarColecaoVendas; 200 |
+| GET `/api/v1/vendas/detalhe` | Query `vendaId`, `referencia` | ConsultarVenda; 200 |
+| POST `/api/v1/vendas` | Body cadastro abaixo | CadastrarVenda; 201 + detalhe + Location |
+| PUT `/api/v1/vendas/cliente` | Body edição abaixo | EditarClienteVenda; 200 detalhe, inclusive no-op |
+| PUT `/api/v1/vendas/status` | Body `vendaId`, `novoStatus`, `referencia`, `revisaoEsperada` | AlterarStatusVenda; 200 detalhe |
+| POST `/api/v1/recebimentos` | Body baixa abaixo | RegistrarPagamento; 200 detalhe confirmado |
+| PUT `/api/v1/recebimentos` | Body correção abaixo | CorrigirPagamento; 200 detalhe confirmado |
+| GET `/api/v1/resumo` | Query `referencia` | ConsultarResumo; 200 |
+| GET `/api/v1/periodo` | Query `inicio`, `fim`, `referencia` | ConsultarPeriodo; 200 |
+| GET `/api/v1/relatorios/mensal` | Query `ano`, `mes`, `referencia` | ConsultarRelatorioMensal; 200 |
+| GET `/api/v1/visao-geral` | Query `referencia` | ConsultarVisaoGeral; 200 |
+
+Cadastro: `nome`, `cpf`, `telefone`, `descricao?`, `dataVenda`, `valorTotalCentavos`,
+`quantidadeParcelas`, `referencia`, `revisaoEsperada`, `entrada?`;
+entrada = `{valorCentavos, forma}`. Edição: `vendaId`, os quatro campos de cliente,
+`referencia`, `revisaoEsperada`. Baixa: `vendaId`, `parcelaId`,
+`valorRecebidoCentavos`, `data`, `forma`, `observacao?`, `referencia`,
+`revisaoEsperada`. Correção troca `parcelaId` por `recebimentoId`, preservando demais
+campos. Mapeamento 1:1 para Commands existentes; nenhum ID novo vem do consumidor.
+Location do cadastro é URI relativa `/api/v1/vendas/detalhe?vendaId=<encoded>&referencia=<ISO>`;
+referência é a recebida e ID é o confirmado, sem construir URL a partir de Host não confiável.
+Baixa não promete recurso GET individual de recebimento nem Location inexistente.
+
+#### Estrutura de saída
+
+Os campos dos DTOs de `Aplicacao/Contratos/` existentes na baseline são o inventário
+de saída v1: transportar **todos** os campos em camelCase, mantendo aninhamento,
+ordem e nulabilidade; transformar revisões e enums conforme acima. Isso inclui
+todos os campos de ClienteResposta/VendaResumoResposta, resumo/parcelas/recebimentos/
+alocacoes de VendaDetalheResposta, ColecaoVendasResposta, ResumoResposta,
+PeriodoResposta e todas as seções/linhas/totais de RelatorioMensalResposta. O mapper
+HTTP deve ser testado por campo; futuras adições internas não alteram v1 automaticamente.
+
+Visão Geral: `{referencia, revisao, indicadores, vendasRecentes, parcelasProximas,
+parcelasAtrasadas}`. `indicadores` contém os quatro campos numéricos de ResumoResposta
+(sem duplicar referência/revisão); recentes são VendaResumoResposta HTTP; próximos/
+atrasados são `{venda, parcela}`, com VendaResumoResposta e ParcelaDetalheResposta.
+Revisões/referências dos resumos aninhados, se presentes, são iguais às do envelope.
+
+### 9. Visão Geral interna e fluxos comerciais
+
+Adicionar `ConsultarVisaoGeralQuery(Referencia)`/Handler via ISender e resposta própria
+imutável. Fazer **uma** carga; projetar conjunto nessa referência, conservar indicadores
+de Projetar e selecionar resumos somente das Ativas. Usar projeções vigentes, sem
+recalcular dinheiro/calendário no handler. Ordenar recentes por DataVenda desc + índice
+original; parcelas por Vencimento asc + índice da venda + índice da parcela; filtrar
+situação antes de Take(5). Próximos segue classificação vigente, sem AddDays que
+transborde em 9999. Copiar listas protegidas e nunca chamar outras Queries por venda.
+
+Os cinco Commands continuam uma chamada a ISender por request e um Save no máximo;
+revisão do consumidor permanece obrigatória. Não buscar revisão nova para forçar
+sucesso, não auto-retry, não escolher outra parcela nem adicionar idempotency key.
+Queries existentes não mudam; projeções não retornam domínio. RequestAborted segue
+ao handler/armazenamento; sucesso confirmado não vira rollback por cancelamento tardio.
+Desconexão/timeout pode impedir entrega da resposta após commit; consumidor precisa
+conferir, pois recarga isoladamente nem sempre identifica um cadastro enviado sem ID.
+
+### 10. Segurança, falhas e privacidade
+
+Esquema ASP.NET de autenticação customizada para segredo opaco, sem JWT/cookies.
+`Authorization: Bearer <Base64>` exatamente uma credencial, validar formato e comparar
+bytes com `CryptographicOperations.FixedTimeEquals`, sem log de valores. Ausência,
+duplicação ou credencial inválida: 401 Problem Details `acesso-local-negado`, challenge
+`WWW-Authenticate: Bearer`, sem redirecionamento, antes de binding/ISender. Autorizar
+somente grupo comercial, não fallback global que transforme rotas 404 em login.
+
+`/health` continua 200 `text/plain` `Healthy`, sem cookies e sem informações do banco;
+só existe após preparação. Não é prova criptográfica de identidade de processo nem
+monitor de disponibilidade contínua do SQLite. CORS desabilitado, sem cookies ou
+origens curingas; integração navegador futura exige nova decisão. Credencial em
+ambiente não protege de comprometimento do usuário/processo local. Nenhum dado real.
+
+Adaptador único de erro, por categoria/código, nunca por mensagem:
+
+| Origem/categoria | HTTP | Código e política |
+| --- | --- | --- |
+| Binding/JSON/query inválido | 400 | `requisicao-invalida`; campo seguro quando conhecido |
+| Content-Type de body não suportado | 415 | `tipo-conteudo-nao-suportado` |
+| Validacao da Aplicacao | 400 | Preservar código/campo/mensagem públicos |
+| Inexistencia | 404 | Preservar código, não confundir com banco ausente |
+| Conflito | 409 | Preservar código; recarregar, sem retry automático |
+| RegraNegocio | 422 | Preservar código/campo/mensagem |
+| Infraestrutura | 503 | Preservar código/mensagem segura, sem Retry-After ou retry implícito |
+| EstadoIndeterminado | 500 | `confirmacao-indeterminada`, `resultadoOperacao: "indeterminado"`; conferir antes de decidir |
+| Exceção/categoria/código inesperados | 500 | `falha-interna`; mensagem genérica, nunca ex.Message |
+
+Problem Details: `type: "about:blank"`, `title` pt-BR por status, `status`, `detail`
+seguro e `codigo`. Opcional `campo`; apenas confirmação incerta conhecida adiciona
+`resultadoOperacao`. Não incluir `instance` com query, Result/Reasons, valores de
+entrada, SQL, caminho, token ou stack. Sem seleção de categoria pelo primeiro erro:
+todos os ErroAplicacao devem ser conhecidos e coerentes; coleção vazia/mista ou erro
+interno desconhecido vira falha técnica genérica. Somente múltiplos erros de categoria
+Validacao coerentes usam `erros-validacao` e `erros` com codigo/mensagem/campo seguros,
+na ordem recebida; múltiplos erros de outras categorias são falha técnica de contrato.
+
+Uniformizar Development/Production. Em ASP.NET Core **10**, configurar binding para
+lançar BadHttpRequestException e tratá-la com status 400/415 explicitamente: o
+exception handler padrão pode transformar em 500. Não expor mensagem da exceção.
+Não instalar DeveloperExceptionPage. Preservar outros status conhecidos de protocolo
+(405/413) com Problem Details seguro. Rota não mapeada fica 404. Não prometer resposta
+em conexão cancelada nem inventar status HTTP 499 como erro comercial.
+
+Não ativar logging de corpos, headers, query strings ou EF sensitive-data. Tratar
+diagnóstico inesperado com evento/código genérico, sem objeto de exceção potencialmente
+sensível; revisar também logging automático do framework para esses caminhos.
+
+### 11. Interface e alternativas
+
+Sem UI: temas, foco, teclado, acessibilidade e testes visuais não alterados; E2E/zoom
+nativos não se aplicam a endpoints. Frontend continua demonstrativo com API desligada.
+Alternativas rejeitadas: Rust/novo host IPC (descarta fundação ASP.NET), acesso direto
+SQLite pelo frontend (burla domínio), JWT/login (escopo desnecessário), persistência
+por requisição sem preparo do host (primeiro uso incompleto), revisão number (perda de
+precisão), IDs na rota (barras opacas), painel por N consultas (inconsistência e N+1).
+
+### 12. Verificação planejada
+
+Unitários: binding/tipos/mapper HTTP/erros/autenticação e novo handler de painel com
+fake contador, oráculos literais, imutabilidade e extremos. Integração: factory própria
+com configuração de banco temporário e segredo sintético fornecido no ambiente antes
+da criação do host; restaurar variável em finally e serializar testes que a alterem.
+Não modificar ambiente concorrentemente nem usar banco global de desenvolvimento.
+Reutilizar SQLite real e provider novo para reabertura; dois clientes para concorrência.
+
+Atualizar health/falhas/rotas existentes para a fixture preparada; conservar provas de
+loopback, sem CORS/cookies/rotas de template e mensagens seguras nos dois ambientes.
+Testar autenticação antes de binding com body malformado sem segredo; JSON em todos
+os DTOs, revisões acima de 2^53 e long.MaxValue, IDs reservados e null; erro de
+preparação impede listener. Doubles de confirmação/cancelamento não são prova de
+falha nativa: manter testes SQLite existentes e identificar o nível da evidência.
+
+Comandos existentes a executar no apply, sequencialmente em `backend/`: restore
+`--locked-mode` após atualizar lockfile por referência, build Release `--no-restore`,
+`dotnet test --solution VendasEmAberto.slnx -c Release --no-build`, descoberta não
+vazia, `dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore` e auditoria
+NuGet transitiva. SDK isolado da fase 004 pode ser usado se disponível; não rebaixar pin.
+Smoke real: DLL própria em porta livre configurada, destino temporário vazio e segredo;
+health, 401, cadastro/consulta/pagamento/reinicialização, loopback, processo encerrado
+e porta liberada. Frontend test/build com API desligada, sem modificar fontes/lockfile.
+Registrar resultados efetivos em `backend/README.md`/tasks no apply, nunca nesta proposta.
+
+### 13. Roadmap de implementação — obrigatório
+
+| Marco | Entregas | Dependências | Critério verificável | Estado |
+| --- | --- | --- | --- | --- |
+| API-01 | Contratos/tipos/erros HTTP, preparação do host e autenticação; commits distintos por funcionalidade | Revisão PRD/TDD/SDD e autorização do apply | CA-061/062/067/068; configuração inválida sem I/O, startup idempotente, binding/401 seguro | Concluído e verificado em 27/11/2026 |
+| API-02 | Query/DTO/handler de Visão Geral e respectivos testes unitários/SQLite | Contratos internos vigentes; API-01 para endpoint | CA-065; snapshot único, universos/ordem/limites/extremos e zero escrita | Concluído e verificado em 27/11/2026 |
+| API-03 | Consultas HTTP: detalhe, coleções, resumo, período, mensal e painel, commits por funcionalidade | API-01; painel requer API-02 | CA-064/065/067; campos, vazios, ordens, datas e ausência de mutação | Concluído e verificado em 27/11/2026 |
+| API-04 | Cadastro, cliente, status, baixa e correção HTTP, commits por funcionalidade | API-01 e consultas de conferência | CA-063/066; commit/reabertura, revisão/no-op, Location e nenhuma repetição | Concluído e verificado em 27/11/2026 |
+| API-05 | Concorrência/falhas transversais, regressão, smoke, auditoria e evidências | API-01–04 completas | CA-061–068 rastreados, verificações reais e limitações documentadas | Concluído e verificado em 27/11/2026 |
+
+### Atualização de execução da DEC-041 — 27/11/2026
+
+Apply autorizado concluído em `feature/fase-005-contrato-e-api-local`, com 21/21
+tarefas verificadas. A matriz de todos os cenários das duas deltas para CA-061–068,
+resultados de teste/build, smoke da DLL Release e limitações está em
+`backend/README.md` (API-05/5.4); a atualização do PRD resume os resultados por critério.
+Em particular, restore bloqueado, build Release sem avisos/erros, suíte MSTest 389/389,
+descoberta 389, format, auditoria NuGet, 430 testes/build frontend sem API e smoke
+Production com loopback, 401, cadastro/Location, baixa, reinício e rotação de segredo
+foram reproduzidos. O smoke usou somente credenciais e dados sintéticos/temporários.
+As duas deltas foram sincronizadas nas specs principais; as duas capabilities afetadas
+passaram validação estrita. A validação de todas as specs em modo estrito ainda acusa
+descrições longas em três capabilities preexistentes e não alteradas, registradas no
+README. Não houve mudança de integração Angular, schema, Tauri, seed ou acesso a banco
+real; isso comprova critérios técnicos, não homologação da loja. A Change foi
+arquivada em `openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`,
+com metadata e 21/21 tarefas conferidas. Próxima etapa: PR único; merge continua
+sujeito a revisão e autorização explícita.
+
+Os marcos concluídos pertencem à mesma feature/PR único, sem PR de planejamento; cada
+funcionalidade inclui testes, documentação e tarefas em commit próprio. Próxima etapa:
+abrir o PR único da feature arquivada pelo template; revisão e autorização explícita
+de merge continuam necessárias.
+
+### 14. Evolução, riscos e condições de revisão
+
+Integração Angular e Tauri ficam futuras; dependem de CORS/origens, localização de dados,
+supervisão, porta/identidade do processo, publicação autocontida e backup. Não são
+pendências bloqueantes para esta API sintética. Sem promessa de escala: snapshot tem
+custo proporcional à base. Riscos: vazamento em logging automático; serialização global
+de long; startup que aceita tráfego cedo; alteração inadvertida do contrato interno.
+Mitigar por testes de fonte/logs, DTOs HTTP explícitos, bootstrap antes de Run e testes
+de contrato. Revisar DEC-041 antes de mudar startup, segurança ou contrato v1.
+
+### 15. Registro da decisão e rastreabilidade
+
+**DEC-041:** escolhas materiais confirmadas por FON-045; detalhes técnicos propostos
+para revisão; não implementada. Substitui apenas a restrição do host técnico isolado
+de DEC-038/040; mantém invariantes, persistência e independência Angular. Consequência:
+API passa a conter dependências de persistência e exige configuração para iniciar.
+Alternativas e contrapartidas acima; validação futura por CA-061–068/API-01–05.
+
+Fontes FON-046: Context7 `/dotnet/aspnetcore.docs`, consultado em 26/11/2026:
+<https://learn.microsoft.com/aspnet/core/fundamentals/error-handling-api?view=aspnetcore-10.0>,
+<https://learn.microsoft.com/aspnet/core/security/authentication/?view=aspnetcore-10.0>,
+<https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-10.0>.
+Documentação retornada inclui diferenças do ASP.NET 11; somente comportamento da
+baseline 10 deve ser usado. Sem alegação de build, auditoria ou teste executado.
+
+PRD/FON-045/046 → RF-031–036/CA-061–068 → DEC-041 → proposal/specs/design/tasks
+de `fase-005-contrato-e-api-local`. Revisão de 26/11/2026 preserva o histórico,
+registra PR #40 integrado e propõe esta evolução, sem alterar código/configuração.
+
 ## DEC-040 — Casos de uso internos da fase 004 (26/11/2026)
 
 ### Situação, origem e síntese da entrevista

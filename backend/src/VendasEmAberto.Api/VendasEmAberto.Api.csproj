@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VendasEmAberto.Aplicacao\VendasEmAberto.Aplicacao.csproj" />
+    <ProjectReference Include="..\VendasEmAberto.Infraestrutura\VendasEmAberto.Infraestrutura.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

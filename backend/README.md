@@ -75,10 +75,11 @@ hashes efetivos constam em
 `src/VendasEmAberto.Infraestrutura/packages.lock.json`; ferramenta e versão estão em
 `dotnet-tools.json`.
 
-Para manter a API técnica sem persistência transitiva, `Api.csproj` referencia apenas
-Aplicacao. EF Core/SQLite não aparece no grafo de pacotes nem no diretório Release da
-API; a suíte de persistência adicionará referência direta à Infraestrutura quando os
-testes forem introduzidos.
+Na baseline anterior à composição HTTP/API-01/1.3, `Api.csproj` referenciava apenas
+Aplicacao e o grafo da API não continha EF Core/SQLite. A decisão D1 da fase 005 passou
+a compor a Infraestrutura pela API; a nova referência transitiva e os lockfiles atuais
+estão registrados em “Inicialização do host local (API-01/1.3)” abaixo. As dependências
+de produção do EF/SQLite continuam declaradas somente pela Infraestrutura.
 
 Fontes oficiais consultadas:
 
@@ -205,8 +206,10 @@ Somente `IPreparacaoArmazenamentoVendas.PrepararAsync` inicializa o schema, sem 
 Repetir a preparação preserva os dados e a revisão. A Aplicacao registra MediatR,
 handlers por assembly e o serviço de preparação; a Infraestrutura registra um destino
 imutável singleton, gerador GUID formato N singleton e adaptador SQLite transient.
-Não há `DbContext` global nem referência da Aplicacao para Infraestrutura. A API não
-chama essas extensões.
+Não há `DbContext` global nem referência da Aplicacao para Infraestrutura. O consumidor
+interno mantém composição explícita; a API usa `AdicionarAplicacao` e
+`AdicionarPersistenciaSqlite` como composition root e chama a preparação separadamente
+antes de servir.
 
 Exemplo de composição para consumidor interno (não é registro do host HTTP):
 
@@ -243,6 +246,74 @@ independentes em dois providers. O SQLite real permaneceu restrito aos diretóri
 temporários descartados pelos testes. Em produção, somente
 `PreparacaoArmazenamentoVendas.PrepararAsync` chama `InicializarAsync`; nesta etapa,
 nenhum handler ou consulta usa o serviço de preparação.
+
+## Contrato HTTP comum (API-01/1.1)
+
+`Api/Contratos/` concentra leitura explícita de JSON/query e tipos exclusivos do fio,
+sem expor DTOs internos, domínio ou `Result`. O leitor de body reconhece apenas os
+campos declarados por cada endpoint; campos desconhecidos são ignorados, chaves
+conhecidas repetidas são recusadas e valores de ID/texto não passam por `Trim` ou
+segunda decodificação. Parâmetros query obrigatórios precisam ocorrer exatamente uma
+vez. Datas são civis `yyyy-MM-dd`; centavos aceitam token inteiro entre zero e
+`9.007.199.254.740.991`; enums aceitam somente nomes textuais conhecidos; revisão usa
+string decimal canônica até `long.MaxValue`. O wrapper `RevisaoApi` aplica a forma
+textual somente às revisões; não existe conversor global de `long`, então centavos
+continuam números JSON. Saídas usam camelCase, enums textuais e datas ISO exatas.
+
+Verificação direcionada desta funcionalidade: testes `ContratoApiJsonTests`,
+`LeitorObjetoJsonTests` e `ParametrosQueryApiTests` no projeto UnitTests cobrem os
+extremos, ausência/null/default, tipos incorretos, duplicatas, enums, IDs sem
+normalização e propriedades desconhecidas. O adaptador de erros HTTP e a tradução
+dessas falhas para Problem Details pertencem à tarefa API-01/1.2; endpoints e mappers
+específicos serão adicionados junto a cada operação.
+
+## Falhas HTTP e Problem Details (API-01/1.2)
+
+`AdaptadorResultadosApi` é o ponto único de tradução de `Result` para HTTP. Categorias
+conhecidas são mapeadas sem ler `Result.Value` em falha; somente códigos/campos
+permitidos atravessam a fronteira. Validações múltiplas coerentes retornam uma lista
+segura. Código/categoria/campo desconhecido, erros mistos ou falha sem erro tipado
+resultam em 500 genérico, sem serializar `Reasons`. A mensagem de infraestrutura não
+é propagada: o detalhe HTTP é fixo. Falhas inesperadas e binding não ecoam mensagem de
+exceção nem valores recebidos.
+
+| Situação | Status | `codigo` / detalhe |
+| --- | ---: | --- |
+| JSON, query ou validação tipada inválida | 400 | Código conhecido; validações múltiplas usam `erros-validacao` |
+| Credencial técnica ausente/inválida | 401 | `acesso-local-negado` |
+| Recurso inexistente | 404 | Código conhecido, por exemplo `venda-inexistente` |
+| Conflito de revisão/histórico | 409 | Código conhecido |
+| Regra comercial não atendida | 422 | Código conhecido |
+| Armazenamento indisponível | 503 | Código conhecido e detalhe fixo |
+| Confirmação indeterminada | 500 | `confirmacao-indeterminada`, `resultadoOperacao: "indeterminado"` |
+| Exceção inesperada, categoria/código desconhecido ou categorias mistas | 500 | `falha-interna`, detalhe genérico |
+| Método, tamanho ou tipo de conteúdo não aceito | 405 / 413 / 415 | `metodo-nao-permitido` / `conteudo-muito-grande` / `tipo-conteudo-nao-suportado` |
+
+As respostas de erro usam `application/problem+json`, `type: about:blank`, status
+coerente com o status HTTP, `codigo` e, quando seguro e fornecido, `campo`; não incluem
+`instance` com query. O corpo recebe `Cache-Control: no-store`. Em .NET 10, o handler
+trata explicitamente `BadHttpRequestException` para preservar 400/405/413/415 em vez
+de convertê-los em 500; `UseStatusCodePages` cobre 405/413 produzidos pelo pipeline.
+Não se promete tradução de códigos ou categorias que não estejam allowlisted: eles
+falham fechados como erro interno genérico. A verificação desta tarefa cobre respostas
+em Development e Production; a auditoria transversal do logging automático e dos
+marcadores nos logs está registrada em API-05/5.2.
+
+Verificações executadas em 26/11/2026 com o SDK isolado `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AdaptadorResultadosApiTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~FalhasTecnicasTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+```
+
+Resultados observados: 7 testes unitários e 10 de integração passaram; o build Release
+passou com 0 avisos e 0 erros. A cobertura verifica 400/404/409/422/503, 401 técnico,
+500 genérico/indeterminado, 405/413/415, status HTTP e corpo em Development/Production,
+campos allowlisted, validações múltiplas/mistas, `Result.Value` não acessado em falha e
+ausência de marcadores sintéticos de entrada/exceção nas respostas. Os testes host-level
+injetam `BadHttpRequestException` para simular os status de binding nesta etapa; ainda
+não há endpoint comercial que permita exercitar o binding real ponta a ponta.
 
 ## Cadastro de venda (APP-02/2.1)
 
@@ -781,15 +852,16 @@ finito de cinco segundos e pooling desabilitado. A sessão é `IAsyncDisposable`
 contexto deve ser descartado ao final da operação. Linha ativa em
 `__EFMigrationsLock` retorna `banco-ocupado`; nenhuma linha/tabela de lock é apagada
 automaticamente. Timeout não aciona retry. O adaptador interno implementa o contrato
-de armazenamento e delega ao leitor/gravador, mas não está registrado nem ligado à API;
-esta permanece sem dependência da Infraestrutura.
+de armazenamento e delega ao leitor/gravador. Na etapa SQL-02, anterior à API-01/1.3,
+ele ainda não estava ligado à API; a composição atual está descrita abaixo.
 
 `AbridorVendasSqliteTests` passou com seis casos em arquivos temporários: ausência
 sem criação, arquivo não SQLite preservado, schema corrente com modo/FKs/timeout
 esperados, coluna alterada recusada, lock preservado como ocupado e liberação da
 conexão que permite mover o arquivo. Junto aos seis testes do inicializador e cinco
-de schema, são 17 testes direcionados aprovados. `Program.cs` e endpoints/health não
-foram alterados; a API permanece sem dependência da Infraestrutura.
+de schema, são 17 testes direcionados aprovados naquela etapa. `Program.cs` e
+endpoints/health não foram alterados então; API-01/1.3 posteriormente adicionou a
+composição da Infraestrutura e o bootstrap explícito.
 
 ## Leitura transacional (SQL-03/3.1)
 
@@ -1634,10 +1706,11 @@ com mensagem que identifica a chave suportada. Não configurar `--urls`,
 `ASPNETCORE_HTTPS_PORTS`, `DOTNET_HTTP_PORTS`, `DOTNET_HTTPS_PORTS` ou
 `Kestrel:Endpoints` concorrentes. A validação ocorre antes de construir/iniciar o
 host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
-também são rejeitados. `/health` indica somente
-disponibilidade do processo, não readiness de banco nem operação comercial. Não há
-login, dados financeiros, integração Angular, importação da planilha, persistência
-ou Tauri nesta fase.
+também são rejeitados. O host só começa a escutar depois de preparar o banco; `/health`
+indica que o processo está ativo após essa preparação, mas não garante disponibilidade
+de cada operação comercial. O host ainda não expõe operações comerciais; o grupo
+versionado preparado para elas usa Bearer local. Não há integração Angular,
+importação da planilha ou Tauri.
 
 ## Falhas técnicas e segurança das respostas
 
@@ -1654,3 +1727,828 @@ conter mensagens e stack traces internos: evitar incluir credenciais ou dados
 pessoais em mensagens de exceção e restringir acesso e retenção dos logs conforme o
 ambiente. A resposta HTTP é deliberadamente genérica; detalhes de implementação
 não devem ser adicionados ao corpo nem a headers.
+
+## Inicialização do host local (API-01/1.3)
+
+A API agora compõe `Aplicacao` e `Infraestrutura` como composition root. Antes de abrir
+o listener Kestrel, valida as opções de hosting/porta, o destino e o segredo; registra
+os serviços e chama `IPreparacaoArmazenamentoVendas.PrepararAsync` explicitamente. Se
+a preparação falhar ou lançar exceção inesperada, o host termina sem servir; o
+diagnóstico é genérico e não inclui caminho, SQL, segredo nem mensagem/exceção. O
+cancelamento de startup continua propagado. O host não cria o diretório pai, não faz
+seed e não repara nem sobrescreve banco incompatível.
+
+| Configuração | Regra |
+| --- | --- |
+| `Backend__Porta` | Opcional; padrão 5070, inteiro entre 1024 e 65535; listener somente em `127.0.0.1`. Sobrescritas de endpoints continuam recusadas. |
+| `Backend__CaminhoBanco` | Obrigatória; destino absoluto de arquivo, com diretório pai já existente. A configuração inválida falha antes de inicializar armazenamento. |
+| `Backend__SegredoLocal` | Obrigatória e lida diretamente do ambiente do processo; Base64 canônico de exatamente 32 bytes. Não aceita valor de appsettings ou argumento de linha de comando. Não imprimir nem persistir o segredo. |
+
+Para iniciar em desenvolvimento, configure `Backend__CaminhoBanco` com o destino local
+e forneça `Backend__SegredoLocal` ao ambiente do processo por um iniciador seguro; não
+coloque o segredo em argumento, appsettings, histórico de comandos ou logs. A partir de
+`backend/`, o comando de execução é:
+
+```powershell
+dotnet run --project src/VendasEmAberto.Api/VendasEmAberto.Api.csproj -c Release
+```
+
+Em destino novo, a preparação cria o schema e estado técnico na revisão zero, sem
+vendas de exemplo. Reinicialização conserva revisão e registros. `HealthEndpointTests`,
+`RotasNaoImplementadasTests` e `FalhasTecnicasTests` usam `HostApiFixture`: cada host
+recebe banco/segredo sintéticos próprios, as alterações às variáveis globais de
+ambiente são serializadas e restauradas no cleanup. `ConfiguracaoHostApiTests` prova
+banco vazio no primeiro startup, ausência de I/O para configurações inválidas,
+recusa de fallback de segredo vindo da configuração, reinício preservando venda/revisão
+e recusa de banco alheio/futuro sem mudança de bytes.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet restore VendasEmAberto.slnx --force-evaluate
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConfiguracaoBackendTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConfiguracaoHostApiTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~HealthEndpointTests|FullyQualifiedName~RotasNaoImplementadasTests|FullyQualifiedName~FalhasTecnicasTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ComposicaoInternaTests|FullyQualifiedName~InicializadorSqliteTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+```
+
+Resultados: restore bloqueado passou; 27 testes unitários de configuração, 6 testes
+host-level de bootstrap, 16 regressões de health/rotas/falhas e 9 testes de composição/
+inicialização passaram; build Release terminou com 0 avisos e 0 erros. A referência
+intencional da API para Infraestrutura adicionou EF Core/SQLite ao grafo transitivo e
+os lockfiles da API e dos projetos de teste foram atualizados somente pelo restore do
+grafo; a listagem confirma EF Core/SQLite em API e nenhum pacote transitivo no Domínio.
+
+Também foi iniciado o binário Release em processo próprio, com banco/segredo temporários
+e porta livre: health respondeu `200 text/plain Healthy`, o listener observado foi
+`127.0.0.1`, o banco foi preparado, a saída não continha caminho/segredo e o processo
+foi encerrado com a porta liberada. Processos negativos recusaram segredo fornecido
+somente por argumento e pai inexistente antes de criar banco/diretório ou manter
+listener. Essa etapa não exercitou autenticação comercial; os testes HTTP da tarefa
+API-01/1.4 abaixo cobrem o esquema. Nem esta etapa nem os testes substituem o smoke
+completo de API-05/5.4.
+
+## Credencial comercial local (API-01/1.4)
+
+O grupo `/api/v1` exige uma única credencial `Authorization: Bearer <segredo>`. O
+segredo é exatamente o valor Base64 canônico de 32 bytes configurado em
+`Backend__SegredoLocal` no ambiente do processo. Não há fallback em appsettings ou
+argumentos, JWT, conta de funcionário, cookie, endpoint de login ou CORS. O esquema
+decodifica a credencial recebida e compara os bytes com
+`CryptographicOperations.FixedTimeEquals`; formato inválido, credencial ausente,
+incorreta ou duplicada não autentica. As respostas comerciais do prefixo `/api/v1`
+usam `Cache-Control: no-store`, inclusive challenge 401, sucesso e falhas.
+
+Gere uma credencial nova no iniciador e defina-a no ambiente do processo sem colocá-la
+em argumento, arquivo, URL ou log. Exemplo em PowerShell, antes de iniciar o host:
+
+```powershell
+$env:Backend__SegredoLocal = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+O cliente deve enviar esse valor somente no header `Authorization`; não o registre em
+URL ou telemetria. Uma nova execução pode receber outro segredo: tokens da execução
+anterior deixam de autenticar após reiniciar com a credencial nova. `GET /health`
+continua público, textual e sem cookie; rotas ausentes permanecem 404, sem redirect
+para login. A proteção é de processo local, não identidade humana nem fronteira contra
+outro processo com o mesmo usuário/permissões; loopback, segredo e `no-store` não
+substituem isolamento do sistema operacional nem protegem um iniciador/usuário
+comprometido.
+
+Verificações da autenticação local executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConfiguracaoBackendTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AutenticacaoBearerLocalTests|FullyQualifiedName~HealthEndpointTests|FullyQualifiedName~RotasNaoImplementadasTests|FullyQualifiedName~FalhasTecnicasTests|FullyQualifiedName~ConfiguracaoHostApiTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 27 testes unitários de configuração e 25 testes de integração (3 de
+autenticação, 6 de startup/configuração e 16 regressões de health, rotas e falhas)
+passaram; build Release com 0 avisos/erros e verificação de formato passaram. Os testes
+verificam challenge/corpo Problem Details seguro e `no-store` para credencial ausente,
+incorreta/duplicada; 401 antes do binding de JSON inválido; execução do handler só
+após autenticação; sucesso/falha sem cache; troca do segredo entre inicializações;
+e ausência de credenciais capturadas em respostas/logs. O handler usa comparação
+constante de bytes. As consultas comerciais de produção GET `/api/v1/vendas` e
+`GET /api/v1/vendas/detalhe` estão documentadas abaixo; as demais rotas previstas
+serão adicionadas nas próximas tarefas. Endpoints de prova usados nos testes
+transversais continuam restritos ao TestServer.
+
+## Consulta interna consolidada da Visão Geral (API-02/2.1–2.2)
+
+`ConsultarVisaoGeralQuery`/Handler carrega uma única vez o snapshot da referência
+solicitada e chama `ConjuntoVendas.Projetar` uma vez. Os quatro indicadores vêm dessa
+projeção existente, preservando o universo operacional de Ativas e recebimentos do mês
+de todos os status. As três listas são montadas em memória a partir das mesmas vendas e
+projeções alinhadas; não há consulta por venda, cálculo financeiro duplicado,
+preparação/gravação, geração de IDs ou mudança no frontend.
+
+O DTO interno `VisaoGeralResposta` mantém referência/revisão no envelope e os quatro
+indicadores sem metadados duplicados; resumos de venda e itens `{venda, parcela}` usam
+os contratos protegidos existentes e repetem a mesma referência/revisão nos resumos
+aninhados. Cada lista é copiada e exposta como coleção somente leitura. Recentes filtra
+Ativas, ordena por data decrescente e índice original crescente antes de limitar a cinco,
+incluindo Ativas quitadas. Próximas e atrasadas filtram Ativas pela classificação do
+domínio, ordenam por vencimento e pelos índices originais de venda/parcela e só então
+limitam a cinco; a janela usa a classificação por `DayNumber`, sem `AddDays` no handler.
+O endpoint HTTP `/api/v1/visao-geral` e seu mapper externo continuam na tarefa 3.6.
+
+Verificações da funcionalidade executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVisaoGeralHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVisaoGeralSqliteTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes unitários e 2 testes de integração SQLite aprovados; build Release
+com 0 avisos/erros e verificação de formato aprovados. O fake confirma uma carga e zero
+preparações/gravações; os oráculos literais cobrem indicadores com entrada, lote e
+pagamentos Individuais em estados mistos, seleção antes do limite com mais de cinco
+elegíveis, empates estáveis, parcelas pagas, ontem/hoje/+7/+8, blocos vazios e
+independentes, datas nos anos 0001/9999 e imutabilidade das listas. A integração grava
+18 vendas sintéticas em banco temporário, reabre com outro provider, confere IDs,
+revisão/referência e valores, transita vendas por Inativa/Prejuízo/Ativa sem estornar
+recebimentos (60.500 centavos), preserva a resposta anterior e confirma revisão 5 após
+nova reabertura. Não foi acessado banco operacional ou alterada a UI.
+
+## Consulta HTTP de detalhe da venda (API-03/3.1)
+
+`GET /api/v1/vendas/detalhe` exige Bearer e os parâmetros únicos `vendaId` e
+`referencia` (`yyyy-MM-dd`) na query. O ID é opaco: consumidores devem codificá-lo como
+um único valor de query e o host o decodifica uma vez, sem aparar nem reinterpretar
+`/`, `%`, `+`, `?`, `#` ou Unicode. A resposta 200 tem `resumo`, `parcelas` e
+`recebimentos`, preservando campos, vínculos e ordem dos DTOs internos; o mapper HTTP
+declara DTOs/enums próprios e converte explicitamente cada status, situação, forma e
+origem. Valores monetários continuam inteiros em centavos, datas são ISO civis,
+`revisao` é string decimal canônica inclusive nos resumos, e nulabilidade/listas são
+preservadas. O endpoint é somente leitura e respostas comerciais mantêm `no-store`.
+
+ID inexistente retorna 404 `venda-inexistente`; query ausente, vazia, duplicada ou
+referência inválida retorna 400 `requisicao-invalida`, sem chamar a consulta para
+parâmetros incompletos. O teste de integração grava uma venda sintética com entrada,
+lote e pagamento individual num SQLite temporário, fecha o primeiro host e reabre o
+mesmo arquivo em outro host antes de consultar. O oráculo JSON compara todos os campos
+literalmente, incluindo ordem, nulabilidade, Unicode, alocações e ID reservado
+`venda/%+?#🧾`; outra verificação cobre 400/404 e confirma revisão 1/uma venda após as
+requisições GET, sem avanço ou escrita.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVendaDetalheEndpointTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite aprovados; build Release com 0 avisos/erros e
+verificação de formato aprovados. Não foi iniciado smoke da DLL nem acessado banco
+operacional; o smoke completo permanece na tarefa 5.4.
+
+## Consulta HTTP de coleções de vendas (API-03/3.2)
+
+`GET /api/v1/vendas` exige Bearer e os parâmetros únicos `colecao` e `referencia`
+(`yyyy-MM-dd`). `colecao` aceita somente os textos exatos `Abertas`, `Quitadas`,
+`Inativas` e `Prejuizo`; valores numéricos, desconhecidos, diferenças de caixa,
+duplicados ou ausentes são rejeitados com 400 `requisicao-invalida`. A resposta 200
+contém `colecao`, `revisao` decimal textual, `referencia` e a lista integral `vendas`.
+Cada resumo mantém os campos de cliente/financeiros do contrato v1, centavos como
+inteiros, datas civis, enums textuais e nulabilidade, usando o mesmo mapper HTTP
+explícito do resumo no detalhe. A ordem é a do conjunto carregado; não há busca,
+paginação ou ordenação configurável. Lista vazia retorna 200 com `vendas: []`; toda
+resposta comercial usa `no-store`.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite de coleção e 2 testes de regressão do detalhe
+aprovados. As verificações literais percorrem as quatro coleções em ordem com status
+misto, campos completos de resumo/cliente e revisão/referência; cobrem banco vazio,
+seletores ausentes, numéricos, desconhecidos, com caixa divergente e duplicados. Após
+as consultas válidas e inválidas, a revisão continua 1 e os oito IDs/ordens persistidos
+permanecem iguais; o caso vazio conserva revisão 0. Build Release com 0 avisos/erros e
+verificação de formato aprovados. Dados são sintéticos e banco temporário.
+
+## Consulta HTTP de indicadores (API-03/3.3)
+
+`GET /api/v1/resumo` exige Bearer e o parâmetro único `referencia` (`yyyy-MM-dd`). A
+resposta 200 contém `totalEmAbertoCentavos`, `valoresEmAtrasoCentavos`,
+`recebidoNoMesCentavos`, `quantidadeVendasAtivas`, `revisao` decimal textual e
+`referencia`; os três valores financeiros são inteiros em centavos seguros. O handler
+reutilizado projeta a carga existente: saldo e atraso consideram somente vendas Ativas
+(a contagem inclui Ativas quitadas), enquanto recebimentos reais do mês contam uma vez
+em qualquer status, incluindo Entrada e histórico de lote. O endpoint é somente leitura,
+respostas comerciais mantêm `no-store`, e banco preparado vazio retorna zeros/revisão
+observada.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 3 testes HTTP/SQLite de resumo e 4 regressões de detalhe/coleções aprovados;
+build Release com 0 avisos/erros e verificação de formato aprovados. Oráculos literais
+confirmam 20.000 em aberto, 10.000 em atraso, 50.000 recebidos no mês e 3 Ativas no
+conjunto misto (incluindo quitada), com Entrada única e recebimentos de Inativa/Prejuízo
+incluídos sem contaminar a dívida operacional. Banco vazio mantém zeros/revisão 0. O
+limite seguro `9.007.199.254.740.991` foi verificado como token numérico inteiro tanto
+em aberto quanto recebido, antes e após registrar a quitação do cenário sintético; consultas
+não avançaram as revisões 1 e 2. Não houve acesso a banco operacional.
+
+## Consulta HTTP por período (API-03/3.4)
+
+`GET /api/v1/periodo` exige Bearer e os parâmetros únicos `inicio`, `fim` e
+`referencia`, todos no formato civil `yyyy-MM-dd`. A resposta 200 mantém os limites,
+`recebidosCentavos`, revisão textual, referência e a lista de resumos `vendas`. A lista
+inclui somente vendas Ativas cuja `dataVenda` esteja dentro do intervalo inclusivo,
+preservando a ordem do conjunto; `recebidosCentavos` soma recebimentos efetivos de todos
+os status pela data de recebimento, inclusive venda originada fora do período. Intervalo
+vazio retorna 200 com lista vazia e zero recebidos. Datas ausentes/malformadas retornam
+400 `requisicao-invalida`; `inicio > fim` retorna 400 `periodo-invalido`. A consulta não
+prepara nem grava e a resposta comercial usa `no-store`.
+
+Exemplo sintético: `/api/v1/periodo?inicio=2027-03-01&fim=2027-03-31&referencia=2027-04-02`.
+Os dados e datas do exemplo não são registros operacionais.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite do período e 7 regressões dos três endpoints anteriores
+aprovados; build Release com 0 avisos/erros e verificação de formato aprovados. O cenário
+confere vendas nas duas bordas inclusivas, exclui venda Ativa fora do intervalo e vendas
+Inativa/Prejuízo, mas soma pela data efetiva recebimentos de Ativas nas bordas e fora do
+intervalo, além de Inativa/Prejuízo (38.000 centavos). Os resumos esperados comparam todos
+os campos e a ordem. Banco vazio, parâmetros ausentes/data impossível e intervalo invertido
+retornaram os status/códigos esperados; revisões 1 e 0 e seus conjuntos permaneceram sem
+alteração após as consultas.
+
+## Consulta HTTP de relatório mensal (API-03/3.5)
+
+`GET /api/v1/relatorios/mensal` exige Bearer e os parâmetros únicos `ano` (1–9999),
+`mes` (1–12) e `referencia` (`yyyy-MM-dd`). O ano/mês seleciona apenas o relatório; a
+referência civil continua sendo a fornecida pelo consumidor. Ausência, duplicidade,
+formato ou limites inválidos retornam 400 `requisicao-invalida` antes de consultar o
+handler. Respostas comerciais, inclusive falhas, mantêm `Cache-Control: no-store`.
+
+A resposta preserva integralmente o `RelatorioMensalResposta` da Aplicacao: referência,
+limites do mês e revisão decimal textual; recebimentos identificados com resumo completo
+da venda, origem, data, forma e valor; série diária completa; vendas do mês; saldos e
+primeiro vencimento pendente; parcelas atrasadas; parcelas de Prejuízo com
+`incluirNoTotal`; e os totais/quantidades recebido, vendas do mês, aberto, atrasado e
+Prejuízo. Resumos aninhados incluem todos os campos do cliente e financeiros. Parcelas
+mantêm campos, enums, nulabilidade e vínculo com venda; centavos são tokens inteiros,
+datas são civis ISO e listas/ordens são as produzidas pelo caso de uso, sem cálculo HTTP.
+Mês sem movimento continua com uma linha diária por dia, inclusive ano bissexto, e não
+substitui a referência nem os totais globais da fotografia.
+
+Exemplo sintético: `/api/v1/relatorios/mensal?ano=2027&mes=3&referencia=2027-04-15`.
+O cenário de verificação usa somente vendas sintéticas e SQLite temporário.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 3 novos testes HTTP/SQLite e 9 regressões das quatro consultas anteriores
+aprovados. O cenário mensal compara campo a campo o JSON e todas as linhas/resumos/
+parcelas com o DTO baseline do handler após reabrir o banco; confere ordem e vínculo de
+Entrada, lote e Individual, série diária conciliada em 101.000 centavos, vendas do mês,
+saldos, atrasadas, status mistos e Prejuízo/`incluirNoTotal`, além dos totais literais
+(221.000 vendidos, 170.000 em aberto, 20.000 atrasados e 10.000 em Prejuízo). Também
+verifica mês vazio bissexto mantendo a referência e saldo global, correção Individual
+movida de março para abril sem alterar a posição na referência, meses de 0001/9999 e
+parâmetros ausentes/duplicados/inválidos sem escrita (revisão permanece 0 no banco
+vazio). Build Release com 0 avisos/erros e verificação de formato aprovados. Não houve
+acesso a banco operacional.
+
+## Consulta HTTP da Visão Geral (API-03/3.6)
+
+`GET /api/v1/visao-geral` exige Bearer e o parâmetro único `referencia` (`yyyy-MM-dd`).
+O envelope contém `referencia`, `revisao` decimal textual, `indicadores` com os quatro
+valores numéricos, `vendasRecentes`, `parcelasProximas` e `parcelasAtrasadas`. Cada
+resumo de venda transporta todos os campos do cliente/financeiros; os itens de parcelas
+identificam venda e parcela com seus campos, enums e nulabilidade. Revisão e referência
+dos resumos aninhados coincidem com o envelope. As três listas respeitam a seleção,
+ordenação estável e o limite cinco já aplicados pelo handler; o transporte não cria
+consultas por venda nem recalcula regras. Respostas comerciais usam `no-store`; referência
+ausente ou inválida retorna 400 sem chamar o handler. A consulta não prepara nem grava.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 14 testes HTTP/SQLite das seis consultas aprovados; build Release com 0
+avisos/erros e verificação de formato aprovados. O cenário reabre SQLite com status
+Ativo, Inativo, Prejuízo e venda quitada, compara todos os campos HTTP com o DTO baseline,
+confere os quatro indicadores (21.300 em aberto, 600 em atraso, 60.600 recebidos e 17
+Ativas), IDs/ordem dos três blocos, inclusão de Ativa quitada, limites, bordas ontem/hoje/
+hoje+7/hoje+8 e metadados aninhados. Um decorator contador sobre o armazenamento SQLite
+confirma uma única carga e zero inicializações/salvamentos durante o GET e nenhuma carga
+para referência inválida/ausente. Banco vazio retorna quatro zeros e três listas vazias,
+sem escrita. Dados são sintéticos; não houve alteração do frontend ou acesso a banco
+operacional.
+
+## Cadastro HTTP de venda (API-04/4.1)
+
+`POST /api/v1/vendas` exige Bearer e `application/json`. O corpo contém `nome`, `cpf`,
+`telefone`, `dataVenda`, `valorTotalCentavos`, `quantidadeParcelas`, `referencia` e
+`revisaoEsperada` como string decimal canônica; `descricao` e `entrada` são opcionais/
+nullable. Entrada, quando presente, tem somente `valorCentavos` inteiro e `forma` textual.
+Os campos desconhecidos são ignorados e não permitem escolher IDs, status, parcelas,
+recebimentos ou outros dados financeiros. Enum e campos conhecidos repetidos, datas e
+tipos inválidos são rejeitados pelo binding seguro; media type não JSON retorna 415.
+
+Exemplo sintético de corpo (nenhum segredo fixo/documentado):
+
+```json
+{
+  "nome": "Cliente de demonstração",
+  "cpf": "52998224725",
+  "telefone": "11987654321",
+  "descricao": null,
+  "dataVenda": "2027-01-15",
+  "valorTotalCentavos": 20000,
+  "quantidadeParcelas": 2,
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "0",
+  "entrada": { "valorCentavos": 10000, "forma": "Pix" }
+}
+```
+
+Sucesso confirmado retorna 201 com o detalhe HTTP completo e `Location` relativo
+`/api/v1/vendas/detalhe?vendaId=<codificado>&referencia=<yyyy-MM-dd>`. O ID vem do
+gerador do backend, não do corpo; somente após o save confirmado é retornada a revisão
+nova. O escape de query preserva IDs opacos (`/`, `%`, `+`, `?`, `#` e Unicode), e a
+Location pode ser consultada com Bearer após reabrir o banco. A entrada é um recebimento
+único alocado à primeira parcela: 10.000 de entrada em contrato de 20.000 resulta em
+20.000 de valor-base, 10.000 recebidos e 10.000 de saldo, sem duplicar o valor. Erros
+de calendário do domínio apontam `dataVenda`, nome público do campo, não `dataBase`.
+Todas as respostas comerciais incluem `Cache-Control: no-store`; validações e conflito
+de revisão não salvam candidatos nem avançam a revisão.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests|FullyQualifiedName~CadastrarVendaEndpointTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~CadastrarVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 17 testes HTTP/SQLite (cadastro e regressão das seis consultas) e 6 testes
+unitários do handler aprovados; build Release com 0 avisos/erros e verificação de formato
+aprovados. Testes de cadastro conferem 10.000/3 = 3.334/3.333/3.333, IDs gerados, revisão
+confirmada, Location corretamente codificada e consulta após reiniciar o host; entrada
+10.000 em 20.000/2 sem dupla contagem; CPF/entrada/calendário/revisão inválidos, stale
+revision e media type incorreto sem save, venda persistida ou avanço de revisão. Um teste
+unitário verifica o mapeamento seguro do erro de calendário. Fixture e SQLite são
+temporários/sintéticos; não houve acesso a banco operacional.
+
+## Edição HTTP de cliente da venda (API-04/4.2)
+
+`PUT /api/v1/vendas/cliente` exige Bearer e `application/json`, com `vendaId`, `nome`,
+`cpf`, `telefone`, `referencia`, `revisaoEsperada` (string decimal canônica) e
+`descricao` opcional/nullable. Somente os quatro dados cadastrais são enviados ao caso
+de uso; propriedades adicionais, inclusive financeiras ou administrativas, são ignoradas.
+O ID é opaco e permanece no corpo. Sucesso retorna 200 com o detalhe completo e revisão
+confirmada. A edição vale para vendas Ativas abertas/quitadas, Inativas e em Prejuízo;
+CPF repetido entre vendas é permitido e altera somente o cliente da venda-alvo. Status,
+contrato, parcelas, recebimentos e seus IDs/alocações permanecem intactos.
+
+Dados de cliente são normalizados pelas fábricas existentes antes da comparação de no-op.
+Uma edição normalizada idêntica retorna 200 sem save/avanço da revisão; revisão obsoleta
+retorna 409 antes dessa comparação, também sem save. Falhas de campo retornam Problem
+Details seguro com campo público e não persistem candidato. Respostas comerciais mantêm
+`Cache-Control: no-store`.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests|FullyQualifiedName~CadastrarVendaEndpointTests|FullyQualifiedName~EditarClienteVendaEndpointTests|FullyQualifiedName~EditarClienteVendaSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~EditarClienteVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 21 testes HTTP/SQLite (seis consultas, cadastro, edição HTTP e edição
+persistida preexistente) e 4 testes unitários do handler aprovados; build Release com 0
+avisos/erros e verificação de formato aprovados. Após reabrir SQLite, os testes cobrem
+edição nos quatro status, CPF compartilhado sem propagação, campos financeiros extras
+ignorados, status/contrato/parcelas/pagamentos preservados, no-op com revisão estável e
+revisão antiga 409 inclusive no no-op. CPF inválido, telefone ausente, chave conhecida
+duplicada e revisão não canônica apontam campos seguros e não salvam. Dados/arquivos são
+sintéticos e temporários; não houve acesso a banco operacional.
+
+## Alteração HTTP do status administrativo (API-04/4.3)
+
+`PUT /api/v1/vendas/status` exige Bearer e `application/json`, com `vendaId`, `novoStatus`,
+`referencia` (`yyyy-MM-dd`) e `revisaoEsperada` (string decimal canônica). `novoStatus`
+aceita exclusivamente os textos `Ativo`, `Inativo` e `Prejuizo`; enum numérico, texto
+desconhecido ou variação de caixa retorna 400 `requisicao-invalida`. Sucesso confirmado
+retorna 200 com detalhe completo e revisão. As regras são as do domínio: Ativo→Inativo,
+Ativo→Prejuizo somente se restar saldo em parcelas, Inativo→Ativo e Prejuizo→Ativo.
+Transições não permitidas retornam 422; mesmo status é no-op 200 sem avanço, mas revisão
+obsoleta retorna 409 antes do no-op. Respostas comerciais incluem `Cache-Control: no-store`.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "novoStatus": "Prejuizo",
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "5"
+}
+```
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AlterarStatusVendaEndpointTests|FullyQualifiedName~AlterarStatusVendaSqliteTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~AlterarStatusVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 7 testes HTTP/SQLite (status, matriz/persistência existente, resumo e painel)
+e 4 unitários do handler aprovados; build Release com 0 avisos/erros e verificação de
+formato aprovados. A cobertura verifica as quatro transições permitidas, Inativo→Prejuizo,
+Prejuizo→Inativo e venda quitada→Prejuizo recusadas; `Prejuizo` exige saldo, enum inválido
+e numérico recusados, no-op e revisão obsoleta. Resumo/painel após as mudanças reportam
+2 vendas Ativas, 10.000 centavos em aberto e 50.000 recebidos no mês, incluindo recebimentos
+de todos os status; o SQLite reaberto confirma revisão 5 e preserva valores, parcelas,
+recebimentos e alocações. Dados e arquivos são sintéticos/temporários; não houve acesso a
+banco operacional.
+
+## Baixa HTTP de recebimento individual (API-04/4.4)
+
+`POST /api/v1/recebimentos` exige Bearer e `application/json`, com `vendaId`, `parcelaId`,
+`valorRecebidoCentavos` (inteiro em centavos), `data`, `forma`, `referencia` e
+`revisaoEsperada` (string decimal canônica); `observacao` é opcional/nullable. A forma é
+um dos textos `Dinheiro`, `Pix`, `CartaoDebito` ou `CartaoCredito`; enums numéricos e
+desconhecidos são recusados no binding. O domínio exige venda Ativa e que o ID de parcela
+corresponda à primeira pendente, mesmo que o vencimento seja futuro; pagamento menor que
+o valor-base, salto/repetição, data/forma ou observação inválidas não são persistidos.
+Observação comporta até 20 valores escalares Unicode. Valor acima do base registra
+acréscimo individual sem alterar o contrato-base. Sucesso confirmado retorna 200 com o
+detalhe completo e revisão nova; ID de recebimento é gerado no servidor. Não existe
+recurso GET individual para o recebimento, portanto não há `Location`.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "parcelaId": "parcela-1",
+  "valorRecebidoCentavos": 11000,
+  "data": "2027-03-12",
+  "forma": "Pix",
+  "observacao": "Acréscimo aplicado",
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "5"
+}
+```
+
+O contrato não oferece idempotency key nem retry automático. Em timeout/desconexão, o
+consumidor deve consultar o detalhe/revisão antes de decidir nova ação; uma repetição cega
+pode atingir parcela já paga ou causar conflito se o primeiro comando foi confirmado.
+Todas as respostas comerciais incluem `Cache-Control: no-store`.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~RegistrarPagamentoEndpointTests|FullyQualifiedName~RegistrarPagamentoSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~RegistrarPagamentoHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes HTTP/SQLite (dois novos de endpoint e os dois de aplicação SQLite)
+e 5 unitários do handler aprovados; build Release com 0 avisos/erros e verificação de
+formato aprovados. Testes confirmam baixa da terceira parcela futura após duas anteriores,
+acréscimo de 1.000 sobre base 10.000, nota de 20 emojis (valores escalares), revisão/IDs/
+alocações após reabertura, ausência de `Location` e ID gerado mesmo com propriedade extra
+`recebimentoId`. Salto, repetição, valor menor, data após referência, formas inválidas,
+nota acima do limite e venda Inativa falham sem save; uma baixa válida posterior confirma
+que a primeira parcela continua sendo o alvo. Centavos enviados como string retornam 400
+com campo público `valorRecebidoCentavos`. Fixtures/SQLite são sintéticos e temporários;
+não houve acesso a banco operacional.
+
+## Correção HTTP de recebimento individual (API-04/4.5)
+
+`PUT /api/v1/recebimentos` exige Bearer e `application/json`, com `vendaId`,
+`recebimentoId`, `valorRecebidoCentavos`, `data`, `forma`, `referencia` e
+`revisaoEsperada` (string decimal canônica); `observacao` é opcional/nullable. Não recebe
+`parcelaId`: a correção usa e preserva a alocação original. Somente recebimentos de origem
+Individual em venda Ativa são corrigíveis; entrada/lote, venda não Ativa, ID ausente ou
+pertencente a outra venda têm falhas tipadas distintas. O mínimo continua sendo o valor-base
+da parcela, e o acréscimo é recalculado como valor corrigido menos base. Sucesso confirmado
+retorna 200 com detalhe e revisão nova; ID, ordem, alocação, contrato-base e demais
+recebimentos são preservados. Não há `Location` porque não se cria novo recurso. Mesmo
+payload de correção é uma confirmação de escrita e avança a revisão uma vez, sem duplicar
+o recebimento.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "recebimentoId": "recebimento-1",
+  "valorRecebidoCentavos": 10500,
+  "data": "2027-03-10",
+  "forma": "CartaoCredito",
+  "observacao": "Corrigido em março",
+  "referencia": "2027-03-31",
+  "revisaoEsperada": "5"
+}
+```
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~CorrigirPagamentoEndpointTests|FullyQualifiedName~CorrigirPagamentoSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~CorrigirPagamentoHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes HTTP/SQLite (dois de endpoint e dois de aplicação SQLite) e 5
+unitários do handler aprovados; build Release com 0 avisos/erros e verificação de formato
+aprovados. A correção reduz o acréscimo de 1.000 para 500 centavos e move a data de
+fevereiro para março: consultas por período passam a totalizar 20.000 em fevereiro e 10.500
+em março. Reenvio idêntico, com revisão atual, incrementa revisão sem duplicar ID; SQLite
+reaberto confirma IDs, ordem, vínculo à parcela, saldos das demais e outra venda intactos.
+IDs ausentes/externos, entrada, lote, venda Inativa, valor menor, data posterior à
+referência, forma inválida, observação acima de 20 valores escalares e revisão obsoleta
+retornam status/códigos esperados sem save. Arquivos e dados são sintéticos/temporários;
+não houve acesso a banco operacional.
+
+## Verificação HTTP transversal de concorrência e confirmação (API-05/5.1)
+
+Os cenários abaixo complementam — não substituem — os testes próprios de cada endpoint.
+Dois `HttpClient`s independentes disputam comandos distintos na revisão 1 por uma barreira
+após ambos carregarem a mesma revisão. Com SQLite real, um recebe 200/revisão 2, o outro
+409 `conflito-revisao`; após descartar o host, reabrir o banco confirma revisão 2, conjunto
+completo e alteração somente da venda vencedora, sem retry do handler.
+
+No cancelamento pré-commit, o cliente HTTP cancela enquanto o gravador SQLite real está
+dentro da transação, após a primeira alteração e antes da confirmação. O token recebido
+pela intervenção transacional é observado cancelado; o pedido termina sem resposta de
+sucesso/erro comercial e a reabertura confirma revisão e venda originais. O caso tardio
+usa `RequestAborted` controlado no TestServer: o hook confirma o commit SQLite, cancela o
+token e retorna; a API mantém 200 e revisão confirmada. Isso testa a ordem do token e do
+commit sem alegar que uma resposta possa chegar após uma desconexão de rede real.
+
+Para confirmação indeterminada, um hook de teste lança `IOException` sintética depois de
+confirmar um commit SQLite real. A resposta HTTP é 500 Problem Details com
+`codigo: "confirmacao-indeterminada"` e `resultadoOperacao: "indeterminado"`, sem revisão,
+sucesso ou alegação de rollback. Contadores do armazenamento no limite do handler mostram
+uma carga inicial e uma tentativa de save, sem nova carga nem retry após a falha; ao
+reabrir, o teste comprova que o commit aconteceu. Essa falha de confirmação é injetada pelo
+seam de teste, não é falha nativa do SQLite/SO; não se simularam desconexão de rede real,
+perda de energia ou falha nativa durante o commit. Em timeout/desconexão, a entrega da
+resposta e o desfecho podem permanecer desconhecidos; consumidores não devem repetir
+comandos cegamente e precisam conferir o estado antes de decidir.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConcorrenciaCommandsEndpointTests|FullyQualifiedName~ConcorrenciaCommandsSqliteTests|FullyQualifiedName~GravadorVendasSqliteTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 21 testes de integração direcionados aprovados (4 HTTP transversais, concorrência
+de Commands no nível de aplicação e testes do gravador SQLite); build Release com 0
+avisos/erros e verificação de formato aprovados. Os testes usam apenas IDs, dados e arquivos
+sintéticos/temporários; nenhum banco operacional foi acessado. A cobertura não prova
+entrega após desconexão real nem falha nativa de confirmação.
+
+## Auditoria transversal HTTP, privacidade e logs (API-05/5.2)
+
+### Matriz de rotas e contratos
+
+As seis consultas e os cinco comandos têm testes HTTP/SQLite específicos, além dos
+testes de contratos JSON/query e do adaptador de erros. A matriz identifica a cobertura
+principal sem substituir os cenários detalhados por operação:
+
+| Operação | Teste HTTP/SQLite principal |
+| --- | --- |
+| `GET /api/v1/vendas/detalhe` | `ConsultarVendaDetalheEndpointTests` |
+| `GET /api/v1/vendas` | `ConsultarColecaoVendasEndpointTests` |
+| `GET /api/v1/resumo` | `ConsultarResumoEndpointTests` |
+| `GET /api/v1/periodo` | `ConsultarPeriodoEndpointTests` |
+| `GET /api/v1/relatorios/mensal` | `ConsultarRelatorioMensalEndpointTests` |
+| `GET /api/v1/visao-geral` | `ConsultarVisaoGeralEndpointTests` |
+| `POST /api/v1/vendas` | `CadastrarVendaEndpointTests` |
+| `PUT /api/v1/vendas/cliente` | `EditarClienteVendaEndpointTests` |
+| `PUT /api/v1/vendas/status` | `AlterarStatusVendaEndpointTests` |
+| `POST /api/v1/recebimentos` | `RegistrarPagamentoEndpointTests` |
+| `PUT /api/v1/recebimentos` | `CorrigirPagamentoEndpointTests` |
+
+`ContratoApiJsonTests`, `LeitorObjetoJsonTests` e `ParametrosQueryApiTests` cobrem
+camelCase, campos requeridos/null/default, duplicatas, propriedades desconhecidas,
+datas civis/extremos, enums textuais, centavos e revisão decimal textual canônica.
+Os testes por operação verificam os mappers, ordens, vínculos, nulabilidade e os campos
+aplicáveis do contrato. Em particular, `CadastrarVendaEndpointTests` confirma no JSON
+de sucesso os dados previstos do cliente — nome, CPF, telefone e descrição nula — além
+dos valores e parcelas; dados cadastrais são deliberadamente preservados em sucesso e
+não mascarados na resposta contratada.
+
+### Status, autenticação, cache e superfícies ausentes
+
+| Verificação | Evidência observada |
+| --- | --- |
+| 401 antes de binding, challenge Bearer e `no-store` | `PrivacidadeHttpTests` envia Bearer incorreto e JSON malformado contra o host real, em Development e Production; `AutenticacaoBearerLocalTests` complementa ausência, credencial incorreta/duplicada e contador sem chamada do handler. |
+| 400 / 404 / 409 / 422 | `PrivacidadeHttpTests.CategoriasComerciaisMantemStatusEProblemDetailsNosDoisAmbientes` atravessa o host real em Development e Production; testes HTTP individuais e `AdaptadorResultadosApiTests` ampliam binding, regras/campos e combinações de erros. |
+| 405 / 413 / 415 em ambos ambientes | `FalhasTecnicasTests.BadHttpRequest_PreservaStatusEProblemDetailsNosDoisAmbientes`; endpoints também cobrem content type inválido com binding/composição reais. |
+| 503 em ambos ambientes | `PrivacidadeHttpTests.BancoAusenteAposInicializacao_Retorna503HttpSemCaminhoNoProblema` remove apenas o SQLite temporário após o startup e confirma `banco-ausente`, `no-store`, Problem Details coerente e ausência de recriação/caminho. |
+| 500 genérico em ambos ambientes | `FalhasTecnicasTests` e `PrivacidadeHttpTests` conferem status/corpo; 500 indeterminado após commit real é coberto por `ConcorrenciaCommandsEndpointTests`. |
+| `no-store` em sucesso/falhas comerciais | Testes de endpoint conferem respostas de operações; os cenários transversais acima verificam explicitamente 401, 500 e 503. |
+| CORS, cookies, login, OpenAPI e rotas de teste | `RotasNaoImplementadasTests`/`HealthEndpointTests` confirmam health público textual, ausência de `Access-Control-Allow-Origin`, cookies/redirecionamento, `/swagger`, `/openapi/v1.json`, rotas antigas e `/__test/failure` no host normal. |
+
+### Captura de logs e limitação
+
+`PrivacidadeHttpTests.ExcecaoComMarcadoresPrivados_Retorna500GenericoESemVazamentoEmLogsDoHost`
+injeta no host real, em Development e Production, uma exceção sintética que contém
+segredo Bearer válido, CPF, telefone, marcador de caminho, SQL e texto de exceção. A
+requisição inclui o segredo no header, CPF/telefone no query/body e o marcador no caminho;
+a exceção sintética contém todas as sentinelas e o SQL. Um `ILoggerProvider` de teste
+captura todos os níveis desde Trace, estado formatado, exceção e scopes. O teste comprova
+que nenhuma delas está no Problem Details ou nos logs capturados,
+incluindo a saída automática do middleware de exceção .NET 10. O comportamento
+observado depende do handler central tratar a exceção e da supressão padrão de
+diagnósticos de exceções tratadas no runtime alvo; não é promessa de sanitização de
+qualquer provider de logging que uma integração futura venha a adicionar.
+
+O caso cobre falha controlada no pipeline e não representa captura de tráfego de rede,
+telemetria externa, dumps/processo ou comportamento de provedores de logging futuros.
+Os testes anteriores de autenticação continuam verificando ausência do Bearer nos logs
+e nas respostas. Somente sentinelas sintéticas e o banco descartável são usados.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~VendasEmAberto.UnitTests.Api"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados reproduzidos em 27/11/2026 com SDK `10.0.404`: suíte completa de integração,
+143 aprovados, 0 falhas e 0 ignorados; suíte unitária da API, 33 aprovados, 0 falhas e
+0 ignorados; build Release com 0 avisos/erros; verificação de formato e `git diff --check`
+aprovados. A execução focada inicial de `PrivacidadeHttpTests` também passou (6 testes).
+Todos os testes usam dados sintéticos e arquivos SQLite temporários; não houve acesso
+a banco operacional. No marco 5.2 ainda não tinham sido executados restore, frontend ou
+smoke da DLL em processo próprio; os dois primeiros foram concluídos em 5.3 e o smoke
+está registrado na seção 5.4 abaixo.
+
+## Regressão final, grafo de dependências e frontend independente (API-05/5.3)
+
+O backend usa SDK `10.0.404` conforme `global.json`, MSTest.Sdk `4.5.3` e
+`net10.0`. Em 27/11/2026, na ordem exigida, foram executados:
+
+```powershell
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build --list-tests
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+dotnet list VendasEmAberto.slnx package --include-transitive
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+```
+
+Restore bloqueado concluiu para os seis projetos. Build Release: 0 avisos e 0 erros.
+Suíte MSTest: 389 aprovados, 0 falhas e 0 ignorados; descoberta: 143 testes de
+integração + 246 unitários = 389. Formatação passou. A listagem transitiva confirmou
+que `VendasEmAberto.Api` referencia Aplicacao e Infraestrutura e recebe EF Core/SQLite
+transitivamente pelo composition root Infraestrutura; Aplicacao referencia Domínio;
+Domínio não tem referências de projeto nem pacotes e busca dos fontes não encontrou
+tipos/namespaces HTTP. A auditoria `--vulnerable --include-transitive` não reportou
+pacotes vulneráveis nos seis projetos, usando NuGet.org e
+`C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\`, fontes disponíveis no ambiente.
+O comando de listagem também confirmou as versões resolvidas;
+não houve atualização intencional de dependências ou lockfiles.
+
+Frontend, executado em `frontend/` com Node `v24.21.0` e npm `11.19.0`, compatíveis
+com `package.json`. `node_modules` já existia, portanto `npm ci` não foi necessário;
+`package-lock.json` foi preservado. Antes dos comandos não havia listener na porta 5070
+e nenhum processo de API foi iniciado. Foram executados:
+
+```powershell
+npm.cmd test -- --watch=false
+npm.cmd run build
+```
+
+Testes: 33 arquivos e 430 testes aprovados. Build Angular completou e gerou
+`frontend/dist/vendas-em-aberto`. Os dois comandos passaram sem API ligada; os testes
+do frontend continuam sem depender do backend. Naquele marco, o smoke de processo/listener
+real da DLL ficou reservado à tarefa 5.4 e seu resultado está detalhado abaixo. `git status` e `git diff --check` não
+apontaram alterações de lockfile ou artefatos versionados após as verificações.
+
+## Smoke da DLL Release e rastreabilidade final (API-05/5.4)
+
+### Smoke em processo próprio
+
+Em 27/11/2026 foi executada a DLL Release existente
+`src/VendasEmAberto.Api/bin/Release/net10.0/VendasEmAberto.Api.dll` em processo
+`dotnet` próprio, ambiente Production, porta loopback livre escolhida pelo sistema,
+SQLite sob diretório temporário aprovado e dois segredos Base64 aleatórios diferentes
+(32 bytes) somente nas variáveis do processo. Nenhum valor de segredo é persistido
+neste documento. Resultado efetivo:
+
+| Passo | Resultado observado |
+| --- | --- |
+| Startup/preparação | Banco temporário novo preparado antes da primeira resposta; arquivo SQLite não vazio. |
+| Fronteira de rede | `Get-NetTCPConnection` identificou apenas listener `127.0.0.1`, de propriedade do processo iniciado pelo smoke. |
+| Health | `GET /health` sem credencial retornou 200, `text/plain`, `Healthy`. |
+| Sem credencial | Consulta comercial retornou 401 Problem Details `acesso-local-negado`, challenge Bearer e `no-store`, sem eco de configuração sensível. |
+| Cadastro/Location | `POST /api/v1/vendas` criou venda sintética, retornou 201, revisão textual `1` e Location relativo; GET autenticado pela Location preservou ID, CPF e telefone sintéticos. |
+| Baixa | `POST /api/v1/recebimentos` quitou a única parcela, retornou 200 e revisão `2`. |
+| Reinício/rotação | Primeiro processo próprio encerrado e porta reaberta por listener de prova. Segundo startup no mesmo SQLite, com outro segredo, conservou venda, ID da parcela, recebimento/alocação e revisão `2`; segredo anterior recebeu 401 e segredo novo consultou a venda. |
+| Limpeza/privacidade | Segundo processo próprio encerrado, porta temporária novamente vinculável e diretório de smoke removido. stdout/stderr dos dois processos foram conferidos contra segredos, CPF, telefone, caminho do banco e marcadores sintéticos de SQL/exceção; nenhuma ocorrência foi encontrada. |
+
+O smoke não emitiu uma falha nativa de SQL/commit nem lançou uma exceção com os
+marcadores: a captura dessas condições e de logging automático é comprovada pelos
+testes de host `PrivacidadeHttpTests` e `ConcorrenciaCommandsEndpointTests`, não por
+esse processo de smoke. Também não prova a entrega da resposta após desconexão de rede.
+Durante o desenvolvimento do script auxiliar, uma tentativa não avançou por chamada
+de RNG indisponível no PowerShell 5.1 e outra assertion usou o caminho incorreto da
+alocação JSON (`recebimentos[0].alocacoes[0].parcelaId`); scripts corrigidos passaram
+integralmente. Não houve falha da DLL, e os processos/artefatos de cada tentativa
+foram limpos.
+
+### Matriz PRD → deltas OpenSpec → evidência executada
+
+A tabela lista todos os cenários nomeados de `api-local-vendas/spec.md` e
+`casos-de-uso-vendas/spec.md`; um cenário pode contribuir para mais de um CA. Os nomes
+mantêm a referência auditável à spec, enquanto a coluna de evidência aponta os testes
+reproduzidos e o smoke quando aplicável.
+
+| CA | Cenários de `api-local-vendas` | Cenários de `casos-de-uso-vendas` | Evidência/resultado |
+| --- | --- | --- | --- |
+| CA-061 | `Primeiro uso e reinicialização`; `Configuração inválida antes de I/O`; `Destino indisponível ou incompatível`; `Conservar fronteira de rede` | `Iniciar API sem banco`; `Composição não substitui preparação`; `Executar consumidores internos e frontend independentemente` | `ConfiguracaoHostApiTests`, grafo/API e smoke Release: preparação explícita, validações e loopback. Frontend 430 testes/build sem API. Sem banco operacional. |
+| CA-062 | `Negar antes de executar operação`; `Aceitar credencial da execução corrente`; `Body inválido sem autenticação`; `Health sem credencial e com origem arbitrária`; `Rotas antigas e de template permanecem ausentes` | `Iniciar API sem banco` (health público e `/vendas` 404) | `AutenticacaoBearerLocalTests`, `HealthEndpointTests`, `RotasNaoImplementadasTests`, `PrivacidadeHttpTests` e smoke: 401/challenge/no-store antes do binding, health textual, sem cookies/CORS/login e segredo antigo recusado após rotação. |
+| CA-063 | `Rotas e entradas dos comandos`; `Cadastrar e reabrir pela localização confirmada`; `No-op e conflito`; `Receber e corrigir sem alterar identidade` | `Mudança administrativa e histórico preservado` (efeitos das transições nos dados e resumos) | Testes HTTP/SQLite dos cinco comandos conferem retorno/revisão, no-op/conflito, reabertura, identidade/histórico; smoke cobriu cadastro/Location/consulta e baixa confirmada após restart. |
+| CA-064 | `Rotas e seletores das consultas`; `Consulta vazia e detalhe inexistente`; `Respeitar universos e período` | `Executar consumidores internos e frontend independentemente` (consultas internas/frontend permanecem isolados) | Testes HTTP/SQLite de detalhe, coleções, resumo, período e mensal; vazios, 404, datas, ordens, universos e ausência de escrita. Frontend permaneceu sem API. |
+| CA-065 | `Rotas e seletores das consultas` (rota consolidada `/visao-geral`) | `Indicadores e itens coerentes`; `Banco vazio e respostas protegidas`; `Ordenação e desempate com mais de cinco elegíveis`; `Bordas da janela e calendário extremo`; `Mudança administrativa e histórico preservado` | Testes unitários/SQLite/HTTP de handler e endpoint: snapshot único, revisão/referência coerentes, listas protegidas, limite/empate, bordas 0001/9999 e transições; sem escrita/fan-out. |
+| CA-066 | `No-op e conflito`; `Receber e corrigir sem alterar identidade`; `Dois consumidores disputam revisão`; `Confirmação indeterminada`; `Cancelamento e desconexão` | `Mudança administrativa e histórico preservado` | `ConcorrenciaCommandsEndpointTests`: SQLite real confirma no máximo um concorrente, cancelamento antes/depois do commit e double de confirmação indeterminada sem retry/alegação de rollback. Não simula falha nativa de commit nem desconexão física. |
+| CA-067 | `Preservar revisão além da precisão JavaScript`; `Recusar revisão e dinheiro de tipos incorretos`; `Preservar identificador reservado`; `Exigir referência e formato civil exato`; `Enums e nulabilidade explícitos`; `Entrada estrutural ausente ou duplicada`; `Content type incorreto`; `Campo extra não amplia edição` | `Indicadores e itens coerentes` (referência/revisão comum nas projeções) | `ContratoApiJsonTests`, `LeitorObjetoJsonTests`, `ParametrosQueryApiTests` e testes dos endpoints: centavos/revisões literais, IDs, query/body, datas/extremos, enums, null/default/duplicatas e binding sem efeito. |
+| CA-068 | `Negar antes de executar operação`; `Body inválido sem autenticação`; `Entrada estrutural ausente ou duplicada`; `Content type incorreto`; `Traduzir categorias e preservar campos`; `Falha técnica ou resultado inválido`; `Proteger corpo e cache`; `Cancelamento e desconexão` | `Composição não substitui preparação` (ausência do armazenamento tratada sem criação implícita) | `FalhasTecnicasTests`, `AdaptadorResultadosApiTests`, `PrivacidadeHttpTests` e testes de concorrência: status/Problem Details em Development/Production, 400/404/409/422/415/500/503, `no-store` e marcadores de segredo/CPF/telefone/caminho/SQL/exceção ausentes de respostas/logs. Captura cobre o provider de teste e logging tratado .NET 10, não providers externos futuros. |
+
+### Fechamento e limitações
+
+Em 27/11/2026 foram concluídas 21/21 tarefas. Além do smoke, a regressão registrada
+na seção 5.3 passou: restore bloqueado, build Release (0 avisos/erros), MSTest
+389/389, descoberta 389, format, auditoria NuGet sem vulnerabilidades nas fontes
+consultadas e frontend 430 testes/build com API desligada. `openspec validate
+fase-005-contrato-e-api-local --strict` e `git diff --check` foram executados após a
+atualização dos artefatos e passaram. A revisão final confirmou somente arquivos
+pertencentes à Change/PRD/TDD/README/tasks: nenhum dado real, banco, saída de smoke,
+mudança de schema, frontend, Tauri ou manutenção de outra Change foi incluído.
+
+Resultado técnico não representa homologação da ótica, validação com vendas reais,
+garantia contra processo/usuário local comprometido, falhas de provedores externos de
+logs, falha nativa real de confirmação ou garantia de entrega HTTP após desconexão.
+Esses limites permanecem explícitos.
+
+Após autorização de sincronização, `openspec/specs/api-local-vendas/spec.md` foi criado
+com Purpose copiado literalmente e 9 requisitos/30 cenários; a capability existente
+`casos-de-uso-vendas` preservou seu Purpose e conteúdo não relacionado, atualizou a
+requirement de isolamento e recebeu 2 requirements/5 cenários de Visão Geral. Os três
+blocos de requirements das deltas foram comparados literalmente com as specs principais
+(normalizando somente finais de linha). As duas capabilities afetadas passaram
+`openspec validate <capability> --type spec --strict`; `openspec validate --specs`
+aprovou 12 specs sem erros. A tentativa mais ampla `openspec validate --specs --strict`
+continua apontando descrições >500 caracteres em três capabilities não alteradas
+(`consulta-vendas`, `dominio-vendas`, `temas-visuais`); não foram editadas por estarem
+fora do escopo. A validação estrita da Change também passou. A Change foi arquivada em
+`openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`; metadados e os
+21 checks concluídos foram conferidos após o movimento. Próximo passo: PR único da
+feature; merge depende de revisão e autorização explícita.

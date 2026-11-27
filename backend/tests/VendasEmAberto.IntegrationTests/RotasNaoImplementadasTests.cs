@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Hosting;
 using System.Net;
 
 namespace VendasEmAberto.IntegrationTests;
@@ -10,14 +8,10 @@ public sealed class RotasNaoImplementadasTests
     [TestMethod]
     public async Task RotasComerciais_Retornam404SemLoginOuRedirecionamento()
     {
-        using var factory = new WebApplicationFactory<Program>();
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            HandleCookies = false
-        });
+        await using var fixture = await HostApiFixture.CriarAsync();
+        var client = fixture.Cliente;
 
-        foreach (var rota in new[] { "/vendas", "/pagamentos" })
+        foreach (var rota in new[] { "/vendas", "/pagamentos", "/api/v1/rota-ausente" })
         {
             using var resposta = await client.GetAsync(rota);
 
@@ -30,8 +24,8 @@ public sealed class RotasNaoImplementadasTests
     [TestMethod]
     public async Task RotasDeTemplateEOpenApi_NaoExistem()
     {
-        using var factory = new WebApplicationFactory<Program>();
-        using var client = factory.CreateClient();
+        await using var fixture = await HostApiFixture.CriarAsync();
+        var client = fixture.Cliente;
 
         foreach (var rota in new[] { "/weatherforecast", "/openapi/v1.json", "/swagger" })
         {
@@ -46,12 +40,8 @@ public sealed class RotasNaoImplementadasTests
     [DataRow("Production")]
     public async Task RotaDeFalhaUsadaPelosTestes_NaoExisteNoHost(string ambiente)
     {
-        using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment(ambiente));
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false
-        });
+        await using var fixture = await HostApiFixture.CriarAsync(ambiente);
+        var client = fixture.Cliente;
 
         using var resposta = await client.GetAsync("/__test/failure");
 
@@ -61,8 +51,8 @@ public sealed class RotasNaoImplementadasTests
     [TestMethod]
     public async Task OrigemWebArbitraria_NaoRecebePermissaoCors()
     {
-        using var factory = new WebApplicationFactory<Program>();
-        using var client = factory.CreateClient();
+        await using var fixture = await HostApiFixture.CriarAsync();
+        var client = fixture.Cliente;
         using var requisicao = new HttpRequestMessage(HttpMethod.Get, "/health");
         requisicao.Headers.Add("Origin", "https://origem-invalida.example");
 

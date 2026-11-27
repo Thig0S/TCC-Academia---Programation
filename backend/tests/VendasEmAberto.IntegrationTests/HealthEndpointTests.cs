@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 
 namespace VendasEmAberto.IntegrationTests;
@@ -9,8 +8,8 @@ public sealed class HealthEndpointTests
     [TestMethod]
     public async Task Health_RetornaHealthyEmTextoSemCookiesOuMutacao()
     {
-        using var factory = new WebApplicationFactory<Program>();
-        using var client = factory.CreateClient();
+        await using var fixture = await HostApiFixture.CriarAsync();
+        var client = fixture.Cliente;
 
         using var primeiraResposta = await client.GetAsync("/health");
         var primeiroCorpo = await primeiraResposta.Content.ReadAsStringAsync();

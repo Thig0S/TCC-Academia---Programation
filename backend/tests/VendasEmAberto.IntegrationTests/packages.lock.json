@@ -546,7 +546,8 @@
       "vendasemaberto.api": {
         "type": "Project",
         "dependencies": {
-          "VendasEmAberto.Aplicacao": "[1.0.0, )"
+          "VendasEmAberto.Aplicacao": "[1.0.0, )",
+          "VendasEmAberto.Infraestrutura": "[1.0.0, )"
         }
       },
       "vendasemaberto.aplicacao": {
