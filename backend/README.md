@@ -296,8 +296,8 @@ trata explicitamente `BadHttpRequestException` para preservar 400/405/413/415 em
 de convertê-los em 500; `UseStatusCodePages` cobre 405/413 produzidos pelo pipeline.
 Não se promete tradução de códigos ou categorias que não estejam allowlisted: eles
 falham fechados como erro interno genérico. A verificação desta tarefa cobre respostas
-em Development e Production; a auditoria de logging automático e marcadores nos logs
-fica para a tarefa transversal API-05/5.2.
+em Development e Production; a auditoria transversal do logging automático e dos
+marcadores nos logs está registrada em API-05/5.2.
 
 Verificações executadas em 26/11/2026 com o SDK isolado `10.0.404`:
 
@@ -2348,3 +2348,82 @@ de Commands no nível de aplicação e testes do gravador SQLite); build Release
 avisos/erros e verificação de formato aprovados. Os testes usam apenas IDs, dados e arquivos
 sintéticos/temporários; nenhum banco operacional foi acessado. A cobertura não prova
 entrega após desconexão real nem falha nativa de confirmação.
+
+## Auditoria transversal HTTP, privacidade e logs (API-05/5.2)
+
+### Matriz de rotas e contratos
+
+As seis consultas e os cinco comandos têm testes HTTP/SQLite específicos, além dos
+testes de contratos JSON/query e do adaptador de erros. A matriz identifica a cobertura
+principal sem substituir os cenários detalhados por operação:
+
+| Operação | Teste HTTP/SQLite principal |
+| --- | --- |
+| `GET /api/v1/vendas/detalhe` | `ConsultarVendaDetalheEndpointTests` |
+| `GET /api/v1/vendas` | `ConsultarColecaoVendasEndpointTests` |
+| `GET /api/v1/resumo` | `ConsultarResumoEndpointTests` |
+| `GET /api/v1/periodo` | `ConsultarPeriodoEndpointTests` |
+| `GET /api/v1/relatorios/mensal` | `ConsultarRelatorioMensalEndpointTests` |
+| `GET /api/v1/visao-geral` | `ConsultarVisaoGeralEndpointTests` |
+| `POST /api/v1/vendas` | `CadastrarVendaEndpointTests` |
+| `PUT /api/v1/vendas/cliente` | `EditarClienteVendaEndpointTests` |
+| `PUT /api/v1/vendas/status` | `AlterarStatusVendaEndpointTests` |
+| `POST /api/v1/recebimentos` | `RegistrarPagamentoEndpointTests` |
+| `PUT /api/v1/recebimentos` | `CorrigirPagamentoEndpointTests` |
+
+`ContratoApiJsonTests`, `LeitorObjetoJsonTests` e `ParametrosQueryApiTests` cobrem
+camelCase, campos requeridos/null/default, duplicatas, propriedades desconhecidas,
+datas civis/extremos, enums textuais, centavos e revisão decimal textual canônica.
+Os testes por operação verificam os mappers, ordens, vínculos, nulabilidade e os campos
+aplicáveis do contrato. Em particular, `CadastrarVendaEndpointTests` confirma no JSON
+de sucesso os dados previstos do cliente — nome, CPF, telefone e descrição nula — além
+dos valores e parcelas; dados cadastrais são deliberadamente preservados em sucesso e
+não mascarados na resposta contratada.
+
+### Status, autenticação, cache e superfícies ausentes
+
+| Verificação | Evidência observada |
+| --- | --- |
+| 401 antes de binding, challenge Bearer e `no-store` | `PrivacidadeHttpTests` envia Bearer incorreto e JSON malformado contra o host real, em Development e Production; `AutenticacaoBearerLocalTests` complementa ausência, credencial incorreta/duplicada e contador sem chamada do handler. |
+| 400 / 404 / 409 / 422 | `PrivacidadeHttpTests.CategoriasComerciaisMantemStatusEProblemDetailsNosDoisAmbientes` atravessa o host real em Development e Production; testes HTTP individuais e `AdaptadorResultadosApiTests` ampliam binding, regras/campos e combinações de erros. |
+| 405 / 413 / 415 em ambos ambientes | `FalhasTecnicasTests.BadHttpRequest_PreservaStatusEProblemDetailsNosDoisAmbientes`; endpoints também cobrem content type inválido com binding/composição reais. |
+| 503 em ambos ambientes | `PrivacidadeHttpTests.BancoAusenteAposInicializacao_Retorna503HttpSemCaminhoNoProblema` remove apenas o SQLite temporário após o startup e confirma `banco-ausente`, `no-store`, Problem Details coerente e ausência de recriação/caminho. |
+| 500 genérico em ambos ambientes | `FalhasTecnicasTests` e `PrivacidadeHttpTests` conferem status/corpo; 500 indeterminado após commit real é coberto por `ConcorrenciaCommandsEndpointTests`. |
+| `no-store` em sucesso/falhas comerciais | Testes de endpoint conferem respostas de operações; os cenários transversais acima verificam explicitamente 401, 500 e 503. |
+| CORS, cookies, login, OpenAPI e rotas de teste | `RotasNaoImplementadasTests`/`HealthEndpointTests` confirmam health público textual, ausência de `Access-Control-Allow-Origin`, cookies/redirecionamento, `/swagger`, `/openapi/v1.json`, rotas antigas e `/__test/failure` no host normal. |
+
+### Captura de logs e limitação
+
+`PrivacidadeHttpTests.ExcecaoComMarcadoresPrivados_Retorna500GenericoESemVazamentoEmLogsDoHost`
+injeta no host real, em Development e Production, uma exceção sintética que contém
+segredo Bearer válido, CPF, telefone, marcador de caminho, SQL e texto de exceção. A
+requisição inclui o segredo no header, CPF/telefone no query/body e o marcador no caminho;
+a exceção sintética contém todas as sentinelas e o SQL. Um `ILoggerProvider` de teste
+captura todos os níveis desde Trace, estado formatado, exceção e scopes. O teste comprova
+que nenhuma delas está no Problem Details ou nos logs capturados,
+incluindo a saída automática do middleware de exceção .NET 10. O comportamento
+observado depende do handler central tratar a exceção e da supressão padrão de
+diagnósticos de exceções tratadas no runtime alvo; não é promessa de sanitização de
+qualquer provider de logging que uma integração futura venha a adicionar.
+
+O caso cobre falha controlada no pipeline e não representa captura de tráfego de rede,
+telemetria externa, dumps/processo ou comportamento de provedores de logging futuros.
+Os testes anteriores de autenticação continuam verificando ausência do Bearer nos logs
+e nas respostas. Somente sentinelas sintéticas e o banco descartável são usados.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~VendasEmAberto.UnitTests.Api"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados reproduzidos em 27/11/2026 com SDK `10.0.404`: suíte completa de integração,
+143 aprovados, 0 falhas e 0 ignorados; suíte unitária da API, 33 aprovados, 0 falhas e
+0 ignorados; build Release com 0 avisos/erros; verificação de formato e `git diff --check`
+aprovados. A execução focada inicial de `PrivacidadeHttpTests` também passou (6 testes).
+Todos os testes usam dados sintéticos e arquivos SQLite temporários; não houve acesso
+a banco operacional. Não foram executados nesta tarefa restore, frontend nem smoke da
+DLL em processo próprio; esses itens permanecem para as tarefas 5.3 e 5.4.
