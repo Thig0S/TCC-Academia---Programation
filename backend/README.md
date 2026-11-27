@@ -1708,8 +1708,9 @@ com mensagem que identifica a chave suportada. Não configurar `--urls`,
 host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
 também são rejeitados. O host só começa a escutar depois de preparar o banco; `/health`
 indica que o processo está ativo após essa preparação, mas não garante disponibilidade
-de cada operação comercial. A API ainda não tem autenticação comercial nem integração
-Angular, importação da planilha ou Tauri.
+de cada operação comercial. O host ainda não expõe operações comerciais; o grupo
+versionado preparado para elas usa Bearer local. Não há integração Angular,
+importação da planilha ou Tauri.
 
 ## Falhas técnicas e segurança das respostas
 
@@ -1785,5 +1786,52 @@ e porta livre: health respondeu `200 text/plain Healthy`, o listener observado f
 `127.0.0.1`, o banco foi preparado, a saída não continha caminho/segredo e o processo
 foi encerrado com a porta liberada. Processos negativos recusaram segredo fornecido
 somente por argumento e pai inexistente antes de criar banco/diretório ou manter
-listener. Essa etapa não exercita autenticação comercial, ainda não implementada; nem
-substitui o smoke completo de API-05/5.4.
+listener. Essa etapa não exercitou autenticação comercial; os testes HTTP da tarefa
+API-01/1.4 abaixo cobrem o esquema. Nem esta etapa nem os testes substituem o smoke
+completo de API-05/5.4.
+
+## Credencial comercial local (API-01/1.4)
+
+O grupo `/api/v1` exige uma única credencial `Authorization: Bearer <segredo>`. O
+segredo é exatamente o valor Base64 canônico de 32 bytes configurado em
+`Backend__SegredoLocal` no ambiente do processo. Não há fallback em appsettings ou
+argumentos, JWT, conta de funcionário, cookie, endpoint de login ou CORS. O esquema
+decodifica a credencial recebida e compara os bytes com
+`CryptographicOperations.FixedTimeEquals`; formato inválido, credencial ausente,
+incorreta ou duplicada não autentica. As respostas comerciais do prefixo `/api/v1`
+usam `Cache-Control: no-store`, inclusive challenge 401, sucesso e falhas.
+
+Gere uma credencial nova no iniciador e defina-a no ambiente do processo sem colocá-la
+em argumento, arquivo, URL ou log. Exemplo em PowerShell, antes de iniciar o host:
+
+```powershell
+$env:Backend__SegredoLocal = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+O cliente deve enviar esse valor somente no header `Authorization`; não o registre em
+URL ou telemetria. Uma nova execução pode receber outro segredo: tokens da execução
+anterior deixam de autenticar após reiniciar com a credencial nova. `GET /health`
+continua público, textual e sem cookie; rotas ausentes permanecem 404, sem redirect
+para login. A proteção é de processo local, não identidade humana nem fronteira contra
+outro processo com o mesmo usuário/permissões; loopback, segredo e `no-store` não
+substituem isolamento do sistema operacional nem protegem um iniciador/usuário
+comprometido.
+
+Verificações da autenticação local executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConfiguracaoBackendTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AutenticacaoBearerLocalTests|FullyQualifiedName~HealthEndpointTests|FullyQualifiedName~RotasNaoImplementadasTests|FullyQualifiedName~FalhasTecnicasTests|FullyQualifiedName~ConfiguracaoHostApiTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 27 testes unitários de configuração e 25 testes de integração (3 de
+autenticação, 6 de startup/configuração e 16 regressões de health, rotas e falhas)
+passaram; build Release com 0 avisos/erros e verificação de formato passaram. Os testes
+verificam challenge/corpo Problem Details seguro e `no-store` para credencial ausente,
+incorreta/duplicada; 401 antes do binding de JSON inválido; execução do handler só
+após autenticação; sucesso/falha sem cache; troca do segredo entre inicializações;
+e ausência de credenciais capturadas em respostas/logs. O handler usa comparação
+constante de bytes. As rotas comerciais de produção ainda serão adicionadas nas
+próximas tarefas; a suíte monta endpoints de prova somente em TestServer.

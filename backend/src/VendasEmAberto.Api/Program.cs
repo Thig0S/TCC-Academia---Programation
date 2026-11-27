@@ -1,6 +1,7 @@
 using VendasEmAberto.Api.Configuracao;
 using VendasEmAberto.Api.Contratos;
 using VendasEmAberto.Api.Erros;
+using VendasEmAberto.Api.Seguranca;
 using VendasEmAberto.Aplicacao.Composicao;
 using VendasEmAberto.Aplicacao.Persistencia;
 using VendasEmAberto.Infraestrutura.Composicao;
@@ -19,7 +20,7 @@ ConfiguracaoBackend.ValidarAusenciaDeSobrescritaDeEndpoints(
 var porta = ConfiguracaoBackend.ObterPorta(builder.Configuration[ConfiguracaoBackend.ChavePorta]);
 var caminhoBanco = ConfiguracaoBackend.ObterCaminhoBanco(
     builder.Configuration[ConfiguracaoBackend.ChaveCaminhoBanco]);
-ConfiguracaoBackend.ValidarSegredoLocal(
+var segredoLocal = ConfiguracaoBackend.ObterSegredoLocal(
     Environment.GetEnvironmentVariable(ConfiguracaoBackend.VariavelSegredoLocal));
 
 builder.WebHost.ConfigureKestrel(opcoes => opcoes.Listen(IPAddress.Loopback, porta));
@@ -27,6 +28,7 @@ builder.Services
     .AdicionarAplicacao()
     .AdicionarPersistenciaSqlite(caminhoBanco);
 builder.Services.AddHealthChecks();
+builder.Services.AdicionarAutenticacaoBearerLocal(segredoLocal);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<HandlerExcecaoApi>();
 builder.Services.Configure<RouteHandlerOptions>(opcoes => opcoes.ThrowOnBadRequest = true);
@@ -74,6 +76,7 @@ app.UseStatusCodePages(async contexto =>
         await resultado.ExecuteAsync(contexto.HttpContext);
     }
 });
+app.UseProtecaoApiLocal();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
@@ -83,6 +86,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsync("Healthy");
     }
 });
+app.MapGrupoComercial();
 
 app.Run();
 

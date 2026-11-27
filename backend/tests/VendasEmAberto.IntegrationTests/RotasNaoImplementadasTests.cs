@@ -11,7 +11,7 @@ public sealed class RotasNaoImplementadasTests
         await using var fixture = await HostApiFixture.CriarAsync();
         var client = fixture.Cliente;
 
-        foreach (var rota in new[] { "/vendas", "/pagamentos" })
+        foreach (var rota in new[] { "/vendas", "/pagamentos", "/api/v1/rota-ausente" })
         {
             using var resposta = await client.GetAsync(rota);
 

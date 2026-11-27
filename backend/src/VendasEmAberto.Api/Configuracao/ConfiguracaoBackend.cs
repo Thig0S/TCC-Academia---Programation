@@ -44,6 +44,12 @@ public static class ConfiguracaoBackend
 
     public static void ValidarSegredoLocal(string? valor)
     {
+        var segredo = ObterSegredoLocal(valor);
+        CryptographicOperations.ZeroMemory(segredo);
+    }
+
+    public static byte[] ObterSegredoLocal(string? valor)
+    {
         const string mensagem = "A variável de ambiente Backend__SegredoLocal deve conter Base64 canônico de 32 bytes.";
 
         if (string.IsNullOrEmpty(valor) || valor.Length != 44 || valor[^1] != '=')
@@ -61,18 +67,14 @@ public static class ConfiguracaoBackend
             throw new InvalidOperationException(mensagem);
         }
 
-        try
-        {
-            if (segredo.Length != 32
-                || !string.Equals(Convert.ToBase64String(segredo), valor, StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException(mensagem);
-            }
-        }
-        finally
+        if (segredo.Length != 32
+            || !string.Equals(Convert.ToBase64String(segredo), valor, StringComparison.Ordinal))
         {
             CryptographicOperations.ZeroMemory(segredo);
+            throw new InvalidOperationException(mensagem);
         }
+
+        return segredo;
     }
 
     public static int ObterPorta(string? valor)
