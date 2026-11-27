@@ -501,6 +501,47 @@ Prettier direcionado aos arquivos TS/JSON, `git diff --check` e
 `openspec validate fase-006-integracao-angular --strict` passaram. Sem novas dependências,
 alteração da API, exposição de credencial, seletor runtime ou ativação do proxy na demo.
 
+### Apply `fase-006-integracao-angular` — tarefa 2.3 — gerações e confirmação por aba (27/11/2026)
+
+`EstadoConsultaPorChave` expõe `inicial/carregando/pronto/erro/inexistente` com chave
+(coleção/ID/mês/referência) e geração local. Trocar a chave cancela a leitura anterior;
+invalidação transversal avança apenas uma época numérica, sem cache de dados. Leituras
+iniciadas antes de uma confirmação aceita não podem voltar a publicar resultado. Erro,
+resposta vazia e inexistência ficam separados de lista vazia.
+
+`ControleConfirmacoes` vive no injector root da aba, não na tela/modal. Ao iniciar o envio,
+fixa referência, alvo original, revisão observada e cópia profunda congelada do rascunho;
+abre exatamente uma subscription e rejeita confirmações concorrentes. Não há retry ou
+resubscription em navegação. Sucesso guarda o resultado e invalida consultas; recusa
+reconhecida guarda resultado/alvo/rascunho para correção ou novo aceite. Falha de transporte
+(status 0/timeout), 502/504/5xx, corpo/resultado inválido ou vazio, código não reconhecido
+e `confirmacao-indeterminada` entram no estado `incerto`, sem presumir rollback.
+
+Estados da confirmação: `disponivel → enviando → confirmado → invalidar consultas`;
+`enviando → recusa conhecida`; ou `enviando → incerto → conferência`. A conferência usa
+sempre alvo e referência capturados (coleção no cadastro, detalhe nas outras operações).
+Falha ou leitura sem sucesso mantém o bloqueio. Consulta bem-sucedida ainda exige ação
+humana explícita; reconhecer invalida novamente as leituras, libera a aba e não reenvia a
+escrita. Classificação de recusas usa códigos/status permitidos pela API e resultados
+conhecidos do adaptador demonstrativo; respostas desconhecidas ficam no ramo incerto. A cópia
+em memória não oferece recuperação após recarga, exactly-once, idempotency key, persistência
+em storage ou coordenação entre abas.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/controle-confirmacoes.spec.ts
+npm test -- --watch=false
+npm run build -- --configuration local
+npm run build
+```
+
+Resultado: **24/24 testes direcionados** e **476/476 testes em 37 arquivos**. Build local
+compilou; build padrão passou com 322,14 kB iniciais. Prettier dos quatro arquivos novos,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+Não houve alterações de storage/backend/dependências, integração de telas ou mudança de
+`serve:local`.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
