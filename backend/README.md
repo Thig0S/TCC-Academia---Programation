@@ -2427,3 +2427,46 @@ aprovados. A execução focada inicial de `PrivacidadeHttpTests` também passou 
 Todos os testes usam dados sintéticos e arquivos SQLite temporários; não houve acesso
 a banco operacional. Não foram executados nesta tarefa restore, frontend nem smoke da
 DLL em processo próprio; esses itens permanecem para as tarefas 5.3 e 5.4.
+
+## Regressão final, grafo de dependências e frontend independente (API-05/5.3)
+
+O backend usa SDK `10.0.404` conforme `global.json`, MSTest.Sdk `4.5.3` e
+`net10.0`. Em 27/11/2026, na ordem exigida, foram executados:
+
+```powershell
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build --list-tests
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+dotnet list VendasEmAberto.slnx package --include-transitive
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+```
+
+Restore bloqueado concluiu para os seis projetos. Build Release: 0 avisos e 0 erros.
+Suíte MSTest: 389 aprovados, 0 falhas e 0 ignorados; descoberta: 143 testes de
+integração + 246 unitários = 389. Formatação passou. A listagem transitiva confirmou
+que `VendasEmAberto.Api` referencia Aplicacao e Infraestrutura e recebe EF Core/SQLite
+transitivamente pelo composition root Infraestrutura; Aplicacao referencia Domínio;
+Domínio não tem referências de projeto nem pacotes e busca dos fontes não encontrou
+tipos/namespaces HTTP. A auditoria `--vulnerable --include-transitive` não reportou
+pacotes vulneráveis nos seis projetos, usando NuGet.org e
+`C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\`, fontes disponíveis no ambiente.
+O comando de listagem também confirmou as versões resolvidas;
+não houve atualização intencional de dependências ou lockfiles.
+
+Frontend, executado em `frontend/` com Node `v24.21.0` e npm `11.19.0`, compatíveis
+com `package.json`. `node_modules` já existia, portanto `npm ci` não foi necessário;
+`package-lock.json` foi preservado. Antes dos comandos não havia listener na porta 5070
+e nenhum processo de API foi iniciado. Foram executados:
+
+```powershell
+npm.cmd test -- --watch=false
+npm.cmd run build
+```
+
+Testes: 33 arquivos e 430 testes aprovados. Build Angular completou e gerou
+`frontend/dist/vendas-em-aberto`. Os dois comandos passaram sem API ligada; os testes
+do frontend continuam sem depender do backend. O smoke de processo/listener real da
+DLL permanece exclusivamente na tarefa 5.4. `git status` e `git diff --check` não
+apontaram alterações de lockfile ou artefatos versionados após as verificações.
