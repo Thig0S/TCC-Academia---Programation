@@ -107,7 +107,8 @@ public sealed class CadastrarVendaHandler(
         var calendario = CalendarioCivil.GerarVencimentos(comando.DataVenda, quantidadeFutura);
         if (calendario is not ResultadoDominio<IReadOnlyList<DateOnly>>.Sucesso)
         {
-            return Falha(((ResultadoDominio<IReadOnlyList<DateOnly>>.Falha)calendario).Erro);
+            var erroCalendario = ((ResultadoDominio<IReadOnlyList<DateOnly>>.Falha)calendario).Erro;
+            return Falha(erroCalendario with { Campo = "dataVenda" });
         }
 
         var carregado = await armazenamento.CarregarAsync(

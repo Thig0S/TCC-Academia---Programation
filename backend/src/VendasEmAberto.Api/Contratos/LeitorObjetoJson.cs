@@ -166,6 +166,22 @@ public sealed class LeitorObjetoJson
         return new LeitorObjetoJson(valor, camposConhecidos);
     }
 
+    public LeitorObjetoJson? LerObjetoOpcional(string campo, params string[] camposConhecidos)
+    {
+        var valor = LerPropriedadeOpcional(campo);
+        if (valor is null || valor.Value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (valor.Value.ValueKind != JsonValueKind.Object)
+        {
+            throw new ErroEntradaApiException(campo);
+        }
+
+        return new LeitorObjetoJson(valor.Value, camposConhecidos);
+    }
+
     private JsonElement LerPropriedadeObrigatoria(string campo)
     {
         ValidarCampoConhecido(campo);

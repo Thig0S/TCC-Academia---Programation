@@ -3,7 +3,7 @@
 Base: PRD/FON-045/046/RF-031–036/CA-061–068 → TDD/DEC-041/API-01–05 →
 proposal → specs api-local-vendas/casos-de-uso-vendas → design/D1–D6.
 
-**Estado: implementação autorizada em andamento; tasks 1.1 a 3.6 implementadas e verificadas.**
+**Estado: implementação autorizada em andamento; tasks 1.1 a 4.1 implementadas e verificadas.**
 Manter as tarefas restantes pendentes até execução e evidências. Usar a mesma branch
 `feature/fase-005-contrato-e-api-local`, sem alterações diretas na main.
 
@@ -37,7 +37,7 @@ em finally. Não iniciar dependente de decisão bloqueante ou mudar contrato par
 
 ## 4. API-04 — Comandos HTTP persistidos
 
-- [ ] 4.1 Expor POST /api/v1/vendas mapeando somente campos de cadastro permitidos, retorno 201/detalhe e Location relativo de detalhe com query codificada e referência recebida. Testes HTTP/SQLite verificam cadastro 10.000/3 = 3.334/3.333/3.333, entrada 10.000 em total 20.000/2 sem dupla contagem, IDs gerados, revisão confirmada e consulta da Location após reinício; cliente/entrada/calendário/revisão inválidos não publicam candidato ou gravam. Documentar contrato/requisição sintética sem segredo fixo, executar testes/build e commit próprio.
+- [x] 4.1 Expor POST /api/v1/vendas mapeando somente campos de cadastro permitidos, retorno 201/detalhe e Location relativo de detalhe com query codificada e referência recebida. Testes HTTP/SQLite verificam cadastro 10.000/3 = 3.334/3.333/3.333, entrada 10.000 em total 20.000/2 sem dupla contagem, IDs gerados, revisão confirmada e consulta da Location após reinício; cliente/entrada/calendário/revisão inválidos não publicam candidato ou gravam. Documentar contrato/requisição sintética sem segredo fixo, executar testes/build e commit próprio.
 - [ ] 4.2 Expor PUT /api/v1/vendas/cliente com vendaId e quatro campos cadastrais. Testes HTTP/SQLite verificam alteração isolada inclusive em quitada/Inativa/Prejuízo, CPF repetido sem propagação, financeiros extras ignorados, histórico preservado, no-op normalizado 200 sem avanço e revisão antiga 409 inclusive no no-op. Conferir erros por campo e reabertura; documentar evidências, executar testes/build e commit próprio.
 - [ ] 4.3 Expor PUT /api/v1/vendas/status com novoStatus textual explícito. Testes HTTP/SQLite verificam matriz de transições vigente, saldo exigido para Prejuízo, mesmo status/no-op, enum inválido/numérico, revisão antiga e preservação do histórico; consultar painel/resumo após transição para conferir universos sem alterar recebidos. Registrar contrato/evidências, executar testes/build e commit próprio.
 - [ ] 4.4 Expor POST /api/v1/recebimentos com IDs explícitos/valor/data/forma/observação, retorno 200 detalhe. Testes HTTP/SQLite cobrem primeira pendente inclusive futura, acréscimo, nota Unicode até 20 valores escalares, revisão confirmada/reabertura; recusar salto, repetição, valor inferior, data/forma/observação inválidas e venda não Ativa sem gravar ou deslocar alvo. Não fabricar Location de recurso não existente; documentar limites/protocolo sem retry, executar testes/build e commit próprio.

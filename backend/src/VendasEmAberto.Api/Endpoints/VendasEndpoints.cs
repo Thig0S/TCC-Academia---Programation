@@ -1,12 +1,15 @@
 using MediatR;
+using System.Globalization;
 using VendasEmAberto.Api.Contratos;
 using VendasEmAberto.Api.Erros;
+using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.CadastrarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarColecaoVendas;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
 using VendasEmAberto.Aplicacao.Funcionalidades.VisaoGeral.ConsultarVisaoGeral;
+using VendasEmAberto.Dominio.Recebimentos;
 
 namespace VendasEmAberto.Api.Endpoints;
 
@@ -15,6 +18,7 @@ public static class VendasEndpoints
     public static RouteGroupBuilder MapVendasEndpoints(this RouteGroupBuilder grupo)
     {
         ArgumentNullException.ThrowIfNull(grupo);
+        grupo.MapPost("/vendas", CadastrarVendaAsync);
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
@@ -22,6 +26,57 @@ public static class VendasEndpoints
         grupo.MapGet("/resumo", ConsultarResumoAsync);
         grupo.MapGet("/visao-geral", ConsultarVisaoGeralAsync);
         return grupo;
+    }
+
+    private static async Task<IResult> CadastrarVendaAsync(HttpContext contexto, ISender sender)
+    {
+        if (!contexto.Request.HasJsonContentType())
+        {
+            return ProblemasApi.TipoConteudoNaoSuportado();
+        }
+
+        var corpo = await LeitorObjetoJson.LerAsync(
+            contexto.Request,
+            [
+                "nome",
+                "cpf",
+                "telefone",
+                "descricao",
+                "dataVenda",
+                "valorTotalCentavos",
+                "quantidadeParcelas",
+                "referencia",
+                "revisaoEsperada",
+                "entrada"
+            ],
+            contexto.RequestAborted);
+
+        var entrada = corpo.LerObjetoOpcional("entrada", "valorCentavos", "forma");
+        var comando = new CadastrarVendaCommand(
+            corpo.LerTextoObrigatorio("nome"),
+            corpo.LerTextoObrigatorio("cpf"),
+            corpo.LerTextoObrigatorio("telefone"),
+            corpo.LerTextoOpcional("descricao"),
+            corpo.LerDataObrigatoria("dataVenda"),
+            corpo.LerCentavosObrigatorios("valorTotalCentavos"),
+            corpo.LerInteiroObrigatorio("quantidadeParcelas"),
+            corpo.LerDataObrigatoria("referencia"),
+            corpo.LerRevisaoObrigatoria("revisaoEsperada"),
+            entrada is null
+                ? null
+                : new EntradaVendaComando(
+                    entrada.LerCentavosObrigatorios("valorCentavos"),
+                    Mapear(entrada.LerEnumObrigatorio<FormaPagamentoApi>("forma"))));
+        var resultado = await sender.Send(comando, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(resultado, detalhe =>
+        {
+            var location = "/api/v1/vendas/detalhe?vendaId="
+                + Uri.EscapeDataString(detalhe.Resumo.Id)
+                + "&referencia="
+                + detalhe.Resumo.Referencia.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return Results.Created(location, MapeadorVendaDetalheApi.Mapear(detalhe));
+        });
     }
 
     private static async Task<IResult> ConsultarPeriodoAsync(HttpContext contexto, ISender sender)
@@ -98,4 +153,13 @@ public static class VendasEndpoints
             resultado,
             detalhe => Results.Json(MapeadorVendaDetalheApi.Mapear(detalhe)));
     }
+
+    private static FormaPagamento Mapear(FormaPagamentoApi forma) => forma switch
+    {
+        FormaPagamentoApi.Dinheiro => FormaPagamento.Dinheiro,
+        FormaPagamentoApi.Pix => FormaPagamento.Pix,
+        FormaPagamentoApi.CartaoDebito => FormaPagamento.CartaoDebito,
+        FormaPagamentoApi.CartaoCredito => FormaPagamento.CartaoCredito,
+        _ => throw new InvalidOperationException("Forma de pagamento do cadastro não reconhecida.")
+    };
 }

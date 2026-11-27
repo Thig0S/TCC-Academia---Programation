@@ -126,6 +126,28 @@ public sealed class CadastrarVendaHandlerTests
     }
 
     [TestMethod]
+    public async Task Handle_CalendarioForaDoLimiteApontaCampoDataVendaDoCommand()
+    {
+        var armazenamento = new ArmazenamentoFake(Conjunto([]), revisao: 0);
+        var gerador = new GeradorFake();
+        var comando = Comando() with
+        {
+            DataVenda = new DateOnly(9999, 12, 31),
+            Referencia = new DateOnly(9999, 12, 31)
+        };
+
+        var resultado = await CriarHandler(armazenamento, gerador).Handle(comando, CancellationToken.None);
+
+        Assert.IsTrue(resultado.IsFailed);
+        var erro = Assert.IsInstanceOfType<ErroAplicacao>(resultado.Errors.Single());
+        Assert.AreEqual("data-invalida", erro.Codigo);
+        Assert.AreEqual("dataVenda", erro.Campo);
+        Assert.AreEqual(0, armazenamento.Carregamentos);
+        Assert.AreEqual(0, armazenamento.Salvamentos);
+        Assert.AreEqual(0, gerador.QuantidadeGerada);
+    }
+
+    [TestMethod]
     public async Task Handle_IdGeradoColidenteOuOverflowNoConjuntoFalhaSemSaveNemRespostaCandidata()
     {
         var existente = CriarVenda("existente", 2_000);

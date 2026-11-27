@@ -2072,3 +2072,59 @@ confirma uma única carga e zero inicializações/salvamentos durante o GET e ne
 para referência inválida/ausente. Banco vazio retorna quatro zeros e três listas vazias,
 sem escrita. Dados são sintéticos; não houve alteração do frontend ou acesso a banco
 operacional.
+
+## Cadastro HTTP de venda (API-04/4.1)
+
+`POST /api/v1/vendas` exige Bearer e `application/json`. O corpo contém `nome`, `cpf`,
+`telefone`, `dataVenda`, `valorTotalCentavos`, `quantidadeParcelas`, `referencia` e
+`revisaoEsperada` como string decimal canônica; `descricao` e `entrada` são opcionais/
+nullable. Entrada, quando presente, tem somente `valorCentavos` inteiro e `forma` textual.
+Os campos desconhecidos são ignorados e não permitem escolher IDs, status, parcelas,
+recebimentos ou outros dados financeiros. Enum e campos conhecidos repetidos, datas e
+tipos inválidos são rejeitados pelo binding seguro; media type não JSON retorna 415.
+
+Exemplo sintético de corpo (nenhum segredo fixo/documentado):
+
+```json
+{
+  "nome": "Cliente de demonstração",
+  "cpf": "52998224725",
+  "telefone": "11987654321",
+  "descricao": null,
+  "dataVenda": "2027-01-15",
+  "valorTotalCentavos": 20000,
+  "quantidadeParcelas": 2,
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "0",
+  "entrada": { "valorCentavos": 10000, "forma": "Pix" }
+}
+```
+
+Sucesso confirmado retorna 201 com o detalhe HTTP completo e `Location` relativo
+`/api/v1/vendas/detalhe?vendaId=<codificado>&referencia=<yyyy-MM-dd>`. O ID vem do
+gerador do backend, não do corpo; somente após o save confirmado é retornada a revisão
+nova. O escape de query preserva IDs opacos (`/`, `%`, `+`, `?`, `#` e Unicode), e a
+Location pode ser consultada com Bearer após reabrir o banco. A entrada é um recebimento
+único alocado à primeira parcela: 10.000 de entrada em contrato de 20.000 resulta em
+20.000 de valor-base, 10.000 recebidos e 10.000 de saldo, sem duplicar o valor. Erros
+de calendário do domínio apontam `dataVenda`, nome público do campo, não `dataBase`.
+Todas as respostas comerciais incluem `Cache-Control: no-store`; validações e conflito
+de revisão não salvam candidatos nem avançam a revisão.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests|FullyQualifiedName~CadastrarVendaEndpointTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~CadastrarVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 17 testes HTTP/SQLite (cadastro e regressão das seis consultas) e 6 testes
+unitários do handler aprovados; build Release com 0 avisos/erros e verificação de formato
+aprovados. Testes de cadastro conferem 10.000/3 = 3.334/3.333/3.333, IDs gerados, revisão
+confirmada, Location corretamente codificada e consulta após reiniciar o host; entrada
+10.000 em 20.000/2 sem dupla contagem; CPF/entrada/calendário/revisão inválidos, stale
+revision e media type incorreto sem save, venda persistida ou avanço de revisão. Um teste
+unitário verifica o mapeamento seguro do erro de calendário. Fixture e SQLite são
+temporários/sintéticos; não houve acesso a banco operacional.
