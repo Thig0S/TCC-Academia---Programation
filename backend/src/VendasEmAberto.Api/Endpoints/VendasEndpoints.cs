@@ -5,6 +5,7 @@ using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarColecaoVendas;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
+using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
 
 namespace VendasEmAberto.Api.Endpoints;
 
@@ -16,6 +17,7 @@ public static class VendasEndpoints
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
+        grupo.MapGet("/relatorios/mensal", ConsultarRelatorioMensalAsync);
         grupo.MapGet("/resumo", ConsultarResumoAsync);
         return grupo;
     }
@@ -42,6 +44,19 @@ public static class VendasEndpoints
         return AdaptadorResultadosApi.Adaptar(
             resultado,
             resumo => Results.Json(MapeadorResumoApi.Mapear(resumo)));
+    }
+
+    private static async Task<IResult> ConsultarRelatorioMensalAsync(HttpContext contexto, ISender sender)
+    {
+        var consulta = new ConsultarRelatorioMensalQuery(
+            ParametrosQueryApi.InteiroObrigatorio(contexto.Request.Query, "ano", 1, 9999),
+            ParametrosQueryApi.InteiroObrigatorio(contexto.Request.Query, "mes", 1, 12),
+            ParametrosQueryApi.DataObrigatoria(contexto.Request.Query, "referencia"));
+        var resultado = await sender.Send(consulta, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            relatorio => Results.Json(MapeadorRelatorioMensalApi.Mapear(relatorio)));
     }
 
     private static async Task<IResult> ConsultarColecaoAsync(HttpContext contexto, ISender sender)

@@ -1999,3 +1999,45 @@ intervalo, além de Inativa/Prejuízo (38.000 centavos). Os resumos esperados co
 os campos e a ordem. Banco vazio, parâmetros ausentes/data impossível e intervalo invertido
 retornaram os status/códigos esperados; revisões 1 e 0 e seus conjuntos permaneceram sem
 alteração após as consultas.
+
+## Consulta HTTP de relatório mensal (API-03/3.5)
+
+`GET /api/v1/relatorios/mensal` exige Bearer e os parâmetros únicos `ano` (1–9999),
+`mes` (1–12) e `referencia` (`yyyy-MM-dd`). O ano/mês seleciona apenas o relatório; a
+referência civil continua sendo a fornecida pelo consumidor. Ausência, duplicidade,
+formato ou limites inválidos retornam 400 `requisicao-invalida` antes de consultar o
+handler. Respostas comerciais, inclusive falhas, mantêm `Cache-Control: no-store`.
+
+A resposta preserva integralmente o `RelatorioMensalResposta` da Aplicacao: referência,
+limites do mês e revisão decimal textual; recebimentos identificados com resumo completo
+da venda, origem, data, forma e valor; série diária completa; vendas do mês; saldos e
+primeiro vencimento pendente; parcelas atrasadas; parcelas de Prejuízo com
+`incluirNoTotal`; e os totais/quantidades recebido, vendas do mês, aberto, atrasado e
+Prejuízo. Resumos aninhados incluem todos os campos do cliente e financeiros. Parcelas
+mantêm campos, enums, nulabilidade e vínculo com venda; centavos são tokens inteiros,
+datas são civis ISO e listas/ordens são as produzidas pelo caso de uso, sem cálculo HTTP.
+Mês sem movimento continua com uma linha diária por dia, inclusive ano bissexto, e não
+substitui a referência nem os totais globais da fotografia.
+
+Exemplo sintético: `/api/v1/relatorios/mensal?ano=2027&mes=3&referencia=2027-04-15`.
+O cenário de verificação usa somente vendas sintéticas e SQLite temporário.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 3 novos testes HTTP/SQLite e 9 regressões das quatro consultas anteriores
+aprovados. O cenário mensal compara campo a campo o JSON e todas as linhas/resumos/
+parcelas com o DTO baseline do handler após reabrir o banco; confere ordem e vínculo de
+Entrada, lote e Individual, série diária conciliada em 101.000 centavos, vendas do mês,
+saldos, atrasadas, status mistos e Prejuízo/`incluirNoTotal`, além dos totais literais
+(221.000 vendidos, 170.000 em aberto, 20.000 atrasados e 10.000 em Prejuízo). Também
+verifica mês vazio bissexto mantendo a referência e saldo global, correção Individual
+movida de março para abril sem alterar a posição na referência, meses de 0001/9999 e
+parâmetros ausentes/duplicados/inválidos sem escrita (revisão permanece 0 no banco
+vazio). Build Release com 0 avisos/erros e verificação de formato aprovados. Não houve
+acesso a banco operacional.
