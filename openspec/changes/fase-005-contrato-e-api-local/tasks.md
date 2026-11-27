@@ -3,7 +3,7 @@
 Base: PRD/FON-045/046/RF-031–036/CA-061–068 → TDD/DEC-041/API-01–05 →
 proposal → specs api-local-vendas/casos-de-uso-vendas → design/D1–D6.
 
-**Estado: implementação autorizada em andamento; tasks 1.1 a 3.1 implementadas e verificadas.**
+**Estado: implementação autorizada em andamento; tasks 1.1 a 3.2 implementadas e verificadas.**
 Manter as tarefas restantes pendentes até execução e evidências. Usar a mesma branch
 `feature/fase-005-contrato-e-api-local`, sem alterações diretas na main.
 
@@ -29,7 +29,7 @@ em finally. Não iniciar dependente de decisão bloqueante ou mudar contrato par
 ## 3. API-03 — Consultas HTTP e mappers por funcionalidade
 
 - [x] 3.1 Expor GET /api/v1/vendas/detalhe com vendaId/referencia em query e mapper de todos os campos de resumo/cliente/parcelas/recebimentos/alocações. Testes HTTP/SQLite autenticados verificam dados literais após reabertura, ordens/nulabilidade/Unicode/IDs reservados, revisão textual, ID ausente 404 versus vazio inválido 400, ausência de referência e nenhuma escrita; registrar contrato/resultado no README e concluir commit próprio após testes/build.
-- [ ] 3.2 Expor GET /api/v1/vendas com colecao/referencia e todas as quatro coleções textuais. Testes HTTP/SQLite com status mistos verificam lista completa em ordem, campos financeiros/cliente, revisão/referência, vazio 200, enum numérico/desconhecido/ausente recusado e zero mutação. Documentar que não há busca/paginação/ordenação configurável, executar testes/build e commit próprio.
+- [x] 3.2 Expor GET /api/v1/vendas com colecao/referencia e todas as quatro coleções textuais. Testes HTTP/SQLite com status mistos verificam lista completa em ordem, campos financeiros/cliente, revisão/referência, vazio 200, enum numérico/desconhecido/ausente recusado e zero mutação. Documentar que não há busca/paginação/ordenação configurável, executar testes/build e commit próprio.
 - [ ] 3.3 Expor GET /api/v1/resumo com mapper dos quatro indicadores/revisão/referência. Testes HTTP/SQLite conferem Ativas quitadas na contagem, Inativas/Prejuízo fora da dívida operacional mas com seus recebimentos no mês, entrada única, zero/vazio e centavos extremos seguros sem gravação. Atualizar README com contrato/evidências, executar testes/build e commit próprio.
 - [ ] 3.4 Expor GET /api/v1/periodo com inicio/fim/referencia. Testes HTTP/SQLite comprovam bordas inclusivas, vendas somente Ativas do intervalo em ordem, recebidos de todos os status pela data efetiva inclusive venda fora do intervalo, vazio 200 e intervalo invertido/data inválida 400 sem escrita. Documentar campos e exemplos sintéticos sem dados pessoais, executar testes/build e commit próprio.
 - [ ] 3.5 Expor GET /api/v1/relatorios/mensal com ano/mes/referencia e mapper integral de todas as seções/linhas/totais/série. Testes HTTP/SQLite verificam cliente/vínculos, soma diária, entrada/lote/Individual corrigido entre meses, status mistos, prejuízo com IncluirNoTotal, ordenações, mês sem movimento mantendo posição e calendário extremo/bissexto; parâmetros inválidos/ausentes 400 sem gravação. Conferir campos individualmente contra DTOs baseline, documentar contrato/evidências, executar testes/build e commit próprio.

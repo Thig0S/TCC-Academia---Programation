@@ -1833,10 +1833,10 @@ verificam challenge/corpo Problem Details seguro e `no-store` para credencial au
 incorreta/duplicada; 401 antes do binding de JSON inválido; execução do handler só
 após autenticação; sucesso/falha sem cache; troca do segredo entre inicializações;
 e ausência de credenciais capturadas em respostas/logs. O handler usa comparação
-constante de bytes. As rotas comerciais de produção ainda serão adicionadas nas
-próximas tarefas; a primeira consulta de produção, GET `/api/v1/vendas/detalhe`, está
-documentada abaixo. Endpoints de prova usados nos testes transversais continuam
-restritos ao TestServer.
+constante de bytes. As consultas comerciais de produção GET `/api/v1/vendas` e
+`GET /api/v1/vendas/detalhe` estão documentadas abaixo; as demais rotas previstas
+serão adicionadas nas próximas tarefas. Endpoints de prova usados nos testes
+transversais continuam restritos ao TestServer.
 
 ## Consulta interna consolidada da Visão Geral (API-02/2.1–2.2)
 
@@ -1909,3 +1909,32 @@ dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
 Resultados: 2 testes HTTP/SQLite aprovados; build Release com 0 avisos/erros e
 verificação de formato aprovados. Não foi iniciado smoke da DLL nem acessado banco
 operacional; o smoke completo permanece na tarefa 5.4.
+
+## Consulta HTTP de coleções de vendas (API-03/3.2)
+
+`GET /api/v1/vendas` exige Bearer e os parâmetros únicos `colecao` e `referencia`
+(`yyyy-MM-dd`). `colecao` aceita somente os textos exatos `Abertas`, `Quitadas`,
+`Inativas` e `Prejuizo`; valores numéricos, desconhecidos, diferenças de caixa,
+duplicados ou ausentes são rejeitados com 400 `requisicao-invalida`. A resposta 200
+contém `colecao`, `revisao` decimal textual, `referencia` e a lista integral `vendas`.
+Cada resumo mantém os campos de cliente/financeiros do contrato v1, centavos como
+inteiros, datas civis, enums textuais e nulabilidade, usando o mesmo mapper HTTP
+explícito do resumo no detalhe. A ordem é a do conjunto carregado; não há busca,
+paginação ou ordenação configurável. Lista vazia retorna 200 com `vendas: []`; toda
+resposta comercial usa `no-store`.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite de coleção e 2 testes de regressão do detalhe
+aprovados. As verificações literais percorrem as quatro coleções em ordem com status
+misto, campos completos de resumo/cliente e revisão/referência; cobrem banco vazio,
+seletores ausentes, numéricos, desconhecidos, com caixa divergente e duplicados. Após
+as consultas válidas e inválidas, a revisão continua 1 e os oito IDs/ordens persistidos
+permanecem iguais; o caso vazio conserva revisão 0. Build Release com 0 avisos/erros e
+verificação de formato aprovados. Dados são sintéticos e banco temporário.
