@@ -10,26 +10,7 @@ public static class MapeadorVendaDetalheApi
 
         var resumo = detalhe.Resumo;
         return new VendaDetalheApiResposta(
-            new VendaResumoApiResposta(
-                resumo.Id,
-                new ClienteApiResposta(
-                    resumo.Cliente.Nome,
-                    resumo.Cliente.Cpf,
-                    resumo.Cliente.Telefone,
-                    resumo.Cliente.Descricao),
-                resumo.DataVenda,
-                Mapear(resumo.StatusAdministrativo),
-                Mapear(resumo.Situacao),
-                resumo.ValorTotalBaseCentavos,
-                resumo.TotalAcrescimosCentavos,
-                resumo.ValorTotalEfetivoCentavos,
-                resumo.TotalRecebidoCentavos,
-                resumo.SaldoCentavos,
-                resumo.QuantidadePaga,
-                resumo.QuantidadeParcelas,
-                resumo.ProximoVencimento,
-                new RevisaoApi(resumo.Revisao),
-                resumo.Referencia),
+            MapeadorVendaResumoApi.Mapear(resumo),
             detalhe.Parcelas.Select(Mapear),
             detalhe.Recebimentos.Select(recebimento => new RecebimentoDetalheApiResposta(
                 recebimento.Id,
@@ -56,23 +37,6 @@ public static class MapeadorVendaDetalheApi
         Mapear(parcela.Situacao),
         parcela.DataPagamento,
         parcela.FormaPagamento is { } forma ? Mapear(forma) : null);
-
-    private static StatusAdministrativoApi Mapear(StatusAdministrativoResposta status) => status switch
-    {
-        StatusAdministrativoResposta.Ativo => StatusAdministrativoApi.Ativo,
-        StatusAdministrativoResposta.Inativo => StatusAdministrativoApi.Inativo,
-        StatusAdministrativoResposta.Prejuizo => StatusAdministrativoApi.Prejuizo,
-        _ => throw new InvalidOperationException("Status administrativo da resposta não reconhecido.")
-    };
-
-    private static SituacaoVendaApi Mapear(SituacaoVendaResposta situacao) => situacao switch
-    {
-        SituacaoVendaResposta.Quitada => SituacaoVendaApi.Quitada,
-        SituacaoVendaResposta.Atrasada => SituacaoVendaApi.Atrasada,
-        SituacaoVendaResposta.ProximosDias => SituacaoVendaApi.ProximosDias,
-        SituacaoVendaResposta.EmAberto => SituacaoVendaApi.EmAberto,
-        _ => throw new InvalidOperationException("Situação da venda na resposta não reconhecida.")
-    };
 
     private static SituacaoParcelaApi Mapear(SituacaoParcelaResposta situacao) => situacao switch
     {
