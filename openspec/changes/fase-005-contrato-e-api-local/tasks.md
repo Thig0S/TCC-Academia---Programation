@@ -77,6 +77,6 @@ registrado nas tasks 1–5 e nos commits/evidências da feature.
 ## Workflow follow-up
 
 - Planejamento original e autorização são estados distintos; esta Change recebeu autorização de apply e tem todas as 21 tarefas verificadas em `feature/fase-005-contrato-e-api-local`.
-- Após a validação estrita e o commit documental final, sincronizar specs e arquivar automaticamente **esta** Change pelo fluxo OpenSpec, conferir metadata/deltas/specs e diretório arquivado. Não arquivar outras Changes.
+- As deltas desta Change foram sincronizadas e as specs principais afetadas passaram validação estrita; após o commit documental desse registro, arquivar automaticamente **esta** Change pelo fluxo OpenSpec e conferir metadata/deltas/specs e diretório arquivado. Não arquivar outras Changes.
 - Após archive confirmado, publicar a mesma feature e abrir um único PR para main usando `.github/pull_request_template.md`, com PRD/TDD/SDD arquivado, escopo integral, verificações e limitações. Não abrir PR antes do archive.
 - Revisão/aprovação exigidas e autorização explícita de merge continuam necessárias; após integração autorizada, conferir PR/main antes de informar conclusão do fluxo.
