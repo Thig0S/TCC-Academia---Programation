@@ -1938,3 +1938,32 @@ seletores ausentes, numéricos, desconhecidos, com caixa divergente e duplicados
 as consultas válidas e inválidas, a revisão continua 1 e os oito IDs/ordens persistidos
 permanecem iguais; o caso vazio conserva revisão 0. Build Release com 0 avisos/erros e
 verificação de formato aprovados. Dados são sintéticos e banco temporário.
+
+## Consulta HTTP de indicadores (API-03/3.3)
+
+`GET /api/v1/resumo` exige Bearer e o parâmetro único `referencia` (`yyyy-MM-dd`). A
+resposta 200 contém `totalEmAbertoCentavos`, `valoresEmAtrasoCentavos`,
+`recebidoNoMesCentavos`, `quantidadeVendasAtivas`, `revisao` decimal textual e
+`referencia`; os três valores financeiros são inteiros em centavos seguros. O handler
+reutilizado projeta a carga existente: saldo e atraso consideram somente vendas Ativas
+(a contagem inclui Ativas quitadas), enquanto recebimentos reais do mês contam uma vez
+em qualquer status, incluindo Entrada e histórico de lote. O endpoint é somente leitura,
+respostas comerciais mantêm `no-store`, e banco preparado vazio retorna zeros/revisão
+observada.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 3 testes HTTP/SQLite de resumo e 4 regressões de detalhe/coleções aprovados;
+build Release com 0 avisos/erros e verificação de formato aprovados. Oráculos literais
+confirmam 20.000 em aberto, 10.000 em atraso, 50.000 recebidos no mês e 3 Ativas no
+conjunto misto (incluindo quitada), com Entrada única e recebimentos de Inativa/Prejuízo
+incluídos sem contaminar a dívida operacional. Banco vazio mantém zeros/revisão 0. O
+limite seguro `9.007.199.254.740.991` foi verificado como token numérico inteiro tanto
+em aberto quanto recebido, antes e após registrar a quitação do cenário sintético; consultas
+não avançaram as revisões 1 e 2. Não houve acesso a banco operacional.

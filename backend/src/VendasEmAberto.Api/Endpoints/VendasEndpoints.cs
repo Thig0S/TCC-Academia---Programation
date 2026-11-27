@@ -2,6 +2,7 @@ using MediatR;
 using VendasEmAberto.Api.Contratos;
 using VendasEmAberto.Api.Erros;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarColecaoVendas;
+using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
 
 namespace VendasEmAberto.Api.Endpoints;
@@ -13,7 +14,19 @@ public static class VendasEndpoints
         ArgumentNullException.ThrowIfNull(grupo);
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
+        grupo.MapGet("/resumo", ConsultarResumoAsync);
         return grupo;
+    }
+
+    private static async Task<IResult> ConsultarResumoAsync(HttpContext contexto, ISender sender)
+    {
+        var consulta = new ConsultarResumoQuery(
+            ParametrosQueryApi.DataObrigatoria(contexto.Request.Query, "referencia"));
+        var resultado = await sender.Send(consulta, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            resumo => Results.Json(MapeadorResumoApi.Mapear(resumo)));
     }
 
     private static async Task<IResult> ConsultarColecaoAsync(HttpContext contexto, ISender sender)
