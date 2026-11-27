@@ -1835,3 +1835,42 @@ após autenticação; sucesso/falha sem cache; troca do segredo entre inicializa
 e ausência de credenciais capturadas em respostas/logs. O handler usa comparação
 constante de bytes. As rotas comerciais de produção ainda serão adicionadas nas
 próximas tarefas; a suíte monta endpoints de prova somente em TestServer.
+
+## Consulta interna consolidada da Visão Geral (API-02/2.1–2.2)
+
+`ConsultarVisaoGeralQuery`/Handler carrega uma única vez o snapshot da referência
+solicitada e chama `ConjuntoVendas.Projetar` uma vez. Os quatro indicadores vêm dessa
+projeção existente, preservando o universo operacional de Ativas e recebimentos do mês
+de todos os status. As três listas são montadas em memória a partir das mesmas vendas e
+projeções alinhadas; não há consulta por venda, cálculo financeiro duplicado,
+preparação/gravação, geração de IDs ou mudança no frontend.
+
+O DTO interno `VisaoGeralResposta` mantém referência/revisão no envelope e os quatro
+indicadores sem metadados duplicados; resumos de venda e itens `{venda, parcela}` usam
+os contratos protegidos existentes e repetem a mesma referência/revisão nos resumos
+aninhados. Cada lista é copiada e exposta como coleção somente leitura. Recentes filtra
+Ativas, ordena por data decrescente e índice original crescente antes de limitar a cinco,
+incluindo Ativas quitadas. Próximas e atrasadas filtram Ativas pela classificação do
+domínio, ordenam por vencimento e pelos índices originais de venda/parcela e só então
+limitam a cinco; a janela usa a classificação por `DayNumber`, sem `AddDays` no handler.
+O endpoint HTTP `/api/v1/visao-geral` e seu mapper externo continuam na tarefa 3.6.
+
+Verificações da funcionalidade executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVisaoGeralHandlerTests
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVisaoGeralSqliteTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes unitários e 2 testes de integração SQLite aprovados; build Release
+com 0 avisos/erros e verificação de formato aprovados. O fake confirma uma carga e zero
+preparações/gravações; os oráculos literais cobrem indicadores com entrada, lote e
+pagamentos Individuais em estados mistos, seleção antes do limite com mais de cinco
+elegíveis, empates estáveis, parcelas pagas, ontem/hoje/+7/+8, blocos vazios e
+independentes, datas nos anos 0001/9999 e imutabilidade das listas. A integração grava
+18 vendas sintéticas em banco temporário, reabre com outro provider, confere IDs,
+revisão/referência e valores, transita vendas por Inativa/Prejuízo/Ativa sem estornar
+recebimentos (60.500 centavos), preserva a resposta anterior e confirma revisão 5 após
+nova reabertura. Não foi acessado banco operacional ou alterada a UI.

@@ -3,7 +3,7 @@
 Base: PRD/FON-045/046/RF-031–036/CA-061–068 → TDD/DEC-041/API-01–05 →
 proposal → specs api-local-vendas/casos-de-uso-vendas → design/D1–D6.
 
-**Estado: implementação autorizada em andamento; tasks 1.1 a 1.4 implementadas e verificadas.**
+**Estado: implementação autorizada em andamento; tasks 1.1 a 2.2 implementadas e verificadas.**
 Manter as tarefas restantes pendentes até execução e evidências. Usar a mesma branch
 `feature/fase-005-contrato-e-api-local`, sem alterações diretas na main.
 
@@ -23,8 +23,8 @@ em finally. Não iniciar dependente de decisão bloqueante ou mudar contrato par
 
 ## 2. API-02 — Visão Geral interna consolidada
 
-- [ ] 2.1 Implementar ConsultarVisaoGeral Query/Handler/DTOs protegidos em Aplicacao, usando uma carga com referência/destino/token e projeções vigentes, sem consulta por venda ou cálculo financeiro duplicado. UnitTests com fake contador e oráculos literais comprovam indicadores, resumos só Ativas, recentes incluindo quitadas, recebidos de todos os status, seleção/ordenação antes de limite cinco, empates por índices, hoje/+7/+8/ontem/pagas, vazio/blocos independentes e calendário 0001/9999; zero preparação/Save/IDs e saída realmente imutável. Documentar contrato e executar testes/build; fechar commit da funcionalidade junto de 2.2.
-- [ ] 2.2 Integrar painel via composição/ISender e SQLite real temporário, reabrindo em provider novo. Verificar mesmos IDs/revisão/referência em indicadores e itens, mais de cinco elegíveis, estado misto, entrada/lote/Individual únicos, efeitos de inativar/Prejuízo/reativar e resposta anterior preservada após alteração. Conferir CA-065 e delta de casos de uso sem alterar UI; registrar evidências por nível no README e concluir commit próprio do painel com 2.1/2.2.
+- [x] 2.1 Implementar ConsultarVisaoGeral Query/Handler/DTOs protegidos em Aplicacao, usando uma carga com referência/destino/token e projeções vigentes, sem consulta por venda ou cálculo financeiro duplicado. UnitTests com fake contador e oráculos literais comprovam indicadores, resumos só Ativas, recentes incluindo quitadas, recebidos de todos os status, seleção/ordenação antes de limite cinco, empates por índices, hoje/+7/+8/ontem/pagas, vazio/blocos independentes e calendário 0001/9999; zero preparação/Save/IDs e saída realmente imutável. Documentar contrato e executar testes/build; fechar commit da funcionalidade junto de 2.2.
+- [x] 2.2 Integrar painel via composição/ISender e SQLite real temporário, reabrindo em provider novo. Verificar mesmos IDs/revisão/referência em indicadores e itens, mais de cinco elegíveis, estado misto, entrada/lote/Individual únicos, efeitos de inativar/Prejuízo/reativar e resposta anterior preservada após alteração. Conferir CA-065 e delta de casos de uso sem alterar UI; registrar evidências por nível no README e concluir commit próprio do painel com 2.1/2.2.
 
 ## 3. API-03 — Consultas HTTP e mappers por funcionalidade
 
