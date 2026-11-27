@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,18 +15,11 @@ public sealed class FalhasTecnicasTests
     [DataRow("Production")]
     public async Task Excecao_Inesperada_RetornaProblemDetailsSemDetalhesSensiveis(string ambiente)
     {
-        using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment(ambiente);
-                builder.ConfigureTestServices(services =>
-                    services.AddSingleton<IStartupFilter, FalhaDeTesteStartupFilter>());
-            });
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            HandleCookies = false
-        });
+        await using var fixture = await HostApiFixture.CriarAsync(
+            ambiente,
+            builder => builder.ConfigureTestServices(services =>
+                services.AddSingleton<IStartupFilter, FalhaDeTesteStartupFilter>()));
+        var client = fixture.Cliente;
         using var requisicao = new HttpRequestMessage(HttpMethod.Get, "/__test/failure");
         requisicao.Headers.Accept.ParseAdd("application/problem+json");
 
@@ -61,18 +53,11 @@ public sealed class FalhasTecnicasTests
         int status,
         string codigo)
     {
-        using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment(ambiente);
-                builder.ConfigureTestServices(services =>
-                    services.AddSingleton<IStartupFilter, BadHttpRequestStartupFilter>());
-            });
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            HandleCookies = false
-        });
+        await using var fixture = await HostApiFixture.CriarAsync(
+            ambiente,
+            builder => builder.ConfigureTestServices(services =>
+                services.AddSingleton<IStartupFilter, BadHttpRequestStartupFilter>()));
+        var client = fixture.Cliente;
 
         using var resposta = await client.GetAsync($"/__test/bad-request/{status}");
         var corpo = await resposta.Content.ReadAsStringAsync();

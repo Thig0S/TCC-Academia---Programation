@@ -75,10 +75,11 @@ hashes efetivos constam em
 `src/VendasEmAberto.Infraestrutura/packages.lock.json`; ferramenta e versão estão em
 `dotnet-tools.json`.
 
-Para manter a API técnica sem persistência transitiva, `Api.csproj` referencia apenas
-Aplicacao. EF Core/SQLite não aparece no grafo de pacotes nem no diretório Release da
-API; a suíte de persistência adicionará referência direta à Infraestrutura quando os
-testes forem introduzidos.
+Na baseline anterior à composição HTTP/API-01/1.3, `Api.csproj` referenciava apenas
+Aplicacao e o grafo da API não continha EF Core/SQLite. A decisão D1 da fase 005 passou
+a compor a Infraestrutura pela API; a nova referência transitiva e os lockfiles atuais
+estão registrados em “Inicialização do host local (API-01/1.3)” abaixo. As dependências
+de produção do EF/SQLite continuam declaradas somente pela Infraestrutura.
 
 Fontes oficiais consultadas:
 
@@ -205,8 +206,10 @@ Somente `IPreparacaoArmazenamentoVendas.PrepararAsync` inicializa o schema, sem 
 Repetir a preparação preserva os dados e a revisão. A Aplicacao registra MediatR,
 handlers por assembly e o serviço de preparação; a Infraestrutura registra um destino
 imutável singleton, gerador GUID formato N singleton e adaptador SQLite transient.
-Não há `DbContext` global nem referência da Aplicacao para Infraestrutura. A API não
-chama essas extensões.
+Não há `DbContext` global nem referência da Aplicacao para Infraestrutura. O consumidor
+interno mantém composição explícita; a API usa `AdicionarAplicacao` e
+`AdicionarPersistenciaSqlite` como composition root e chama a preparação separadamente
+antes de servir.
 
 Exemplo de composição para consumidor interno (não é registro do host HTTP):
 
@@ -849,15 +852,16 @@ finito de cinco segundos e pooling desabilitado. A sessão é `IAsyncDisposable`
 contexto deve ser descartado ao final da operação. Linha ativa em
 `__EFMigrationsLock` retorna `banco-ocupado`; nenhuma linha/tabela de lock é apagada
 automaticamente. Timeout não aciona retry. O adaptador interno implementa o contrato
-de armazenamento e delega ao leitor/gravador, mas não está registrado nem ligado à API;
-esta permanece sem dependência da Infraestrutura.
+de armazenamento e delega ao leitor/gravador. Na etapa SQL-02, anterior à API-01/1.3,
+ele ainda não estava ligado à API; a composição atual está descrita abaixo.
 
 `AbridorVendasSqliteTests` passou com seis casos em arquivos temporários: ausência
 sem criação, arquivo não SQLite preservado, schema corrente com modo/FKs/timeout
 esperados, coluna alterada recusada, lock preservado como ocupado e liberação da
 conexão que permite mover o arquivo. Junto aos seis testes do inicializador e cinco
-de schema, são 17 testes direcionados aprovados. `Program.cs` e endpoints/health não
-foram alterados; a API permanece sem dependência da Infraestrutura.
+de schema, são 17 testes direcionados aprovados naquela etapa. `Program.cs` e
+endpoints/health não foram alterados então; API-01/1.3 posteriormente adicionou a
+composição da Infraestrutura e o bootstrap explícito.
 
 ## Leitura transacional (SQL-03/3.1)
 
@@ -1702,10 +1706,10 @@ com mensagem que identifica a chave suportada. Não configurar `--urls`,
 `ASPNETCORE_HTTPS_PORTS`, `DOTNET_HTTP_PORTS`, `DOTNET_HTTPS_PORTS` ou
 `Kestrel:Endpoints` concorrentes. A validação ocorre antes de construir/iniciar o
 host e orienta a usar `Backend:Porta`; argumentos de linha de comando equivalentes
-também são rejeitados. `/health` indica somente
-disponibilidade do processo, não readiness de banco nem operação comercial. Não há
-login, dados financeiros, integração Angular, importação da planilha, persistência
-ou Tauri nesta fase.
+também são rejeitados. O host só começa a escutar depois de preparar o banco; `/health`
+indica que o processo está ativo após essa preparação, mas não garante disponibilidade
+de cada operação comercial. A API ainda não tem autenticação comercial nem integração
+Angular, importação da planilha ou Tauri.
 
 ## Falhas técnicas e segurança das respostas
 
@@ -1722,3 +1726,64 @@ conter mensagens e stack traces internos: evitar incluir credenciais ou dados
 pessoais em mensagens de exceção e restringir acesso e retenção dos logs conforme o
 ambiente. A resposta HTTP é deliberadamente genérica; detalhes de implementação
 não devem ser adicionados ao corpo nem a headers.
+
+## Inicialização do host local (API-01/1.3)
+
+A API agora compõe `Aplicacao` e `Infraestrutura` como composition root. Antes de abrir
+o listener Kestrel, valida as opções de hosting/porta, o destino e o segredo; registra
+os serviços e chama `IPreparacaoArmazenamentoVendas.PrepararAsync` explicitamente. Se
+a preparação falhar ou lançar exceção inesperada, o host termina sem servir; o
+diagnóstico é genérico e não inclui caminho, SQL, segredo nem mensagem/exceção. O
+cancelamento de startup continua propagado. O host não cria o diretório pai, não faz
+seed e não repara nem sobrescreve banco incompatível.
+
+| Configuração | Regra |
+| --- | --- |
+| `Backend__Porta` | Opcional; padrão 5070, inteiro entre 1024 e 65535; listener somente em `127.0.0.1`. Sobrescritas de endpoints continuam recusadas. |
+| `Backend__CaminhoBanco` | Obrigatória; destino absoluto de arquivo, com diretório pai já existente. A configuração inválida falha antes de inicializar armazenamento. |
+| `Backend__SegredoLocal` | Obrigatória e lida diretamente do ambiente do processo; Base64 canônico de exatamente 32 bytes. Não aceita valor de appsettings ou argumento de linha de comando. Não imprimir nem persistir o segredo. |
+
+Para iniciar em desenvolvimento, configure `Backend__CaminhoBanco` com o destino local
+e forneça `Backend__SegredoLocal` ao ambiente do processo por um iniciador seguro; não
+coloque o segredo em argumento, appsettings, histórico de comandos ou logs. A partir de
+`backend/`, o comando de execução é:
+
+```powershell
+dotnet run --project src/VendasEmAberto.Api/VendasEmAberto.Api.csproj -c Release
+```
+
+Em destino novo, a preparação cria o schema e estado técnico na revisão zero, sem
+vendas de exemplo. Reinicialização conserva revisão e registros. `HealthEndpointTests`,
+`RotasNaoImplementadasTests` e `FalhasTecnicasTests` usam `HostApiFixture`: cada host
+recebe banco/segredo sintéticos próprios, as alterações às variáveis globais de
+ambiente são serializadas e restauradas no cleanup. `ConfiguracaoHostApiTests` prova
+banco vazio no primeiro startup, ausência de I/O para configurações inválidas,
+recusa de fallback de segredo vindo da configuração, reinício preservando venda/revisão
+e recusa de banco alheio/futuro sem mudança de bytes.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet restore VendasEmAberto.slnx --force-evaluate
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConfiguracaoBackendTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConfiguracaoHostApiTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~HealthEndpointTests|FullyQualifiedName~RotasNaoImplementadasTests|FullyQualifiedName~FalhasTecnicasTests"
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ComposicaoInternaTests|FullyQualifiedName~InicializadorSqliteTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+```
+
+Resultados: restore bloqueado passou; 27 testes unitários de configuração, 6 testes
+host-level de bootstrap, 16 regressões de health/rotas/falhas e 9 testes de composição/
+inicialização passaram; build Release terminou com 0 avisos e 0 erros. A referência
+intencional da API para Infraestrutura adicionou EF Core/SQLite ao grafo transitivo e
+os lockfiles da API e dos projetos de teste foram atualizados somente pelo restore do
+grafo; a listagem confirma EF Core/SQLite em API e nenhum pacote transitivo no Domínio.
+
+Também foi iniciado o binário Release em processo próprio, com banco/segredo temporários
+e porta livre: health respondeu `200 text/plain Healthy`, o listener observado foi
+`127.0.0.1`, o banco foi preparado, a saída não continha caminho/segredo e o processo
+foi encerrado com a porta liberada. Processos negativos recusaram segredo fornecido
+somente por argumento e pai inexistente antes de criar banco/diretório ou manter
+listener. Essa etapa não exercita autenticação comercial, ainda não implementada; nem
+substitui o smoke completo de API-05/5.4.
