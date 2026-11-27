@@ -1834,7 +1834,9 @@ incorreta/duplicada; 401 antes do binding de JSON inválido; execução do handl
 após autenticação; sucesso/falha sem cache; troca do segredo entre inicializações;
 e ausência de credenciais capturadas em respostas/logs. O handler usa comparação
 constante de bytes. As rotas comerciais de produção ainda serão adicionadas nas
-próximas tarefas; a suíte monta endpoints de prova somente em TestServer.
+próximas tarefas; a primeira consulta de produção, GET `/api/v1/vendas/detalhe`, está
+documentada abaixo. Endpoints de prova usados nos testes transversais continuam
+restritos ao TestServer.
 
 ## Consulta interna consolidada da Visão Geral (API-02/2.1–2.2)
 
@@ -1874,3 +1876,36 @@ independentes, datas nos anos 0001/9999 e imutabilidade das listas. A integraç�
 revisão/referência e valores, transita vendas por Inativa/Prejuízo/Ativa sem estornar
 recebimentos (60.500 centavos), preserva a resposta anterior e confirma revisão 5 após
 nova reabertura. Não foi acessado banco operacional ou alterada a UI.
+
+## Consulta HTTP de detalhe da venda (API-03/3.1)
+
+`GET /api/v1/vendas/detalhe` exige Bearer e os parâmetros únicos `vendaId` e
+`referencia` (`yyyy-MM-dd`) na query. O ID é opaco: consumidores devem codificá-lo como
+um único valor de query e o host o decodifica uma vez, sem aparar nem reinterpretar
+`/`, `%`, `+`, `?`, `#` ou Unicode. A resposta 200 tem `resumo`, `parcelas` e
+`recebimentos`, preservando campos, vínculos e ordem dos DTOs internos; o mapper HTTP
+declara DTOs/enums próprios e converte explicitamente cada status, situação, forma e
+origem. Valores monetários continuam inteiros em centavos, datas são ISO civis,
+`revisao` é string decimal canônica inclusive nos resumos, e nulabilidade/listas são
+preservadas. O endpoint é somente leitura e respostas comerciais mantêm `no-store`.
+
+ID inexistente retorna 404 `venda-inexistente`; query ausente, vazia, duplicada ou
+referência inválida retorna 400 `requisicao-invalida`, sem chamar a consulta para
+parâmetros incompletos. O teste de integração grava uma venda sintética com entrada,
+lote e pagamento individual num SQLite temporário, fecha o primeiro host e reabre o
+mesmo arquivo em outro host antes de consultar. O oráculo JSON compara todos os campos
+literalmente, incluindo ordem, nulabilidade, Unicode, alocações e ID reservado
+`venda/%+?#🧾`; outra verificação cobre 400/404 e confirma revisão 1/uma venda após as
+requisições GET, sem avanço ou escrita.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter FullyQualifiedName~ConsultarVendaDetalheEndpointTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite aprovados; build Release com 0 avisos/erros e
+verificação de formato aprovados. Não foi iniciado smoke da DLL nem acessado banco
+operacional; o smoke completo permanece na tarefa 5.4.
