@@ -119,6 +119,10 @@ validação estrutural de unknown. Revisão sempre string canônica 0..long.MaxV
 centavos number seguro, datas ISO sem Date/UTC, enums explícitos e null/arrays. IDs
 em query/body, codificados uma vez, sem trim ou segmentação. Fonte de referência
 reutiliza a política atual sem instanciar demo/seed no modo HTTP. Mês não muda referência.
+Cada método de comando recebe explicitamente a revisão observada junto do payload; a
+fonte demo permite `null`, sem criar revisão fictícia, e o cliente HTTP falha antes de
+enviar se a revisão não for textual e canônica. A referência serializada vem do token fixo
+da sessão, nunca do relógio consultado a cada request.
 
 Não usar `Number(revisao)` nem supor que o tipo genérico de HttpClient valida JSON.
 Resposta inválida em leitura é falha de contrato; após envio de comando é resultado
@@ -145,6 +149,8 @@ Revisão do detalhe é fixada ao abrir/preparar edição/status/baixa/correção
 adquire revisão por consulta de coleção antes de habilitar confirmação. Não renovar
 revisão no submit nem adotar a mais recente recebida por outro contexto. 409 preserva
 rascunho e alvo; exigir recarga explícita e novo aceite, nunca deslocar parcela.
+O chamador passa essa revisão observada ao método de comando da fonte; o cliente não a
+busca nem a infere do último snapshot global.
 
 Coordenador por aba garante um comando em andamento, uma subscription, sem retry ou
 resubscription por navegação. Tela destruída não cancela o acompanhamento da escrita;

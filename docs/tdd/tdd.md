@@ -129,6 +129,10 @@ revisão string canônica 0..long.MaxValue, dinheiro number inteiro seguro, ISO 
 enums textuais exatos e IDs não aparados. Validar respostas como unknown: tipos
 genéricos de HttpClient não validam JSON em runtime. Resposta incompatível não é sucesso.
 Mapear enums/campos explicitamente para modelos de apresentação; null/listas preservados.
+Cada comando da fonte recebe o payload e a revisão observada explicitamente (`string | null`);
+demo não fabrica revisão, enquanto o cliente HTTP recusa null/não canônica antes de enviar.
+A referência vem do token fixado na composição e é serializada em cada operação. Não obter
+revisão global, renovar no submit nem ler relógio por request.
 
 Consultas usam discriminated union `inicial/carregando/pronto/erro/inexistente`, com
 chave ID/coleção/mês/referência e geração de invalidação. Não usar arrays vazios como
