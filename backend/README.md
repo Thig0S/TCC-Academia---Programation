@@ -2128,3 +2128,38 @@ confirmada, Location corretamente codificada e consulta após reiniciar o host; 
 revision e media type incorreto sem save, venda persistida ou avanço de revisão. Um teste
 unitário verifica o mapeamento seguro do erro de calendário. Fixture e SQLite são
 temporários/sintéticos; não houve acesso a banco operacional.
+
+## Edição HTTP de cliente da venda (API-04/4.2)
+
+`PUT /api/v1/vendas/cliente` exige Bearer e `application/json`, com `vendaId`, `nome`,
+`cpf`, `telefone`, `referencia`, `revisaoEsperada` (string decimal canônica) e
+`descricao` opcional/nullable. Somente os quatro dados cadastrais são enviados ao caso
+de uso; propriedades adicionais, inclusive financeiras ou administrativas, são ignoradas.
+O ID é opaco e permanece no corpo. Sucesso retorna 200 com o detalhe completo e revisão
+confirmada. A edição vale para vendas Ativas abertas/quitadas, Inativas e em Prejuízo;
+CPF repetido entre vendas é permitido e altera somente o cliente da venda-alvo. Status,
+contrato, parcelas, recebimentos e seus IDs/alocações permanecem intactos.
+
+Dados de cliente são normalizados pelas fábricas existentes antes da comparação de no-op.
+Uma edição normalizada idêntica retorna 200 sem save/avanço da revisão; revisão obsoleta
+retorna 409 antes dessa comparação, também sem save. Falhas de campo retornam Problem
+Details seguro com campo público e não persistem candidato. Respostas comerciais mantêm
+`Cache-Control: no-store`.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests|FullyQualifiedName~CadastrarVendaEndpointTests|FullyQualifiedName~EditarClienteVendaEndpointTests|FullyQualifiedName~EditarClienteVendaSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~EditarClienteVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 21 testes HTTP/SQLite (seis consultas, cadastro, edição HTTP e edição
+persistida preexistente) e 4 testes unitários do handler aprovados; build Release com 0
+avisos/erros e verificação de formato aprovados. Após reabrir SQLite, os testes cobrem
+edição nos quatro status, CPF compartilhado sem propagação, campos financeiros extras
+ignorados, status/contrato/parcelas/pagamentos preservados, no-op com revisão estável e
+revisão antiga 409 inclusive no no-op. CPF inválido, telefone ausente, chave conhecida
+duplicada e revisão não canônica apontam campos seguros e não salvam. Dados/arquivos são
+sintéticos e temporários; não houve acesso a banco operacional.
