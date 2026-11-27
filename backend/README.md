@@ -1967,3 +1967,35 @@ incluídos sem contaminar a dívida operacional. Banco vazio mantém zeros/revis
 limite seguro `9.007.199.254.740.991` foi verificado como token numérico inteiro tanto
 em aberto quanto recebido, antes e após registrar a quitação do cenário sintético; consultas
 não avançaram as revisões 1 e 2. Não houve acesso a banco operacional.
+
+## Consulta HTTP por período (API-03/3.4)
+
+`GET /api/v1/periodo` exige Bearer e os parâmetros únicos `inicio`, `fim` e
+`referencia`, todos no formato civil `yyyy-MM-dd`. A resposta 200 mantém os limites,
+`recebidosCentavos`, revisão textual, referência e a lista de resumos `vendas`. A lista
+inclui somente vendas Ativas cuja `dataVenda` esteja dentro do intervalo inclusivo,
+preservando a ordem do conjunto; `recebidosCentavos` soma recebimentos efetivos de todos
+os status pela data de recebimento, inclusive venda originada fora do período. Intervalo
+vazio retorna 200 com lista vazia e zero recebidos. Datas ausentes/malformadas retornam
+400 `requisicao-invalida`; `inicio > fim` retorna 400 `periodo-invalido`. A consulta não
+prepara nem grava e a resposta comercial usa `no-store`.
+
+Exemplo sintético: `/api/v1/periodo?inicio=2027-03-01&fim=2027-03-31&referencia=2027-04-02`.
+Os dados e datas do exemplo não são registros operacionais.
+
+Verificações executadas em 26/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 2 testes HTTP/SQLite do período e 7 regressões dos três endpoints anteriores
+aprovados; build Release com 0 avisos/erros e verificação de formato aprovados. O cenário
+confere vendas nas duas bordas inclusivas, exclui venda Ativa fora do intervalo e vendas
+Inativa/Prejuízo, mas soma pela data efetiva recebimentos de Ativas nas bordas e fora do
+intervalo, além de Inativa/Prejuízo (38.000 centavos). Os resumos esperados comparam todos
+os campos e a ordem. Banco vazio, parâmetros ausentes/data impossível e intervalo invertido
+retornaram os status/códigos esperados; revisões 1 e 0 e seus conjuntos permaneceram sem
+alteração após as consultas.
