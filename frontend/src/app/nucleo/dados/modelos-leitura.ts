@@ -5,6 +5,13 @@ export type SituacaoParcelaLeitura = 'Paga' | 'Atrasado' | 'Próximos dias' | 'A
 export type OrigemRecebimentoLeitura = 'Entrada' | 'Lote' | 'Individual';
 export type ColecaoVendas = 'abertas' | 'quitadas' | 'inativas' | 'prejuizos';
 
+export interface ColecaoVendasLeitura {
+  readonly colecao: ColecaoVendas;
+  readonly referencia: string;
+  readonly revisao: string | null;
+  readonly vendas: readonly VendaResumoLeitura[];
+}
+
 export interface ClienteLeitura {
   readonly nome: string;
   readonly cpf: string;

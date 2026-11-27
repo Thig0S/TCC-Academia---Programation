@@ -32,6 +32,7 @@ import { subtrairCentavos, somarCentavos } from '../../funcionalidades/vendas/di
 import { ServicoDemonstracao } from '../demonstracao/servico-demonstracao';
 import {
   ColecaoVendas,
+  ColecaoVendasLeitura,
   FormaPagamentoLeitura,
   IndicadoresVisaoGeralLeitura,
   ParcelaAtrasadaMensalLeitura,
@@ -46,7 +47,7 @@ import {
   VendaResumoLeitura,
   VisaoGeralLeitura,
 } from './modelos-leitura';
-import { FonteVendas } from './fonte-vendas';
+import { ComandoComRevisao, FonteVendas } from './fonte-vendas';
 
 function mapearForma(forma: string): FormaPagamentoLeitura {
   if (!formaAceita(forma)) throw new RangeError('Forma de pagamento demonstrativa inválida.');
@@ -262,7 +263,7 @@ export class FonteVendasDemonstracao implements FonteVendas {
   private readonly servico = inject(ServicoDemonstracao);
   readonly referencia = this.servico.referencia;
 
-  consultarColecao(colecao: ColecaoVendas): Observable<readonly VendaResumoLeitura[]> {
+  consultarColecao(colecao: ColecaoVendas): Observable<ColecaoVendasLeitura> {
     return defer(() => {
       const vendas = {
         abertas: this.servico.abertas(),
@@ -270,7 +271,12 @@ export class FonteVendasDemonstracao implements FonteVendas {
         inativas: this.servico.inativas(),
         prejuizos: this.servico.prejuizos(),
       }[colecao];
-      return of(vendas.map((venda) => mapearResumo(venda, this.referencia)));
+      return of({
+        colecao,
+        referencia: this.referencia,
+        revisao: null,
+        vendas: vendas.map((venda) => mapearResumo(venda, this.referencia)),
+      });
     });
   }
 
@@ -308,24 +314,34 @@ export class FonteVendasDemonstracao implements FonteVendas {
     );
   }
 
-  cadastrarVenda(comando: ComandoCadastro): Observable<Resultado<VendaDetalheLeitura>> {
-    return this.executarComando(() => this.servico.cadastrarVenda(comando));
+  cadastrarVenda(
+    entrada: ComandoComRevisao<ComandoCadastro>,
+  ): Observable<Resultado<VendaDetalheLeitura>> {
+    return this.executarComando(() => this.servico.cadastrarVenda(entrada.comando));
   }
 
-  editarCliente(comando: ComandoEdicaoCliente): Observable<Resultado<VendaDetalheLeitura>> {
-    return this.executarComando(() => this.servico.editarCliente(comando));
+  editarCliente(
+    entrada: ComandoComRevisao<ComandoEdicaoCliente>,
+  ): Observable<Resultado<VendaDetalheLeitura>> {
+    return this.executarComando(() => this.servico.editarCliente(entrada.comando));
   }
 
-  alterarStatus(comando: ComandoMudancaStatus): Observable<Resultado<VendaDetalheLeitura>> {
-    return this.executarComando(() => this.servico.alterarStatus(comando));
+  alterarStatus(
+    entrada: ComandoComRevisao<ComandoMudancaStatus>,
+  ): Observable<Resultado<VendaDetalheLeitura>> {
+    return this.executarComando(() => this.servico.alterarStatus(entrada.comando));
   }
 
-  registrarPagamento(comando: ComandoPagamento): Observable<Resultado<VendaDetalheLeitura>> {
-    return this.executarComando(() => this.servico.registrarPagamento(comando));
+  registrarPagamento(
+    entrada: ComandoComRevisao<ComandoPagamento>,
+  ): Observable<Resultado<VendaDetalheLeitura>> {
+    return this.executarComando(() => this.servico.registrarPagamento(entrada.comando));
   }
 
-  corrigirPagamento(comando: ComandoCorrecaoPagamento): Observable<Resultado<VendaDetalheLeitura>> {
-    return this.executarComando(() => this.servico.corrigirPagamento(comando));
+  corrigirPagamento(
+    entrada: ComandoComRevisao<ComandoCorrecaoPagamento>,
+  ): Observable<Resultado<VendaDetalheLeitura>> {
+    return this.executarComando(() => this.servico.corrigirPagamento(entrada.comando));
   }
 
   private executarComando(

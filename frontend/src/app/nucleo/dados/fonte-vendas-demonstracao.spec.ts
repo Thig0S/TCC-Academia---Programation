@@ -37,19 +37,20 @@ describe('Adaptador assíncrono da demonstração', () => {
     const abertas = await firstValueFrom(fonte.consultarColecao('abertas'));
     const esperadas = demonstracao.abertas();
 
-    expect(abertas.map((venda) => venda.id)).toEqual(esperadas.map((venda) => venda.id));
-    expect(abertas[0]).toMatchObject({
+    expect(abertas).toMatchObject({ colecao: 'abertas', referencia, revisao: null });
+    expect(abertas.vendas.map((venda) => venda.id)).toEqual(esperadas.map((venda) => venda.id));
+    expect(abertas.vendas[0]).toMatchObject({
       referencia,
       revisao: null,
       valorTotalCentavos: esperadas[0].valorTotalCentavos,
       valorTotalEfetivoCentavos: esperadas[0].valorTotalEfetivoCentavos,
       saldoCentavos: esperadas[0].saldoCentavos,
     });
-    expect(abertas[0]).not.toHaveProperty('recebimentos');
+    expect(abertas.vendas[0]).not.toHaveProperty('recebimentos');
 
-    const detalheResultante = await firstValueFrom(fonte.consultarVenda(abertas[0].id));
+    const detalheResultante = await firstValueFrom(fonte.consultarVenda(abertas.vendas[0].id));
     const detalhe = valorSucesso(detalheResultante);
-    expect(detalhe.resumo.id).toBe(abertas[0].id);
+    expect(detalhe.resumo.id).toBe(abertas.vendas[0].id);
     expect(detalhe.resumo.revisao).toBeNull();
     expect(detalhe.parcelas).toHaveLength(esperadas[0].parcelas.length);
     expect(detalhe.recebimentos.length).toBeGreaterThan(0);
@@ -97,7 +98,7 @@ describe('Adaptador assíncrono da demonstração', () => {
     const fonte = TestBed.inject(FonteVendasDemonstracao);
     const demonstracao = TestBed.inject(ServicoDemonstracao);
     const quantidadeInicial = demonstracao.vendas().length;
-    const comando = fonte.cadastrarVenda(cadastro());
+    const comando = fonte.cadastrarVenda({ comando: cadastro(), revisaoEsperada: null });
 
     expect(demonstracao.vendas()).toHaveLength(quantidadeInicial);
 

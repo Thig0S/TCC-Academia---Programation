@@ -457,6 +457,50 @@ uso de HTTP ou integração das telas. Prettier direcionado aos arquivos TS/JSON
 `git diff --check` passaram. Sem E2E novo, alteração de dependências, API, armazenamento,
 `start:local` ou ativação da fonte HTTP.
 
+### Apply `fase-006-integracao-angular` — tarefa 2.2 — cliente HTTP wire v1 (27/11/2026)
+
+`FonteVendasHttp` usa somente `/api/v1` relativo à origem same-origin do proxy. GET de
+coleção, detalhe, Visão Geral e relatório mensal transportam a referência capturada na
+sessão; coleção preserva `revisao` no envelope inclusive sem vendas. Os cinco comandos
+recebem `{ comando, revisaoEsperada }`, validam revisão decimal textual canônica até
+`9223372036854775807` antes de enviar e nunca fazem refresh. O cliente não envia token,
+Authorization nem credencial de proxy; o gate Node continua responsável pelo Bearer no
+upstream.
+
+`contratos-api.ts` recebe sucesso como `unknown` e valida objeto/campos obrigatórios,
+listas/null, enums exatos, centavos inteiros seguros, datas civis sem `Date`/UTC e revisões
+sem conversão numérica. Os mappers mantêm campos wire e modelos de apresentação separados,
+conferem referência/revisão dos resumos aninhados e não recalculam saldos/totais. IDs de
+consulta usam codec RFC 3986 estrito no `HttpParams`, preservados sem aparar e codificados
+uma única vez. Enum wire `Prejuizo`, `ProximosDias`, `CartaoDebito` e `HistoricoLote` é
+traduzido explicitamente para os modelos de leitura; `descricao`, datas/pagamento nulos e
+arrays vazios são preservados. Erros Problem Details estruturados viram `Resultado` tipado;
+falhas de transporte ou resposta incompatível permanecem no canal de erro para a camada de
+coordenação classificá-las sem publicar sucesso.
+
+O build configuration `local` agora registra `provideHttpClient()` e liga
+`FONTE_VENDAS_LOCAL` ao cliente. O build padrão continua só com provider demo; `serve:local`
+segue apontando para `build:development`, sem ativar HTTP antes da conexão das telas.
+Fixture mensal sintética cobre `HistoricoLote` como recebimento `Lote`; não foi criado
+comando ou endpoint de lote. `ComandoPagamento.valorCentavos` ausente falha antes do envio,
+sem inferir valor financeiro no cliente.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/fonte-vendas-http.spec.ts --include src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts --include src/app/nucleo/dados/composicao-fonte-vendas.spec.ts
+npm run build -- --configuration local
+npm test -- --watch=false
+npm run build
+```
+
+Resultado: **22/22 testes direcionados** e **452/452 testes em 36 arquivos**. Build local
+compilou com provider HTTP (1,58 MB sem otimização); build padrão passou com 322,14 kB
+iniciais. A compilação local não representa ativação em `serve:local` nem aceite de telas.
+Prettier direcionado aos arquivos TS/JSON, `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Sem novas dependências,
+alteração da API, exposição de credencial, seletor runtime ou ativação do proxy na demo.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

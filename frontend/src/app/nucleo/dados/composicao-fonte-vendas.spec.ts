@@ -6,6 +6,7 @@ import { REFERENCIA_SESSAO, RELOGIO_SESSAO } from './referencia-sessao';
 import { REFERENCIA_DEMONSTRACAO } from '../demonstracao/referencia-demonstracao';
 import { ServicoDemonstracao } from '../demonstracao/servico-demonstracao';
 import { provedoresFonteVendas as provedoresLocais } from '../../../configuracoes/provedores-fonte-vendas.local';
+import { FonteVendasHttp } from './fonte-vendas-http';
 
 describe('Composição da fonte de vendas', () => {
   it('mantém a composição padrão demonstrativa sem fonte local nem cliente HTTP', () => {
@@ -44,7 +45,7 @@ describe('Composição da fonte de vendas', () => {
     expect(instanciacoesDemonstrativas).toBe(0);
   });
 
-  it('falha fechada quando a fonte local não foi fornecida, sem fallback demonstrativo', () => {
+  it('liga a configuração local ao cliente HTTP sem instanciar ou recorrer à demonstração', () => {
     let instanciacoesDemonstrativas = 0;
     TestBed.configureTestingModule({
       providers: [
@@ -59,7 +60,7 @@ describe('Composição da fonte de vendas', () => {
       ],
     });
 
-    expect(() => TestBed.inject(FONTE_VENDAS)).toThrow();
+    expect(TestBed.inject(FONTE_VENDAS)).toBeInstanceOf(FonteVendasHttp);
     expect(instanciacoesDemonstrativas).toBe(0);
   });
 

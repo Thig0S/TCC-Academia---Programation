@@ -12,9 +12,9 @@ import {
 } from '../../funcionalidades/vendas/venda.modelos';
 import {
   ColecaoVendas,
+  ColecaoVendasLeitura,
   RelatorioMensalLeitura,
   VendaDetalheLeitura,
-  VendaResumoLeitura,
   VisaoGeralLeitura,
 } from './modelos-leitura';
 
@@ -22,16 +22,32 @@ import {
 export interface FonteVendas {
   readonly referencia: string;
 
-  consultarColecao(colecao: ColecaoVendas): Observable<readonly VendaResumoLeitura[]>;
+  consultarColecao(colecao: ColecaoVendas): Observable<ColecaoVendasLeitura>;
   consultarVenda(id: string): Observable<Resultado<VendaDetalheLeitura>>;
   consultarVisaoGeral(): Observable<VisaoGeralLeitura>;
   consultarRelatorioMensal(mes: string): Observable<RelatorioMensalLeitura>;
 
-  cadastrarVenda(comando: ComandoCadastro): Observable<Resultado<VendaDetalheLeitura>>;
-  editarCliente(comando: ComandoEdicaoCliente): Observable<Resultado<VendaDetalheLeitura>>;
-  alterarStatus(comando: ComandoMudancaStatus): Observable<Resultado<VendaDetalheLeitura>>;
-  registrarPagamento(comando: ComandoPagamento): Observable<Resultado<VendaDetalheLeitura>>;
-  corrigirPagamento(comando: ComandoCorrecaoPagamento): Observable<Resultado<VendaDetalheLeitura>>;
+  cadastrarVenda(
+    entrada: ComandoComRevisao<ComandoCadastro>,
+  ): Observable<Resultado<VendaDetalheLeitura>>;
+  editarCliente(
+    entrada: ComandoComRevisao<ComandoEdicaoCliente>,
+  ): Observable<Resultado<VendaDetalheLeitura>>;
+  alterarStatus(
+    entrada: ComandoComRevisao<ComandoMudancaStatus>,
+  ): Observable<Resultado<VendaDetalheLeitura>>;
+  registrarPagamento(
+    entrada: ComandoComRevisao<ComandoPagamento>,
+  ): Observable<Resultado<VendaDetalheLeitura>>;
+  corrigirPagamento(
+    entrada: ComandoComRevisao<ComandoCorrecaoPagamento>,
+  ): Observable<Resultado<VendaDetalheLeitura>>;
+}
+
+/** Revisão do snapshot que autorizou a confirmação; null existe somente na demonstração. */
+export interface ComandoComRevisao<T> {
+  readonly comando: T;
+  readonly revisaoEsperada: string | null;
 }
 
 export const FONTE_VENDAS = new InjectionToken<FonteVendas>('Fonte assíncrona de vendas');
