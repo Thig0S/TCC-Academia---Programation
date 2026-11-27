@@ -2307,3 +2307,44 @@ IDs ausentes/externos, entrada, lote, venda Inativa, valor menor, data posterior
 referência, forma inválida, observação acima de 20 valores escalares e revisão obsoleta
 retornam status/códigos esperados sem save. Arquivos e dados são sintéticos/temporários;
 não houve acesso a banco operacional.
+
+## Verificação HTTP transversal de concorrência e confirmação (API-05/5.1)
+
+Os cenários abaixo complementam — não substituem — os testes próprios de cada endpoint.
+Dois `HttpClient`s independentes disputam comandos distintos na revisão 1 por uma barreira
+após ambos carregarem a mesma revisão. Com SQLite real, um recebe 200/revisão 2, o outro
+409 `conflito-revisao`; após descartar o host, reabrir o banco confirma revisão 2, conjunto
+completo e alteração somente da venda vencedora, sem retry do handler.
+
+No cancelamento pré-commit, o cliente HTTP cancela enquanto o gravador SQLite real está
+dentro da transação, após a primeira alteração e antes da confirmação. O token recebido
+pela intervenção transacional é observado cancelado; o pedido termina sem resposta de
+sucesso/erro comercial e a reabertura confirma revisão e venda originais. O caso tardio
+usa `RequestAborted` controlado no TestServer: o hook confirma o commit SQLite, cancela o
+token e retorna; a API mantém 200 e revisão confirmada. Isso testa a ordem do token e do
+commit sem alegar que uma resposta possa chegar após uma desconexão de rede real.
+
+Para confirmação indeterminada, um hook de teste lança `IOException` sintética depois de
+confirmar um commit SQLite real. A resposta HTTP é 500 Problem Details com
+`codigo: "confirmacao-indeterminada"` e `resultadoOperacao: "indeterminado"`, sem revisão,
+sucesso ou alegação de rollback. Contadores do armazenamento no limite do handler mostram
+uma carga inicial e uma tentativa de save, sem nova carga nem retry após a falha; ao
+reabrir, o teste comprova que o commit aconteceu. Essa falha de confirmação é injetada pelo
+seam de teste, não é falha nativa do SQLite/SO; não se simularam desconexão de rede real,
+perda de energia ou falha nativa durante o commit. Em timeout/desconexão, a entrega da
+resposta e o desfecho podem permanecer desconhecidos; consumidores não devem repetir
+comandos cegamente e precisam conferir o estado antes de decidir.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConcorrenciaCommandsEndpointTests|FullyQualifiedName~ConcorrenciaCommandsSqliteTests|FullyQualifiedName~GravadorVendasSqliteTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 21 testes de integração direcionados aprovados (4 HTTP transversais, concorrência
+de Commands no nível de aplicação e testes do gravador SQLite); build Release com 0
+avisos/erros e verificação de formato aprovados. Os testes usam apenas IDs, dados e arquivos
+sintéticos/temporários; nenhum banco operacional foi acessado. A cobertura não prova
+entrega após desconexão real nem falha nativa de confirmação.
