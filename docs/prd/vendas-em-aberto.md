@@ -175,8 +175,9 @@ processos não continha os marcadores sintéticos auditados.
 
 A validação integral/backend/frontend e as limitações estão registradas no README; o
 frontend não foi conectado à API, não houve mudança de schema, Tauri, seed ou dados
-operacionais, e não se afirma homologação/aceite da ótica. A conclusão técnica da
-Change não equivale a merge ou autorização para uso real.
+operacionais, e não se afirma homologação/aceite da ótica. A Change foi arquivada em
+`openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`. A conclusão
+técnica não equivale a merge ou autorização para uso real.
 
 ### 13. Riscos e mitigação
 
