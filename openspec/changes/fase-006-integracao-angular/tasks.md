@@ -1,0 +1,100 @@
+# Tasks
+
+Base: PRD/FON-047/048/RF-037–043/CA-069–078 → TDD/DEC-042 → proposal → sete deltas
+em `specs/` → design/D1–D7 → INT-01–06. **Somente planejamento autorizado. Todas as
+tarefas estão pendentes; nenhum apply, pacote, build ou teste de aplicação executado.**
+
+Gate anterior ao apply: revisão dos artefatos, pedido explícito de implementação e
+PR #41 integrado com contrato equivalente ao head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`.
+Se contrato mudar, revisar PRD/TDD/SDD antes de código dependente. Não mesclar o PR #41
+nem copiar seu código silenciosamente. Continuar na mesma feature desta Change,
+integrando a main atualizada com preservação de trabalho existente.
+
+Cada funcionalidade inclui testes, documentação em `frontend/README.md` (e backend
+somente se necessário) e atualização desta lista; executar suas verificações antes
+do commit próprio, em português. Planejamento/documentação independente tem commit
+separado. Não juntar consultas ou cinco comandos independentes num commit final grande.
+Builds/testes sequenciais na mesma saída; só dados sintéticos e processos próprios.
+Não criar pacote novo, endpoint seed, reset, integração desktop ou dados reais.
+
+## 1. INT-01 — Baseline e gate do proxy local
+
+- [ ] 1.1 Confirmar integração do PR #41 e disponibilidade dos endpoints/campos/revisão textual/credencial em código e specs integrados; conferir versões de Node/npm/Angular e SDK conforme manifestos/global.json, sem atualizar baseline. Comparar a fase 005 com a referência do planejamento e registrar divergências ou equivalência em README/tarefas. Verificar estado Git limpo ou alterações próprias antes de integrar main à feature; parar em decisão/ambiente incompatível, sem instalar SDK global ou executar código dependente com requisito aberto.
+- [ ] 1.2 Criar configuração Node do proxy e gate testável de DEC-042/9/D2, sem habilitar proxy no start/build padrão: ambiente para segredo/porta, alvo fixo loopback, match `/api/v1`, métodos admitidos, Host e Fetch Metadata/Origin exatos, rawHeaders contra duplicatas, remoção de auth/cookie de entrada e Bearer somente após admissão. Testes unitários com Node built-in cobrem configuração inválida, origem null/externa/ausente/duplicada, same-site/none/cross-site, métodos/upgrade, destino fixo e zero chamada upstream nas recusas. Documentar execução local sintética, limites e ausência de segredo persistido; testes direcionados antes do commit de proteção.
+- [ ] 1.3 Adicionar perfil serve local em loopback/configuração proxy e script proposto `start:local`; executar gate com CLI real 22.2.6 e upstream temporário próprio, comprovando match com query/IDs reservados, admissão do browser, recusa sem encaminhamento, encerramento correto do hook, erro 502/no-store seguro e logging sem marcadores de URL/body/segredo. Conferir credencial ausente de assets/respostas e rejeição na API quando segredo de formato válido não corresponde. Manter defaults/Pages sem proxy; registrar fontes/versão/evidências e commit próprio. Se hooks/ordem/logging não cumprirem contrato, parar e revisar DEC-042/SDD antes de INT-02, sem enfraquecer gate, abrir CORS ou instalar pacote silenciosamente.
+
+## 2. INT-02 — Fronteira de dados, wire e coordenação
+
+- [ ] 2.1 Definir modelos de leitura/token/fonte assíncrona usados pelas telas e adaptar demonstração existente sem apagar cálculos/testes; introduzir composição demo/local via providers/fileReplacement e referência de sessão independente do seed. Implementar somente métodos realmente consumidos, sem store global genérico. Testes de composição comprovam modo padrão sem API/segredo, referência fixa incluindo meia-noite, nova abertura e fonte local sem instanciar demo nem fallback. Build/testes direcionados, documentação do contrato e commit de composição; configurar perfil local para usar a fonte HTTP, nunca demonstração temporária disfarçada.
+- [ ] 2.2 Implementar cliente e mapeamento wire v1 de D3 com validação estrutural unknown: revisão textual canônica até long.MaxValue, centavos seguros, datas civis extremas, IDs reservados/codificação única, enums/null/arrays. HttpTestingController verifica paths/query/bodies e recusa de resposta inválida, sem Number(revisao), Date/UTC, entidades do domínio demo ou cálculo financeiro no mapper. Cobrir representação mensal com lote sintético em fixture de contrato, sem novo comando de lote; documentar contrato/fontes e executar testes/build antes do commit.
+- [ ] 2.3 Implementar estados por chave/geração e controle de confirmação por aba conforme D4–D6: uma subscription, bloqueio de envio concorrente, revisão fixada, invalidação transversal, resultado acompanhado após destruição de componente e classificação de recusa/incerteza. Testes controlados cobrem resposta fora de ordem, leitura anterior ao commit, status 0/timeout/502/504/5xx/body inválido, confirmação indeterminada, zero retry e liberação apenas após consulta+reconhecimento. Não adiar esse protocolo básico até INT-05; documentar máquina de estados e registrar testes/commit próprios.
+
+## 3. INT-03 — Consultas das telas com estados acessíveis
+
+- [ ] 3.1 Integrar Vendas abertas/quitadas e coleções administrativas à fonte por modelos de resumo, preservando os quatro destinos, busca/situação/sort/paginação locais. Testes de componente e contrato cobrem 0/1/11/21 registros, termo sem resultado, ordem estável, página corrigida e ausência de consulta por detalhe para listar; loading/erro não vira vazio, falha local não ativa seed. Verificar teclado/temas e documentar evidências antes do commit da listagem.
+- [ ] 3.2 Integrar detalhe e carregamento por ID com histórico/entrada/recebimentos/alocações/origens preservados, sem reconstruir domínio TypeScript. Testes cobrem ID opaco/reservado, 404 contratual versus falha física/transporte, troca rápida de ID, consulta antiga após invalidação e retornos/foco; leitura não prepara/grava. Conferir exibição de até dez parcelas e acesso ao excedente nos dois temas; documentação/testes direcionados e commit do detalhe.
+- [ ] 3.3 Integrar Visão Geral pela consulta consolidada, sem fan-out ou cálculos de indicadores/listas no adaptador HTTP. Testes com resposta literal verificam quatro indicadores, limites e links dos três resumos, vazio independente por bloco, loading/erro e recebimentos de todos os status sem alterar referência; manter demo com seus cálculos existentes. Verificar teclado e temas/viewports; registrar testes/documentação e commit do painel.
+- [ ] 3.4 Integrar dashboard mensal pela API, preservando cinco cartões/seções expansíveis, seleção válida anterior, foco/abertura, série diária completa, tabela equivalente e exportação indisponível. Testes cobrem mudança rápida de mês com respostas invertidas, mês vazio com posição não vazia, bordas 0001/9999, nulabilidade/origens/lote em fixture wire, nenhum recálculo financeiro de totais e falha sem apresentar outro mês como atual. Documentar evidências e fechar commit de Relatórios após testes/build/inspeção dos temas.
+- [ ] 3.5 Desacoplar App/Configurações da demonstração concreta e adequar explicações e mensagens ao modo: demo descarta, local preserva negócios, referência fixa/renovada na recarga, tema em memória, somente sintéticos e conferência antes de repetir resposta perdida. Testes verificam ambos os modos, rotas diretas/reload, ausência de seletor fictício/reset/login e manutenção dos pontos explicativos sem banner global novo. Documentar limites e commit próprio com testes.
+
+## 4. INT-04 — Confirmações persistidas por funcionalidade
+
+- [ ] 4.1 Integrar cadastro com prévia/validação local preservadas, revisão adquirida antes de confirmar e POST único. Testes de formulário/HTTP cobrem entrada única, centavos/calendário, descrição ausente, campos wire→rascunho, cancelamento pré-envio, envio duplo, 409 sem refresh silencioso da revisão e resposta inválida/incerta sem sucesso; rascunho mantido. Sucesso navega para ID confirmado e invalida consultas; validar foco/teclado e documentação antes do commit do cadastro.
+- [ ] 4.2 Integrar edição dos quatro campos do cliente com revisão do detalhe ao preparar rascunho e PUT único. Testes cobrem campos/CPF repetido, no-op, preservação financeira, troca de ID antes de editar, erro associado ou resumo seguro para campo desconhecido, conflito com rascunho mantido e novo aceite após recarga; sem copiar revisão de outro contexto. Documentar evidências e executar testes direcionados/build antes do commit da edição.
+- [ ] 4.3 Integrar mudança administrativa com confirmação explícita, alvo/revisão originais e no-op sem incrementar revisão no backend. Testes cobrem matriz vigente, conflito em outra venda, não publicar antes de resposta, navegação durante envio e atualização de coleções/painel após sucesso sem replay. Conferir foco/restauração dos modais/temas; registrar documentação/testes e commit do status.
+- [ ] 4.4 Integrar baixa individual com parcela explícita e revisão preparada, valor/data/forma/observação atuais e POST `/api/v1/recebimentos`. Testes cobrem primeira pendente, sem salto/deslocamento, aviso de atraso, entrada não elegível, acréscimo permitido, nota Unicode, envio duplo, conflito, resposta perdida, cancelamento antes de enviar e fechamento depois de envio sem promessa de rollback. Verificar foco na próxima ação/quitação e invalidação; documentar resultados e commit da baixa com seus testes.
+- [ ] 4.5 Integrar correção individual com recebimento/alocação preservados e revisão original. Testes cobrem valor 11.000→10.500 sobre base 10.000, mudança de mês, ID existente/inelegível, entrada/lote não editáveis, mesmos dados sem duplicar recebimento, erro/cancelamento/conflito/resultado incerto e atualização mensal sem repetir escrita. Preservar rascunho/foco e documentar protocolo antes do commit da correção.
+
+## 5. INT-05 — Conferência e recuperação transversais
+
+- [ ] 5.1 Conectar alerta persistente na aba e fluxo de conferência a todos os cinco comandos/telas: sair de modal para consultar sem perder rascunho, consulta de coleção para cadastro/detalhe para demais, leitura bem-sucedida antes de habilitar reconhecimento explícito e bloqueio em falha. Testes de navegação entre features provam bloqueio global, zero replay no reconhecimento, rascunho preservado em memória e nenhuma inferência por semelhança de cliente. Reabertura nunca restaura/envia comando e mantém orientação de conferência; documentar limitações/testes e commit da recuperação integrada.
+- [ ] 5.2 Completar verificação transversal de refresh pós-sucesso, concorrência com leitura pendente e navegação durante escrita: sucesso confirmado permanece distinto de falha de consulta, dado antigo não sobrescreve revisão confirmada e outro comando não passa enquanto houver envio/incerteza. Testes de componentes/fonte comprovam uma escrita, anúncios/foco corretos e rascunhos intactos; documentar método/resultados e commit próprio de testes/ajustes, sem introduzir retry ou polling.
+
+## 6. INT-06 — Integração real, regressão e auditoria
+
+- [ ] 6.1 Criar configuração Playwright local isolada da demo e fixture de processos/banco próprios: API e CLI em loopback, segredo efêmero só no processo servidor, arquivo SQLite temporário, dados criados pela API direta autenticada e cleanup apenas dos recursos próprios. Teste de infraestrutura comprova inicial vazio, recusa sem segredo, proxy admitido/negado, portas liberadas e artefatos/logs sem credencial. Não reutilizar servidor alheio ou adicionar endpoint seed; isolar banco por worker ou usar worker único. Documentar execução/scripts propostos e commit da infraestrutura E2E.
+- [ ] 6.2 Executar E2E real para consultas e cinco comandos: cadastrar com/sem entrada, editar cliente, mudar status/reativar, baixa/correção entre meses, conferir coleções/indicadores/dashboard e filtros/paginação com mais de dez registros. Recarregar browser e reiniciar API no mesmo arquivo prova persistência/IDs e ausência de seed, com referência renovada; usar backend real sem substituir por mocks. Conferir os dois temas e viewports 1366×768/390×844, teclado e foco; registrar resultados próprios e commit de cobertura integrada.
+- [ ] 6.3 Executar E2E com duas abas para 409 e nova decisão após consulta, e cenários de resposta perdida antes/depois do backend confirmar: interceptar resposta após chamada real para o caso pós-commit, reler por consumidor independente e provar bloqueio/conferência sem duplicar. Cobrir falha na consulta de conferência e falha no refresh depois de sucesso conhecido. Identificar em documentação o que é falha controlada de transporte versus prova transacional nativa; não alegar exactly-once/falha nativa de commit. Registrar evidências e commit de concorrência/incerteza.
+- [ ] 6.4 Repetir regressão demo com API desligada: testes unitários, E2E existentes, fixture de paginação, build padrão e conferência Pages sem chamadas comerciais/segredo; executar build local, testes de proxy, formatação e E2E local. Repetir sequencialmente backend restore locked/build Release/test/format e auditoria conforme comandos da baseline integrada. Registrar executáveis/versões/comandos/contagens/códigos de saída reais no README e tarefas; contagens históricas não são expectativa fixa e SDK ausente é bloqueio sem autorização herdada de instalação.
+- [ ] 6.5 Auditar privacidade/compatibilidade/acessibilidade e rastreabilidade de todas as sete deltas contra CA-069–078: marcadores de segredo ausentes de browser/bundles/logs/traces, rejeição de origem antes do upstream, zero browser storage comercial, precisão, foco/anúncios/contraste, formulário na fronteira 767/768 e densidade no estado pronto. Verificar zoom nativo 200% quando possível e registrar limitação sem substituir por viewport. Consolidar estado real em PRD/TDD/README/tarefas, executar `openspec validate fase-006-integracao-angular --strict` e `git diff --check`, revisar diff contra main atualizada e ausência de dados reais/schema/seed/desktop/alterações alheias. Commit documental final; pendências reais impedem alegar conclusão.
+
+## Acceptance Traceability
+
+| Contrato/aceite | Tarefas principais | Nível esperado |
+| --- | --- | --- |
+| Modo separado/demo, CA-069 | 2.1, 3.5, 6.4 | Composição, componentes e E2E demo sem API |
+| Persistência/referência/rotas, CA-070 | 2.1, 3.2, 3.5, 6.2 | Unitário + browser/API real/reinício |
+| Proxy/proveniência/credencial, CA-071 | 1.2–1.3, 6.1, 6.5 | Node tests + CLI real com contador upstream + API |
+| Wire/coleções/painel/mês, CA-072 | 2.2, 3.1–3.4, 6.2 | HttpTestingController/componentes + E2E real |
+| Estados/corridas, CA-073 | 2.3, 3.1–3.4, 5.2 | Respostas controladas fora de ordem + navegação |
+| Cinco comandos/rascunhos, CA-074 | 2.3, 4.1–4.5, 6.2 | Unidade/componente por comando + SQLite real |
+| Conflito/refresh pós-sucesso, CA-075 | 2.3, 4.1–4.5, 5.2, 6.3 | Unitário + duas abas + refresh falho |
+| Incerteza/conferência, CA-076 | 2.3, 4.1–4.5, 5.1–5.2, 6.3 | Protocolo controlado + resposta perdida pós-commit real |
+| Teclado/temas/limites, CA-077 | 3.1–3.5, 4.1–4.5, 5.1, 6.2/6.5 | Componentes/E2E/inspeção manual identificada |
+| Evidências e não regressão, CA-078 | Todos; integração 6.1–6.5 | Resultados reais por nível, sem homologação presumida |
+
+## Planning Verification
+
+Em 27/11/2026: fontes e decisões materiais levantadas antes do scaffold; main e
+estado do PR #41 consultados; PRD/TDD atualizados na feature; nenhum código de projeto
+alterado. `openspec validate fase-006-integracao-angular --strict` passou e
+`git diff --check` passou para o diff rastreado, com avisos de normalização LF/CRLF.
+Inspeção estrutural somente leitura por Node conferiu sete capabilities idênticas à
+proposta, 20 requisitos/57 cenários, títulos MODIFIED existentes, preservação dos nomes
+de todos os cenários anteriores desses blocos e caminhos dentro da Change. São
+23 tarefas pendentes, zero marcadas. Tentativa auxiliar por Python não executou por
+ausência do comando; nenhuma instalação foi feita e a verificação foi realizada por Node.
+O status informa os quatro tipos de artefatos prontos, não tarefas implementadas.
+Nenhum build, teste de aplicação, aceite operacional, archive ou PR desta Change.
+
+## Workflow follow-up
+
+- Revisar todos os artefatos. Aguardar novo pedido explícito de apply; escolha de design
+  não autoriza implementação. Resolver os gates antes das tarefas dependentes.
+- Somente após escopo integral autorizado e verificações concluídos, sincronizar deltas
+  e arquivar automaticamente **esta** Change pelo fluxo OpenSpec; conferir specs,
+  metadados e diretório arquivado. Não arquivar Changes antigas como efeito colateral.
+- Publicar a mesma feature e abrir um único PR para main pelo template, com PRD/TDD/SDD,
+  resultados reais e limitações; não abrir PR por planejamento pronto ou funcionalidade.
+- Merge exige revisão/aprovação e autorização explícita; após integração, conferir
+  estado do PR e presença da entrega na main antes de alegar conclusão do fluxo.

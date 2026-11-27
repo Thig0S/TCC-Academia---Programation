@@ -1,5 +1,339 @@
 # TDD — Mercadão dos Óculos - Vendas em Aberto
 
+## DEC-042 — Integração Angular local da fase 006 (27/11/2026)
+
+### 1. Identificação e situação
+
+Technical Design Document de `fase-006-integracao-angular`, baseado em PRD/FON-047/048,
+RF-037–043 e CA-069–078. Planejamento, **não implementado; apply não autorizado**.
+Escopo, proxy com credencial no servidor, referência fixa e conferência explícita foram
+confirmados no Harness. Estrutura e protocolos abaixo são desenho proposto para revisão,
+não confirmação de compatibilidade executada nem autorização de uso operacional.
+
+### 2. Contexto, objetivos e limites
+
+Integrar as funcionalidades atuais à API v1 sem acoplar o Pages ao backend e sem
+reimplementar projeções financeiras no browser. Preservar demonstrativo como padrão,
+formulários, prévia, busca/ordenação/paginação, temas e semântica de IDs. Fora: Tauri,
+instalador, rede, dados reais, seed SQLite, schema, importação, exportação, backup,
+idempotência distribuída, sincronização automática entre abas e dependências novas.
+
+### 3. Fontes e estado real
+
+Inspecionados `frontend/package.json`, `angular.json`, `app.config.ts`, `app.ts`,
+`nucleo/demonstracao/`, cadastro/detalhe/recebimento, Visão Geral, Relatórios e
+Configurações; testes adjacentes, configuração Playwright e specs pertinentes.
+As telas dependem de `ServicoDemonstracao`, seus retornos síncronos e modelos de
+domínio demonstrativo. `Relatorios` chama `calcularRelatorio` e Visão Geral deriva
+listas de todas as vendas. Não há HttpClient configurado ou proxy no workspace.
+
+Main `d84d568` está alinhada à remota consultada e contém só health no host. A API v1
+foi lida na branch do PR #41, commit `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`,
+incluindo `api-local-vendas/spec.md`, design e Program. PR aberto em 27/11/2026.
+Seções FON-045/046, RF-031–036/CA-061–068 e DEC-041 pertencem àquele PR, não estão
+copiadas para esta branch. Integrá-lo e reconferir contrato é gate anterior ao apply.
+Histórico de 285/389/430 testes não foi reexecutado nesta proposta.
+
+Fontes externas FON-048, consultadas em 27/11/2026:
+- Context7 `/websites/angular_dev`: HTTP requests/testing; `/angular/angular-cli`:
+  proxy; `/vitejs/vite`: proxy options, configure/bypass e limites de allowedHosts.
+- <https://angular.dev/guide/http/making-requests>
+- <https://angular.dev/guide/http/testing>
+- <https://angular.dev/tools/cli/serve>
+- <https://vite.dev/config/server-options.html>
+- Fontes oficiais `angular/angular-cli/main/packages/angular/build/src/utils/load-proxy-config.ts`
+  e `vitejs/vite/main/packages/vite/src/node/server/middlewares/proxy.ts`: carga de
+  configuração JS e gate antes de proxy.web. São fontes main, não prova da 22.2.6.
+  Tentativa de consultar tag 22.2.6 retornou 404; compatibilidade exata deve ser
+  demonstrada no gate INT-01, não presumida por estas fontes.
+
+### 4. Síntese da entrevista
+
+| Tema | Escolha explícita | Situação |
+| --- | --- | --- |
+| Resultado | Integrar Angular localmente com sintéticos, preservando Pages demo | Confirmada; não implementada |
+| Conexão | Proxy local, segredo fora do browser e CORS da API desligado | Confirmada; não implementada |
+| Tempo | Dia local capturado na abertura, fixo na sessão; recarga renova só referência | Confirmada; não implementada no modo local |
+| Incerteza | Bloquear confirmações na aba até consulta e reconhecimento humano | Confirmada; não implementada |
+| Demais detalhes | Composição, modelos de leitura, gates e roadmap abaixo | Propostos para revisão |
+
+### 5. Arquitetura e responsabilidades propostas
+
+```text
+Componentes --> Fachada de dados por funcionalidade
+                         |
+                         +--> Adaptador demonstrativo --> ServicoDemonstracao
+                         |
+                         +--> Adaptador HTTP --> /api/v1 (mesma origem)
+                                                   |
+                                        Proxy dev Node/Angular CLI
+                                        [Host/origem + Bearer ambiente]
+                                                   |
+                                          API loopback --> SQLite
+```
+
+Componentes dependem da fronteira de dados, não do modo concreto. Fachadas coordenam
+estado de consulta/comando, invalidação e versões; adaptadores produzem modelos próprios
+de leitura da UI. Não disfarçar DTO HTTP como `Venda` de domínio demonstrativo.
+HTTP não chama fábricas do frontend para reconstruir a venda nem recalcula saldos,
+situações, acréscimos, universos ou série mensal. Demo pode continuar usando suas
+funções puras existentes; prévia/validação antecipada e formatação são reutilizáveis.
+Não criar store global de todas as vendas, repository genérico ou framework de estado.
+
+### 6. Linguagem, framework e ferramentas
+
+Manter Angular/CLI/build 22.2.6, TypeScript 6.0.3, RxJS 7.8.2, Tailwind 4.3.5,
+Vitest 5.1.0, Playwright 1.65.0, Node >=24.15 <25/npm 11.19.0 dos manifestos.
+Sem atualização de versões, NgRx, SDK gerado ou novo pacote proxy. Usar HttpClient
+com APIs públicas de providers/testes e RxJS existentes. Signal Forms já adotado
+permanece; não migrar formulários por conveniência. Backend mantém baseline da fase 005.
+Comprovar APIs usadas e restore/build no apply, sem alegar compatibilidade compilada agora.
+
+### 7. Estrutura e convenções propostas
+
+```text
+frontend/src/app/nucleo/dados/
+  fonte-vendas.ts                  [contrato/token, metodos tipados e respostas]
+  modelos-leitura.ts               [somente modelos compartilhados necessarios]
+  fonte-vendas-demonstracao.ts      [adaptador da fonte existente]
+  fonte-vendas-http.ts              [cliente wire v1 e conversao explicita]
+  contratos-api.ts                 [DTOs wire + validacao estrutural]
+  controle-confirmacoes.ts         [busy/incerteza por aba e invalidacao]
+  referencia-sessao.ts             [reutiliza politica atual sem gerar seed]
+frontend/src/app/funcionalidades/*/ [estado/fachadas especificas junto da feature]
+frontend/src/configuracoes/         [providers demo/local via fileReplacement]
+frontend/proxy-local.cjs            [apenas Node; le ambiente no startup]
+frontend/scripts/protecao-proxy-local.cjs [gate testavel sem Angular/segredo persistido]
+frontend/e2e/integracao-local/      [fluxos e fixtures reais separadas do demo]
+frontend/playwright.integracao-local.config.ts
+```
+
+Nomes ilustram responsabilidades concretas, não autorizam abstrações vazias.
+`RetornoFormulario` pode continuar serviço de navegação/foco, sem responsabilidade de
+transporte; ajustar seu uso e eventual localização só onde necessário. Remover dependência
+direta de demo em App/Configurações/funcionalidades; não apagar cálculos/testes demo.
+
+### 8. Estado, dados e composição
+
+`FonteVendas` oferece coleções, detalhe, painel, mês e cinco comandos com retorno
+assíncrono tipado. Implementar apenas operações consumidas: `/resumo` e `/periodo`
+não têm tela dedicada e não exigem chamadas artificiais nem UI nova. Wire preserva
+revisão string canônica 0..long.MaxValue, dinheiro number inteiro seguro, ISO civil,
+enums textuais exatos e IDs não aparados. Validar respostas como unknown: tipos
+genéricos de HttpClient não validam JSON em runtime. Resposta incompatível não é sucesso.
+Mapear enums/campos explicitamente para modelos de apresentação; null/listas preservados.
+
+Consultas usam discriminated union `inicial/carregando/pronto/erro/inexistente`, com
+chave ID/coleção/mês/referência e geração de invalidação. Não usar arrays vazios como
+placeholder de sucesso. Cancelar leituras obsoletas com switchMap/descarte; conferir
+chave/geração antes de publicar. Após comando confirmado, invalidar todas as consultas
+dependentes; resposta anterior em voo não pode sobrescrever detalhe confirmado.
+Sem polling, service worker comercial ou cache persistente; dados antigos, se retidos,
+ficam explicitamente desatualizados e não habilitam confirmar até recarga pertinente.
+
+Revisão pertence ao snapshot que fundamenta a ação, não a um máximo global oportunista.
+Edição/status/baixa/correção fixam a revisão do detalhe ao abrir/preparar o rascunho.
+Cadastro consulta revisão por uma coleção antes de habilitar confirmar. Não buscar
+revisão nova no submit para forçar sucesso. Conflito exige leitura explícita e novo
+aceite sobre o mesmo alvo; não sobrescrever rascunho nem deslocar parcela/recebimento.
+
+Configuração padrão/demo continua `npm start`, `npm run build` e Pages. Propor
+configuração `local` de build/serve, fileReplacement somente de providers e script
+`start:local`: ng serve em 127.0.0.1:4200 com proxy e modo local. Nenhum segredo no
+arquivo de ambiente compilado. Build local é só artefato técnico, não implantável
+sem o proxy; não publicar no Pages. Sem seletor runtime/URL ou fallback automático.
+
+### 9. Proxy e fluxos de falha
+
+**Proxy privilegiado, apenas de desenvolvimento:** `proxy-local.cjs` lê
+`Backend__SegredoLocal` exclusivamente no processo Node e `Backend__Porta` (default
+5070, intervalo da API) para alvo fixo `http://127.0.0.1:<porta>`. Validar segredo
+Base64 canônico de 32 bytes e porta antes de servir modo local; não abrir arquivo,
+capturar caminho de banco ou iniciar/preparar API pelo proxy. Configurar API separadamente
+com seu caminho absoluto sintético e a mesma credencial. Nunca aceitar URL upstream do
+browser. Match ancorado somente `/api/v1` e descendentes, sem reescrever query/IDs.
+
+Gate obrigatório antes de encaminhar/injetar Bearer: Host único exatamente
+`127.0.0.1:4200`; `Sec-Fetch-Site: same-origin` obrigatório; Origin, se presente,
+exatamente `http://127.0.0.1:4200`, obrigatório para POST/PUT; rejeitar null, duplicatas,
+cross-site/same-site/none e metadados ausentes; GET/POST/PUT comerciais apenas, sem
+upgrade ou OPTIONS proxied. Inspecionar rawHeaders para duplicatas. Não usar Referer
+como autenticação nem confiar só em allowedHosts, pois Vite aceita IPs por padrão.
+Isso admite Chromium fetch da mesma origem, não navegação direta para endpoint ou
+clientes sem Fetch Metadata; tais clientes técnicos acessam API diretamente com Bearer.
+
+Usar gate `bypass` e hook `configure` da configuração Node carregada pelo CLI. Recusa
+encerra resposta genérica 403/no-store antes de proxy.web; retorno do hook não pode
+deixar encaminhar resposta já encerrada. Credencial de entrada Authorization/cookie
+não é confiável: remover, injetar só Bearer do ambiente após admissão. Não adicionar
+CORS permissivo, bypass por ambiente de teste, `allowedHosts=true`, target dinâmico,
+ou credencial padrão. Nenhum header/endpoint devolve o segredo ao browser.
+
+Interceptar erros do proxy antes do logger padrão para emitir diagnóstico genérico sem
+query/headers/body/stack sensível; desabilitar debug de proxy no perfil local. Quando
+for possível responder, erro upstream devolve 502/no-store/código genérico próprio,
+**sem** afirmar se comando chegou ou gravou. Provar tanto gate como logging em servidor
+CLI real da versão fixada; se hooks/ordem não cumprirem protocolo, parar e revisar
+DEC-042/SDD antes de integrar telas, sem abrir CORS ou instalar pacote silenciosamente.
+
+**HTTP e comandos:** GETs não têm retry automático nesta fase; ação de recarregar é
+explícita. Cada comando tem uma subscription controlada, sem retry/shareReplay que
+reenvie escrita. Controle por aba bloqueia confirmação concorrente enquanto comando
+está em voo. Navegação não dispara cancelamento automático do comando nem resubscription;
+coordenador root mantém o resultado e invalida consultas mesmo se a tela for destruída.
+Se não houver resposta confiável após envio (status 0, timeout, 502/504, 5xx genérico,
+body de sucesso inválido) ou houver `confirmacao-indeterminada`, estado é incerto.
+400/401/404/409/415/422 e 503 com Problem Details conhecido da API são recusas
+identificáveis, sem inventar certeza a partir apenas de HTTP desconhecido.
+
+No incerto: guardar rascunho/código e alvo em memória no coordenador, mostrar aviso
+persistente ao navegar e bloquear os cinco comandos em toda a aba. Permitir consultas;
+ação Conferir consulta coleção no cadastro, detalhe nos outros e atualiza/invalida
+consultas dependentes. Só depois de leitura bem-sucedida habilitar reconhecimento
+explícito de conferência; ele libera comandos, **não** reenvia nem confirma o anterior.
+Mudança de cliente semelhante não identifica automaticamente cadastro perdido; sem
+idempotency key não há prova exactly-once. Não guardar pendência/comando em storage.
+Reabertura descarta rascunho/bloqueio, mas nunca reenvia e deve orientar conferência
+antes de repetir operação cuja resposta foi perdida, sem prometer reconhecimento automático.
+
+Erro de validação usa mapa explícito campo wire→campo rascunho (inclui `valorTotal`,
+`quantidadeParcelas`, `entrada.forma`, `data` e `revisaoEsperada`); campo desconhecido
+vira resumo seguro, não falha silenciosa. 401 informa configuração local inválida,
+não pede login humano. 404 só vira Venda não encontrada com código contratual de venda
+ausente; 503 não vira vazio. Depois de sucesso confirmado, erro de refresh é falha de
+atualização separada; manter identidade/revisão confirmadas e nunca sugerir repetir comando.
+
+### 10. Interface, formulários e acessibilidade
+
+Preservar componentes, rotas e tokens existentes. UI recebe dados prontos para
+apresentação; busca/sort/paginação sobre resumos completos, sem exigir parcelas em cada
+linha. Painel usa `/visao-geral`, Relatórios `/relatorios/mensal` (cinco seções e série);
+não fazer fan-out por venda nem somar dinheiro para gerar totais alternativos.
+Prévia mantém regras locais já testadas, identificada como prévia, não confirmação.
+Arredondamento da escala visual do gráfico não altera centavos dos dados.
+
+Formulários aguardam Promises/Observable consumido uma vez; validação antecipada não
+envia negócio. Erros preservam rascunho; loading real usa aria-busy/anúncio adequado,
+sem roubar foco em cada resposta. Enquanto comando pendente, impedir nova confirmação;
+fechar/navegar não promete rollback. Escape antes de enviar continua cancelamento sem
+mutação; depois do envio pode fechar com aviso de operação em andamento/incerta, e
+coordenador conserva resultado. Sucesso usa foco lógico existente, erros de campo focam
+primeiro pertinente. Aviso incerto permite sair do modal para conferir sem perder
+rascunho em memória. Configurações/mensagens deixam claro SQLite sintético versus demo.
+
+### 11. Alternativas e contrapartidas
+
+| Alternativa | Decisão e motivo |
+| --- | --- |
+| Token no bundle/storage e CORS amplo | Rejeitada: expõe credencial e contraria escolha do usuário |
+| Browser direto com token temporário/CORS restrito | Não escolhida; exigiria provisionamento e mudar fase 005 |
+| Hospedar SPA no backend ou desktop agora | Fora do escopo confirmado; aumenta distribuição/lifecycle |
+| Proxy Node separado/plataforma nova | Não adotar por padrão; CLI existente deve comprovar gate, falha exige revisão |
+| HttpClient/RxJS e signals existentes | Propostos; sem pacote novo/NgRx ou framework de cache |
+| Adapter HTTP reconstruindo domínio TypeScript | Rejeitado: duplo motor financeiro e dependência de histórico completo |
+| Retry automático, atualização otimista e inferência por cliente | Rejeitados: revisão global/commit perdido não garantem idempotência |
+
+Custo aceito: adaptação de telas/testes síncronos, modelos de apresentação e estados
+explícitos; não é troca trivial de serviço. Sem estimativa/prazo ou benchmark inventados.
+
+### 12. Qualidade e verificação planejada
+
+Vitest/HttpTestingController: contratos, tipos/IDs/enums, uma subscription/escrita,
+zero retry, erros por campo, referências, revisão original, troca de ID/mês e geração
+pós-invalidação. Componentes: loading/vazio/404/erro, rascunhos, dois modos, foco,
+modais, busy, incerteza e recuperação. Testes Node/proxy e CLI real: Host/origem,
+Fetch Metadata, configuração/rotação, destino fixo, logs/bundle/browser sem marcador
+de segredo e negação antes de encaminhamento. Não importar dependência transitive
+como API pública; usar Node built-in nos testes auxiliares.
+
+Playwright em configuração local separada: API/CLI próprios com banco temporário,
+credencial efêmera e fixtures sintéticas criadas via API autenticada, sem endpoint seed.
+Portas próprias sem encerrar servidores alheios; se ocupadas, falhar e informar.
+Sem paralelismo sobre mesmo banco: worker único ou destinos isolados. Recarregar browser,
+reiniciar API no mesmo arquivo, duas abas/revisão, edição/status/baixa/correção e mês.
+Incerteza: interceptar e perder resposta **após** backend confirmar em cenário controlado;
+outro caso perde antes, comprovando UI conservadora em ambos. Mock de erro verifica
+protocolo, não simula falha nativa de commit. Testes reais do gravador permanecem.
+
+Executar sequencialmente frontend tests/build/format e E2E demo/local, backend restore
+locked/build Release/test/format e auditoria conforme baseline integrada. Comandos
+frontend existentes: `npm.cmd test -- --watch=false`, `npm.cmd run build`,
+`npm.cmd run format:check`, `npm.cmd run test:e2e` e fixture de paginação vigente.
+Propostos: `test:proxy-local`, `build:local`, `test:e2e:local`; criar/documentar somente
+no apply. Sem npm ci se desnecessário; se necessário, lockfile apenas e preservar
+processos alheios. SDK .NET deve satisfazer global.json; se ausente, registrar bloqueio,
+sem instalar/rebaixar global nem herdar autorização de instalação de Change antiga.
+
+Conferir temas em 1366×768 e 390×844 e fronteira 767/768 dos formulários; teclado,
+contraste, densidade no pronto e anúncios. Zoom nativo 200% exige observação manual
+própria; viewport reduzido não o substitui. Registrar limitação se indisponível.
+
+### 13. Segurança, privacidade e desempenho
+
+Proxy com segredo é ponte privilegiada, não autenticação humana. Headers protegem
+contra proveniência web indevida, mas processo local pode forjá-los; dev server/conta
+comprometidos não estão isolados. Não expor porta além de loopback, secretos em assets,
+logs/traces ou dump de ambiente. Artifacts E2E sintéticos ainda não podem conter Bearer.
+Queries podem conter IDs: higienizar logging inclusive erro upstream e debug.
+Sem cookies/storage/IndexedDB de negócio, métricas remotas, benchmark ou meta nova de
+escala; consultas completas mantêm custo proporcional à base aceito anteriormente.
+
+### 14. Execução e Roadmap de implementação — obrigatório
+
+Pré-requisitos: revisão dos artefatos + novo apply explícito; fase 005 integrada com
+contrato equivalente; ambiente fixado disponível. Não incorporar código do PR #41
+silenciosamente nesta proposta nem mesclá-lo. Se contrato mudar, revisar primeiro docs.
+
+| Marco | Entregas | Dependências | Critério verificável | Estado |
+| --- | --- | --- | --- | --- |
+| INT-01 | Reconferir baseline integrada; composição demo/local; gate proxy/segredo e logging | Pré-requisitos acima | Demo sem API; CLI real recusa origem/Host antes de proxy; segredo não vaza | Não implementado |
+| INT-02 | Fronteira/modelos/cliente/adaptador demo e estado de confirmação | INT-01 | Tipos exatos, uma escrita, referência fixa, revisão observada e testes de protocolo | Não implementado |
+| INT-03 | Quatro coleções, detalhe, Visão Geral e mês; funcionalidades separadas | INT-02 | Pronto/erro/vazio/ausente, corridas e busca/paginação; sem cálculos financeiros HTTP | Não implementado |
+| INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Não implementado |
+| INT-05 | Conferência integrada/alerta por aba e recovery pós-sucesso | INT-02/04; protocolo básico já testado antes | Resposta perdida bloqueia toda aba; consulta+aceite liberam sem reenvio | Não implementado |
+| INT-06 | E2E real/reinício/duas abas, regressão demo/backend, auditoria e evidências | INT-01–05 | CA-069–078 rastreados, privacidade e limitações reais documentadas | Não implementado |
+
+Consultas podem ser desenvolvidas independentemente após INT-02, mas não compartilhar
+builds/testes/SQLite em paralelo. Nenhuma delegação ou paralelismo de agentes necessário.
+Cada funcionalidade inclui testes/documentação/tarefas e commit próprio em português;
+planejamento em commit separado. Archive e PR único somente após toda Change concluída
+e verificada; não arquivar no propose ou por artefatos prontos. Merge exige autorização.
+Desktop/produção/importação/backup são evolução futura com outra decisão e autorização.
+
+### 15. Registro central da decisão
+
+DEC-042 complementa DEC-040/041 e reutiliza suas regras; não substitui schema/domínio.
+Problema: consumidores síncronos demo não tratam fronteiras HTTP/revisão/resultado incerto.
+Escolha: adapters separados, proxy dev com segredo no servidor e protocolos acima.
+Origem: FON-047 para decisões materiais; FON-048 e inspeção para desenho proposto.
+Situação: escolhas da entrevista confirmadas, desenho técnico proposto; implementação
+não iniciada. Contrapartidas/alternativas nas seções 5–13. Validação: INT-01–06 e CA-069–078.
+
+### 16. Riscos, hipóteses e pendências
+
+Dependência bloqueante: PR #41 aberto; confirmar integração e reconciliação antes do apply.
+Gate técnico: hooks do CLI/Vite exatos ainda sem execução observada; prova de proteção
+antecede qualquer tela local. Falha bloqueia e exige revisão, não implementação insegura.
+Não há regra comercial pendente para este recorte. PEN-013/014 e autorização operacional
+continuam fora. Recarga perde bloqueio em memória: isso não autoriza replay nem garante
+deduplicação; mensagens orientam conferência humana, com limite explicitado no PRD.
+
+### 17. Rastreabilidade e revisão documental
+
+FON-047/048 → RF-037–043/CA-069–078 → DEC-042 → Change
+`fase-006-integracao-angular` → INT-01–06. Specs existentes de demonstração limitam
+descarte/ausência de API ao modo demo; deltas devem expressar a exceção local sem
+revogar esses contratos. Capability nova descreve integração/revisão/incerteza.
+Lotes legados e dashboard têm textos históricos divergentes nas specs principais:
+não introduzir novas baixas em lote nem retirar dashboard; preservar código/regras
+atuais e RF-018–020, deixando manutenção de outras Changes fora do recorte.
+Verificações aqui são documentais; nenhum build/teste/auditoria de código foi executado.
+
+### 18. Histórico
+
+27/11/2026: acrescenta DEC-042 após PRD da fase 006; reserva DEC-041 da fase 005,
+preserva decisões/histórico existentes e distingue main integrada de PR aberto.
+
 ## DEC-040 — Casos de uso internos da fase 004 (26/11/2026)
 
 ### Situação, origem e síntese da entrevista

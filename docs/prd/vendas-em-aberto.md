@@ -1,5 +1,201 @@
 # PRD — Mercadão dos Óculos - Vendas em Aberto
 
+## Fase 006 de evolução — integração Angular local (27/11/2026)
+
+### 1. Identificação e resumo executivo
+
+Change `fase-006-integracao-angular`: planejamento solicitado, **não implementado e
+sem autorização de apply**. Não é a FASE-006 histórica dos formulários demonstrativos.
+Conectar as telas existentes ao contrato HTTP v1 para validar o fluxo persistido com
+dados sintéticos, preservando a demonstração independente publicada no Pages.
+Responsáveis por homologação operacional não foram definidos.
+
+### 2. Contexto, problema e fontes
+
+| Fonte | Referência | Evidência e limite |
+| --- | --- | --- |
+| FON-047 | Exploração e pedido desta Change; respostas no Harness em 27/11/2026 | Integração local antes de desktop; proxy local com credencial fora do browser; referência fixa por sessão; bloqueio após resultado incerto até consulta e reconhecimento explícitos. Autoriza planejamento, não implementação. |
+| FON-048 | Documentação Angular/CLI e Vite via Context7, em 27/11/2026 | HTTP assíncrono, múltiplas subscriptions geram múltiplas requisições; proxy de desenvolvimento e limites de Host. Fontes/compatibilidade em DEC-042; não comprova execução da versão instalada. |
+| FON-045/046 | PR #41, branch `feature/fase-005-contrato-e-api-local`, commit `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` | Contrato v1, revisão textual, Bearer, CORS desligado e painel consolidado. PR aberto na consulta de 27/11; não integrado à main desta proposta. |
+
+Na main inspecionada (`d84d568`), API só expõe health. As telas injetam diretamente
+`ServicoDemonstracao`; Relatórios calcula a partir das vendas e os formulários chamam
+comandos síncronos. Configurações explica descarte ao recarregar. Portanto, trocar
+apenas a URL não satisfaz a integração. A fase 004 foi integrada pelo PR #40.
+Evidências anteriores: 285 testes backend na main, 389 declarados no PR #41 e 430
+frontend; nenhuma suíte foi reexecutada neste planejamento.
+
+### 3. Objetivos e resultados esperados
+
+Reutilizar OBJ-001–005: consultar e alterar a venda correta, reconciliar resultados e
+comunicar limites. Resultado técnico: cadastro, edição, status, baixa e correção pela
+interface sobrevivem à recarga/reinício no mesmo banco; demonstração continua isolada.
+Não há meta nova de desempenho nem ganho comercial medido.
+
+### 4. Público e necessidades
+
+Consumidor imediato: desenvolvedor e avaliação técnica local com dados fictícios.
+Beneficiário futuro: equipe da loja, sem login humano ou perfis por funcionário.
+Preservar teclado, foco, temas, leitura das tabelas e mensagens pt-BR; não tratar esse
+ambiente como produto instalado ou aprovado para uso real.
+
+### 5. Escopo e prioridades
+
+Essenciais: modo local separado, transporte/proxy, consultas usadas pelas telas,
+cinco comandos, precisão dos tipos, estados assíncronos, revisão observada, conferência
+de resultado incerto e regressão dos dois modos. Preservar rotas, busca, ordenação,
+paginação, prévia e identidade visual; não redesenhar o produto.
+
+Fora: desktop/Tauri/instalador, rede externa, login humano, dados reais, importação,
+seed automático no SQLite, reset do banco, schema novo, exportação, backup operacional,
+idempotency key, polling/sincronização automática entre abas e manutenção de outras
+Changes. Integração no Pages não é objetivo: ele continua exclusivamente demonstrativo.
+
+### 6. Jornadas e fluxos
+
+- Consulta persistida (JOR-001/005): iniciar ambiente local configurado → carregar
+  coleção/detalhe/painel/mês → buscar/ordenar/paginar dados recebidos → consultar origem.
+  Carregamento, falha de comunicação, vazio e ausência de registro são estados distintos.
+- Confirmação (JOR-002/003/004): carregar revisão → preencher rascunho → confirmar uma
+  vez → aguardar resposta → publicar detalhe confirmado e invalidar consultas anteriores.
+  Conflito preserva rascunho e exige recarga/novo aceite, sem reenvio automático.
+- Conferência (JOR-004/006): perder resposta de comando → bloquear confirmações na aba
+  → consultar dados → reconhecer explicitamente a conferência → decidir nova ação.
+  A consulta não prova automaticamente se cadastro incerto foi aceito.
+- Demonstração (JOR-006): iniciar modo padrão sem API/segredo → usar dados em memória
+  → recarregar e restaurar seed. Nenhuma requisição comercial à API é permitida nesse modo.
+
+### 7. Requisitos funcionais
+
+Todos Essenciais; origem FON-047 e contratos existentes. Escopo e escolhas expressas
+confirmados; detalhamento técnico proposto para revisão em DEC-042.
+
+| ID | Entradas e pré-condições | Comportamento e resultado | Alternativas e aceite |
+| --- | --- | --- | --- |
+| RF-037 | Modo selecionado pela composição de execução/build, não por parâmetro de URL | Manter demonstração como padrão independente e oferecer modo local persistido explícito; configurações e confirmações informam o modo correto. | Falha local nunca troca para seed; Pages não requer API/segredo. CA-069/070. |
+| RF-038 | Modo local, API v1 da fase 005 integrada, segredo e porta locais configurados | Usar proxy de desenvolvimento em loopback e mesma origem; segredo permanece no processo servidor, fora de bundle, browser, URL e logs; CORS da API permanece desligado. | Configuração inválida impede modo local; requisição de origem/Host não admitidos é recusada antes do encaminhamento. CA-071. |
+| RF-039 | Referência civil capturada uma vez na abertura e consultas com seletores explícitos | Consultar quatro coleções, detalhe, Visão Geral e relatório mensal via API; revisão textual, centavos, datas e IDs preservados. Busca/ordenação/paginação são locais sobre a coleção completa. | Vazio só após sucesso; detalhe 404 é ausência, erro físico não; resultados antigos não substituem seleção atual. CA-072/073. |
+| RF-040 | Rascunho válido, revisão observada e alvo explícito | Cadastrar, editar quatro campos do cliente, alterar status, baixar e corrigir individualmente via API; bloquear duplicidade durante envio, atualizar somente após resposta confirmada e preservar regras/no-ops. | Validação preserva valores e associa erros; conflito exige recarga e confirmação nova, sem aplicar alteração silenciosa. CA-074/075. |
+| RF-041 | Timeout, perda de resposta, falha de transporte ou confirmação indeterminada de comando já enviado | Não anunciar sucesso/rollback nem repetir escrita; preservar rascunho em memória e bloquear novas confirmações comerciais em toda a aba até consulta bem-sucedida e reconhecimento explícito de conferência. | Falha da consulta mantém bloqueio; leitura não confirma automaticamente cadastro incerto; nova decisão não é retry automático. CA-076. |
+| RF-042 | Navegação, troca de ID/mês, atualização após comando ou erro assíncrono | Exibir carregamento real, erro, dados desatualizados, vazio e ausência sem misturá-los; manter foco, modal e mensagens acessíveis; invalidar dados anteriores após confirmação. | Falha de atualização depois de comando confirmado não desfaz o sucesso nem autoriza repetir a escrita. CA-073/075/077. |
+| RF-043 | Apply futuro autorizado, SQLite exclusivamente sintético e processos próprios | Verificar cliente, proxy, componentes e fluxos browser→API→SQLite, incluindo recarga/reinício, conflito, incerteza e regressão demonstrativa. | Registrar evidências por nível, limitações, zoom manual quando possível e testes não executados; não alegar aceite da loja. CA-078. |
+
+### 8. Regras e dados conceituais
+
+Preservar RF-023–036/RN-025/026 e contrato da fase 005. Revisão é global e, no cliente,
+texto decimal canônico; dinheiro é inteiro seguro em centavos. Datas são civis sem UTC;
+IDs são opacos. Cliente continua pertencendo à venda. Não criar segunda regra financeira.
+Prévia/validação antecipada continuam locais, não substituem confirmação da API.
+
+Referência permanece fixa ao atravessar meia-noite; recarga captura novo dia sem apagar
+SQLite. Selecionar mês não muda referência. Banco novo continua vazio; nenhum seed é
+copiado da demonstração. Não há sincronização ao vivo entre abas; conflitos são esperados.
+
+### 9. Requisitos não funcionais e restrições
+
+Reutilizar RNF-001/002/003/005/007/009 para pt-BR, precisão, teclado, foco, dois temas,
+contraste e viewports existentes. Exceção delimitada a RNF-004/010: **somente o modo
+local** transmite dados sintéticos à API e persiste no SQLite. O demonstrativo continua
+sem transmissão comercial e sem storage; nenhum modo grava negócios/segredo no browser.
+Proxy não oferece isolamento contra processo do mesmo usuário nem aptidão operacional.
+Sem meta de latência nova, telemetria, benchmark ou proteção de SO prometida.
+
+### 10. Experiência e estados de interface
+
+Manter densidade e controles atuais no estado pronto. Estados transitórios e falhas
+podem ocupar espaço acessível sem reduzir fontes nem esconder ações. Mensagens devem
+ser anunciáveis sem roubar foco durante busca/carregamento. Após sucesso, manter foco
+lógico no detalhe/próxima ação; validação direciona ao campo pertinente. Rascunho não
+é substituído por recarga de leitura. Cancelar antes de enviar descarta sem mutação;
+cancelar navegação após envio não garante rollback. Configurações distingue persistência
+local sintética de descarte demonstrativo; tema continua em memória nos dois modos.
+
+### 11. Critérios de aceite e rastreabilidade
+
+- **CA-069 (RF-037):** dado build/execução padrão e API desligada, quando usar as telas
+  e recarregar, então preservar funcionamento demonstrativo, seed e descarte, sem
+  requisições comerciais nem dependência de segredo; Pages permanece demonstrativo.
+- **CA-070 (RF-037/039):** dado SQLite sintético vazio no modo local, quando cadastrar,
+  recarregar browser e reiniciar API no mesmo arquivo, então conservar IDs/histórico e
+  revisão; recarga renova referência, não recria seed nem apaga dados; avisos são fiéis.
+- **CA-071 (RF-038):** dado proxy configurado, quando consultar/confirmar pela mesma
+  origem válida, então encaminhar à API autenticada sem revelar credencial. Host/origem
+  indevidos, metadados de origem ausentes/contraditórios ou segredo inválido não permitem
+  operação. Rejeição de proveniência/configuração inválida ocorre antes de encaminhar;
+  segredo com formato válido mas diferente do da API resulta em 401 da API, sem alterar revisão.
+- **CA-072 (RF-039):** dados quatro coleções, nomes semelhantes, IDs reservados, revisão
+  `9007199254740993`, dinheiro seguro e datas extremas, quando transportar e apresentar,
+  então preservar literalmente; busca/filtros/ordem/páginas operam sobre coleção completa
+  e universos financeiros continuam os da API. Painel usa consulta consolidada.
+- **CA-073 (RF-039/042):** dadas consultas em andamento, quando trocar ID ou mês e
+  respostas chegarem fora de ordem ou falharem, então só seleção atual é publicada;
+  loading/erro não são vazio/404, e dado anterior não passa por atual silenciosamente.
+- **CA-074 (RF-040):** dado estado válido e revisão observada, quando confirmar cada
+  um dos cinco comandos, então fazer uma única requisição, aguardar confirmação e
+  reconciliar detalhe/coleções/painel/mês; preservar regras, IDs e no-ops. Envio duplo
+  enquanto pendente não gera segundo comando; erro de campo mantém rascunho/foco.
+- **CA-075 (RF-040/042):** dadas duas abas na mesma revisão, quando uma gravar, então
+  a outra recebe conflito sem retry, conserva rascunho/alvo e exige recarga e aceite
+  novos. Se escrita for confirmada mas atualização de consulta falhar, então informar
+  sucesso da escrita e falha de atualização separadamente, sem reenviar comando.
+- **CA-076 (RF-041):** dado comando com resposta perdida ou indeterminada, quando a
+  pessoa navegar e tentar confirmar outro, então bloqueio permanece na aba; somente
+  consulta bem-sucedida seguida de reconhecimento explícito libera novas confirmações,
+  sem reenviar rascunho. Falha de consulta não libera; cadastro incerto não é identificado
+  automaticamente por semelhança de cliente. Reabertura não restaura/envia comando.
+- **CA-077 (RF-042):** dados ambos os temas, desktop 1366×768, 390×844 e zoom nativo
+  200% quando disponível, quando operar loading, falhas, formulários e modais por teclado,
+  então manter valores, foco, anúncios, contraste e acesso; cancelar antes do envio não
+  grava, e fechamento após envio não anuncia rollback. Exportação continua indisponível.
+- **CA-078 (RF-043):** dado apply autorizado após integração da fase 005, quando executar
+  verificações unitárias, proxy e E2E contra API/SQLite temporário, então registrar
+  resultados reais, reinício, conflitos e incerteza por nível; repetir regressão demo e
+  backend. Não usar dados reais nem substituir teste integrado por mocks.
+
+Matriz: OBJ-001–005 → JOR-001–006 → FON-047/048 → RF-037–043/CA-069–078 →
+TDD/DEC-042 → `openspec/changes/fase-006-integracao-angular/` → INT-01–06.
+
+### 12. Métricas e plano de validação
+
+Sucesso técnico é satisfazer CA-069–078 com evidências por camada; não há novo percentual
+ou tempo alvo. MET-001–005 continuam propostas para avaliação humana futura; PEN-014
+não resolvida por testes. Roteiro sintético: consultar vazio → cadastrar com entrada →
+editar → baixar/corrigir → conferir mês/status → recarregar/reiniciar → provocar conflito
+e resposta perdida → conferir → repetir modo demo com API desligada. Sem telemetria.
+
+### 13. Dependências, riscos e mitigação
+
+PR #41 precisa ser integrado e seu contrato reconferido antes do apply; se mudar,
+revisar PRD/TDD/SDD antes de código dependente. Proxy com Bearer é uma ponte privilegiada:
+loopback sozinho não basta; exigir Host e proveniência, sem alvo arbitrário ou logs de
+query/body. HTTP assíncrono pode duplicar subscriptions; exigir uma escrita por envio.
+Risco de dado obsoleto e confirmação perdida exige invalidação e conferência, não retry.
+Responsáveis e probabilidades não foram confirmados; sem uso operacional autorizado.
+
+### 14. Decisões e pendências
+
+Confirmados no Harness: ambiente local, proxy com segredo no servidor, referência fixa,
+conferência explícita após resultado incerto. Os detalhes técnicos de DEC-042 são
+propostos para revisão. Nenhuma nova regra comercial aberta; integração do PR #41 é
+dependência técnica bloqueante do apply, não motivo para mesclá-lo automaticamente.
+Se hooks do proxy não cumprirem a proteção na versão existente, interromper a tarefa
+afetada e revisar desenho, sem remover a proteção ou abrir CORS para avançar.
+
+### 15. Entregas e próximos passos
+
+Revisar PRD/TDD/SDD; só depois de novo pedido de apply e pré-requisito integrado,
+executar INT-01–06. Commit por funcionalidade com suas verificações; não abrir PR apenas
+por este planejamento. Archive e PR único somente após escopo integral implementado e
+verificado; merge exige autorização explícita. Nenhum resultado de implementação novo.
+
+### 16. Glossário e revisão
+
+Modo local: avaliação técnica sintética com persistência no backend; demonstração:
+memória descartável; conferência: consulta + reconhecimento humano, não prova de
+exactly-once; proxy: ferramenta apenas de desenvolvimento. Revisão de 27/11/2026
+acrescenta FON-047/048, RF-037–043 e CA-069–078, reservando os IDs FON-045/046,
+RF-031–036, CA-061–068 e DEC-041 para a fase 005 ainda no PR #41; preserva histórico.
+
 ## Fase 004 do backend — aplicação interna (26/11/2026)
 
 ### Identificação, fontes e situação
