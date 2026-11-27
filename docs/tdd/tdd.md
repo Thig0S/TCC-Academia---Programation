@@ -6,8 +6,10 @@
 
 Desenho para `fase-005-contrato-e-api-local`, baseado no PRD/FON-045/046,
 RF-031–036 e CA-061–068. Escopo e escolhas materiais confirmados no Harness;
-contrato detalhado abaixo **proposto para revisão**. Tudo nesta decisão está
-**não implementado**; planejamento não autoriza apply. Não é a FASE-005 histórica
+contrato detalhado abaixo foi **proposto para revisão no planejamento original**.
+Na elaboração, nada estava implementado e o planejamento não autorizava apply; a
+execução autorizada posterior e seu estado estão registrados ao final desta decisão.
+Não é a FASE-005 histórica
 do Angular. Homologação operacional e responsáveis por ela não foram definidos.
 
 ### 2. Contexto e objetivo
@@ -286,16 +288,30 @@ Registrar resultados efetivos em `backend/README.md`/tasks no apply, nunca nesta
 
 | Marco | Entregas | Dependências | Critério verificável | Estado |
 | --- | --- | --- | --- | --- |
-| API-01 | Contratos/tipos/erros HTTP, preparação do host e autenticação; commits distintos por funcionalidade | Revisão PRD/TDD/SDD e novo pedido de apply | CA-061/062/067/068; configuração inválida sem I/O, startup idempotente, binding/401 seguro | Não implementado |
-| API-02 | Query/DTO/handler de Visão Geral e respectivos testes unitários/SQLite | Contratos internos vigentes; API-01 para endpoint | CA-065; snapshot único, universos/ordem/limites/extremos e zero escrita | Não implementado |
-| API-03 | Consultas HTTP: detalhe, coleções, resumo, período, mensal e painel, commits por funcionalidade | API-01; painel requer API-02 | CA-064/065/067; campos, vazios, ordens, datas e ausência de mutação | Não implementado |
-| API-04 | Cadastro, cliente, status, baixa e correção HTTP, commits por funcionalidade | API-01 e consultas de conferência | CA-063/066; commit/reabertura, revisão/no-op, Location e nenhuma repetição | Não implementado |
-| API-05 | Concorrência/falhas transversais, regressão, smoke, auditoria e evidências | API-01–04 completas | CA-061–068 rastreados, verificações reais e limitações documentadas | Não implementado |
+| API-01 | Contratos/tipos/erros HTTP, preparação do host e autenticação; commits distintos por funcionalidade | Revisão PRD/TDD/SDD e autorização do apply | CA-061/062/067/068; configuração inválida sem I/O, startup idempotente, binding/401 seguro | Concluído e verificado em 27/11/2026 |
+| API-02 | Query/DTO/handler de Visão Geral e respectivos testes unitários/SQLite | Contratos internos vigentes; API-01 para endpoint | CA-065; snapshot único, universos/ordem/limites/extremos e zero escrita | Concluído e verificado em 27/11/2026 |
+| API-03 | Consultas HTTP: detalhe, coleções, resumo, período, mensal e painel, commits por funcionalidade | API-01; painel requer API-02 | CA-064/065/067; campos, vazios, ordens, datas e ausência de mutação | Concluído e verificado em 27/11/2026 |
+| API-04 | Cadastro, cliente, status, baixa e correção HTTP, commits por funcionalidade | API-01 e consultas de conferência | CA-063/066; commit/reabertura, revisão/no-op, Location e nenhuma repetição | Concluído e verificado em 27/11/2026 |
+| API-05 | Concorrência/falhas transversais, regressão, smoke, auditoria e evidências | API-01–04 completas | CA-061–068 rastreados, verificações reais e limitações documentadas | Concluído e verificado em 27/11/2026 |
 
-Painel interno pode avançar após contrato consolidado, mas não executar builds na mesma
-saída em paralelo. Cada funcionalidade inclui testes, documentação e tarefas em commit
-próprio. Todos os marcos pertencem à mesma feature/PR único, sem PR de planejamento.
-Após apply integral/verificado: sync/archive desta Change, conferir resultado e abrir PR
+### Atualização de execução da DEC-041 — 27/11/2026
+
+Apply autorizado concluído em `feature/fase-005-contrato-e-api-local`, com 21/21
+tarefas verificadas. A matriz de todos os cenários das duas deltas para CA-061–068,
+resultados de teste/build, smoke da DLL Release e limitações está em
+`backend/README.md` (API-05/5.4); a atualização do PRD resume os resultados por critério.
+Em particular, restore bloqueado, build Release sem avisos/erros, suíte MSTest 389/389,
+descoberta 389, format, auditoria NuGet, 430 testes/build frontend sem API e smoke
+Production com loopback, 401, cadastro/Location, baixa, reinício e rotação de segredo
+foram reproduzidos. O smoke usou somente credenciais e dados sintéticos/temporários.
+Não houve mudança de integração Angular, schema, Tauri, seed ou acesso a banco real;
+isso comprova critérios técnicos, não homologação da loja. O archive e PR serão
+registrados após validação estrita e arquivamento da Change; merge continua sujeito
+a revisão e autorização explícita.
+
+Os marcos concluídos pertencem à mesma feature/PR único, sem PR de planejamento; cada
+funcionalidade inclui testes, documentação e tarefas em commit próprio. Próxima etapa:
+sync/archive desta Change após validação estrita, conferir o resultado e então abrir PR
 pelo template; revisão e autorização explícita de merge continuam necessárias.
 
 ### 14. Evolução, riscos e condições de revisão
