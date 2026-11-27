@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../../app.routes';
+import { appConfig } from '../../../app.config';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
 import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
@@ -10,7 +10,7 @@ describe('Cadastro demonstrativo pela interface', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     }),

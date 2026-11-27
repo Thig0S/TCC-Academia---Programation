@@ -146,6 +146,11 @@ representação completa; painel usa GET `/api/v1/visao-geral`; mês usa
 `/api/v1/relatorios/mensal`. Não montar painel/relatório com consulta por venda ou
 refazer totais de domínio. Gráfico só calcula escala geométrica dos dados recebidos.
 
+Enquanto comandos das telas demo ainda alteram diretamente o serviço legado, o adaptador
+demonstrativo observa a troca da coleção imutável e avança a geração compartilhada, para
+que consultas snapshot das listas permaneçam reativas durante a migração. Essa ponte não
+existe na composição HTTP/local, que não instancia serviço nem seed demonstrativo.
+
 ### D5 — Comando fixado na revisão observada e sem replay
 
 Revisão do detalhe é fixada ao abrir/preparar edição/status/baixa/correção; cadastro

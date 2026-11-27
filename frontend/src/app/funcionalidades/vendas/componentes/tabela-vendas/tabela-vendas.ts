@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { SeloSituacao } from '../../../../compartilhado/componentes/selo-situacao/selo-situacao';
 import { formatarDataCivil } from '../../data-civil';
 import { formatarDinheiro } from '../../dinheiro';
-import { ProjecaoVenda } from '../../venda.calculos';
+import { VendaResumoLeitura } from '../../../../nucleo/dados/modelos-leitura';
 
 @Component({
   selector: 'app-tabela-vendas',
@@ -12,7 +12,7 @@ import { ProjecaoVenda } from '../../venda.calculos';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TabelaVendas {
-  readonly vendas = input.required<readonly ProjecaoVenda[]>();
+  readonly vendas = input.required<readonly VendaResumoLeitura[]>();
   readonly legenda = input.required<string>();
   readonly origem = input<'abertas' | 'quitadas' | 'inativas' | 'prejuizo'>('abertas');
   readonly visualPiloto = input(false);

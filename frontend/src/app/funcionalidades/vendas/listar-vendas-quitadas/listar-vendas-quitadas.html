@@ -39,26 +39,51 @@
       Nome parcial, CPF ou telefone por dígitos e data completa DD/MM/AAAA.
     </p>
   </section>
-  <p class="mb-2 ms-2" role="status" aria-live="polite" aria-atomic="true">
-    {{ resultados().length }}
-    {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
-  </p>
-  @if (vendas().length === 0) {
-    <p class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
-      Não há vendas quitadas.
+  @if (carregando()) {
+    <p
+      class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      Carregando vendas quitadas…
     </p>
-  } @else if (resultados().length === 0) {
-    <p class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
-      Nenhuma venda corresponde à pesquisa.
-    </p>
+  } @else if (!consultaPronta()) {
+    <div
+      class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted"
+      role="alert"
+    >
+      <p class="mb-2">Não foi possível carregar vendas quitadas. Tente novamente.</p>
+      <button
+        type="button"
+        class="h-10 rounded-xl border border-control-border bg-surface px-4 text-sm font-semibold text-text shadow-sm transition-colors hover:border-brand hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="recarregarColecao()"
+      >
+        Tentar novamente
+      </button>
+    </div>
   } @else {
-    <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
+    <p class="mb-2 ms-2" role="status" aria-live="polite" aria-atomic="true">
+      {{ resultados().length }}
+      {{ resultados().length === 1 ? 'venda encontrada' : 'vendas encontradas' }}
+    </p>
+    @if (vendas().length === 0) {
+      <p class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
+        Não há vendas quitadas.
+      </p>
+    } @else if (resultados().length === 0) {
+      <p class="m-2 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
+        Nenhuma venda corresponde à pesquisa.
+      </p>
+    } @else {
+      <app-tabela-vendas [vendas]="vendasPagina()" legenda="Vendas quitadas" origem="quitadas" />
+    }
+    <app-paginacao-vendas
+      class="block border-t border-border px-2 py-1"
+      [faixa]="faixaResultados()"
+      [paginaAtual]="paginaSelecionada()"
+      [totalPaginas]="totalPaginas()"
+      (paginaAlterada)="selecionarPagina($event)"
+    />
   }
-  <app-paginacao-vendas
-    class="block border-t border-border px-2 py-1"
-    [faixa]="faixaResultados()"
-    [paginaAtual]="paginaSelecionada()"
-    [totalPaginas]="totalPaginas()"
-    (paginaAlterada)="selecionarPagina($event)"
-  />
 </div>

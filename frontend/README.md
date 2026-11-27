@@ -542,6 +542,44 @@ compilou; build padrão passou com 322,14 kB iniciais. Prettier dos quatro arqui
 Não houve alterações de storage/backend/dependências, integração de telas ou mudança de
 `serve:local`.
 
+### Apply `fase-006-integracao-angular` — tarefa 3.1 — consultas das listas (27/11/2026)
+
+Vendas abertas, quitadas e as duas coleções administrativas (`inativas` e `prejuizos`)
+consultam `FONTE_VENDAS.consultarColecao` e apresentam exclusivamente `VendaResumoLeitura`;
+listar nunca consulta detalhe por item. Os quatro destinos, links por ID opaco, busca,
+filtro de situação nas abertas, ordenação e paginação locais permanecem. Mudança de busca,
+filtro ou ordenação reinicia a página; diminuição da coleção limita a página atual ao novo
+último índice.
+
+Cada tela diferencia primeiro carregamento, carregamento subsequente, erro e coleção vazia.
+Vazio só é mostrado depois de resposta bem-sucedida; erro tem mensagem acessível e retry
+somente por botão explícito. A falha da fonte não aciona demonstração/seed. Para manter a
+demonstração reativa enquanto telas de comando ainda usam diretamente o serviço legado,
+`FonteVendasDemonstracao` observa a coleção do serviço e invalida a geração compartilhada
+quando ela muda; a composição HTTP não instancia essa fonte nem o serviço demo. `serve:local`
+segue apontando para o build de desenvolvimento e não foi ativado.
+
+Verificação de acessibilidade/tema: status e erro usam `role`, `aria-live` e `aria-busy`;
+links/botões/inputs são controles nativos com foco visível e tabela horizontal focável. Os
+testes cobrem foco após limpar pesquisa e controles de paginação; a navegação por abertas,
+quitadas, inativas e prejuízo conserva o tema compartilhado. Nenhum redesenho visual foi
+introduzido.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/funcionalidades/vendas/listas-vendas.spec.ts --include src/app/funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas.spec.ts
+npm test -- --watch=false
+npm run build -- --configuration local
+npm run build
+```
+
+Resultado: **16/16 testes direcionados em 2 arquivos** e **479/479 testes em 37 arquivos**;
+build local compilou (1,58 MB iniciais) e build padrão passou (323,15 kB iniciais). Specs de
+rotas e fluxos demo foram alinhadas aos providers reais de `appConfig`. Prettier nos arquivos
+TypeScript/HTML tocados, `git diff --check` e `openspec validate fase-006-integracao-angular
+--strict` passaram. Sem alteração de API, dependências, proxy ou configuração de `serve:local`.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

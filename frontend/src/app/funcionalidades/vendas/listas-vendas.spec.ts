@@ -1,15 +1,68 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { signal } from '@angular/core';
-import { routes } from '../../app.routes';
+import { of, Subject, throwError } from 'rxjs';
+import { appConfig } from '../../app.config';
+import { ControleConsultas } from '../../nucleo/dados/controle-consultas';
+import { FONTE_VENDAS, FonteVendas } from '../../nucleo/dados/fonte-vendas';
+import {
+  ColecaoVendas,
+  ColecaoVendasLeitura,
+  VendaResumoLeitura,
+} from '../../nucleo/dados/modelos-leitura';
 import { ServicoDemonstracao } from '../../nucleo/demonstracao/servico-demonstracao';
 import { formatarDataCivil } from './data-civil';
 import { formatarDinheiro } from './dinheiro';
 import { buscarVendas, FiltroSituacaoVenda } from './venda.busca';
 
+const referenciaTeste = '2026-01-31';
+
+function resumoTeste(colecao: ColecaoVendas, indice: number): VendaResumoLeitura {
+  return {
+    id: `${colecao}/venda/${indice}`,
+    cliente: {
+      nome: `Cliente ${colecao} ${String(indice).padStart(2, '0')}`,
+      cpf: `90000000${String(indice).padStart(3, '0')}75`,
+      telefone: `1190000${String(indice).padStart(4, '0')}`,
+      descricao: null,
+    },
+    dataVenda: '2026-01-01',
+    statusAdministrativo:
+      colecao === 'inativas' ? 'Inativo' : colecao === 'prejuizos' ? 'Prejuízo' : 'Ativo',
+    situacao: colecao === 'quitadas' ? 'Quitada' : 'Em aberto',
+    valorTotalCentavos: 10000,
+    acrescimosCentavos: 0,
+    valorTotalEfetivoCentavos: 10000,
+    totalRecebidoCentavos: colecao === 'quitadas' ? 10000 : 0,
+    saldoCentavos: colecao === 'quitadas' ? 0 : 10000,
+    quantidadePaga: colecao === 'quitadas' ? 1 : 0,
+    quantidadeParcelas: 1,
+    proximoVencimento: colecao === 'quitadas' ? null : '2026-02-01',
+    revisao: '0',
+    referencia: referenciaTeste,
+  };
+}
+
+function criarFonteFake(quantidade: Readonly<Record<ColecaoVendas, number>>): FonteVendas {
+  return {
+    referencia: referenciaTeste,
+    consultarColecao: vi.fn((colecao: ColecaoVendas) => {
+      const envelope: ColecaoVendasLeitura = {
+        colecao,
+        referencia: referenciaTeste,
+        revisao: '0',
+        vendas: Array.from({ length: quantidade[colecao] }, (_, indice) =>
+          resumoTeste(colecao, indice + 1),
+        ),
+      };
+      return of(envelope);
+    }),
+    consultarVenda: vi.fn(),
+  } as unknown as FonteVendas;
+}
+
 describe('Listas de vendas', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
+  beforeEach(() => TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] }));
 
   it('exibe somente vendas abertas com projeções corretas e links identificáveis', async () => {
     const servico = TestBed.inject(ServicoDemonstracao);
@@ -49,6 +102,106 @@ describe('Listas de vendas', () => {
       );
       expect(links[2].getAttribute('aria-label')).toContain(venda.id);
     });
+  });
+
+  it('consulta cada destino uma vez e pagina envelopes com 0, 1, 11 e 21 resumos sem detalhe', async () => {
+    const fonte = criarFonteFake({ abertas: 0, quitadas: 1, inativas: 11, prejuizos: 21 });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = () => harness.routeNativeElement!;
+
+    await harness.fixture.whenStable();
+    expect(pagina().textContent).toContain('Não há vendas em aberto.');
+    expect(fonte.consultarColecao).toHaveBeenCalledWith('abertas');
+
+    await harness.navigateByUrl('/vendas/quitadas');
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(pagina().querySelector('nav[aria-label="Paginação de vendas"]')).toBeNull();
+
+    await harness.navigateByUrl('/vendas/inativas');
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(10);
+    pagina().querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(pagina().querySelector('[aria-label="Faixa de resultados"]')?.textContent).toContain(
+      '11–11 de 11 vendas',
+    );
+
+    await harness.navigateByUrl('/vendas/prejuizo');
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(10);
+    pagina().querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(10);
+    pagina().querySelector<HTMLButtonElement>('[aria-label="Próxima página"]')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina().querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(pagina().querySelector('[aria-label="Faixa de resultados"]')?.textContent).toContain(
+      '21–21 de 21 vendas',
+    );
+
+    expect(fonte.consultarColecao).toHaveBeenCalledTimes(4);
+    expect(fonte.consultarVenda).not.toHaveBeenCalled();
+  });
+
+  it('mantém erro separado de vazio, sem fallback, e só repete consulta por ação explícita', async () => {
+    const fonte = criarFonteFake({ abertas: 0, quitadas: 0, inativas: 0, prejuizos: 0 });
+    let chamadas = 0;
+    vi.mocked(fonte.consultarColecao).mockImplementation((colecao) => {
+      chamadas++;
+      if (chamadas === 1) return throwError(() => new Error('transporte indisponível'));
+      return of({
+        colecao,
+        referencia: referenciaTeste,
+        revisao: '0',
+        vendas: [],
+      });
+    });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const consultarDemo = vi.fn();
+    TestBed.overrideProvider(ServicoDemonstracao, {
+      useValue: { abertas: consultarDemo } as unknown as ServicoDemonstracao,
+    });
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = harness.routeNativeElement!;
+
+    await harness.fixture.whenStable();
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
+      'Não foi possível carregar vendas em aberto.',
+    );
+    expect(pagina.textContent).not.toContain('Não há vendas em aberto.');
+    expect(consultarDemo).not.toHaveBeenCalled();
+    expect(fonte.consultarColecao).toHaveBeenCalledTimes(1);
+
+    pagina.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+    await harness.fixture.whenStable();
+    expect(pagina.textContent).toContain('Não há vendas em aberto.');
+    expect(fonte.consultarColecao).toHaveBeenCalledTimes(2);
+    expect(consultarDemo).not.toHaveBeenCalled();
+  });
+
+  it('expõe carregamento e só apresenta vazio depois da resposta bem-sucedida', async () => {
+    const fonte = criarFonteFake({ abertas: 0, quitadas: 0, inativas: 0, prejuizos: 0 });
+    const resposta = new Subject<ColecaoVendasLeitura>();
+    vi.mocked(fonte.consultarColecao).mockReturnValue(resposta);
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const harness = await RouterTestingHarness.create('/vendas');
+    const pagina = harness.routeNativeElement!;
+
+    expect(pagina.querySelector('[aria-busy="true"]')?.textContent).toContain(
+      'Carregando vendas em aberto',
+    );
+    expect(pagina.textContent).not.toContain('Não há vendas em aberto.');
+
+    resposta.next({
+      colecao: 'abertas',
+      referencia: referenciaTeste,
+      revisao: '0',
+      vendas: [],
+    });
+    harness.fixture.detectChanges();
+
+    expect(pagina.textContent).toContain('Não há vendas em aberto.');
+    expect(pagina.querySelector('[aria-busy="true"]')).toBeNull();
   });
 
   it('mantém controles de pesquisa consistentes e não adiciona filtros às outras coleções', async () => {
@@ -156,6 +309,7 @@ describe('Listas de vendas', () => {
         forma: 'Pix',
       }).tipo,
     ).toBe('sucesso');
+    TestBed.inject(ControleConsultas).invalidarTodas();
     await harness.fixture.whenStable();
     expect(pagina.querySelector('[aria-current="page"]')?.textContent).toContain('2');
     expect(faixas()).toContain('11–20 de 20 vendas');
@@ -245,6 +399,7 @@ describe('Listas de vendas', () => {
         }).tipo,
       ).toBe('sucesso');
     }
+    TestBed.inject(ControleConsultas).invalidarTodas();
     await harness.fixture.whenStable();
     expect(pagina.querySelectorAll('tbody tr')).toHaveLength(10);
     expect(pagina.querySelector('[aria-current="page"]')).toBeNull();
@@ -454,41 +609,26 @@ describe('Listas de vendas', () => {
   });
 
   it('aplica busca numérica por substring de CPF sem remover pontuação da identificação armazenada', async () => {
-    const preparador = await import('./venda.validacoes');
-    const calculos = await import('./venda.calculos');
-    const preparado = preparador.prepararCadastro(
-      {
-        cliente: {
-          nome: 'Cliente de teste numérico',
-          cpf: '900.000.001-75',
-          telefone: '(11) 91234-5678',
-        },
-        dataVenda: '2026-01-01',
-        valorTotalCentavos: 10000,
-        quantidadeParcelas: 1,
-        entrada: null,
-      },
-      '2026-01-01',
-      'teste/venda/numerica',
+    const fonte = criarFonteFake({ abertas: 1, quitadas: 0, inativas: 0, prejuizos: 0 });
+    vi.mocked(fonte.consultarColecao).mockImplementation((colecao) =>
+      of({
+        colecao,
+        referencia: referenciaTeste,
+        revisao: '0',
+        vendas: [
+          {
+            ...resumoTeste('abertas', 1),
+            cliente: {
+              nome: 'Cliente de teste numérico',
+              cpf: '900.000.001-75',
+              telefone: '(11) 91234-5678',
+              descricao: null,
+            },
+          },
+        ],
+      }),
     );
-    if (preparado.tipo !== 'sucesso') throw new Error(preparado.mensagem);
-    const venda = calculos.projetarVenda(
-      { ...preparado.valor, cliente: { ...preparado.valor.cliente, cpf: '900.000.001-75' } },
-      '2026-01-01',
-    );
-    TestBed.overrideProvider(ServicoDemonstracao, {
-      useValue: {
-        referencia: '2026-01-01',
-        abertas: signal([venda]),
-        quitadas: signal([]),
-        resumo: signal({
-          totalEmAbertoCentavos: venda.saldoCentavos,
-          valoresEmAtrasoCentavos: 0,
-          recebidoNoMesCentavos: 0,
-          vendasCadastradas: 1,
-        }),
-      } as unknown as ServicoDemonstracao,
-    });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
 
     const harness = await RouterTestingHarness.create('/vendas');
     const pagina = harness.routeNativeElement!;
@@ -501,18 +641,8 @@ describe('Listas de vendas', () => {
   });
 
   it('exibe coleções vazias e resumos zero sem dados ilustrativos fixos', async () => {
-    TestBed.overrideProvider(ServicoDemonstracao, {
-      useValue: {
-        referencia: '2026-01-01',
-        abertas: signal([]),
-        quitadas: signal([]),
-        resumo: signal({
-          totalEmAbertoCentavos: 0,
-          valoresEmAtrasoCentavos: 0,
-          recebidoNoMesCentavos: 0,
-          vendasCadastradas: 0,
-        }),
-      } as unknown as ServicoDemonstracao,
+    TestBed.overrideProvider(FONTE_VENDAS, {
+      useValue: criarFonteFake({ abertas: 0, quitadas: 0, inativas: 0, prejuizos: 0 }),
     });
 
     const harness = await RouterTestingHarness.create('/vendas');

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { effect, Injectable, inject, untracked } from '@angular/core';
 import { defer, Observable, of } from 'rxjs';
 import {
   calcularRelatorio,
@@ -30,6 +30,7 @@ import {
 import { ProjecaoParcela } from '../../funcionalidades/parcelas/parcela.calculos';
 import { subtrairCentavos, somarCentavos } from '../../funcionalidades/vendas/dinheiro';
 import { ServicoDemonstracao } from '../demonstracao/servico-demonstracao';
+import { ControleConsultas } from './controle-consultas';
 import {
   ColecaoVendas,
   ColecaoVendasLeitura,
@@ -261,7 +262,17 @@ function mapearRelatorioMensal(
 @Injectable({ providedIn: 'root' })
 export class FonteVendasDemonstracao implements FonteVendas {
   private readonly servico = inject(ServicoDemonstracao);
+  private readonly controleConsultas = inject(ControleConsultas);
   readonly referencia = this.servico.referencia;
+  private ultimaColecao = this.servico.vendas();
+  // Invalidates snapshots when still-demo-only screens mutate the legacy service directly.
+  private readonly acompanharMutacoesLegadas = effect(() => {
+    const vendas = this.servico.vendas();
+    if (vendas !== this.ultimaColecao) {
+      this.ultimaColecao = vendas;
+      untracked(() => this.controleConsultas.invalidarTodas());
+    }
+  });
 
   consultarColecao(colecao: ColecaoVendas): Observable<ColecaoVendasLeitura> {
     return defer(() => {

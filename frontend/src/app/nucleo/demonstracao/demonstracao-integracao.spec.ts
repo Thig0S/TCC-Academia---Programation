@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from '../../app';
-import { routes } from '../../app.routes';
+import { appConfig } from '../../app.config';
 import { ComandoCadastro } from '../../funcionalidades/vendas/venda.modelos';
 import { formatarDinheiro } from '../../funcionalidades/vendas/dinheiro';
 import { REFERENCIA_DEMONSTRACAO } from './referencia-demonstracao';
@@ -34,7 +34,7 @@ describe('Inicialização e integração da sessão', () => {
   afterEach(() => vi.useRealTimers());
 
   it('App captura o dia local na abertura, mantém após meia-noite e renova em nova aplicação', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] });
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2027, 0, 31, 23, 59));
     const app = TestBed.createComponent(App);
@@ -47,7 +47,7 @@ describe('Inicialização e integração da sessão', () => {
     vi.useRealTimers();
     await app.whenStable();
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] });
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2027, 1, 1, 0, 1));
     const novaApp = TestBed.createComponent(App);
@@ -64,7 +64,7 @@ describe('Inicialização e integração da sessão', () => {
   it('preserva cadastro, pagamentos individuais e mesma fonte ao navegar por todos os destinos', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     });
@@ -133,7 +133,7 @@ describe('Inicialização e integração da sessão', () => {
   it('reflete edição nas listas, busca e detalhe com uma publicação e sem alterar resumos', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     });
@@ -205,7 +205,7 @@ describe('Inicialização e integração da sessão', () => {
   it('mantém listas, cartões e detalhe na mesma fonte reativa; consulta e navegação não mutam', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     });

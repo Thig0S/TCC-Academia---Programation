@@ -144,6 +144,12 @@ chave/geração antes de publicar. Após comando confirmado, invalidar todas as 
 dependentes; resposta anterior em voo não pode sobrescrever detalhe confirmado.
 Sem polling, service worker comercial ou cache persistente; dados antigos, se retidos,
 ficam explicitamente desatualizados e não habilitam confirmar até recarga pertinente.
+Durante a migração gradual, comandos demo ainda usados diretamente pelo serviço legado
+substituem a coleção imutável `vendas`; `FonteVendasDemonstracao` observa essa identidade
+e avança a geração compartilhada para renovar consultas de telas já conectadas à fonte.
+Essa ponte existe somente na composição demo. A composição local não instancia o adaptador
+nem o serviço demonstrativo; nela, sucesso do coordenador ou retry explicitamente acionado
+é que inicia uma nova leitura.
 
 Revisão pertence ao snapshot que fundamenta a ação, não a um máximo global oportunista.
 Edição/status/baixa/correção fixam a revisão do detalhe ao abrir/preparar o rascunho.
