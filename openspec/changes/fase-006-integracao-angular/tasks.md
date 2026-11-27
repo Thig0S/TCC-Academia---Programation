@@ -108,6 +108,13 @@ demo pode receber `null`, mas o cliente HTTP não envia comando sem string canô
 referência continua vindo do token de sessão. PRD e requisitos de produto não mudaram.
 `openspec validate fase-006-integracao-angular --strict` passou após essa clarificação.
 
+Durante a implementação de 2.2, a leitura do contrato wire confirmou que GET de coleção
+retorna `revisao` no envelope, independentemente dos itens. TDD/Design foram atualizados
+para preservar esse envelope (inclusive lista vazia) no contrato da fonte; no demo a
+revisão é `null`. Isso é necessário para o cadastro de 4.1 capturar o snapshot consultado,
+sem mudança em requisito de produto. `openspec validate fase-006-integracao-angular --strict`
+passou após a decisão.
+
 ## Workflow follow-up
 
 - A revisão dos artefatos e o pedido explícito de apply foram concluídos; executar as

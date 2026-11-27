@@ -133,6 +133,9 @@ Cada comando da fonte recebe o payload e a revisão observada explicitamente (`s
 demo não fabrica revisão, enquanto o cliente HTTP recusa null/não canônica antes de enviar.
 A referência vem do token fixado na composição e é serializada em cada operação. Não obter
 revisão global, renovar no submit nem ler relógio por request.
+Consulta de coleção retorna envelope com coleção, referência, revisão e vendas; a revisão
+é preservada mesmo quando a lista está vazia, para o cadastro preparar confirmação sem
+inferir revisão de um item ou de outro snapshot. No demo, envelope mantém revisão `null`.
 
 Consultas usam discriminated union `inicial/carregando/pronto/erro/inexistente`, com
 chave ID/coleção/mês/referência e geração de invalidação. Não usar arrays vazios como

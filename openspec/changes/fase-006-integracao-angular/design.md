@@ -123,6 +123,9 @@ Cada método de comando recebe explicitamente a revisão observada junto do payl
 fonte demo permite `null`, sem criar revisão fictícia, e o cliente HTTP falha antes de
 enviar se a revisão não for textual e canônica. A referência serializada vem do token fixo
 da sessão, nunca do relógio consultado a cada request.
+Consulta de coleção mantém envelope com coleção, referência, revisão e vendas, incluindo
+coleção vazia; isso permite cadastro capturar a revisão do snapshot consultado sem depender
+de qualquer resumo individual. O envelope demonstrativo usa revisão `null`.
 
 Não usar `Number(revisao)` nem supor que o tipo genérico de HttpClient valida JSON.
 Resposta inválida em leitura é falha de contrato; após envio de comando é resultado
