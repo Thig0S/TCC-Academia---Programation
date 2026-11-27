@@ -1,6 +1,7 @@
 using VendasEmAberto.Api.Configuracao;
 using VendasEmAberto.Api.Contratos;
 using VendasEmAberto.Api.Erros;
+using VendasEmAberto.Api.Endpoints;
 using VendasEmAberto.Api.Seguranca;
 using VendasEmAberto.Aplicacao.Composicao;
 using VendasEmAberto.Aplicacao.Persistencia;
@@ -86,7 +87,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsync("Healthy");
     }
 });
-app.MapGrupoComercial();
+app.MapGrupoComercial().MapVendasEndpoints();
 
 app.Run();
 
