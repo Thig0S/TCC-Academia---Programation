@@ -388,8 +388,10 @@ O `angular.json` oferece a configuração `serve:local` em `127.0.0.1:4200` com
 `PORT` antes de iniciar o CLI local fixado. O teste executou `npm run start:local` com
 `DEBUG=vite:proxy` e `PORT=4300`; o servidor permaneceu em 4200, verificando a
 limpeza do ambiente e o perfil local. Os scripts padrão `start` e `build` não foram
-alterados. Neste estágio, o perfil local ainda usa os providers demonstrativos; a seleção
-da fonte HTTP e file replacement pertencem à tarefa 2.1. Pages continua sem proxy.
+alterados. Neste estágio, o perfil local ainda usa os providers demonstrativos e é somente
+um smoke do transporte, não um modo persistido. A tarefa 2.1 define a fronteira/adaptador
+e composições testáveis; o cliente HTTP vem em 2.2 e o perfil só selecionará esse provider
+após a integração das telas e da configuração em 3.1–3.5. Pages continua sem proxy.
 
 Executado em Node 24.21.0, Angular CLI/build 22.2.6, Vite 8.3.5 e Chromium headless:
 

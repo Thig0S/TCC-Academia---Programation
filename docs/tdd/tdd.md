@@ -108,7 +108,7 @@ frontend/src/app/nucleo/dados/
   controle-confirmacoes.ts         [busy/incerteza por aba e invalidacao]
   referencia-sessao.ts             [reutiliza politica atual sem gerar seed]
 frontend/src/app/funcionalidades/*/ [estado/fachadas especificas junto da feature]
-frontend/src/configuracoes/         [providers demo/local via fileReplacement]
+frontend/src/configuracoes/         [providers demo/local via fileReplacement; ativação após integração das telas]
 frontend/proxy-local.cjs            [apenas Node; le ambiente no startup]
 frontend/scripts/protecao-proxy-local.cjs [gate testavel sem Angular/segredo persistido]
 frontend/e2e/integracao-local/      [fluxos e fixtures reais separadas do demo]
@@ -144,12 +144,15 @@ Cadastro consulta revisão por uma coleção antes de habilitar confirmar. Não 
 revisão nova no submit para forçar sucesso. Conflito exige leitura explícita e novo
 aceite sobre o mesmo alvo; não sobrescrever rascunho nem deslocar parcela/recebimento.
 
-Configuração padrão/demo continua `npm start`, `npm run build` e Pages. O perfil `local`
-de serve e o script `start:local` foram criados para ng serve em 127.0.0.1:4200 com
-proxy. Até INT-02.1, essa configuração ainda usa a composição demonstrativa; providers
-locais/fileReplacement permanecem pendentes e o perfil não representa integração de telas.
-Nenhum segredo no arquivo de ambiente compilado. Build local é só artefato técnico, não
-implantável sem proxy; não publicar no Pages. Sem seletor runtime/URL ou fallback automático.
+Configuração padrão/demo continua `npm start`, `npm run build` e Pages. Já existe um perfil
+`serve:local` com proxy em 127.0.0.1:4200, mas ele permanece um harness de transporte que
+serve a composição demonstrativa; não o apresentar como modo persistido. INT-02.1 cria a
+fronteira, o adaptador demonstrativo e composições isoladas/testáveis; INT-02.2 implementa o
+cliente HTTP. Manter `serve:local` ligado ao build de smoke até consultas/telas consumirem a
+fonte local (INT-03.1–3.4) e App/Configurações declararem corretamente o modo (INT-03.5);
+somente então selecionar o build/provider HTTP. Nenhum segredo no arquivo de ambiente
+compilado. Build local é artefato técnico, não implantável sem proxy; não publicar no Pages.
+Sem seletor runtime/URL ou fallback automático.
 
 ### 9. Proxy e fluxos de falha
 
@@ -199,7 +202,8 @@ body ou Authorization recebido. Assets/respostas do browser também não continh
 API .NET real em SQLite sintético recebeu outro Bearer Base64 válido e respondeu 401/no-store,
 sem expor qualquer das credenciais. `node --test --test-concurrency=1 proxy-local.test.cjs
 proxy-local-cli.test.cjs` passou 9/9 e `npm run build` padrão passou (316,87 kB iniciais).
-O build/teste não comprova a composição Angular local, que permanece em INT-02.1.
+O build/teste comprova somente o harness do proxy, não o modo de persistência. A composição
+HTTP e a ativação de `serve:local` permanecem pendentes de INT-02.1, INT-02.2 e INT-03.1–3.5.
 
 **HTTP e comandos:** GETs não têm retry automático nesta fase; ação de recarregar é
 explícita. Cada comando tem uma subscription controlada, sem retry/shareReplay que

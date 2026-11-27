@@ -40,9 +40,14 @@ lotes nem retirada do dashboard atual; preservar RF-018–020 e comportamento vi
 
 Reutilizar `ServicoDemonstracao` por adaptador e introduzir fonte HTTP com contrato
 assíncrono comum para coleções, detalhe, painel, mês e cinco comandos. Configuração
-padrão continua demo em start/build/Pages; configuração local troca providers com
-fileReplacement e ativa proxy. Sem token em providers/ambiente compilado, seletor por
-URL ou fallback por falha. App e Configurações obtêm referência/limites pela composição.
+padrão continua demo em start/build/Pages. INT-02.1 define a fronteira, o adaptador demo
+e composições demo/local isoladas/testáveis via providers/fileReplacement; INT-02.2
+implementa a fonte HTTP. O `serve:local` criado
+em INT-01.3 permanece um harness do proxy sobre o build/composição demo até INT-03.1–3.4
+conectarem as consultas/telas e INT-03.5 adequar App/Configurações; somente então ele
+seleciona build/provider HTTP. Preparar e testar composição local não ativa esse perfil.
+Sem token em providers/ambiente compilado, seletor por URL ou fallback por falha. App e
+Configurações obtêm referência/limites pela composição.
 
 Alternativa de substituir a fonte original eliminaria demonstração independente;
 ifs por tela espalhariam política de modo. Adapter HTTP fingindo entidade `Venda`
@@ -60,8 +65,10 @@ Implementado e exercitado proxy com credencial fora do browser. `proxy-local.cjs
 somente em start local, lendo `Backend__SegredoLocal` (Base64 canônico, 32 bytes) e
 `Backend__Porta` (default 5070, limites da API); alvo imutável 127.0.0.1. API é iniciada
 separadamente com mesmo segredo e caminho sintético explícito. Proxy não prepara banco.
-O perfil local só instala o serve/proxy neste estágio; providers e telas ainda usam demo até
-INT-02.1.
+O perfil `serve:local` só instala o serve/proxy neste estágio e continua servindo a
+composição demonstrativa como harness. INT-02.1 define/testa composições independentes,
+mas não troca esse perfil; a ativação HTTP depende do cliente de INT-02.2 e da integração
+das telas/configuração em INT-03.1–3.5.
 
 ```text
 Browser 127.0.0.1:4200 --> Gate Host / Fetch Metadata / Origin
@@ -95,8 +102,9 @@ Upgrade real recebe 404 do listener Vite sem chamar `proxy.ws`; `Expect` é nega
 Vite omite `proxyReq` quando presente. Execução Chromium/upstream temporário comprovou
 query/ID preservados, recusa sem upstream, 502/no-store genérico e ausência de marcadores
 nos logs, assets, respostas e requests do browser. API .NET real rejeitou credencial distinta
-e válida (401/no-store). `npm run build` demo passou; providers/telas locais continuam em
-INT-02.1. O proxy não afirma entrega/rollback de comando que resulte em erro de transporte.
+e válida (401/no-store). `npm run build` demo passou; a fronteira/adaptador e as telas
+permanecem em INT-02.1 e INT-03.1–3.5. O proxy não afirma entrega/rollback de comando que
+resulte em erro de transporte.
 
 Alternativa direta com token/CORS ou SPA hospedada no backend ampliaria decisões não
 escolhidas; servidor proxy separado não é adicionado por padrão. A implementação não

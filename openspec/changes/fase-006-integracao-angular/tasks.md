@@ -29,7 +29,7 @@ Não criar pacote novo, endpoint seed, reset, integração desktop ou dados reai
 
 ## 2. INT-02 — Fronteira de dados, wire e coordenação
 
-- [ ] 2.1 Definir modelos de leitura/token/fonte assíncrona usados pelas telas e adaptar demonstração existente sem apagar cálculos/testes; introduzir composição demo/local via providers/fileReplacement e referência de sessão independente do seed. Implementar somente métodos realmente consumidos, sem store global genérico. Testes de composição comprovam modo padrão sem API/segredo, referência fixa incluindo meia-noite, nova abertura e fonte local sem instanciar demo nem fallback. Build/testes direcionados, documentação do contrato e commit de composição; configurar perfil local para usar a fonte HTTP, nunca demonstração temporária disfarçada.
+- [ ] 2.1 Definir modelos de leitura/token/fonte assíncrona usados pelas telas e adaptar demonstração existente sem apagar cálculos/testes; estabelecer composições demo/local isoladas por providers/fileReplacement e referência de sessão independente do seed, sem ativar ainda a fonte HTTP em `serve:local` (a composição local pode ser testada com provider substituto até 2.2). Implementar somente métodos realmente consumidos, sem store global genérico. Testes de composição comprovam modo padrão sem API/segredo, referência fixa incluindo meia-noite, nova abertura e composição local sem instanciar demo nem fallback. Build/testes direcionados, documentação do contrato e commit de composição. Manter `start:local` como smoke do proxy sobre a composição demo; ativar o provider/build HTTP somente após o cliente de 2.2 e a conexão das telas/configuração em 3.1–3.5.
 - [ ] 2.2 Implementar cliente e mapeamento wire v1 de D3 com validação estrutural unknown: revisão textual canônica até long.MaxValue, centavos seguros, datas civis extremas, IDs reservados/codificação única, enums/null/arrays. HttpTestingController verifica paths/query/bodies e recusa de resposta inválida, sem Number(revisao), Date/UTC, entidades do domínio demo ou cálculo financeiro no mapper. Cobrir representação mensal com lote sintético em fixture de contrato, sem novo comando de lote; documentar contrato/fontes e executar testes/build antes do commit.
 - [ ] 2.3 Implementar estados por chave/geração e controle de confirmação por aba conforme D4–D6: uma subscription, bloqueio de envio concorrente, revisão fixada, invalidação transversal, resultado acompanhado após destruição de componente e classificação de recusa/incerteza. Testes controlados cobrem resposta fora de ordem, leitura anterior ao commit, status 0/timeout/502/504/5xx/body inválido, confirmação indeterminada, zero retry e liberação apenas após consulta+reconhecimento. Não adiar esse protocolo básico até INT-05; documentar máquina de estados e registrar testes/commit próprios.
 
@@ -91,6 +91,15 @@ momento eram 23 tarefas pendentes, zero marcadas. Tentativa auxiliar por Python 
 ausência do comando; nenhuma instalação foi feita e a verificação foi realizada por Node.
 O status informa os quatro tipos de artefatos prontos, não tarefas implementadas.
 Nenhum build, teste de aplicação, aceite operacional, archive ou PR desta Change.
+
+Após a decisão do usuário de preservar o sequenciamento (27/11/2026), TDD, Design,
+esta tarefa e README esclarecem que INT-02.1 entrega fronteira/adaptador e composições
+isoladas/testáveis, enquanto `start:local` continua smoke do proxy sobre demo. A seleção
+HTTP só será ativada após cliente 2.2 e integração de telas/configuração 3.1–3.5. PRD
+permanece inalterado porque requisitos do produto não mudaram. `openspec validate
+fase-006-integracao-angular --strict` e `git diff --check` passaram. Prettier direcionado
+aos quatro Markdown reportou arquivos fora do formato; as versões em HEAD também falham
+na mesma verificação, portanto não foi reformatado conteúdo histórico alheio.
 
 ## Workflow follow-up
 
