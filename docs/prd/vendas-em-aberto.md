@@ -4,26 +4,27 @@
 
 ### 1. Identificação e resumo executivo
 
-Change `fase-006-integracao-angular`: planejamento solicitado, **não implementado e
-sem autorização de apply**. Não é a FASE-006 histórica dos formulários demonstrativos.
-Conectar as telas existentes ao contrato HTTP v1 para validar o fluxo persistido com
-dados sintéticos, preservando a demonstração independente publicada no Pages.
+Change `fase-006-integracao-angular`: planejamento concluído e apply autorizado em
+27/11/2026, após integração do PR #41; implementação em andamento nesta feature. Não é
+a FASE-006 histórica dos formulários demonstrativos. Conectar as telas existentes ao
+contrato HTTP v1 para validar o fluxo persistido com dados sintéticos, preservando a
+demonstração independente publicada no Pages.
 Responsáveis por homologação operacional não foram definidos.
 
 ### 2. Contexto, problema e fontes
 
 | Fonte | Referência | Evidência e limite |
 | --- | --- | --- |
-| FON-047 | Exploração e pedido desta Change; respostas no Harness em 27/11/2026 | Integração local antes de desktop; proxy local com credencial fora do browser; referência fixa por sessão; bloqueio após resultado incerto até consulta e reconhecimento explícitos. Autoriza planejamento, não implementação. |
+| FON-047 | Exploração, pedido inicial e respostas no Harness em 27/11/2026 | Decisões de produto: integração local antes de desktop; proxy com credencial fora do browser; referência fixa por sessão; conferência após resultado incerto. O pedido inicial autorizou planejamento; o apply foi autorizado explicitamente depois da integração do PR #41. |
 | FON-048 | Documentação Angular/CLI e Vite via Context7, em 27/11/2026 | HTTP assíncrono, múltiplas subscriptions geram múltiplas requisições; proxy de desenvolvimento e limites de Host. Fontes/compatibilidade em DEC-042; não comprova execução da versão instalada. |
-| FON-045/046 | PR #41, branch `feature/fase-005-contrato-e-api-local`, commit `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` | Contrato v1, revisão textual, Bearer, CORS desligado e painel consolidado. PR aberto na consulta de 27/11; não integrado à main desta proposta. |
+| FON-045/046 | PR #41, branch `feature/fase-005-contrato-e-api-local`, head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` | Contrato v1, revisão textual, Bearer, CORS desligado e painel consolidado. PR integrado à main em 27/11/2026 pelo commit `a8de117`; código e specs foram reconferidos na tarefa 1.1. |
 
-Na main inspecionada (`d84d568`), API só expõe health. As telas injetam diretamente
-`ServicoDemonstracao`; Relatórios calcula a partir das vendas e os formulários chamam
-comandos síncronos. Configurações explica descarte ao recarregar. Portanto, trocar
-apenas a URL não satisfaz a integração. A fase 004 foi integrada pelo PR #40.
-Evidências anteriores: 285 testes backend na main, 389 declarados no PR #41 e 430
-frontend; nenhuma suíte foi reexecutada neste planejamento.
+Na main integrada (`a8de117`), a API v1 da fase 005 está disponível com as seis consultas,
+cinco comandos, autenticação Bearer local e specs versionadas. As telas continuam
+injetando diretamente `ServicoDemonstracao`; Relatórios calcula a partir das vendas e
+os formulários chamam comandos síncronos. Portanto, trocar apenas a URL não satisfaz a
+integração. A fase 004 foi integrada pelo PR #40. Evidências anteriores da fase 005
+estão em `backend/README.md`; não foram reexecutadas durante a conferência da tarefa 1.1.
 
 ### 3. Objetivos e resultados esperados
 
@@ -165,36 +166,37 @@ e resposta perdida → conferir → repetir modo demo com API desligada. Sem tel
 
 ### 13. Dependências, riscos e mitigação
 
-PR #41 precisa ser integrado e seu contrato reconferido antes do apply; se mudar,
-revisar PRD/TDD/SDD antes de código dependente. Proxy com Bearer é uma ponte privilegiada:
-loopback sozinho não basta; exigir Host e proveniência, sem alvo arbitrário ou logs de
-query/body. HTTP assíncrono pode duplicar subscriptions; exigir uma escrita por envio.
-Risco de dado obsoleto e confirmação perdida exige invalidação e conferência, não retry.
-Responsáveis e probabilidades não foram confirmados; sem uso operacional autorizado.
+PR #41 foi integrado e seu contrato reconferido na tarefa 1.1; não houve divergência
+material com a referência deste PRD. Se contrato futuro mudar, revisar PRD/TDD/SDD antes
+de código dependente. Proxy com Bearer é uma ponte privilegiada: loopback sozinho não
+basta; exigir Host e proveniência, sem alvo arbitrário ou logs de query/body. HTTP
+assíncrono pode duplicar subscriptions; exigir uma escrita por envio. Risco de dado
+obsoleto e confirmação perdida exige invalidação e conferência, não retry. Responsáveis
+e probabilidades não foram confirmados; sem uso operacional autorizado.
 
 ### 14. Decisões e pendências
 
 Confirmados no Harness: ambiente local, proxy com segredo no servidor, referência fixa,
 conferência explícita após resultado incerto. Os detalhes técnicos de DEC-042 são
-propostos para revisão. Nenhuma nova regra comercial aberta; integração do PR #41 é
-dependência técnica bloqueante do apply, não motivo para mesclá-lo automaticamente.
-Se hooks do proxy não cumprirem a proteção na versão existente, interromper a tarefa
-afetada e revisar desenho, sem remover a proteção ou abrir CORS para avançar.
+propostos para revisão. Nenhuma nova regra comercial aberta; a dependência do PR #41 foi
+satisfeita antes do apply. Se hooks do proxy não cumprirem a proteção na versão existente,
+interromper a tarefa afetada e revisar desenho, sem remover a proteção ou abrir CORS para
+avançar.
 
 ### 15. Entregas e próximos passos
 
-Revisar PRD/TDD/SDD; só depois de novo pedido de apply e pré-requisito integrado,
-executar INT-01–06. Commit por funcionalidade com suas verificações; não abrir PR apenas
-por este planejamento. Archive e PR único somente após escopo integral implementado e
-verificado; merge exige autorização explícita. Nenhum resultado de implementação novo.
+O apply foi autorizado em 27/11/2026 após a integração do PR #41; executar INT-01–06
+conforme as tarefas e gates técnicos. Commit por funcionalidade com suas verificações;
+não abrir PR apenas por este planejamento. Archive e PR único somente após escopo
+integral implementado e verificado; merge exige autorização explícita.
 
 ### 16. Glossário e revisão
 
 Modo local: avaliação técnica sintética com persistência no backend; demonstração:
 memória descartável; conferência: consulta + reconhecimento humano, não prova de
 exactly-once; proxy: ferramenta apenas de desenvolvimento. Revisão de 27/11/2026
-acrescenta FON-047/048, RF-037–043 e CA-069–078, reservando os IDs FON-045/046,
-RF-031–036, CA-061–068 e DEC-041 para a fase 005 ainda no PR #41; preserva histórico.
+acrescenta FON-047/048, RF-037–043 e CA-069–078, preservando os IDs FON-045/046,
+RF-031–036, CA-061–068 e DEC-041 da fase 005, integrada pelo PR #41; preserva histórico.
 
 ## Fase 005 do backend — contrato e API local (26/11/2026)
 

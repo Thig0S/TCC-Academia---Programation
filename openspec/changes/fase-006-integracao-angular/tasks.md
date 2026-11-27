@@ -1,14 +1,15 @@
 # Tasks
 
 Base: PRD/FON-047/048/RF-037–043/CA-069–078 → TDD/DEC-042 → proposal → sete deltas
-em `specs/` → design/D1–D7 → INT-01–06. **Somente planejamento autorizado. Todas as
-tarefas estão pendentes; nenhum apply, pacote, build ou teste de aplicação executado.**
+em `specs/` → design/D1–D7 → INT-01–06. No início do apply autorizado, as 23 tarefas
+estavam pendentes; o estado e as evidências atuais são registrados abaixo.
 
-Gate anterior ao apply: revisão dos artefatos, pedido explícito de implementação e
-PR #41 integrado com contrato equivalente ao head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`.
-Se contrato mudar, revisar PRD/TDD/SDD antes de código dependente. Não mesclar o PR #41
-nem copiar seu código silenciosamente. Continuar na mesma feature desta Change,
-integrando a main atualizada com preservação de trabalho existente.
+Gate anterior ao apply, satisfeito em 27/11/2026: revisão dos artefatos, pedido explícito
+de implementação e PR #41 integrado com contrato equivalente ao head
+`4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`. A main `a8de117` foi integrada nesta mesma
+feature pelo merge `9e3a0e9`, com reconciliação do PRD/TDD e preservação do planejamento.
+Se o contrato mudar, revisar PRD/TDD/SDD antes de código dependente. Não copiar código
+nem inferir autorização de merge a partir do planejamento.
 
 Cada funcionalidade inclui testes, documentação em `frontend/README.md` (e backend
 somente se necessário) e atualização desta lista; executar suas verificações antes
@@ -19,7 +20,8 @@ Não criar pacote novo, endpoint seed, reset, integração desktop ou dados reai
 
 ## 1. INT-01 — Baseline e gate do proxy local
 
-- [ ] 1.1 Confirmar integração do PR #41 e disponibilidade dos endpoints/campos/revisão textual/credencial em código e specs integrados; conferir versões de Node/npm/Angular e SDK conforme manifestos/global.json, sem atualizar baseline. Comparar a fase 005 com a referência do planejamento e registrar divergências ou equivalência em README/tarefas. Verificar estado Git limpo ou alterações próprias antes de integrar main à feature; parar em decisão/ambiente incompatível, sem instalar SDK global ou executar código dependente com requisito aberto.
+- [x] 1.1 Confirmar integração do PR #41 e disponibilidade dos endpoints/campos/revisão textual/credencial em código e specs integrados; conferir versões de Node/npm/Angular e SDK conforme manifestos/global.json, sem atualizar baseline. Comparar a fase 005 com a referência do planejamento e registrar divergências ou equivalência em README/tarefas. Verificar estado Git limpo ou alterações próprias antes de integrar main à feature; parar em decisão/ambiente incompatível, sem instalar SDK global ou executar código dependente com requisito aberto.
+  - Evidência 27/11/2026: PR #41 merged em `a8de117`; branch limpa antes da integração e main incorporada por `9e3a0e9`. `openspec/specs/api-local-vendas/spec.md` e código integrado confirmam seis consultas GET e cinco comandos em `/api/v1`, `Backend__SegredoLocal` como Bearer Base64 canônico de 32 bytes, revisão decimal textual até `long.MaxValue`, datas civis e centavos seguros. Não foi encontrada divergência material com DEC-041/D3; não há endpoint de lote. Node 24.21.0, npm 11.19.0, Angular/CLI local 22.2.6 via `npm exec -- ng` em `frontend/` e SDK .NET 10.0.404 correspondem aos manifestos. `npx ng` a partir da raiz resolveu CLI global 22.2.4; usar a CLI local do workspace. Sem atualização de baseline, instalação ou build/teste de aplicação nesta tarefa.
 - [ ] 1.2 Criar configuração Node do proxy e gate testável de DEC-042/9/D2, sem habilitar proxy no start/build padrão: ambiente para segredo/porta, alvo fixo loopback, match `/api/v1`, métodos admitidos, Host e Fetch Metadata/Origin exatos, rawHeaders contra duplicatas, remoção de auth/cookie de entrada e Bearer somente após admissão. Testes unitários com Node built-in cobrem configuração inválida, origem null/externa/ausente/duplicada, same-site/none/cross-site, métodos/upgrade, destino fixo e zero chamada upstream nas recusas. Documentar execução local sintética, limites e ausência de segredo persistido; testes direcionados antes do commit de proteção.
 - [ ] 1.3 Adicionar perfil serve local em loopback/configuração proxy e script proposto `start:local`; executar gate com CLI real 22.2.6 e upstream temporário próprio, comprovando match com query/IDs reservados, admissão do browser, recusa sem encaminhamento, encerramento correto do hook, erro 502/no-store seguro e logging sem marcadores de URL/body/segredo. Conferir credencial ausente de assets/respostas e rejeição na API quando segredo de formato válido não corresponde. Manter defaults/Pages sem proxy; registrar fontes/versão/evidências e commit próprio. Se hooks/ordem/logging não cumprirem contrato, parar e revisar DEC-042/SDD antes de INT-02, sem enfraquecer gate, abrir CORS ou instalar pacote silenciosamente.
 

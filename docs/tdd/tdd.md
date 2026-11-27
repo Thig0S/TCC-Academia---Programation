@@ -5,7 +5,8 @@
 ### 1. Identificação e situação
 
 Technical Design Document de `fase-006-integracao-angular`, baseado em PRD/FON-047/048,
-RF-037–043 e CA-069–078. Planejamento, **não implementado; apply não autorizado**.
+RF-037–043 e CA-069–078. Planejamento concluído; apply autorizado em 27/11/2026 e
+implementação em andamento nesta feature.
 Escopo, proxy com credencial no servidor, referência fixa e conferência explícita foram
 confirmados no Harness. Estrutura e protocolos abaixo são desenho proposto para revisão,
 não confirmação de compatibilidade executada nem autorização de uso operacional.
@@ -27,12 +28,15 @@ As telas dependem de `ServicoDemonstracao`, seus retornos síncronos e modelos d
 domínio demonstrativo. `Relatorios` chama `calcularRelatorio` e Visão Geral deriva
 listas de todas as vendas. Não há HttpClient configurado ou proxy no workspace.
 
-Main `d84d568` está alinhada à remota consultada e contém só health no host. A API v1
-foi lida na branch do PR #41, commit `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`,
-incluindo `api-local-vendas/spec.md`, design e Program. PR aberto em 27/11/2026.
-Seções FON-045/046, RF-031–036/CA-061–068 e DEC-041 pertencem àquele PR, não estão
-copiadas para esta branch. Integrá-lo e reconferir contrato é gate anterior ao apply.
-Histórico de 285/389/430 testes não foi reexecutado nesta proposta.
+Main integrada `a8de117` contém o contrato e a implementação da API v1 do PR #41
+(head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`), incluindo `api-local-vendas/spec.md`,
+DEC-041 e os endpoints. A integração foi incorporada a esta feature pelo merge `9e3a0e9`;
+PR #41 está merged desde 27/11/2026. Na tarefa 1.1, os seis GETs, cinco comandos,
+prefixo autenticado `/api/v1`, segredo `Backend__SegredoLocal` em Base64 canônico de
+32 bytes e revisão textual canônica foram comparados entre especificação e código; não
+foi encontrada divergência material. FON-045/046, RF-031–036/CA-061–068 e DEC-041
+continuam pertencendo à fase 005 integrada. Evidências históricas de 389 testes backend
+e 430 frontend constam dos READMEs; não foram reexecutadas na tarefa 1.1.
 
 Fontes externas FON-048, consultadas em 27/11/2026:
 - Context7 `/websites/angular_dev`: HTTP requests/testing; `/angular/angular-cli`:
@@ -311,7 +315,7 @@ não iniciada. Contrapartidas/alternativas nas seções 5–13. Validação: INT
 
 ### 16. Riscos, hipóteses e pendências
 
-Dependência bloqueante: PR #41 aberto; confirmar integração e reconciliação antes do apply.
+PR #41 integrado e contrato reconferido na tarefa 1.1; a dependência está satisfeita.
 Gate técnico: hooks do CLI/Vite exatos ainda sem execução observada; prova de proteção
 antecede qualquer tela local. Falha bloqueia e exige revisão, não implementação insegura.
 Não há regra comercial pendente para este recorte. PEN-013/014 e autorização operacional
@@ -331,8 +335,9 @@ Verificações aqui são documentais; nenhum build/teste/auditoria de código fo
 
 ### 18. Histórico
 
-27/11/2026: acrescenta DEC-042 após PRD da fase 006; reserva DEC-041 da fase 005,
-preserva decisões/histórico existentes e distingue main integrada de PR aberto.
+27/11/2026: acrescenta DEC-042 após PRD da fase 006; preserva DEC-041 e o histórico
+da fase 005; reconciliação com a main integrada e autorização do apply registradas na
+tarefa 1.1 desta Change.
 
 ## DEC-041 — Contrato e API local da fase 005 (26/11/2026)
 

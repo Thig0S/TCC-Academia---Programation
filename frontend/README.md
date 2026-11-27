@@ -307,6 +307,41 @@ formatação que já existem nesses documentos em `HEAD`; eles não foram reform
 integralmente. As verificações usaram somente dados sintéticos e não constituem
 aceite operacional.
 
+## Apply `fase-006-integracao-angular` — tarefa 1.1 — baseline integrada (27/11/2026)
+
+O PR #41 (`feature/fase-005-contrato-e-api-local`, head
+`4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`) foi integrado à `main` em 27/11/2026,
+merge commit `a8de1173a7df84ac3af860688b46a094b74bd1f2`. A branch desta Change estava
+limpa antes da integração; a `main` foi incorporada aqui pelo merge `9e3a0e9`. Os
+conflitos limitados ao PRD/TDD foram reconciliados mantendo os registros das fases 005 e
+006. A especificação integrada `openspec/specs/api-local-vendas/spec.md` e o código
+`backend/src/VendasEmAberto.Api/` foram comparados à referência DEC-041/D3:
+
+| Contrato | Especificação/código integrados | Resultado da comparação |
+| --- | --- | --- |
+| Rotas | Seis GETs de coleções, detalhe, resumo, período, relatório mensal e Visão Geral; cinco comandos POST/PUT de venda, cliente, status, baixa e correção, sob `/api/v1` | Equivalente; nenhum endpoint comercial planejado está ausente |
+| Credencial | `Backend__SegredoLocal`, Base64 canônico de 32 bytes; grupo comercial exige Bearer e health permanece separado | Equivalente; sem login humano, CORS permissivo ou credencial no contrato de UI |
+| Tipos | Revisão decimal textual canônica até `long.MaxValue`; centavos inteiros seguros; datas civis; enums textuais e IDs opacos | Equivalente; conversor e leitor estrutural correspondem à especificação |
+| Operações | Referência/revisão nos comandos; detalhe confirmado, erros Problem Details e consulta consolidada | Equivalente; não existe endpoint de baixa em lote; origem histórica em lote permanece dado de leitura |
+
+Não foi encontrada divergência material entre código, spec e desenho. A API inicializa
+SQLite sintético antes de servir, valida o caminho e segredo no processo backend e usa
+loopback; isso não substitui o gate de proveniência que será implementado no proxy Node.
+Os resultados históricos da fase 005 permanecem no `backend/README.md` (incluindo
+389/389 testes backend); nenhum build ou teste de aplicação foi executado nesta tarefa.
+
+Toolchain conferida sem alterar manifestos/lockfiles:
+
+| Projeto | Fixado | Observado |
+| --- | --- | --- |
+| Frontend | Node `>=24.15.0 <25.0.0`, npm `11.19.0`, Angular/CLI `22.2.6` | Node `24.21.0`, npm `11.19.0`, `npm exec -- ng version` em `frontend/` confirmou Angular/CLI local `22.2.6` |
+| Backend | SDK .NET `10.0.404`, `latestPatch` | `dotnet --version` em `backend/`: `10.0.404` |
+
+Observação operacional: `npx ng version` executado na raiz resolveu CLI global `22.2.4`;
+no diretório do projeto, a CLI local fixada em `22.2.6` foi confirmada com `npm exec -- ng`.
+Usar a CLI local explicitamente nos gates seguintes. Não houve instalação global, alteração
+de baseline, build ou teste de aplicação nesta conferência.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

@@ -58,9 +58,12 @@ pacotes novos, SDK cliente genérico, UI de `/resumo` ou `/periodo`, seed, Tauri
 instalador, importação, dados reais, login humano, exportação, backup ou deploy local
 no Pages. Não altera nem arquiva outras Changes.
 
-**Pré-requisito do apply:** integrar e reconferir o PR #41, aberto na consulta de
-27/11/2026 (head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`). Main desta proposta:
-`d84d568`. Não copiar silenciosamente seu código ou inferir autorização de merge.
+**Pré-requisito do apply:** integrar e reconferir o PR #41 (head
+`4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`). Gate satisfeito em 27/11/2026: PR merged
+na main pelo commit `a8de117`; contrato reconferido na tarefa 1.1 e main incorporada à
+feature por merge próprio. A main de planejamento era `d84d568`. A integração do PR não
+foi feita silenciosamente por esta Change nem inferida do planejamento.
 Compatibilidade dos hooks do CLI fixado exige gate real antes das telas; falha exige
-revisar o desenho, não enfraquecer proteção. Proposta pronta não autoriza apply,
-archive ou abertura antecipada de PR.
+revisar o desenho, não enfraquecer proteção. A proposta, isoladamente, não autorizou o
+apply; o pedido posterior e o início autorizado estão registrados na tarefa 1.1.
+Archive ou abertura de PR continuam condicionados à conclusão integral da Change.
