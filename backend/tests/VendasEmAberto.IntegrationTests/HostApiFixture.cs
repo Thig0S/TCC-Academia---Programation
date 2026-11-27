@@ -35,6 +35,8 @@ internal sealed class HostApiFixture : IAsyncDisposable
 
     public IServiceProvider Servicos => _factory.Services;
 
+    public HttpClient CriarCliente() => _factory.CreateClient(CriarOpcoesCliente());
+
     public static async Task<HostApiFixture> CriarAsync(
         string? ambiente = null,
         Action<IWebHostBuilder>? configurar = null,
@@ -77,11 +79,7 @@ internal sealed class HostApiFixture : IAsyncDisposable
 
                     configurar?.Invoke(builder);
                 });
-            cliente = factory.CreateClient(new WebApplicationFactoryClientOptions
-            {
-                AllowAutoRedirect = false,
-                HandleCookies = false
-            });
+            cliente = factory.CreateClient(CriarOpcoesCliente());
 
             return new HostApiFixture(
                 diretorioTemporario,
@@ -148,4 +146,10 @@ internal sealed class HostApiFixture : IAsyncDisposable
             ExclusaoAmbiente.Release();
         }
     }
+
+    private static WebApplicationFactoryClientOptions CriarOpcoesCliente() => new()
+    {
+        AllowAutoRedirect = false,
+        HandleCookies = false
+    };
 }
