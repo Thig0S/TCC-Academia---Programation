@@ -10,6 +10,7 @@ using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.AlterarStatusVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.EditarClienteVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
+using VendasEmAberto.Aplicacao.Funcionalidades.Recebimentos.CorrigirPagamento;
 using VendasEmAberto.Aplicacao.Funcionalidades.Recebimentos.RegistrarPagamento;
 using VendasEmAberto.Aplicacao.Funcionalidades.VisaoGeral.ConsultarVisaoGeral;
 using VendasEmAberto.Dominio.Recebimentos;
@@ -26,6 +27,7 @@ public static class VendasEndpoints
         grupo.MapPut("/vendas/cliente", EditarClienteAsync);
         grupo.MapPut("/vendas/status", AlterarStatusAsync);
         grupo.MapPost("/recebimentos", RegistrarPagamentoAsync);
+        grupo.MapPut("/recebimentos", CorrigirPagamentoAsync);
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
@@ -158,6 +160,42 @@ public static class VendasEndpoints
         var comando = new RegistrarPagamentoCommand(
             corpo.LerTextoObrigatorio("vendaId"),
             corpo.LerTextoObrigatorio("parcelaId"),
+            corpo.LerCentavosObrigatorios("valorRecebidoCentavos"),
+            corpo.LerDataObrigatoria("data"),
+            Mapear(corpo.LerEnumObrigatorio<FormaPagamentoApi>("forma")),
+            corpo.LerTextoOpcional("observacao"),
+            corpo.LerDataObrigatoria("referencia"),
+            corpo.LerRevisaoObrigatoria("revisaoEsperada"));
+        var resultado = await sender.Send(comando, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            detalhe => Results.Json(MapeadorVendaDetalheApi.Mapear(detalhe)));
+    }
+
+    private static async Task<IResult> CorrigirPagamentoAsync(HttpContext contexto, ISender sender)
+    {
+        if (!contexto.Request.HasJsonContentType())
+        {
+            return ProblemasApi.TipoConteudoNaoSuportado();
+        }
+
+        var corpo = await LeitorObjetoJson.LerAsync(
+            contexto.Request,
+            [
+                "vendaId",
+                "recebimentoId",
+                "valorRecebidoCentavos",
+                "data",
+                "forma",
+                "observacao",
+                "referencia",
+                "revisaoEsperada"
+            ],
+            contexto.RequestAborted);
+        var comando = new CorrigirPagamentoCommand(
+            corpo.LerTextoObrigatorio("vendaId"),
+            corpo.LerTextoObrigatorio("recebimentoId"),
             corpo.LerCentavosObrigatorios("valorRecebidoCentavos"),
             corpo.LerDataObrigatoria("data"),
             Mapear(corpo.LerEnumObrigatorio<FormaPagamentoApi>("forma")),

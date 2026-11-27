@@ -2258,3 +2258,52 @@ nota acima do limite e venda Inativa falham sem save; uma baixa válida posterio
 que a primeira parcela continua sendo o alvo. Centavos enviados como string retornam 400
 com campo público `valorRecebidoCentavos`. Fixtures/SQLite são sintéticos e temporários;
 não houve acesso a banco operacional.
+
+## Correção HTTP de recebimento individual (API-04/4.5)
+
+`PUT /api/v1/recebimentos` exige Bearer e `application/json`, com `vendaId`,
+`recebimentoId`, `valorRecebidoCentavos`, `data`, `forma`, `referencia` e
+`revisaoEsperada` (string decimal canônica); `observacao` é opcional/nullable. Não recebe
+`parcelaId`: a correção usa e preserva a alocação original. Somente recebimentos de origem
+Individual em venda Ativa são corrigíveis; entrada/lote, venda não Ativa, ID ausente ou
+pertencente a outra venda têm falhas tipadas distintas. O mínimo continua sendo o valor-base
+da parcela, e o acréscimo é recalculado como valor corrigido menos base. Sucesso confirmado
+retorna 200 com detalhe e revisão nova; ID, ordem, alocação, contrato-base e demais
+recebimentos são preservados. Não há `Location` porque não se cria novo recurso. Mesmo
+payload de correção é uma confirmação de escrita e avança a revisão uma vez, sem duplicar
+o recebimento.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "recebimentoId": "recebimento-1",
+  "valorRecebidoCentavos": 10500,
+  "data": "2027-03-10",
+  "forma": "CartaoCredito",
+  "observacao": "Corrigido em março",
+  "referencia": "2027-03-31",
+  "revisaoEsperada": "5"
+}
+```
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~CorrigirPagamentoEndpointTests|FullyQualifiedName~CorrigirPagamentoSqliteTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~CorrigirPagamentoHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 4 testes HTTP/SQLite (dois de endpoint e dois de aplicação SQLite) e 5
+unitários do handler aprovados; build Release com 0 avisos/erros e verificação de formato
+aprovados. A correção reduz o acréscimo de 1.000 para 500 centavos e move a data de
+fevereiro para março: consultas por período passam a totalizar 20.000 em fevereiro e 10.500
+em março. Reenvio idêntico, com revisão atual, incrementa revisão sem duplicar ID; SQLite
+reaberto confirma IDs, ordem, vínculo à parcela, saldos das demais e outra venda intactos.
+IDs ausentes/externos, entrada, lote, venda Inativa, valor menor, data posterior à
+referência, forma inválida, observação acima de 20 valores escalares e revisão obsoleta
+retornam status/códigos esperados sem save. Arquivos e dados são sintéticos/temporários;
+não houve acesso a banco operacional.
