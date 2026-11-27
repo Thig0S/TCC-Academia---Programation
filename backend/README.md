@@ -2536,4 +2536,17 @@ mudança de schema, frontend, Tauri ou manutenção de outra Change foi incluíd
 Resultado técnico não representa homologação da ótica, validação com vendas reais,
 garantia contra processo/usuário local comprometido, falhas de provedores externos de
 logs, falha nativa real de confirmação ou garantia de entrega HTTP após desconexão.
-Esses limites permanecem explícitos; sync/archive e PR são etapas seguintes do fluxo.
+Esses limites permanecem explícitos.
+
+Após autorização de sincronização, `openspec/specs/api-local-vendas/spec.md` foi criado
+com Purpose copiado literalmente e 9 requisitos/30 cenários; a capability existente
+`casos-de-uso-vendas` preservou seu Purpose e conteúdo não relacionado, atualizou a
+requirement de isolamento e recebeu 2 requirements/5 cenários de Visão Geral. Os três
+blocos de requirements das deltas foram comparados literalmente com as specs principais
+(normalizando somente finais de linha). As duas capabilities afetadas passaram
+`openspec validate <capability> --type spec --strict`; `openspec validate --specs`
+aprovou 12 specs sem erros. A tentativa mais ampla `openspec validate --specs --strict`
+continua apontando descrições >500 caracteres em três capabilities não alteradas
+(`consulta-vendas`, `dominio-vendas`, `temas-visuais`); não foram editadas por estarem
+fora do escopo. A validação estrita da Change também passou. Próximos passos: archive
+verificado e PR único da feature.
