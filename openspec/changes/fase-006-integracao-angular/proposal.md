@@ -6,8 +6,9 @@ As telas ainda usam estado demonstrativo síncrono, enquanto a fase 005 oferece 
 contrato HTTP persistido. Validar agora o fluxo completo com dados sintéticos evita
 levar problemas de precisão, concorrência e confirmação perdida para a futura etapa desktop.
 
-Base: PRD/FON-047/048/RF-037–043/CA-069–078 → TDD/DEC-042. Somente planejamento
-autorizado; não confundir com a FASE-006 histórica dos formulários.
+Base: PRD/FON-047/048/RF-037–043/CA-069–078 → TDD/DEC-042. O pedido inicial autorizou
+somente planejamento; apply autorizado em 27/11/2026 após revisão dos artefatos e
+integração do PR #41. Não confundir com a FASE-006 histórica dos formulários.
 
 ## What Changes
 

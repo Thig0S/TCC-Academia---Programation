@@ -342,6 +342,46 @@ no diretório do projeto, a CLI local fixada em `22.2.6` foi confirmada com `npm
 Usar a CLI local explicitamente nos gates seguintes. Não houve instalação global, alteração
 de baseline, build ou teste de aplicação nesta conferência.
 
+### Apply `fase-006-integracao-angular` — tarefa 1.2 — gate Node do proxy (27/11/2026)
+
+`proxy-local-gate.cjs` constrói a configuração e valida os pedidos antes de o Vite
+encaminhá-los; `proxy-local.cjs` é o módulo CommonJS de configuração do CLI, ainda não
+referenciado pelo `angular.json`. O proxy permanece desligado em `npm start`, `npm run
+build` e Pages; a ligação explícita ao perfil local e o teste com CLI/upstream temporário
+ficam para a tarefa 1.3.
+
+O módulo exige `Backend__SegredoLocal` como Base64 canônico de 32 bytes e aceita
+`Backend__Porta` de 1024–65535 (padrão 5070). A origem upstream é sempre
+`http://127.0.0.1:<porta>`; variáveis de URL/alvo não são lidas. A API deve ser iniciada
+separadamente, usando o mesmo segredo apenas nos ambientes dos processos e um caminho
+absoluto para banco sintético, conforme `backend/README.md`. Não gravar a credencial em
+arquivo, argumento, configuração Angular, bundle ou histórico de comandos. O gate não
+inicia nem prepara a API e não configura banco.
+
+Antes de qualquer encaminhamento, o gate exige Host único `127.0.0.1:4200`,
+`Sec-Fetch-Site: same-origin` único, Origin exato quando presente (obrigatório em POST/
+PUT) e método GET/POST/PUT. Lê `rawHeaders` para rejeitar duplicatas; nega caminhos fora
+de `/api/v1` e descendentes, `Origin: null`, origens externas, metadados ausentes ou
+cross-site/same-site/none, `Upgrade`, `Expect` e conexões WebSocket. A recusa encerra
+403 genérico com `Cache-Control: no-store`, substitui o caminho por sentinel fixo para
+evitar log de query e interrompe o hook antes de `next()`/`proxy.web`. `Expect` é negado
+porque o Vite 8.3.5 do builder não emite `proxyReq` nesse caso. Para pedidos admitidos,
+o hook de saída remove Authorization/cookie recebidos e injeta o Bearer do processo Node.
+
+Teste direcionado, sem servidor ou dependências extras, executado em `frontend/`:
+
+```powershell
+node --test proxy-local.test.cjs
+```
+
+Resultado em 27/11/2026: **7/7 testes aprovados** para segredo/porta, alvo fixo, fronteira
+de rota, proveniência, duplicatas, métodos/upgrade/Expect, recusa sem chamada upstream e
+remoção/injeção de credenciais. O hook foi inspecionado na fonte instalada do Vite 8.3.5;
+isso não substitui a prova de execução pelo CLI real da tarefa 1.3. Cabeçalhos de
+proveniência defendem o browser contra sites externos, não contra processo local malicioso
+com capacidade de forjar requisições ou ler o ambiente. Usar somente dados sintéticos;
+clientes técnicos autenticam-se diretamente na API e não recebem bypass do proxy.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

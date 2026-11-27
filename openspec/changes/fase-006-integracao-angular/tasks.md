@@ -22,7 +22,8 @@ Não criar pacote novo, endpoint seed, reset, integração desktop ou dados reai
 
 - [x] 1.1 Confirmar integração do PR #41 e disponibilidade dos endpoints/campos/revisão textual/credencial em código e specs integrados; conferir versões de Node/npm/Angular e SDK conforme manifestos/global.json, sem atualizar baseline. Comparar a fase 005 com a referência do planejamento e registrar divergências ou equivalência em README/tarefas. Verificar estado Git limpo ou alterações próprias antes de integrar main à feature; parar em decisão/ambiente incompatível, sem instalar SDK global ou executar código dependente com requisito aberto.
   - Evidência 27/11/2026: PR #41 merged em `a8de117`; branch limpa antes da integração e main incorporada por `9e3a0e9`. `openspec/specs/api-local-vendas/spec.md` e código integrado confirmam seis consultas GET e cinco comandos em `/api/v1`, `Backend__SegredoLocal` como Bearer Base64 canônico de 32 bytes, revisão decimal textual até `long.MaxValue`, datas civis e centavos seguros. Não foi encontrada divergência material com DEC-041/D3; não há endpoint de lote. Node 24.21.0, npm 11.19.0, Angular/CLI local 22.2.6 via `npm exec -- ng` em `frontend/` e SDK .NET 10.0.404 correspondem aos manifestos. `npx ng` a partir da raiz resolveu CLI global 22.2.4; usar a CLI local do workspace. Sem atualização de baseline, instalação ou build/teste de aplicação nesta tarefa.
-- [ ] 1.2 Criar configuração Node do proxy e gate testável de DEC-042/9/D2, sem habilitar proxy no start/build padrão: ambiente para segredo/porta, alvo fixo loopback, match `/api/v1`, métodos admitidos, Host e Fetch Metadata/Origin exatos, rawHeaders contra duplicatas, remoção de auth/cookie de entrada e Bearer somente após admissão. Testes unitários com Node built-in cobrem configuração inválida, origem null/externa/ausente/duplicada, same-site/none/cross-site, métodos/upgrade, destino fixo e zero chamada upstream nas recusas. Documentar execução local sintética, limites e ausência de segredo persistido; testes direcionados antes do commit de proteção.
+- [x] 1.2 Criar configuração Node do proxy e gate testável de DEC-042/9/D2, sem habilitar proxy no start/build padrão: ambiente para segredo/porta, alvo fixo loopback, match `/api/v1`, métodos admitidos, Host e Fetch Metadata/Origin exatos, rawHeaders contra duplicatas, rejeição de Upgrade/Expect, remoção de auth/cookie de entrada e Bearer somente após admissão. Testes unitários com Node built-in cobrem configuração inválida, origem null/externa/ausente/duplicada, same-site/none/cross-site, métodos/upgrade, destino fixo e zero chamada upstream nas recusas. Documentar execução local sintética, limites e ausência de segredo persistido; testes direcionados antes do commit de proteção.
+  - Evidência 27/11/2026: `node --test proxy-local.test.cjs` passou 7/7; `node --check` passou nos três módulos CommonJS e Prettier nos mesmos arquivos. O carregador `proxy-local.cjs` foi invocado com credencial efêmera em processo e resolveu o contexto `^/api/v1(?:/|\?|$)` para loopback:5070, sem alterar Angular/`package.json`/lockfiles. `git diff --check` passou. Fonte instalada do builder confirma a ordem dos hooks; CLI real, upstream temporário, resposta/logs de erro e wiring do perfil local continuam no gate da tarefa 1.3, não comprovados aqui.
 - [ ] 1.3 Adicionar perfil serve local em loopback/configuração proxy e script proposto `start:local`; executar gate com CLI real 22.2.6 e upstream temporário próprio, comprovando match com query/IDs reservados, admissão do browser, recusa sem encaminhamento, encerramento correto do hook, erro 502/no-store seguro e logging sem marcadores de URL/body/segredo. Conferir credencial ausente de assets/respostas e rejeição na API quando segredo de formato válido não corresponde. Manter defaults/Pages sem proxy; registrar fontes/versão/evidências e commit próprio. Se hooks/ordem/logging não cumprirem contrato, parar e revisar DEC-042/SDD antes de INT-02, sem enfraquecer gate, abrir CORS ou instalar pacote silenciosamente.
 
 ## 2. INT-02 — Fronteira de dados, wire e coordenação
@@ -77,22 +78,24 @@ Não criar pacote novo, endpoint seed, reset, integração desktop ou dados reai
 
 ## Planning Verification
 
-Em 27/11/2026: fontes e decisões materiais levantadas antes do scaffold; main e
+Registro do planejamento original, antes da autorização do apply, em 27/11/2026:
+fontes e decisões materiais levantadas antes do scaffold; main e
 estado do PR #41 consultados; PRD/TDD atualizados na feature; nenhum código de projeto
 alterado. `openspec validate fase-006-integracao-angular --strict` passou e
 `git diff --check` passou para o diff rastreado, com avisos de normalização LF/CRLF.
 Inspeção estrutural somente leitura por Node conferiu sete capabilities idênticas à
 proposta, 20 requisitos/57 cenários, títulos MODIFIED existentes, preservação dos nomes
-de todos os cenários anteriores desses blocos e caminhos dentro da Change. São
-23 tarefas pendentes, zero marcadas. Tentativa auxiliar por Python não executou por
+de todos os cenários anteriores desses blocos e caminhos dentro da Change. Naquele
+momento eram 23 tarefas pendentes, zero marcadas. Tentativa auxiliar por Python não executou por
 ausência do comando; nenhuma instalação foi feita e a verificação foi realizada por Node.
 O status informa os quatro tipos de artefatos prontos, não tarefas implementadas.
 Nenhum build, teste de aplicação, aceite operacional, archive ou PR desta Change.
 
 ## Workflow follow-up
 
-- Revisar todos os artefatos. Aguardar novo pedido explícito de apply; escolha de design
-  não autoriza implementação. Resolver os gates antes das tarefas dependentes.
+- A revisão dos artefatos e o pedido explícito de apply foram concluídos; executar as
+  tarefas restantes somente após resolver seus gates técnicos e manter os resultados
+  comprovados atualizados em PRD/TDD/SDD/README.
 - Somente após escopo integral autorizado e verificações concluídos, sincronizar deltas
   e arquivar automaticamente **esta** Change pelo fluxo OpenSpec; conferir specs,
   metadados e diretório arquivado. Não arquivar Changes antigas como efeito colateral.

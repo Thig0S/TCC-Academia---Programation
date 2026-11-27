@@ -8,8 +8,8 @@ Technical Design Document de `fase-006-integracao-angular`, baseado em PRD/FON-0
 RF-037–043 e CA-069–078. Planejamento concluído; apply autorizado em 27/11/2026 e
 implementação em andamento nesta feature.
 Escopo, proxy com credencial no servidor, referência fixa e conferência explícita foram
-confirmados no Harness. Estrutura e protocolos abaixo são desenho proposto para revisão,
-não confirmação de compatibilidade executada nem autorização de uso operacional.
+confirmados no Harness. O desenho foi revisado e o apply autorizado; compatibilidade
+runtime permanece sujeita aos gates e isso não autoriza uso operacional.
 
 ### 2. Contexto, objetivos e limites
 
@@ -48,8 +48,11 @@ Fontes externas FON-048, consultadas em 27/11/2026:
 - Fontes oficiais `angular/angular-cli/main/packages/angular/build/src/utils/load-proxy-config.ts`
   e `vitejs/vite/main/packages/vite/src/node/server/middlewares/proxy.ts`: carga de
   configuração JS e gate antes de proxy.web. São fontes main, não prova da 22.2.6.
-  Tentativa de consultar tag 22.2.6 retornou 404; compatibilidade exata deve ser
-  demonstrada no gate INT-01, não presumida por estas fontes.
+  A inspeção da instalação local confirmou Angular CLI/build 22.2.6 e Vite 8.3.5 do
+  builder: configuração CommonJS carregada pelo CLI, contexto regex preservado, `bypass`
+  antes de `proxy.web`, ramo string respeitando `res.writableEnded` e evento `proxyReq`
+  emitido antes do streaming (exceto se houver `Expect`). A leitura da fonte instalada
+  não substitui a execução real da CLI planejada em INT-01.3.
 
 ### 4. Síntese da entrevista
 
@@ -161,14 +164,17 @@ Gate obrigatório antes de encaminhar/injetar Bearer: Host único exatamente
 `127.0.0.1:4200`; `Sec-Fetch-Site: same-origin` obrigatório; Origin, se presente,
 exatamente `http://127.0.0.1:4200`, obrigatório para POST/PUT; rejeitar null, duplicatas,
 cross-site/same-site/none e metadados ausentes; GET/POST/PUT comerciais apenas, sem
-upgrade ou OPTIONS proxied. Inspecionar rawHeaders para duplicatas. Não usar Referer
+Upgrade, `Expect` ou OPTIONS proxied. Rejeitar `Expect` porque o Vite 8.3.5 omite seu
+evento `proxyReq` nesse caso; manter `ws` desabilitado. Inspecionar rawHeaders para
+duplicatas. Não usar Referer
 como autenticação nem confiar só em allowedHosts, pois Vite aceita IPs por padrão.
 Isso admite Chromium fetch da mesma origem, não navegação direta para endpoint ou
 clientes sem Fetch Metadata; tais clientes técnicos acessam API diretamente com Bearer.
 
 Usar gate `bypass` e hook `configure` da configuração Node carregada pelo CLI. Recusa
-encerra resposta genérica 403/no-store antes de proxy.web; retorno do hook não pode
-deixar encaminhar resposta já encerrada. Credencial de entrada Authorization/cookie
+encerra resposta genérica 403/no-store, substitui a URL do pedido por um sentinel fixo
+e retorna esse path; no Vite instalado, o ramo string retorna antes de `next()` quando
+`writableEnded`, sem executar `proxy.web` ou repetir o encerramento. Credencial de entrada Authorization/cookie
 não é confiável: remover, injetar só Bearer do ambiente após admissão. Não adicionar
 CORS permissivo, bypass por ambiente de teste, `allowedHosts=true`, target dinâmico,
 ou credencial padrão. Nenhum header/endpoint devolve o segredo ao browser.

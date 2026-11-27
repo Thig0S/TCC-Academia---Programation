@@ -5,8 +5,8 @@
 Ver `proposal.md/Why`. PRD/FON-047/048/RF-037–043/CA-069–078 e TDD/DEC-042 centralizam
 o escopo e contrato técnico; este desenho organiza sua aplicação. Criar design é
 necessário: mudança transversal nas telas, composição, segurança e protocolo assíncrono.
-O planejamento foi concluído e o apply foi autorizado em 27/11/2026; a tarefa 1.1 foi
-concluída e o primeiro código ainda não foi implementado nesta Change.
+O planejamento foi concluído e o apply foi autorizado em 27/11/2026; as tarefas 1.1–1.2
+estão concluídas, com a integração das telas ainda não iniciada.
 
 Main integrada `a8de117`: API técnica v1 e specs da fase 005 disponíveis; telas ainda
 dependem de `ServicoDemonstracao`, comandos síncronos e Relatórios/painel calculados da
@@ -74,13 +74,18 @@ Browser 127.0.0.1:4200 --> Gate Host / Fetch Metadata / Origin
 
 Aplicar DEC-042/9 integralmente: rawHeaders para duplicatas, Host único exato,
 Sec-Fetch-Site same-origin obrigatório, Origin exato quando presente e obrigatório
-em POST/PUT; negar null/externo/same-site/none/ausente, métodos não admitidos e upgrade
-comercial antes de proxy.web. Match ancorado `/api/v1` sem alterar query/IDs. Não
-confiar só em allowedHosts, pois Vite admite IPs por padrão; não emitir CORS permissivo.
+em POST/PUT; negar null/externo/same-site/none/ausente, métodos não admitidos e headers
+Upgrade/Expect antes de proxy.web. `ws` permanece desabilitado; `Expect` é
+rejeitado porque o Vite 8.3.5 não emite `proxyReq` quando esse header está presente.
+Match ancorado `/api/v1` sem alterar query/IDs em pedidos admitidos. Não confiar só em
+allowedHosts, pois Vite admite IPs por padrão; não emitir CORS permissivo.
 Cliente técnico sem esses headers usa API direta autenticada, não bypass do proxy.
 
-Hooks `bypass`/`configure` propostos com encerramento seguro de recusa e logging
-higienizado antes do logger padrão. Erro upstream responde 502/no-store/código genérico,
+Hooks `bypass`/`configure` verificados na fonte instalada: `bypass` roda antes de
+`proxy.web`; a recusa termina 403/no-store, redige o caminho com sentinel fixo e retorna
+string, para o ramo do Vite que observa `writableEnded` retornar sem `next()`. O hook
+`proxyReq` injeta Bearer/remove Authorization e cookie somente após admissão. Logging
+real pela CLI ainda é gate INT-01.3. Erro upstream responde 502/no-store/código genérico,
 sem afirmar entrega/rollback; desativar debug que imprima URL/dados. Provar marcador
 de segredo/query ausente de logs, responses, bundle, requests do browser e artifacts.
 
