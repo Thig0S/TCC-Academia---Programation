@@ -81,6 +81,12 @@
             },
             "development": {
               "buildTarget": "vendas-em-aberto:build:development"
+            },
+            "local": {
+              "buildTarget": "vendas-em-aberto:build:development",
+              "host": "127.0.0.1",
+              "port": 4200,
+              "proxyConfig": "proxy-local.cjs"
             }
           },
           "defaultConfiguration": "development"

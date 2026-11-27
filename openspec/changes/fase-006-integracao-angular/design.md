@@ -5,7 +5,7 @@
 Ver `proposal.md/Why`. PRD/FON-047/048/RF-037–043/CA-069–078 e TDD/DEC-042 centralizam
 o escopo e contrato técnico; este desenho organiza sua aplicação. Criar design é
 necessário: mudança transversal nas telas, composição, segurança e protocolo assíncrono.
-O planejamento foi concluído e o apply foi autorizado em 27/11/2026; as tarefas 1.1–1.2
+O planejamento foi concluído e o apply foi autorizado em 27/11/2026; as tarefas 1.1–1.3
 estão concluídas, com a integração das telas ainda não iniciada.
 
 Main integrada `a8de117`: API técnica v1 e specs da fase 005 disponíveis; telas ainda
@@ -56,10 +56,12 @@ em `src/configuracoes/`, proxy Node fora de src e E2E local separado. Sem pacote
 
 ### D2 — Proxy do CLI com gate anterior ao encaminhamento
 
-Confirmado proxy com credencial fora do browser. Proposto `proxy-local.cjs` carregado
+Implementado e exercitado proxy com credencial fora do browser. `proxy-local.cjs` é carregado
 somente em start local, lendo `Backend__SegredoLocal` (Base64 canônico, 32 bytes) e
 `Backend__Porta` (default 5070, limites da API); alvo imutável 127.0.0.1. API é iniciada
 separadamente com mesmo segredo e caminho sintético explícito. Proxy não prepara banco.
+O perfil local só instala o serve/proxy neste estágio; providers e telas ainda usam demo até
+INT-02.1.
 
 ```text
 Browser 127.0.0.1:4200 --> Gate Host / Fetch Metadata / Origin
@@ -75,25 +77,32 @@ Browser 127.0.0.1:4200 --> Gate Host / Fetch Metadata / Origin
 Aplicar DEC-042/9 integralmente: rawHeaders para duplicatas, Host único exato,
 Sec-Fetch-Site same-origin obrigatório, Origin exato quando presente e obrigatório
 em POST/PUT; negar null/externo/same-site/none/ausente, métodos não admitidos e headers
-Upgrade/Expect antes de proxy.web. `ws` permanece desabilitado; `Expect` é
-rejeitado porque o Vite 8.3.5 não emite `proxyReq` quando esse header está presente.
+Upgrade/Expect antes de proxy.web. `Expect` é rejeitado porque o Vite 8.3.5 não emite
+`proxyReq` quando esse header está presente. Ativar `ws` só para passar upgrades pela
+validação: o gate retorna `false` sem resposta HTTP e o Vite encerra o handshake 404,
+sem chamar `proxy.ws`.
 Match ancorado `/api/v1` sem alterar query/IDs em pedidos admitidos. Não confiar só em
 allowedHosts, pois Vite admite IPs por padrão; não emitir CORS permissivo.
 Cliente técnico sem esses headers usa API direta autenticada, não bypass do proxy.
 
-Hooks `bypass`/`configure` verificados na fonte instalada: `bypass` roda antes de
+Hooks `bypass`/`configure` verificados pela execução real Angular CLI 22.2.6/Vite 8.3.5:
+`bypass` roda antes de
 `proxy.web`; a recusa termina 403/no-store, redige o caminho com sentinel fixo e retorna
 string, para o ramo do Vite que observa `writableEnded` retornar sem `next()`. O hook
 `proxyReq` injeta Bearer/remove Authorization e cookie somente após admissão. Logging
-real pela CLI ainda é gate INT-01.3. Erro upstream responde 502/no-store/código genérico,
-sem afirmar entrega/rollback; desativar debug que imprima URL/dados. Provar marcador
-de segredo/query ausente de logs, responses, bundle, requests do browser e artifacts.
+do erro foi interceptado antes do logger padrão; o preloader local remove `DEBUG`/`PORT`.
+Upgrade real recebe 404 do listener Vite sem chamar `proxy.ws`; `Expect` é negado pois
+Vite omite `proxyReq` quando presente. Execução Chromium/upstream temporário comprovou
+query/ID preservados, recusa sem upstream, 502/no-store genérico e ausência de marcadores
+nos logs, assets, respostas e requests do browser. API .NET real rejeitou credencial distinta
+e válida (401/no-store). `npm run build` demo passou; providers/telas locais continuam em
+INT-02.1. O proxy não afirma entrega/rollback de comando que resulte em erro de transporte.
 
 Alternativa direta com token/CORS ou SPA hospedada no backend ampliaria decisões não
-escolhidas; servidor proxy separado não é adicionado por padrão. Documentação consultada
-é main/atual, sem comprovação da tag 22.2.6: gate INT-01 executa CLI real e comprova
-negação **sem upstream receber**, erro/logging e caminho feliz. Se não funcionar,
-parar e revisar antes de telas; não enfraquecer gate ou instalar pacote silenciosamente.
+escolhidas; servidor proxy separado não é adicionado por padrão. A implementação não
+adicionou dependências nem alterou os scripts padrão `start`/`build`. Gate INT-01.3 passou
+com CLI real e comprovou negação **sem upstream receber**, erro/logging e caminho feliz;
+não enfraquecer gate ou abrir CORS ao avançar para as telas.
 
 ### D3 — Contratos exatos e referência por sessão
 

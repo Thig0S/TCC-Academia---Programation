@@ -144,11 +144,12 @@ Cadastro consulta revisão por uma coleção antes de habilitar confirmar. Não 
 revisão nova no submit para forçar sucesso. Conflito exige leitura explícita e novo
 aceite sobre o mesmo alvo; não sobrescrever rascunho nem deslocar parcela/recebimento.
 
-Configuração padrão/demo continua `npm start`, `npm run build` e Pages. Propor
-configuração `local` de build/serve, fileReplacement somente de providers e script
-`start:local`: ng serve em 127.0.0.1:4200 com proxy e modo local. Nenhum segredo no
-arquivo de ambiente compilado. Build local é só artefato técnico, não implantável
-sem o proxy; não publicar no Pages. Sem seletor runtime/URL ou fallback automático.
+Configuração padrão/demo continua `npm start`, `npm run build` e Pages. O perfil `local`
+de serve e o script `start:local` foram criados para ng serve em 127.0.0.1:4200 com
+proxy. Até INT-02.1, essa configuração ainda usa a composição demonstrativa; providers
+locais/fileReplacement permanecem pendentes e o perfil não representa integração de telas.
+Nenhum segredo no arquivo de ambiente compilado. Build local é só artefato técnico, não
+implantável sem proxy; não publicar no Pages. Sem seletor runtime/URL ou fallback automático.
 
 ### 9. Proxy e fluxos de falha
 
@@ -165,8 +166,9 @@ Gate obrigatório antes de encaminhar/injetar Bearer: Host único exatamente
 exatamente `http://127.0.0.1:4200`, obrigatório para POST/PUT; rejeitar null, duplicatas,
 cross-site/same-site/none e metadados ausentes; GET/POST/PUT comerciais apenas, sem
 Upgrade, `Expect` ou OPTIONS proxied. Rejeitar `Expect` porque o Vite 8.3.5 omite seu
-evento `proxyReq` nesse caso; manter `ws` desabilitado. Inspecionar rawHeaders para
-duplicatas. Não usar Referer
+evento `proxyReq` nesse caso. Manter `ws: true` somente para que o listener de upgrade
+do Vite invoque o gate; com `res` ausente, a recusa retorna `false` e fecha o handshake
+como 404 antes de qualquer `proxy.ws`. Inspecionar rawHeaders para duplicatas. Não usar Referer
 como autenticação nem confiar só em allowedHosts, pois Vite aceita IPs por padrão.
 Isso admite Chromium fetch da mesma origem, não navegação direta para endpoint ou
 clientes sem Fetch Metadata; tais clientes técnicos acessam API diretamente com Bearer.
@@ -185,6 +187,19 @@ for possível responder, erro upstream devolve 502/no-store/código genérico pr
 **sem** afirmar se comando chegou ou gravou. Provar tanto gate como logging em servidor
 CLI real da versão fixada; se hooks/ordem não cumprirem protocolo, parar e revisar
 DEC-042/SDD antes de integrar telas, sem abrir CORS ou instalar pacote silenciosamente.
+
+**Evidência INT-01.3 (27/11/2026):** Angular CLI/build 22.2.6 e Vite 8.3.5 instalados.
+O smoke executou `npm run start:local` com `DEBUG` e `PORT` deliberadamente definidos:
+o preloader limpou ambos e a origem serviu em 127.0.0.1:4200.
+Chromium fez GET same-origin com query/ID reservado preservados e Bearer apenas no trecho
+servidor→upstream; uma chamada de proveniência cross-site recebeu 403/no-store sem tráfego
+upstream. Upgrade WebSocket encerrou em 404 sem encaminhamento. Upstream que fechou socket
+gerou 502/no-store/código genérico; logs do CLI não continham marcadores de segredo, query,
+body ou Authorization recebido. Assets/respostas do browser também não continham segredo.
+API .NET real em SQLite sintético recebeu outro Bearer Base64 válido e respondeu 401/no-store,
+sem expor qualquer das credenciais. `node --test --test-concurrency=1 proxy-local.test.cjs
+proxy-local-cli.test.cjs` passou 9/9 e `npm run build` padrão passou (316,87 kB iniciais).
+O build/teste não comprova a composição Angular local, que permanece em INT-02.1.
 
 **HTTP e comandos:** GETs não têm retry automático nesta fase; ação de recarregar é
 explícita. Cada comando tem uma subscription controlada, sem retry/shareReplay que

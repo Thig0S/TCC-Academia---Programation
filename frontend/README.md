@@ -345,10 +345,9 @@ de baseline, build ou teste de aplicação nesta conferência.
 ### Apply `fase-006-integracao-angular` — tarefa 1.2 — gate Node do proxy (27/11/2026)
 
 `proxy-local-gate.cjs` constrói a configuração e valida os pedidos antes de o Vite
-encaminhá-los; `proxy-local.cjs` é o módulo CommonJS de configuração do CLI, ainda não
-referenciado pelo `angular.json`. O proxy permanece desligado em `npm start`, `npm run
-build` e Pages; a ligação explícita ao perfil local e o teste com CLI/upstream temporário
-ficam para a tarefa 1.3.
+encaminhá-los; `proxy-local.cjs` é o módulo CommonJS do CLI. Ao concluir a tarefa 1.2,
+ele ainda não estava referenciado pelo `angular.json`; a ligação foi feita na tarefa 1.3.
+O proxy segue desligado em `npm start`, `npm run build` e Pages.
 
 O módulo exige `Backend__SegredoLocal` como Base64 canônico de 32 bytes e aceita
 `Backend__Porta` de 1024–65535 (padrão 5070). A origem upstream é sempre
@@ -376,11 +375,45 @@ node --test proxy-local.test.cjs
 
 Resultado em 27/11/2026: **7/7 testes aprovados** para segredo/porta, alvo fixo, fronteira
 de rota, proveniência, duplicatas, métodos/upgrade/Expect, recusa sem chamada upstream e
-remoção/injeção de credenciais. O hook foi inspecionado na fonte instalada do Vite 8.3.5;
-isso não substitui a prova de execução pelo CLI real da tarefa 1.3. Cabeçalhos de
+remoção/injeção de credenciais. Os hooks também foram exercitados pelo CLI real na tarefa
+1.3. Cabeçalhos de
 proveniência defendem o browser contra sites externos, não contra processo local malicioso
 com capacidade de forjar requisições ou ler o ambiente. Usar somente dados sintéticos;
 clientes técnicos autenticam-se diretamente na API e não recebem bypass do proxy.
+
+### Apply `fase-006-integracao-angular` — tarefa 1.3 — perfil local e prova do CLI (27/11/2026)
+
+O `angular.json` oferece a configuração `serve:local` em `127.0.0.1:4200` com
+`proxy-local.cjs`; `npm run start:local` usa `start-local.cjs` para limpar `DEBUG` e
+`PORT` antes de iniciar o CLI local fixado. O teste executou `npm run start:local` com
+`DEBUG=vite:proxy` e `PORT=4300`; o servidor permaneceu em 4200, verificando a
+limpeza do ambiente e o perfil local. Os scripts padrão `start` e `build` não foram
+alterados. Neste estágio, o perfil local ainda usa os providers demonstrativos; a seleção
+da fonte HTTP e file replacement pertencem à tarefa 2.1. Pages continua sem proxy.
+
+Executado em Node 24.21.0, Angular CLI/build 22.2.6, Vite 8.3.5 e Chromium headless:
+
+```powershell
+node --test --test-concurrency=1 proxy-local.test.cjs proxy-local-cli.test.cjs
+npm run build
+```
+
+Resultado: **9/9 testes passaram**. No browser real, um GET same-origin admitido manteve
+query e ID reservado intactos; o upstream viu Bearer injetado pelo servidor. Authorization
+e Cookie controlados pelo chamador foram removidos/substituídos. Proveniência cross-site
+recebeu 403/no-store sem chegar ao upstream. Upgrade WebSocket recebeu 404 sem chamada a
+`proxy.ws`. Um upstream de teste que encerrou o socket produziu 502/no-store com somente o
+código `local-api-unavailable`; logs do CLI não continham marcadores da query, body,
+segredo ou credencial recebida. Capturas de assets/respostas/requests do browser também não
+continham segredo.
+
+Um teste adicional iniciou a API .NET 10 real com SQLite sintético temporário e usou um
+Bearer diferente, ainda canônico e de 32 bytes: a API respondeu 401/no-store, sem expor o
+segredo configurado ou o apresentado. Os dois segredos foram gerados em memória e não
+persistidos. `npm run build` padrão passou com bundle inicial de 316,87 kB. Prettier,
+`node --check` dos arquivos CommonJS e `git diff --check` também passaram. Não houve
+alteração de lockfile ou instalação de dependência. A prova cobre a infraestrutura do
+proxy, não a composição/fonte HTTP local nem aceite funcional das telas.
 
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 

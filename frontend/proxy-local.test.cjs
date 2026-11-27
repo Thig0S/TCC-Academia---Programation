@@ -88,7 +88,7 @@ test('configuration validates the secret and fixes the loopback target and defau
   const { options } = getProxyOptions();
 
   assert.equal(options.target, `http://127.0.0.1:${DEFAULT_BACKEND_PORT}`);
-  assert.equal(options.ws, false);
+  assert.equal(options.ws, true);
   assert.equal(new RegExp(API_CONTEXT).test('/api/v1'), true);
   assert.equal(new RegExp(API_CONTEXT).test('/api/v1?x=1'), true);
   assert.equal(new RegExp(API_CONTEXT).test('/api/v1/vendas?x=1'), true);

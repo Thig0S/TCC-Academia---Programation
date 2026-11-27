@@ -9,6 +9,8 @@ const DEFAULT_BACKEND_PORT = 5070;
 const MIN_BACKEND_PORT = 1024;
 const MAX_BACKEND_PORT = 65535;
 const FORBIDDEN_RESPONSE = 'Request rejected.';
+const UPSTREAM_ERROR_CODE = 'local-api-unavailable';
+const UPSTREAM_ERROR_MESSAGE = 'Local API upstream unavailable.';
 
 function readProxySettings(environment) {
   const secret = environment?.Backend__SegredoLocal;
@@ -109,9 +111,8 @@ function validateProxyRequest(request) {
 }
 
 function denyRequest(request, response) {
-  if (!response) return false;
-
   if (request && typeof request === 'object') request.url = REJECTED_PATH;
+  if (!response) return false;
 
   if (response && !response.writableEnded) {
     response.writeHead(403, {
@@ -126,6 +127,37 @@ function denyRequest(request, response) {
   return REJECTED_PATH;
 }
 
+function sanitizeProxyError(error, request, response) {
+  if (request && typeof request === 'object') request.url = REJECTED_PATH;
+
+  if (error && typeof error === 'object') {
+    error.name = 'Error';
+    error.message = UPSTREAM_ERROR_MESSAGE;
+    error.stack = `Error: ${UPSTREAM_ERROR_MESSAGE}`;
+    error.code = 'ERR_LOCAL_PROXY_UPSTREAM';
+    error.cause = undefined;
+    error.address = undefined;
+    error.hostname = undefined;
+    error.path = undefined;
+    error.port = undefined;
+    error.syscall = undefined;
+  }
+
+  if (
+    response &&
+    typeof response.writeHead === 'function' &&
+    typeof response.end === 'function' &&
+    !response.headersSent &&
+    !response.writableEnded
+  ) {
+    response.writeHead(502, {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+    response.end(JSON.stringify({ code: UPSTREAM_ERROR_CODE }));
+  }
+}
+
 function createLocalProxyConfiguration(environment = process.env) {
   const { secret, target } = readProxySettings(environment);
 
@@ -133,12 +165,17 @@ function createLocalProxyConfiguration(environment = process.env) {
     [API_CONTEXT]: {
       target,
       changeOrigin: true,
-      ws: false,
+      ws: true,
       bypass(request, response) {
         if (!validateProxyRequest(request)) return denyRequest(request, response);
         return undefined;
       },
       configure(proxyServer) {
+        // Vite registers its default logger after `configure`; redact first so
+        // the later handler cannot print the incoming URL or low-level error.
+        proxyServer.on('error', (error, request, response) => {
+          sanitizeProxyError(error, request, response);
+        });
         proxyServer.on('proxyReq', (proxyRequest) => {
           proxyRequest.removeHeader('authorization');
           proxyRequest.removeHeader('cookie');
