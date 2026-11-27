@@ -6,11 +6,13 @@ using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.CadastrarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarColecaoVendas;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
+using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.AlterarStatusVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.EditarClienteVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
 using VendasEmAberto.Aplicacao.Funcionalidades.VisaoGeral.ConsultarVisaoGeral;
 using VendasEmAberto.Dominio.Recebimentos;
+using VendasEmAberto.Dominio.Vendas;
 
 namespace VendasEmAberto.Api.Endpoints;
 
@@ -21,6 +23,7 @@ public static class VendasEndpoints
         ArgumentNullException.ThrowIfNull(grupo);
         grupo.MapPost("/vendas", CadastrarVendaAsync);
         grupo.MapPut("/vendas/cliente", EditarClienteAsync);
+        grupo.MapPut("/vendas/status", AlterarStatusAsync);
         grupo.MapGet("/vendas", ConsultarColecaoAsync);
         grupo.MapGet("/vendas/detalhe", ConsultarDetalheAsync);
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
@@ -98,6 +101,29 @@ public static class VendasEndpoints
             corpo.LerTextoObrigatorio("cpf"),
             corpo.LerTextoObrigatorio("telefone"),
             corpo.LerTextoOpcional("descricao"),
+            corpo.LerDataObrigatoria("referencia"),
+            corpo.LerRevisaoObrigatoria("revisaoEsperada"));
+        var resultado = await sender.Send(comando, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            detalhe => Results.Json(MapeadorVendaDetalheApi.Mapear(detalhe)));
+    }
+
+    private static async Task<IResult> AlterarStatusAsync(HttpContext contexto, ISender sender)
+    {
+        if (!contexto.Request.HasJsonContentType())
+        {
+            return ProblemasApi.TipoConteudoNaoSuportado();
+        }
+
+        var corpo = await LeitorObjetoJson.LerAsync(
+            contexto.Request,
+            ["vendaId", "novoStatus", "referencia", "revisaoEsperada"],
+            contexto.RequestAborted);
+        var comando = new AlterarStatusVendaCommand(
+            corpo.LerTextoObrigatorio("vendaId"),
+            Mapear(corpo.LerEnumObrigatorio<StatusAdministrativoApi>("novoStatus")),
             corpo.LerDataObrigatoria("referencia"),
             corpo.LerRevisaoObrigatoria("revisaoEsperada"));
         var resultado = await sender.Send(comando, contexto.RequestAborted);
@@ -189,5 +215,13 @@ public static class VendasEndpoints
         FormaPagamentoApi.CartaoDebito => FormaPagamento.CartaoDebito,
         FormaPagamentoApi.CartaoCredito => FormaPagamento.CartaoCredito,
         _ => throw new InvalidOperationException("Forma de pagamento do cadastro não reconhecida.")
+    };
+
+    private static StatusAdministrativoVenda Mapear(StatusAdministrativoApi status) => status switch
+    {
+        StatusAdministrativoApi.Ativo => StatusAdministrativoVenda.Ativo,
+        StatusAdministrativoApi.Inativo => StatusAdministrativoVenda.Inativo,
+        StatusAdministrativoApi.Prejuizo => StatusAdministrativoVenda.Prejuizo,
+        _ => throw new InvalidOperationException("Status administrativo da requisição não reconhecido.")
     };
 }

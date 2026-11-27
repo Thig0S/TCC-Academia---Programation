@@ -2163,3 +2163,44 @@ ignorados, status/contrato/parcelas/pagamentos preservados, no-op com revisão e
 revisão antiga 409 inclusive no no-op. CPF inválido, telefone ausente, chave conhecida
 duplicada e revisão não canônica apontam campos seguros e não salvam. Dados/arquivos são
 sintéticos e temporários; não houve acesso a banco operacional.
+
+## Alteração HTTP do status administrativo (API-04/4.3)
+
+`PUT /api/v1/vendas/status` exige Bearer e `application/json`, com `vendaId`, `novoStatus`,
+`referencia` (`yyyy-MM-dd`) e `revisaoEsperada` (string decimal canônica). `novoStatus`
+aceita exclusivamente os textos `Ativo`, `Inativo` e `Prejuizo`; enum numérico, texto
+desconhecido ou variação de caixa retorna 400 `requisicao-invalida`. Sucesso confirmado
+retorna 200 com detalhe completo e revisão. As regras são as do domínio: Ativo→Inativo,
+Ativo→Prejuizo somente se restar saldo em parcelas, Inativo→Ativo e Prejuizo→Ativo.
+Transições não permitidas retornam 422; mesmo status é no-op 200 sem avanço, mas revisão
+obsoleta retorna 409 antes do no-op. Respostas comerciais incluem `Cache-Control: no-store`.
+
+Exemplo sintético:
+
+```json
+{
+  "vendaId": "venda-exemplo",
+  "novoStatus": "Prejuizo",
+  "referencia": "2027-03-15",
+  "revisaoEsperada": "5"
+}
+```
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~AlterarStatusVendaEndpointTests|FullyQualifiedName~AlterarStatusVendaSqliteTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests"
+dotnet test tests/VendasEmAberto.UnitTests/VendasEmAberto.UnitTests.csproj -c Release --no-restore --filter FullyQualifiedName~AlterarStatusVendaHandlerTests
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 7 testes HTTP/SQLite (status, matriz/persistência existente, resumo e painel)
+e 4 unitários do handler aprovados; build Release com 0 avisos/erros e verificação de
+formato aprovados. A cobertura verifica as quatro transições permitidas, Inativo→Prejuizo,
+Prejuizo→Inativo e venda quitada→Prejuizo recusadas; `Prejuizo` exige saldo, enum inválido
+e numérico recusados, no-op e revisão obsoleta. Resumo/painel após as mudanças reportam
+2 vendas Ativas, 10.000 centavos em aberto e 50.000 recebidos no mês, incluindo recebimentos
+de todos os status; o SQLite reaberto confirma revisão 5 e preserva valores, parcelas,
+recebimentos e alocações. Dados e arquivos são sintéticos/temporários; não houve acesso a
+banco operacional.
