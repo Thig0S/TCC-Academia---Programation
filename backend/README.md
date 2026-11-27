@@ -2425,8 +2425,9 @@ Resultados reproduzidos em 27/11/2026 com SDK `10.0.404`: suíte completa de int
 0 ignorados; build Release com 0 avisos/erros; verificação de formato e `git diff --check`
 aprovados. A execução focada inicial de `PrivacidadeHttpTests` também passou (6 testes).
 Todos os testes usam dados sintéticos e arquivos SQLite temporários; não houve acesso
-a banco operacional. Não foram executados nesta tarefa restore, frontend nem smoke da
-DLL em processo próprio; esses itens permanecem para as tarefas 5.3 e 5.4.
+a banco operacional. No marco 5.2 ainda não tinham sido executados restore, frontend ou
+smoke da DLL em processo próprio; os dois primeiros foram concluídos em 5.3 e o smoke
+está registrado na seção 5.4 abaixo.
 
 ## Regressão final, grafo de dependências e frontend independente (API-05/5.3)
 
@@ -2467,6 +2468,72 @@ npm.cmd run build
 
 Testes: 33 arquivos e 430 testes aprovados. Build Angular completou e gerou
 `frontend/dist/vendas-em-aberto`. Os dois comandos passaram sem API ligada; os testes
-do frontend continuam sem depender do backend. O smoke de processo/listener real da
-DLL permanece exclusivamente na tarefa 5.4. `git status` e `git diff --check` não
+do frontend continuam sem depender do backend. Naquele marco, o smoke de processo/listener
+real da DLL ficou reservado à tarefa 5.4 e seu resultado está detalhado abaixo. `git status` e `git diff --check` não
 apontaram alterações de lockfile ou artefatos versionados após as verificações.
+
+## Smoke da DLL Release e rastreabilidade final (API-05/5.4)
+
+### Smoke em processo próprio
+
+Em 27/11/2026 foi executada a DLL Release existente
+`src/VendasEmAberto.Api/bin/Release/net10.0/VendasEmAberto.Api.dll` em processo
+`dotnet` próprio, ambiente Production, porta loopback livre escolhida pelo sistema,
+SQLite sob diretório temporário aprovado e dois segredos Base64 aleatórios diferentes
+(32 bytes) somente nas variáveis do processo. Nenhum valor de segredo é persistido
+neste documento. Resultado efetivo:
+
+| Passo | Resultado observado |
+| --- | --- |
+| Startup/preparação | Banco temporário novo preparado antes da primeira resposta; arquivo SQLite não vazio. |
+| Fronteira de rede | `Get-NetTCPConnection` identificou apenas listener `127.0.0.1`, de propriedade do processo iniciado pelo smoke. |
+| Health | `GET /health` sem credencial retornou 200, `text/plain`, `Healthy`. |
+| Sem credencial | Consulta comercial retornou 401 Problem Details `acesso-local-negado`, challenge Bearer e `no-store`, sem eco de configuração sensível. |
+| Cadastro/Location | `POST /api/v1/vendas` criou venda sintética, retornou 201, revisão textual `1` e Location relativo; GET autenticado pela Location preservou ID, CPF e telefone sintéticos. |
+| Baixa | `POST /api/v1/recebimentos` quitou a única parcela, retornou 200 e revisão `2`. |
+| Reinício/rotação | Primeiro processo próprio encerrado e porta reaberta por listener de prova. Segundo startup no mesmo SQLite, com outro segredo, conservou venda, ID da parcela, recebimento/alocação e revisão `2`; segredo anterior recebeu 401 e segredo novo consultou a venda. |
+| Limpeza/privacidade | Segundo processo próprio encerrado, porta temporária novamente vinculável e diretório de smoke removido. stdout/stderr dos dois processos foram conferidos contra segredos, CPF, telefone, caminho do banco e marcadores sintéticos de SQL/exceção; nenhuma ocorrência foi encontrada. |
+
+O smoke não emitiu uma falha nativa de SQL/commit nem lançou uma exceção com os
+marcadores: a captura dessas condições e de logging automático é comprovada pelos
+testes de host `PrivacidadeHttpTests` e `ConcorrenciaCommandsEndpointTests`, não por
+esse processo de smoke. Também não prova a entrega da resposta após desconexão de rede.
+Durante o desenvolvimento do script auxiliar, uma tentativa não avançou por chamada
+de RNG indisponível no PowerShell 5.1 e outra assertion usou o caminho incorreto da
+alocação JSON (`recebimentos[0].alocacoes[0].parcelaId`); scripts corrigidos passaram
+integralmente. Não houve falha da DLL, e os processos/artefatos de cada tentativa
+foram limpos.
+
+### Matriz PRD → deltas OpenSpec → evidência executada
+
+A tabela lista todos os cenários nomeados de `api-local-vendas/spec.md` e
+`casos-de-uso-vendas/spec.md`; um cenário pode contribuir para mais de um CA. Os nomes
+mantêm a referência auditável à spec, enquanto a coluna de evidência aponta os testes
+reproduzidos e o smoke quando aplicável.
+
+| CA | Cenários de `api-local-vendas` | Cenários de `casos-de-uso-vendas` | Evidência/resultado |
+| --- | --- | --- | --- |
+| CA-061 | `Primeiro uso e reinicialização`; `Configuração inválida antes de I/O`; `Destino indisponível ou incompatível`; `Conservar fronteira de rede` | `Iniciar API sem banco`; `Composição não substitui preparação`; `Executar consumidores internos e frontend independentemente` | `ConfiguracaoHostApiTests`, grafo/API e smoke Release: preparação explícita, validações e loopback. Frontend 430 testes/build sem API. Sem banco operacional. |
+| CA-062 | `Negar antes de executar operação`; `Aceitar credencial da execução corrente`; `Body inválido sem autenticação`; `Health sem credencial e com origem arbitrária`; `Rotas antigas e de template permanecem ausentes` | `Iniciar API sem banco` (health público e `/vendas` 404) | `AutenticacaoBearerLocalTests`, `HealthEndpointTests`, `RotasNaoImplementadasTests`, `PrivacidadeHttpTests` e smoke: 401/challenge/no-store antes do binding, health textual, sem cookies/CORS/login e segredo antigo recusado após rotação. |
+| CA-063 | `Rotas e entradas dos comandos`; `Cadastrar e reabrir pela localização confirmada`; `No-op e conflito`; `Receber e corrigir sem alterar identidade` | `Mudança administrativa e histórico preservado` (efeitos das transições nos dados e resumos) | Testes HTTP/SQLite dos cinco comandos conferem retorno/revisão, no-op/conflito, reabertura, identidade/histórico; smoke cobriu cadastro/Location/consulta e baixa confirmada após restart. |
+| CA-064 | `Rotas e seletores das consultas`; `Consulta vazia e detalhe inexistente`; `Respeitar universos e período` | `Executar consumidores internos e frontend independentemente` (consultas internas/frontend permanecem isolados) | Testes HTTP/SQLite de detalhe, coleções, resumo, período e mensal; vazios, 404, datas, ordens, universos e ausência de escrita. Frontend permaneceu sem API. |
+| CA-065 | `Rotas e seletores das consultas` (rota consolidada `/visao-geral`) | `Indicadores e itens coerentes`; `Banco vazio e respostas protegidas`; `Ordenação e desempate com mais de cinco elegíveis`; `Bordas da janela e calendário extremo`; `Mudança administrativa e histórico preservado` | Testes unitários/SQLite/HTTP de handler e endpoint: snapshot único, revisão/referência coerentes, listas protegidas, limite/empate, bordas 0001/9999 e transições; sem escrita/fan-out. |
+| CA-066 | `No-op e conflito`; `Receber e corrigir sem alterar identidade`; `Dois consumidores disputam revisão`; `Confirmação indeterminada`; `Cancelamento e desconexão` | `Mudança administrativa e histórico preservado` | `ConcorrenciaCommandsEndpointTests`: SQLite real confirma no máximo um concorrente, cancelamento antes/depois do commit e double de confirmação indeterminada sem retry/alegação de rollback. Não simula falha nativa de commit nem desconexão física. |
+| CA-067 | `Preservar revisão além da precisão JavaScript`; `Recusar revisão e dinheiro de tipos incorretos`; `Preservar identificador reservado`; `Exigir referência e formato civil exato`; `Enums e nulabilidade explícitos`; `Entrada estrutural ausente ou duplicada`; `Content type incorreto`; `Campo extra não amplia edição` | `Indicadores e itens coerentes` (referência/revisão comum nas projeções) | `ContratoApiJsonTests`, `LeitorObjetoJsonTests`, `ParametrosQueryApiTests` e testes dos endpoints: centavos/revisões literais, IDs, query/body, datas/extremos, enums, null/default/duplicatas e binding sem efeito. |
+| CA-068 | `Negar antes de executar operação`; `Body inválido sem autenticação`; `Entrada estrutural ausente ou duplicada`; `Content type incorreto`; `Traduzir categorias e preservar campos`; `Falha técnica ou resultado inválido`; `Proteger corpo e cache`; `Cancelamento e desconexão` | `Composição não substitui preparação` (ausência do armazenamento tratada sem criação implícita) | `FalhasTecnicasTests`, `AdaptadorResultadosApiTests`, `PrivacidadeHttpTests` e testes de concorrência: status/Problem Details em Development/Production, 400/404/409/422/415/500/503, `no-store` e marcadores de segredo/CPF/telefone/caminho/SQL/exceção ausentes de respostas/logs. Captura cobre o provider de teste e logging tratado .NET 10, não providers externos futuros. |
+
+### Fechamento e limitações
+
+Em 27/11/2026 foram concluídas 21/21 tarefas. Além do smoke, a regressão registrada
+na seção 5.3 passou: restore bloqueado, build Release (0 avisos/erros), MSTest
+389/389, descoberta 389, format, auditoria NuGet sem vulnerabilidades nas fontes
+consultadas e frontend 430 testes/build com API desligada. `openspec validate
+fase-005-contrato-e-api-local --strict` e `git diff --check` foram executados após a
+atualização dos artefatos e passaram. A revisão final confirmou somente arquivos
+pertencentes à Change/PRD/TDD/README/tasks: nenhum dado real, banco, saída de smoke,
+mudança de schema, frontend, Tauri ou manutenção de outra Change foi incluído.
+
+Resultado técnico não representa homologação da ótica, validação com vendas reais,
+garantia contra processo/usuário local comprometido, falhas de provedores externos de
+logs, falha nativa real de confirmação ou garantia de entrega HTTP após desconexão.
+Esses limites permanecem explícitos; sync/archive e PR são etapas seguintes do fluxo.

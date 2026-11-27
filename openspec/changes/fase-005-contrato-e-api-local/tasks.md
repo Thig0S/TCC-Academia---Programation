@@ -3,8 +3,8 @@
 Base: PRD/FON-045/046/RF-031–036/CA-061–068 → TDD/DEC-041/API-01–05 →
 proposal → specs api-local-vendas/casos-de-uso-vendas → design/D1–D6.
 
-**Estado: implementação autorizada em andamento; tasks 1.1 a 4.5 e 5.1 a 5.3 implementadas e verificadas.**
-Manter as tarefas restantes pendentes até execução e evidências. Usar a mesma branch
+**Estado: apply autorizado concluído; tasks 1.1 a 4.5 e 5.1 a 5.4 implementadas, verificadas e rastreadas.**
+Não há tarefas de implementação pendentes; usar a mesma branch
 `feature/fase-005-contrato-e-api-local`, sem alterações diretas na main.
 
 Cada funcionalidade deve incluir testes, documentação pertinente no `backend/README.md`,
@@ -48,7 +48,7 @@ em finally. Não iniciar dependente de decisão bloqueante ou mudar contrato par
 - [x] 5.1 Completar testes HTTP de concorrência/cancelamento/confirmação incerta sem substituir os testes de cada operação. Dois clientes na mesma revisão com SQLite real confirmam no máximo um commit e reabrem o conjunto do vencedor; token observado antes de commit conserva protocolo e token tardio não reclassifica sucesso. Double controlado prova 500 confirmacao-indeterminada com resultadoOperacao indeterminado, sem revisão nova/sucesso/alegação de rollback, zero retry/recarga após commit; identificar limites de desconexão e distinguir doubles de falhas nativas. Documentar evidências reais, executar testes direcionados e commit próprio de testes transversais.
 - [x] 5.2 Auditar cobertura HTTP de todos os campos/rotas e segurança em Development/Production: 401 antes de binding, no-store, 400/404/409/422/415/503/500, erros mistos/desconhecidos, enums/datas/revisões/nulabilidade, CORS ausente, sem cookies/login/Swagger/rotas de teste. Capturar logs e respostas de falha com marcadores sintéticos de segredo/CPF/telefone/caminho/SQL/exceção e provar ausência, incluindo logging automático do framework; respostas de sucesso devem conservar os dados cadastrais previstos no contrato. Corrigir apenas falhas no escopo, registrar matriz e limitações no README, executar suíte dirigida e commit próprio se houver complemento transversal.
 - [x] 5.3 Executar sequencialmente restore bloqueado, build Release sem restore, suíte MSTest completa via dotnet test --solution VendasEmAberto.slnx -c Release --no-build, descoberta não vazia, format --verify-no-changes --no-restore e auditoria NuGet transitiva, com SDK compatível efetivamente identificado. Conferir grafo Api com Infraestrutura/EF/SQLite intencionais e domínio sem acoplamento HTTP. Executar frontend test/build com API desligada; se restauração necessária usar lockfile sem atualizar dependências nem encerrar servidores alheios. Registrar comandos/executáveis/saídas/contagens/códigos reais e não executados no README e tarefas, sem homologação operacional; commit documental de evidências.
-- [ ] 5.4 Executar smoke da DLL Release em processo próprio com porta temporária livre, banco temporário e segredo novo no ambiente: preparação antes de servir, loopback, health textual público, 401 sem segredo, cadastro/Location/consulta, baixa, encerramento/reinício preservando registros e recusa de segredo anterior após troca; conferir processo encerrado/porta liberada e nenhuma saída sensível. Completar matriz CA-061–068 versus todos os cenários das deltas, atualizar PRD/TDD/tasks com resultados reais, executar openspec validate fase-005-contrato-e-api-local --strict e git diff --check e revisar diff contra main atualizada. Confirmar ausência de dados reais/bancos versionados, mudanças de schema/frontend/Tauri e manutenção de outras Changes; registrar verificações e limitações em commit documental, sem marcar tarefa parcial concluída.
+- [x] 5.4 Smoke da DLL Release reproduzido em processo próprio, Production, loopback e porta temporária `60013`, com SQLite temporário e dois segredos aleatórios no ambiente: preparação antes de servir, health textual, 401 sem credencial, cadastro 201/Location/consulta, baixa 200/revisão 2, encerramento/reinício preservando venda/recebimento e recusa do segredo anterior após rotação. Os dois processos foram encerrados, a porta foi reaberta em prova e os artefatos removidos; stdout/stderr não continham as sentinelas auditadas. Matriz completa CA-061–068 × cenários das duas deltas em `backend/README.md`; PRD e TDD atualizados. `openspec validate fase-005-contrato-e-api-local --strict`, `git diff --check` e diff contra a `main` atualizada (HEAD de main remoto `d84d568`) aprovados. Revisão confirmou ausência de dados reais/bancos versionados, mudanças de schema/frontend/Tauri ou manutenção de outras Changes. Resultado limita-se a evidências técnicas sintéticas; sem homologação operacional. Detalhes e limitações registrados nesta Change e no README.
 
 ## Acceptance Traceability
 
@@ -63,18 +63,20 @@ em finally. Não iniciar dependente de decisão bloqueante ou mudar contrato par
 | CA-067 | Tipos exatos; binding sem efeitos | D2 | 1.1, 3.1–3.6, 5.2 |
 | CA-068 | Falhas privadas; binding; cache | D3/D4/D6 | 1.2, 1.4, 5.1–5.2 |
 
-## Planning Verification
+## Planning Verification — baseline histórica de 26/11/2026
 
 Em 26/11/2026, `openspec validate fase-005-contrato-e-api-local --strict` passou e
 o status identificou proposal, specs (duas deltas), design e tasks existentes.
 `git diff --check` passou, com avisos somente de normalização LF/CRLF nos documentos.
 Revisados PRD/TDD, dependências dos artefatos e rastreabilidade CA-061–068.
-Esse resultado comprova somente planejamento: nenhuma das 21 tarefas foi executada,
-e nenhum build, teste de aplicação, instalação ou smoke desta fase foi realizado.
+Esse resultado comprovava somente planejamento naquela data: nenhuma das 21 tarefas
+estava então executada e nenhum build, teste de aplicação, instalação ou smoke desta
+fase havia sido realizado. O resultado não descreve o estado posterior do apply,
+registrado nas tasks 1–5 e nos commits/evidências da feature.
 
 ## Workflow follow-up
 
-- Artefatos prontos não significam implementação autorizada ou concluída. Aguardar novo pedido de apply, mantendo tarefas pendentes até evidências reais.
-- Após implementar/verificar todo o escopo, sincronizar specs e arquivar automaticamente **esta** Change pelo fluxo OpenSpec, conferir metadata/deltas/specs e diretório arquivado. Não arquivar outras Changes.
-- Publicar a mesma feature e abrir um único PR para main usando `.github/pull_request_template.md`, com PRD/TDD/SDD arquivado, escopo integral, verificações e limitações. Não abrir PR só porque o planejamento terminou.
+- Planejamento original e autorização são estados distintos; esta Change recebeu autorização de apply e tem todas as 21 tarefas verificadas em `feature/fase-005-contrato-e-api-local`.
+- Após a validação estrita e o commit documental final, sincronizar specs e arquivar automaticamente **esta** Change pelo fluxo OpenSpec, conferir metadata/deltas/specs e diretório arquivado. Não arquivar outras Changes.
+- Após archive confirmado, publicar a mesma feature e abrir um único PR para main usando `.github/pull_request_template.md`, com PRD/TDD/SDD arquivado, escopo integral, verificações e limitações. Não abrir PR antes do archive.
 - Revisão/aprovação exigidas e autorização explícita de merge continuam necessárias; após integração autorizada, conferir PR/main antes de informar conclusão do fluxo.

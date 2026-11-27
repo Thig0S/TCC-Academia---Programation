@@ -4,7 +4,9 @@
 
 ### 1. Identificação e resumo executivo
 
-Planejamento de `fase-005-contrato-e-api-local`, sem autorização de implementação.
+Planejamento original de `fase-005-contrato-e-api-local`, elaborado sem autorização
+de implementação; a autorização e execução posteriores estão registradas na atualização
+de 27/11/2026 abaixo.
 O objetivo é disponibilizar os casos de uso persistidos a consumidores HTTP locais,
 incluindo uma consulta consolidada da Visão Geral. Público imediato: desenvolvedor,
 testes e futuro host desktop; beneficiários futuros: funcionários da loja.
@@ -147,6 +149,34 @@ cenários/testes que comprovem seu aceite, sem contagens históricas como expect
 Sucesso técnico: cenários CA-061–068 demonstrados e resultados reais registrados no
 apply. Métricas são os resultados verificáveis dos cenários, não telemetria ou ganho
 comercial medido. Homologação com a loja fica fora; responsáveis e uso real indefinidos.
+
+### Atualização de execução da Change — 27/11/2026
+
+O apply autorizado de `fase-005-contrato-e-api-local` foi concluído na feature
+`feature/fase-005-contrato-e-api-local`: 21/21 tarefas verificadas, com specs e
+evidências detalhadas em `backend/README.md` e na Change. O smoke da DLL Release em
+Production usou segredo aleatório no ambiente, banco sintético temporário e loopback;
+confirmou preparação antes do health, health 200 textual, 401 sem credencial, cadastro
+201 com Location, consulta, recebimento da única parcela/revisão 2, reinício conservando
+venda/recebimento e rejeitando o segredo anterior. Os processos próprios foram
+encerrados, a porta temporária liberada e arquivos de smoke removidos; a saída dos
+processos não continha os marcadores sintéticos auditados.
+
+| Critério | Evidência principal registrada | Resultado |
+| --- | --- | --- |
+| CA-061 — inicialização/persistência | `ConfiguracaoHostApiTests`, `Primeiro uso e reinicialização`, `Configuração inválida antes de I/O`, `Destino indisponível ou incompatível`, `Conservar fronteira de rede`; smoke real de startup/reinício/loopback | Atendido nos cenários sintéticos; sem acesso a banco operacional. |
+| CA-062 — proteção local/health/CORS | `AutenticacaoBearerLocalTests`, `HealthEndpointTests`, `RotasNaoImplementadasTests`; `Negar antes de executar operação`, `Aceitar credencial da execução corrente`, `Body inválido sem autenticação`, cenários de health/rotas; smoke 401 e rotação | Atendido em testes e smoke técnico; não é garantia contra comprometimento do processo/usuário local. |
+| CA-063 — comandos confirmados | Testes HTTP/SQLite de cadastro, cliente, status, recebimento e correção; cenários `Rotas e entradas dos comandos`, `Cadastrar e reabrir pela localização confirmada`, `No-op e conflito`, `Receber e corrigir sem alterar identidade`; smoke cadastro/Location/baixa/reabertura | Atendido com dados sintéticos e revisão confirmada. |
+| CA-064 — consultas | Testes HTTP/SQLite de detalhe, coleções, resumo, período e mensal; cenários `Rotas e seletores das consultas`, `Consulta vazia e detalhe inexistente`, `Respeitar universos e período` | Atendido; consultas verificadas sem mutação/preparação implícita. |
+| CA-065 — Visão Geral | Testes unitários/SQLite/HTTP do handler e endpoint; cenários de indicadores, banco vazio, ordenação/desempate, bordas/calendário e mudança administrativa na delta de casos de uso | Atendido com snapshot único, listas protegidas, limites e bordas. |
+| CA-066 — concorrência/certeza | `ConcorrenciaCommandsEndpointTests`; cenários `Dois consumidores disputam revisão`, `Confirmação indeterminada`, `Cancelamento e desconexão` | Atendido para concorrência SQLite e double controlado de confirmação incerta; não simula falha nativa de commit nem prova entrega após desconexão real. |
+| CA-067 — tipos exatos | Testes de contrato/query e endpoints; cenários de revisão/dinheiro, ID reservado, data/referência, enums/nulabilidade e binding estrutural | Atendido; revisões textuais, centavos inteiros, IDs e datas preservados/recusados conforme contrato. |
+| CA-068 — falhas privadas | `FalhasTecnicasTests`, `PrivacidadeHttpTests`, `AdaptadorResultadosApiTests`; cenários de binding/content type, categorias, falha técnica, corpo/cache; auditoria Development/Production | Atendido para os casos cobertos; logs futuros/provedores externos, telemetria, dumps e desconexão física estão fora da prova automatizada. |
+
+A validação integral/backend/frontend e as limitações estão registradas no README; o
+frontend não foi conectado à API, não houve mudança de schema, Tauri, seed ou dados
+operacionais, e não se afirma homologação/aceite da ótica. A conclusão técnica da
+Change não equivale a merge ou autorização para uso real.
 
 ### 13. Riscos e mitigação
 
