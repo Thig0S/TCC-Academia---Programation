@@ -2041,3 +2041,34 @@ movida de março para abril sem alterar a posição na referência, meses de 000
 parâmetros ausentes/duplicados/inválidos sem escrita (revisão permanece 0 no banco
 vazio). Build Release com 0 avisos/erros e verificação de formato aprovados. Não houve
 acesso a banco operacional.
+
+## Consulta HTTP da Visão Geral (API-03/3.6)
+
+`GET /api/v1/visao-geral` exige Bearer e o parâmetro único `referencia` (`yyyy-MM-dd`).
+O envelope contém `referencia`, `revisao` decimal textual, `indicadores` com os quatro
+valores numéricos, `vendasRecentes`, `parcelasProximas` e `parcelasAtrasadas`. Cada
+resumo de venda transporta todos os campos do cliente/financeiros; os itens de parcelas
+identificam venda e parcela com seus campos, enums e nulabilidade. Revisão e referência
+dos resumos aninhados coincidem com o envelope. As três listas respeitam a seleção,
+ordenação estável e o limite cinco já aplicados pelo handler; o transporte não cria
+consultas por venda nem recalcula regras. Respostas comerciais usam `no-store`; referência
+ausente ou inválida retorna 400 sem chamar o handler. A consulta não prepara nem grava.
+
+Verificações executadas em 27/11/2026 com SDK `10.0.404`:
+
+```powershell
+dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj -c Release --no-restore --filter "FullyQualifiedName~ConsultarVendaDetalheEndpointTests|FullyQualifiedName~ConsultarColecaoVendasEndpointTests|FullyQualifiedName~ConsultarResumoEndpointTests|FullyQualifiedName~ConsultarPeriodoEndpointTests|FullyQualifiedName~ConsultarRelatorioMensalEndpointTests|FullyQualifiedName~ConsultarVisaoGeralEndpointTests"
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+```
+
+Resultados: 14 testes HTTP/SQLite das seis consultas aprovados; build Release com 0
+avisos/erros e verificação de formato aprovados. O cenário reabre SQLite com status
+Ativo, Inativo, Prejuízo e venda quitada, compara todos os campos HTTP com o DTO baseline,
+confere os quatro indicadores (21.300 em aberto, 600 em atraso, 60.600 recebidos e 17
+Ativas), IDs/ordem dos três blocos, inclusão de Ativa quitada, limites, bordas ontem/hoje/
+hoje+7/hoje+8 e metadados aninhados. Um decorator contador sobre o armazenamento SQLite
+confirma uma única carga e zero inicializações/salvamentos durante o GET e nenhuma carga
+para referência inválida/ausente. Banco vazio retorna quatro zeros e três listas vazias,
+sem escrita. Dados são sintéticos; não houve alteração do frontend ou acesso a banco
+operacional.

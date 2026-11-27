@@ -6,6 +6,7 @@ using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarResumo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Vendas.ConsultarVenda;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarPeriodo;
 using VendasEmAberto.Aplicacao.Funcionalidades.Relatorios.ConsultarRelatorioMensal;
+using VendasEmAberto.Aplicacao.Funcionalidades.VisaoGeral.ConsultarVisaoGeral;
 
 namespace VendasEmAberto.Api.Endpoints;
 
@@ -19,6 +20,7 @@ public static class VendasEndpoints
         grupo.MapGet("/periodo", ConsultarPeriodoAsync);
         grupo.MapGet("/relatorios/mensal", ConsultarRelatorioMensalAsync);
         grupo.MapGet("/resumo", ConsultarResumoAsync);
+        grupo.MapGet("/visao-geral", ConsultarVisaoGeralAsync);
         return grupo;
     }
 
@@ -57,6 +59,17 @@ public static class VendasEndpoints
         return AdaptadorResultadosApi.Adaptar(
             resultado,
             relatorio => Results.Json(MapeadorRelatorioMensalApi.Mapear(relatorio)));
+    }
+
+    private static async Task<IResult> ConsultarVisaoGeralAsync(HttpContext contexto, ISender sender)
+    {
+        var consulta = new ConsultarVisaoGeralQuery(
+            ParametrosQueryApi.DataObrigatoria(contexto.Request.Query, "referencia"));
+        var resultado = await sender.Send(consulta, contexto.RequestAborted);
+
+        return AdaptadorResultadosApi.Adaptar(
+            resultado,
+            visaoGeral => Results.Json(MapeadorVisaoGeralApi.Mapear(visaoGeral)));
     }
 
     private static async Task<IResult> ConsultarColecaoAsync(HttpContext contexto, ISender sender)
