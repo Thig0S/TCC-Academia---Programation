@@ -2548,5 +2548,7 @@ blocos de requirements das deltas foram comparados literalmente com as specs pri
 aprovou 12 specs sem erros. A tentativa mais ampla `openspec validate --specs --strict`
 continua apontando descrições >500 caracteres em três capabilities não alteradas
 (`consulta-vendas`, `dominio-vendas`, `temas-visuais`); não foram editadas por estarem
-fora do escopo. A validação estrita da Change também passou. Próximos passos: archive
-verificado e PR único da feature.
+fora do escopo. A validação estrita da Change também passou. A Change foi arquivada em
+`openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`; metadados e os
+21 checks concluídos foram conferidos após o movimento. Próximo passo: PR único da
+feature; merge depende de revisão e autorização explícita.

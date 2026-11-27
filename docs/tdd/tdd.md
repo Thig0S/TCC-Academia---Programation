@@ -308,14 +308,15 @@ As duas deltas foram sincronizadas nas specs principais; as duas capabilities af
 passaram validação estrita. A validação de todas as specs em modo estrito ainda acusa
 descrições longas em três capabilities preexistentes e não alteradas, registradas no
 README. Não houve mudança de integração Angular, schema, Tauri, seed ou acesso a banco
-real; isso comprova critérios técnicos, não homologação da loja. Próxima etapa:
-arquivamento verificado e PR único; merge continua sujeito a revisão e autorização
-explícita.
+real; isso comprova critérios técnicos, não homologação da loja. A Change foi
+arquivada em `openspec/changes/archive/2026-11-27-fase-005-contrato-e-api-local/`,
+com metadata e 21/21 tarefas conferidas. Próxima etapa: PR único; merge continua
+sujeito a revisão e autorização explícita.
 
 Os marcos concluídos pertencem à mesma feature/PR único, sem PR de planejamento; cada
 funcionalidade inclui testes, documentação e tarefas em commit próprio. Próxima etapa:
-archive desta Change após validação estrita, conferir o resultado e então abrir PR
-pelo template; revisão e autorização explícita de merge continuam necessárias.
+abrir o PR único da feature arquivada pelo template; revisão e autorização explícita
+de merge continuam necessárias.
 
 ### 14. Evolução, riscos e condições de revisão
 
