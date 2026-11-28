@@ -30,32 +30,36 @@ A aplicação SHALL oferecer navegação com ícones decorativos e rótulos Vis�
 
 ### Requirement: Rotas acessíveis diretamente e retorno de caminho desconhecido
 
-A aplicação SHALL disponibilizar `/visao-geral`, `/vendas`, `/vendas/quitadas`, `/vendas/nova`, `/vendas/:id`, `/vendas/:id/editar`, `/relatorios` e `/configuracoes`. A entrada `/` SHALL abrir Visão Geral. Detalhe e edição SHALL preservar o identificador completo. Caminho desconhecido SHALL mostrar página não encontrada com retorno explícito para Visão Geral, sem inventar registro ou erro não tratado.
+A aplicação SHALL disponibilizar as rotas atuais de Visão Geral, Vendas, quatro
+coleções, cadastro, detalhe, edição, Relatórios e Configurações; `/` SHALL abrir
+Visão Geral. Detalhe/edição SHALL preservar ID completo. Caminho desconhecido SHALL
+mostrar página não encontrada com retorno, sem inventar registro ou erro não tratado.
+Recarga SHALL seguir a fonte do modo, sem tratar persistência local como sessão
+demonstrativa perdida.
 
 #### Scenario: Abrir e recarregar destinos diretamente
-- **WHEN** a pessoa abrir diretamente ou recarregar cada rota conhecida
-- **THEN** SHALL encontrar a página identificada e a navegação coerente com o destino, sujeita à existência do registro na sessão atual
-- **AND** a entrada `/` SHALL resultar em `/visao-geral`
-- **AND** detalhe e edição SHALL consultar o identificador completo, inclusive barras codificadas, sem alterar IDs do domínio
-- **AND** recarregar edição de venda criada na sessão anterior SHALL informar registro ausente, pois não há persistência
+- **WHEN** abrir diretamente ou recarregar `/visao-geral`, `/vendas`, `/vendas/quitadas`, `/vendas/inativas`, `/vendas/prejuizo`, `/vendas/nova`, `/vendas/:id`, `/vendas/:id/editar`, `/relatorios` ou `/configuracoes`
+- **THEN** SHALL encontrar página identificada e navegação coerente, sujeita à existência do registro e disponibilidade da fonte
+- **AND** `/` SHALL resultar em `/visao-geral`; detalhe/edição SHALL consultar ID completo, inclusive barras codificadas
+- **AND** no demo, edição de venda criada na sessão anterior SHALL informar ausência; no local, registro persistido SHALL ser recuperado após recarga sem seed
 
 #### Scenario: Recuperar-se de caminho desconhecido
 - **WHEN** a pessoa acessar uma rota não prevista
 - **THEN** SHALL receber indicação de página não encontrada e link para Visão Geral
-- **AND** acionar o retorno SHALL restaurar a navegação normal, preservando aviso e tema da sessão
+- **AND** retorno SHALL restaurar navegação normal, preservando tema e limites do modo
 
 #### Scenario: Trocar venda sem exibir registro anterior
-- **WHEN** a navegação interna mudar o detalhe de uma venda para outra e depois para um identificador inexistente
-- **THEN** SHALL consultar o novo identificador a cada navegação, sem manter dados do anterior
-- **AND** o identificador inexistente SHALL apresentar venda não encontrada, distinta de rota desconhecida, com retornos explícitos
-- **AND** `/vendas/quitadas` SHALL continuar abrindo a coleção, nunca o detalhe de uma venda com esse nome
-- **AND** `/vendas/nova` SHALL abrir cadastro, nunca detalhe de ID nova; edição SHALL atualizar o rascunho ao trocar o ID
+- **WHEN** mudar detalhe de uma venda para outra e depois para identificador inexistente
+- **THEN** SHALL consultar novo ID a cada navegação sem manter dados do anterior; no local, resposta atrasada anterior SHALL não substituir destino atual
+- **AND** ID ausente SHALL mostrar venda não encontrada com retornos, distinta de rota desconhecida e indisponibilidade da API
+- **AND** `/vendas/quitadas` SHALL abrir coleção, nunca detalhe de ID quitadas
+- **AND** `/vendas/nova` SHALL abrir cadastro, nunca detalhe de ID nova; edição SHALL preparar rascunho correto ao trocar ID
 
 #### Scenario: Orientar cadastro e edição dentro de Vendas
 - **WHEN** abrir cadastro ou edição por ação interna ou acesso direto
 - **THEN** Vendas SHALL permanecer como módulo ativo, com título principal específico e foco após navegação interna
 - **AND** SHALL haver retorno explícito a Vendas e, na edição existente, ao detalhe correspondente, sem exigir histórico do navegador
-- **AND** cancelamento por ação interna SHALL restaurar contexto e foco do acionador quando existente, com alternativa lógica se ausente
+- **AND** cancelar antes de envio SHALL restaurar contexto/foco do acionador existente ou alternativa lógica; após envio local SHALL não afirmar rollback
 
 ### Requirement: Conteúdo comercial honestamente indisponível
 
@@ -76,12 +80,21 @@ Visão Geral e Relatórios SHALL apresentar consultas financeiras reais da sess�
 
 ### Requirement: Configurações explicativa
 
-Configurações SHALL explicar o uso de dados fictícios, estado apenas em memória, perda de alterações ao recarregar e ausência de capacidade para controlar cobranças reais. SHALL não apresentar controles fictícios de contas, integrações, regras comerciais ou persistência.
+Configurações SHALL explicar dados fictícios e ausência de uso operacional. No modo
+demo SHALL explicar memória e descarte ao recarregar; no local SHALL explicar
+persistência sintética no SQLite, referência fixa e conferência após resposta perdida.
+Tema SHALL continuar em memória nos dois modos. SHALL não haver controles fictícios
+de contas, integração, regras comerciais, reset ou persistência.
 
 #### Scenario: Reconhecer os limites em Configurações
-- **WHEN** a pessoa acessar Configurações pela navegação ou por seu atalho
-- **THEN** SHALL encontrar o título e as quatro explicações de limite
+- **WHEN** acessar Configurações pela navegação ou atalho em qualquer modo
+- **THEN** SHALL encontrar título e explicações fiéis à fonte ativa, sem prometer descarte de vendas persistidas nem uso operacional
 - **AND** SHALL não encontrar controles que prometam operações indisponíveis
+
+#### Scenario: Conferir orientação após recarga local
+- **WHEN** reabrir modo local e consultar seus limites
+- **THEN** SHALL explicar que negócios persistem, referência é renovada e rascunhos/tema não são recuperados do browser
+- **AND** SHALL orientar conferir dados antes de repetir operação cuja resposta foi perdida, sem prometer deduplicação automática
 
 ### Requirement: Orientação por teclado e adaptação da estrutura
 

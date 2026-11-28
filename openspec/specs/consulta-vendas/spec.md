@@ -148,27 +148,36 @@ As consultas SHALL distinguir coleção sem registros, busca/filtro sem correspo
 
 ### Requirement: Consulta acessível e sem mutações
 
-A consulta SHALL preservar aviso demonstrativo, dois temas, teclado, foco e privacidade. Pesquisar, limpar, paginar e navegar SHALL não alterar registros. Ações funcionais de cadastrar, editar cliente e receber SHALL depender de confirmação explícita conforme suas capacidades, sem exportação. Tabelas e busca SHALL ser legíveis nos viewports técnicos existentes; rolagem horizontal necessária SHALL ficar restrita à região da tabela.
+A consulta SHALL preservar limites do modo, dois temas, teclado, foco e privacidade.
+Pesquisar, limpar, paginar e navegar SHALL não alterar negócios. Cadastro, edição e
+recebimento SHALL depender de confirmação explícita, sem exportação em Vendas.
+Tabelas/busca SHALL ser legíveis nos viewports existentes, com rolagem horizontal
+restrita à tabela. O modo local SHALL distinguir carregamento/falha de vazio/ausência.
 
 #### Scenario: Consultar por teclado em ambos os temas
 - **WHEN** a pessoa pesquisar, limpar, abrir detalhes e retornar por teclado nos dois temas e viewports técnicos
-- **THEN** SHALL alcançar os controles com foco perceptível, rótulos inequívocos, cabeçalhos de tabela e situações textuais
-- **AND** resultados SHALL ser anunciáveis sem mover o foco durante digitação; ações SHALL não depender de hover
-- **AND** texto comum SHALL atingir contraste mínimo 4,5:1, texto grande e indicadores essenciais de foco/controle 3:1
-- **AND** eventual região de rolagem da tabela SHALL ser identificável e operável por teclado, sem corte horizontal do restante da página
+- **THEN** SHALL alcançar controles com foco perceptível, rótulos inequívocos, cabeçalhos e situações textuais
+- **AND** resultados SHALL ser anunciáveis sem mover foco durante digitação e ações SHALL não depender de hover
+- **AND** texto comum SHALL alcançar contraste 4,5:1; texto grande, foco e controles essenciais 3:1
+- **AND** região de rolagem da tabela SHALL ser identificável e operável por teclado, sem corte do restante da página
 
 #### Scenario: Navegar sem alterar ou persistir vendas
-- **WHEN** a pessoa consultar as listas e detalhes, pesquisar, limpar, alternar temas e recarregar
-- **THEN** SHALL não criar ou modificar vendas, pagamentos e dados pessoais por essas ações, nem gravar storage, cookies ou banco do navegador
-- **AND** SHALL não consultar serviços externos ou expor mecanismos globais de teste para mutar o estado
-- **AND** a nova sessão SHALL restaurar referência/conjunto inicial conforme as regras do núcleo, sem prometer persistência
-- **AND** os recortes somente leitura da FASE-004/005 SHALL ser históricos; somente confirmações explícitas dos fluxos da FASE-006 SHALL permitir mutações
+- **WHEN** consultar listas/detalhes, pesquisar, limpar, alternar temas e recarregar
+- **THEN** SHALL não criar ou modificar vendas, pagamentos ou dados pessoais por essas ações nem gravar negócios, cookies ou preferências no browser
+- **AND** SHALL não consultar serviços externos ou expor mecanismos globais de teste para mutar estado
+- **AND** no demo SHALL restaurar referência/conjunto inicial sem persistência; no local SHALL consultar SQLite pela API sem inserir seed, mantendo negócios existentes
+- **AND** recortes históricos somente leitura SHALL não impedir comandos atuais, que continuam exigindo confirmação explícita
 
 #### Scenario: Acessar ações funcionais e refletir alterações
-- **WHEN** acessar Nova venda em Vendas, Editar em uma linha de abertas/quitadas ou no detalhe, ou Receber no detalhe com pendências
-- **THEN** SHALL abrir o fluxo funcional da venda correta, com nomes acessíveis contextualizados e sem ações fictícias
-- **AND** sucesso SHALL atualizar dados e coleções da mesma sessão; critérios e paginação SHALL continuar seguindo os contratos existentes, incluindo ajuste da última página após redução
-- **AND** Vendas e Quitadas SHALL continuar sem os quatro cartões globais, busca global ou exportação
+- **WHEN** acessar Nova venda em Vendas, Editar numa linha de abertas/quitadas ou detalhe, ou Receber no detalhe elegível
+- **THEN** SHALL abrir o fluxo da venda correta com nomes acessíveis contextualizados, sem ações fictícias
+- **AND** sucesso confirmado SHALL atualizar ou invalidar consultas da fonte do modo, com ajuste de página inválida após redução da coleção
+- **AND** Vendas e Quitadas SHALL continuar sem quatro cartões globais, busca global ou exportação
+
+#### Scenario: Não inventar vazio durante falha local
+- **WHEN** consulta local estiver pendente, falhar ou retornar detalhe contratualmente ausente
+- **THEN** SHALL apresentar respectivamente carregamento, falha recarregável ou venda não encontrada com retorno
+- **AND** SHALL não reutilizar dados de outro ID ou apresentar erro de banco como venda ausente
 
 ### Requirement: Paginação local das coleções de vendas
 
