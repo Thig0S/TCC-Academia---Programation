@@ -23,6 +23,8 @@ import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalh
 import { MODO_APLICACAO } from '../../../nucleo/configuracao/modo-aplicacao';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { ControleConsultas } from '../../../nucleo/dados/controle-consultas';
+import { ControleConfirmacoes } from '../../../nucleo/dados/controle-confirmacoes';
+import { ErroContratoApi } from '../../../nucleo/dados/contratos-api';
 import { EstadoConsultaPorChave } from '../../../nucleo/dados/estado-consulta';
 import { FONTE_VENDAS } from '../../../nucleo/dados/fonte-vendas';
 import { FonteVendasDemonstracao } from '../../../nucleo/dados/fonte-vendas-demonstracao';
@@ -37,12 +39,19 @@ import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar
 import { CorrigirPagamento } from '../../parcelas/corrigir-pagamento/corrigir-pagamento';
 import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
 import { ProjecaoVenda } from '../venda.calculos';
-import { StatusAdministrativoVenda } from '../venda.modelos';
+import { ComandoMudancaStatus, StatusAdministrativoVenda } from '../venda.modelos';
 import { formatarCpf, formatarTelefone } from '../identificacao.validacoes';
 import {
   PagamentoDemonstrativo,
   PagamentoIndividualDemonstrativo,
 } from '../../parcelas/pagamento.modelos';
+
+interface ConfirmacaoStatusPreparada {
+  readonly vendaId: string;
+  readonly status: StatusAdministrativoVenda;
+  readonly referencia: string;
+  readonly revisaoEsperada: string | null;
+}
 
 @Component({
   selector: 'app-detalhes-venda',
@@ -53,13 +62,14 @@ import {
 })
 export class DetalhesVenda {
   protected readonly sucesso = inject(RetornoFormulario).consumirSucesso();
-  private readonly modo = inject(MODO_APLICACAO);
+  protected readonly modo = inject(MODO_APLICACAO);
   private readonly rota = inject(ActivatedRoute);
   private readonly fonte = inject(FONTE_VENDAS);
   // Preserve legacy demo-only actions without creating the demo service in local composition.
   private readonly servico =
     this.fonte instanceof FonteVendasDemonstracao ? inject(ServicoDemonstracao) : null;
   private readonly controleConsultas = inject(ControleConsultas);
+  private readonly confirmacoes = inject(ControleConfirmacoes);
   private readonly consultaInterna = new EstadoConsultaPorChave<VendaDetalheLeitura | null>(
     this.controleConsultas,
   );
@@ -79,6 +89,12 @@ export class DetalhesVenda {
   protected readonly mensagemStatus = signal('');
   protected readonly erroStatus = signal('');
   protected readonly statusAlvo = signal<StatusAdministrativoVenda | null>(null);
+  protected readonly conflitoStatus = signal(false);
+  protected readonly recarregandoStatus = signal(false);
+  protected readonly statusRevisaoRecarregada = signal(false);
+  private readonly statusPreparado = signal<ConfirmacaoStatusPreparada | null>(null);
+  private readonly geracaoAntesDaRecargaStatus = signal<number | null>(null);
+  protected readonly statusEnviando = signal(false);
   private readonly statusAcionador = signal<StatusAdministrativoVenda | null>(null);
   private readonly statusConfirmado = signal(false);
   private readonly modalStatus = viewChild(Modal);
@@ -109,6 +125,94 @@ export class DetalhesVenda {
       this.carregarDetalhe(id);
     });
     onCleanup(() => untracked(() => this.consultaInterna.cancelar()));
+  });
+  private readonly descartarStatusDeOutraVenda = effect(() => {
+    const id = this.id().get('id');
+    const preparado = this.statusPreparado();
+    if (preparado && preparado.vendaId !== id) {
+      untracked(() => {
+        this.statusAlvo.set(null);
+        this.statusPreparado.set(null);
+        this.conflitoStatus.set(false);
+        this.recarregandoStatus.set(false);
+        this.statusRevisaoRecarregada.set(false);
+        this.geracaoAntesDaRecargaStatus.set(null);
+        this.erroStatus.set('');
+        this.mensagemStatus.set('');
+      });
+    }
+  });
+  private readonly aceitarLeituraAposConflitoStatus = effect(() => {
+    if (!this.recarregandoStatus()) return;
+    const preparado = this.statusPreparado();
+    const geracaoAnterior = this.geracaoAntesDaRecargaStatus();
+    const estado = this.estadoConsulta();
+    if (!preparado || geracaoAnterior === null) return;
+
+    if (
+      (estado.tipo === 'erro' || estado.tipo === 'inexistente') &&
+      estado.geracao > geracaoAnterior
+    ) {
+      this.recarregandoStatus.set(false);
+      this.erroStatus.set(
+        'Não foi possível recarregar a venda. Nenhuma nova mudança foi enviada; tente consultar novamente.',
+      );
+      afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
+        injector: this.injector,
+      });
+      return;
+    }
+    if (
+      estado.tipo !== 'pronto' ||
+      estado.geracao <= geracaoAnterior ||
+      estado.chave.tipo !== 'detalhe' ||
+      estado.chave.vendaId !== preparado.vendaId ||
+      estado.valor === null
+    ) {
+      return;
+    }
+
+    const atual = estado.valor.resumo;
+    if (this.modo === 'local' && atual.revisao === null) {
+      this.recarregandoStatus.set(false);
+      this.erroStatus.set(
+        'A consulta atual não forneceu uma revisão válida. Recarregue a venda antes de confirmar.',
+      );
+      return;
+    }
+    if (!this.transicaoStatusPermitida(atual, preparado.status)) {
+      this.recarregandoStatus.set(false);
+      this.statusAlvo.set(null);
+      this.statusPreparado.set(null);
+      this.conflitoStatus.set(false);
+      this.erroStatus.set('');
+      this.mensagemStatus.set(
+        'A venda mudou e o destino escolhido não é mais permitido. Confira o status atual antes de iniciar outra mudança.',
+      );
+      this.statusConfirmado.set(true);
+      this.modalStatus()?.fechar();
+      return;
+    }
+
+    this.statusPreparado.set({
+      ...preparado,
+      revisaoEsperada: atual.revisao,
+    });
+    if (this.statusAlvo() === null) this.statusAlvo.set(preparado.status);
+    this.recarregandoStatus.set(false);
+    this.statusRevisaoRecarregada.set(true);
+    this.geracaoAntesDaRecargaStatus.set(null);
+    this.conflitoStatus.set(false);
+    this.erroStatus.set(
+      `A venda foi recarregada. O status atual é ${atual.statusAdministrativo}; revise e confirme novamente.`,
+    );
+    afterNextRender(
+      () =>
+        this.elemento.nativeElement
+          .querySelector<HTMLButtonElement>('dialog [data-foco-inicial]')
+          ?.focus(),
+      { injector: this.injector },
+    );
   });
   protected readonly restaurarFoco = () => {
     afterNextRender(
@@ -163,10 +267,77 @@ export class DetalhesVenda {
   }
 
   protected abrirConfirmacaoStatus(status: StatusAdministrativoVenda): void {
+    const estado = this.estadoConsulta();
+    if (
+      estado.tipo !== 'pronto' ||
+      estado.chave.tipo !== 'detalhe' ||
+      estado.chave.vendaId !== this.id().get('id') ||
+      estado.valor === null ||
+      estado.valor.resumo.id !== estado.chave.vendaId ||
+      !this.transicaoStatusPermitida(estado.valor.resumo, status) ||
+      !this.podeAbrirStatus(estado.valor.resumo)
+    ) {
+      return;
+    }
     this.statusAcionador.set(status);
+    this.statusPreparado.set({
+      vendaId: estado.valor.resumo.id,
+      status,
+      referencia: this.fonte.referencia,
+      revisaoEsperada: estado.valor.resumo.revisao,
+    });
     this.statusConfirmado.set(false);
     this.erroStatus.set('');
+    this.conflitoStatus.set(false);
+    this.statusRevisaoRecarregada.set(false);
     this.statusAlvo.set(status);
+  }
+
+  protected podeAbrirStatus(venda: VendaResumoLeitura): boolean {
+    return (
+      !this.conflitoStatus() &&
+      this.confirmacoes.estado().tipo === 'disponivel' &&
+      (this.modo === 'demonstrativo' || venda.revisao !== null)
+    );
+  }
+
+  protected bloqueioStatus(venda: VendaResumoLeitura): string {
+    if (this.modo === 'local' && venda.revisao === null) {
+      return 'A consulta não forneceu uma revisão válida. Nenhuma mudança de status foi enviada.';
+    }
+    const estado = this.confirmacoes.estado();
+    if (estado.tipo === 'enviando') {
+      return 'Outra confirmação está em andamento; aguarde a resposta antes de mudar o status.';
+    }
+    if (estado.tipo === 'incerto') {
+      return 'Há um resultado incerto nesta aba. Confira os dados antes de iniciar outra confirmação.';
+    }
+    return '';
+  }
+
+  protected readonly podeConfirmarStatus = computed(() => {
+    const preparado = this.statusPreparado();
+    return (
+      preparado !== null &&
+      this.statusAlvo() === preparado.status &&
+      this.id().get('id') === preparado.vendaId &&
+      !this.statusEnviando() &&
+      !this.recarregandoStatus() &&
+      !this.conflitoStatus() &&
+      this.confirmacoes.estado().tipo === 'disponivel' &&
+      (this.modo === 'demonstrativo' || preparado.revisaoEsperada !== null)
+    );
+  });
+
+  private transicaoStatusPermitida(
+    venda: VendaResumoLeitura,
+    destino: StatusAdministrativoVenda,
+  ): boolean {
+    if (venda.statusAdministrativo === destino) return true;
+    if (venda.statusAdministrativo === 'Ativo') {
+      return destino === 'Inativo' || (destino === 'Prejuízo' && venda.saldoCentavos > 0);
+    }
+    return destino === 'Ativo';
   }
 
   protected textoConfirmacaoStatus(status: StatusAdministrativoVenda): string {
@@ -180,28 +351,122 @@ export class DetalhesVenda {
     }
   }
 
-  protected confirmarMudancaStatus(): void {
-    const status = this.statusAlvo();
-    const consulta = this.consultaDemonstrativa();
-    if (this.servico === null || status === null || consulta?.tipo !== 'sucesso') return;
+  protected async confirmarMudancaStatus(): Promise<void> {
+    const preparado = this.statusPreparado();
+    if (!preparado || !this.podeConfirmarStatus()) return;
+    this.statusEnviando.set(true);
+    this.erroStatus.set('');
+    this.statusRevisaoRecarregada.set(false);
     try {
-      const resultado = this.servico.alterarStatus({ vendaId: consulta.valor.id, status });
+      const resultado = await this.confirmacoes.confirmar(
+        {
+          operacao: 'status',
+          alvo: { tipo: 'detalhe', vendaId: preparado.vendaId },
+          referencia: preparado.referencia,
+          revisaoEsperada: preparado.revisaoEsperada,
+          rascunho: { vendaId: preparado.vendaId, status: preparado.status },
+        },
+        (contexto) => {
+          const comando: ComandoMudancaStatus = {
+            vendaId: preparado.vendaId,
+            status: preparado.status,
+          };
+          return this.fonte
+            .alterarStatus({
+              comando,
+              revisaoEsperada: contexto.revisaoEsperada,
+            })
+            .pipe(
+              map((resposta) => {
+                if (
+                  resposta.tipo === 'sucesso' &&
+                  (resposta.valor.resumo.id !== preparado.vendaId ||
+                    resposta.valor.resumo.statusAdministrativo !== preparado.status)
+                ) {
+                  throw new ErroContratoApi('A mudança retornou venda ou status incompatível.');
+                }
+                return resposta;
+              }),
+            );
+        },
+      );
+      if (this.id().get('id') !== preparado.vendaId) return;
       if (resultado.tipo !== 'sucesso') {
-        this.erroStatus.set(resultado.mensagem);
-        afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
-          injector: this.injector,
-        });
+        if (resultado.codigo === 'conflito-revisao') {
+          this.conflitoStatus.set(true);
+          this.statusRevisaoRecarregada.set(false);
+          this.geracaoAntesDaRecargaStatus.set(this.estadoConsulta().geracao);
+          this.mensagemStatus.set('');
+          this.erroStatus.set(
+            'A venda mudou desde a consulta. Recarregue e revise o mesmo alvo antes de confirmar novamente.',
+          );
+          afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
+            injector: this.injector,
+          });
+        } else if (this.confirmacoes.estado().tipo === 'incerto') {
+          const mensagem =
+            'O resultado da mudança está incerto. Não reenvie; confira os dados antes de tentar novamente.';
+          this.erroStatus.set(mensagem);
+          this.mensagemStatus.set('');
+          this.statusPreparado.set(null);
+          this.statusAlvo.set(null);
+          afterNextRender(
+            () =>
+              this.elemento.nativeElement
+                .querySelector<HTMLElement>('#titulo-status-administrativo')
+                ?.focus(),
+            {
+              injector: this.injector,
+            },
+          );
+        } else {
+          this.erroStatus.set(resultado.mensagem);
+          if (this.statusAlvo() === null) this.statusPreparado.set(null);
+          afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
+            injector: this.injector,
+          });
+        }
         return;
       }
       this.statusConfirmado.set(true);
       this.mensagemStatus.set(resultado.mensagem);
+      this.statusPreparado.set(null);
+      this.conflitoStatus.set(false);
+      this.erroStatus.set('');
+      this.statusEnviando.set(false);
       this.modalStatus()?.fechar();
     } catch {
-      this.erroStatus.set('Não foi possível atualizar o status. Tente novamente.');
-      afterNextRender(() => this.alertaStatus()?.nativeElement.focus(), {
-        injector: this.injector,
-      });
+      if (this.id().get('id') === preparado.vendaId) {
+        const mensagem =
+          'O resultado da mudança está incerto. Não reenvie; confira os dados antes de tentar novamente.';
+        this.erroStatus.set(mensagem);
+        this.mensagemStatus.set('');
+      }
+    } finally {
+      this.statusEnviando.set(false);
     }
+  }
+
+  protected recarregarStatusAposConflito(): void {
+    const preparado = this.statusPreparado();
+    if (!preparado || !this.conflitoStatus() || this.recarregandoStatus()) return;
+    this.geracaoAntesDaRecargaStatus.set(this.estadoConsulta().geracao);
+    this.recarregandoStatus.set(true);
+    this.statusRevisaoRecarregada.set(false);
+    this.erroStatus.set('Consultando a venda para revisar a confirmação…');
+    this.carregarDetalhe(preparado.vendaId);
+  }
+
+  protected descartarMudancaStatus(): void {
+    if (this.statusEnviando()) return;
+    this.statusAlvo.set(null);
+    this.statusPreparado.set(null);
+    this.conflitoStatus.set(false);
+    this.recarregandoStatus.set(false);
+    this.statusRevisaoRecarregada.set(false);
+    this.geracaoAntesDaRecargaStatus.set(null);
+    this.erroStatus.set('');
+    this.mensagemStatus.set('');
   }
 
   protected cancelarConfirmacaoStatus(): void {
@@ -210,6 +475,13 @@ export class DetalhesVenda {
 
   protected fecharConfirmacaoStatus(): void {
     this.statusAlvo.set(null);
+    if (this.statusEnviando()) {
+      this.mensagemStatus.set(
+        'A mudança já foi enviada. Fechar o diálogo não a cancela; o resultado continuará sendo acompanhado nesta aba.',
+      );
+      return;
+    }
+    if (!this.conflitoStatus()) this.statusPreparado.set(null);
     this.erroStatus.set('');
   }
 
@@ -217,12 +489,13 @@ export class DetalhesVenda {
     afterNextRender(
       () => {
         const host = this.elemento.nativeElement;
+        const tituloStatus = host.querySelector<HTMLElement>('#titulo-status-administrativo');
         const destino = this.statusConfirmado()
-          ? null
+          ? (tituloStatus ?? host.querySelector<HTMLElement>('h1'))
           : [...host.querySelectorAll<HTMLButtonElement>('[data-acao-status]')].find(
               (botao) => botao.dataset['acaoStatus'] === this.statusAcionador(),
             );
-        (destino ?? host.querySelector<HTMLElement>('#titulo-status-administrativo'))?.focus();
+        (destino ?? tituloStatus ?? host.querySelector<HTMLElement>('h1'))?.focus();
         this.statusConfirmado.set(false);
       },
       { injector: this.injector },
@@ -320,7 +593,12 @@ export class DetalhesVenda {
   private consultarDetalhe(id: string): Observable<VendaDetalheLeitura | null> {
     return this.fonte.consultarVenda(id).pipe(
       map((resultado) => {
-        if (resultado.tipo === 'sucesso') return resultado.valor;
+        if (resultado.tipo === 'sucesso') {
+          if (resultado.valor.resumo.id !== id) {
+            throw new ErroContratoApi('A consulta retornou outro identificador de venda.');
+          }
+          return resultado.valor;
+        }
         if (resultado.tipo === 'inexistencia' && resultado.codigo === 'venda-inexistente') {
           return null;
         }

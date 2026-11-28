@@ -622,9 +622,8 @@ describe('DetalhesVenda', () => {
     expect(historico.textContent).toContain('Parcela 2:');
     expect(historico.textContent).toContain('Recebido online');
     expect(pagina.querySelector('a[aria-label^="Editar dados"]')).toBeNull();
-    expect(
-      pagina.querySelector('[data-acao-status], [data-acao-pagar], [data-acao-corrigir]'),
-    ).toBeNull();
+    expect(pagina.querySelector('[data-acao-status="Inativo"]')).not.toBeNull();
+    expect(pagina.querySelector('[data-acao-pagar], [data-acao-corrigir]')).toBeNull();
     expect(pagina.querySelector('form, input')).toBeNull();
     expect(consultarDemo).not.toHaveBeenCalled();
     expect(fonte.cadastrarVenda).not.toHaveBeenCalled();
@@ -769,12 +768,11 @@ describe('DetalhesVenda', () => {
       const botao = pagina().querySelector<HTMLButtonElement>(`[data-acao-status="${status}"]`)!;
       botao.click();
       await harness.fixture.whenStable();
-      return botao;
     };
 
     expect(pagina().textContent).toContain('Ativo');
     expect(pagina().querySelectorAll('[data-acao-status]')).toHaveLength(2);
-    const acionadorInativar = await abrirConfirmacao('Inativo');
+    await abrirConfirmacao('Inativo');
     const dialog = pagina().querySelector<HTMLDialogElement>('dialog')!;
     expect(dialog.open).toBe(true);
     expect(document.activeElement).toBe(dialog.querySelector('[data-foco-inicial]'));
@@ -790,7 +788,7 @@ describe('DetalhesVenda', () => {
       tipo: 'sucesso',
       valor: { statusAdministrativo: 'Ativo' },
     });
-    expect(document.activeElement).toBe(acionadorInativar);
+    expect((document.activeElement as HTMLButtonElement).dataset['acaoStatus']).toBe('Inativo');
 
     await abrirConfirmacao('Inativo');
     await confirmar();

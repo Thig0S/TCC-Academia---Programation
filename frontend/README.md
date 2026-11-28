@@ -4973,3 +4973,35 @@ Verificações reais direcionadas:
 Refinamento visual posterior: o grupo usa `gap-2` (8 px) entre os links; cada link recebeu SVG inline de 16 px com check, pausa e alerta, todos decorativos e ocultos à tecnologia assistiva. E2E mediu ordem, separação mínima de 7 px, alinhamento dos ícones, nomes acessíveis e atributos decorativos nos dois temas e viewports. A suíte de navegação serial passou **4/4**; a suíte unitária passou **416/416** em 33 arquivos; build, Prettier direcionado, `git diff --check` e `openspec validate empilhar-links-sidebar --strict` passaram. Uma execução paralela anterior teve falha intermitente no teste preexistente de teclado/ordenação mobile; a repetição isolada e a regressão serial passaram.
 
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
+
+## OpenSpec `fase-006-integracao-angular` — confirmação de status (INT-04.3) — 28/11/2026
+
+O detalhe local prepara a mudança administrativa com o ID e a revisão do próprio
+snapshot consultado. A confirmação passa pela fonte assíncrona e pelo coordenador
+global: abrir/cancelar não envia comando, o status apresentado só muda após sucesso
+confirmado e nenhum valor financeiro é recalculado no cliente. Os controles refletem
+a matriz existente (incluindo saldo para Prejuízo), sem alterar regras de domínio.
+
+Conflito conserva o alvo original e não renova revisão sozinho. A pessoa solicita a
+recarga explicitamente; somente uma leitura válida para o mesmo ID atualiza a revisão,
+e uma nova confirmação ainda é necessária. Uma resposta de detalhe de outra venda é
+rejeitada, falha de recarga não envia novo comando e resultado incerto bloqueia replay.
+Fechar o modal ou navegar após envio não cancela a escrita; a aba continua acompanhando
+o resultado. Após sucesso, consultas dependentes são invalidadas sem repetir a operação.
+
+Verificações executadas em 28/11/2026:
+
+- `npm test -- --watch=false`: **521/521 testes em 41 arquivos**.
+- `npm run test:e2e -- status-administrativo.spec.ts`: **8/8** em Chromium 1366×768 e
+  390×844, nos temas claro e escuro; inclui transições, navegação, cancelamento e foco.
+- `npm run build`: aprovado, **326,86 kB** iniciais; `npm exec ng build -- --configuration local`:
+  aprovado, **1,54 MB** iniciais.
+- `dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj
+  --configuration Release --filter "FullyQualifiedName~AlterarStatusViaSender_AplicaMatrizNoOpEConflitoSemPerderHistorico"`:
+  **1/1**; matriz/no-op sem incremento de revisão e preservação do histórico.
+- Prettier direcionado, `git diff --check` e `openspec validate
+  fase-006-integracao-angular --strict`: aprovados.
+
+Os testes de componente usam fonte simulada; o teste SQLite verifica o backend
+existente, não constitui E2E da interface contra a API. A integração browser real
+continua pendente em INT-06.2. Zoom nativo de 200% não foi verificado nesta tarefa.
