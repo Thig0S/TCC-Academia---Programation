@@ -11,6 +11,7 @@ import { cpfValido, telefoneValido } from '../identificacao.validacoes';
 import { ComandoCadastro, ComandoEdicaoCliente, Venda } from '../venda.modelos';
 import { prepararCadastro } from '../venda.validacoes';
 import { projetarVenda } from '../venda.calculos';
+import { VendaDetalheLeitura } from '../../../nucleo/dados/modelos-leitura';
 
 export interface RascunhoCliente {
   nome: string;
@@ -245,6 +246,51 @@ export function converterRecebimento(
     tipo: 'sucesso',
     comando: {
       vendaId: venda.id,
+      parcelaId,
+      data: rascunho.data,
+      forma: rascunho.forma,
+      valorCentavos: valorRecebido,
+      observacao: rascunho.observacao,
+    },
+  };
+}
+
+/** Converte baixa local usando somente parcela e revisão observadas no snapshot da API. */
+export function converterRecebimentoLocal(
+  rascunho: RascunhoRecebimento,
+  detalhe: VendaDetalheLeitura,
+  parcelaId: string,
+  referencia: string,
+): Conversao<ComandoPagamento, RascunhoRecebimento> {
+  const erros: ErrosCampos<RascunhoRecebimento> = {};
+  const data = erroData(rascunho.data, detalhe.resumo.dataVenda, referencia);
+  if (data) erros.data = data;
+  if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione a forma do recebimento.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
+
+  const parcela = detalhe.parcelas.find((item) => item.id === parcelaId);
+  const primeiraPendente = detalhe.parcelas.find((item) => item.situacao !== 'Paga');
+  let resumo: string | null = null;
+  if (detalhe.resumo.statusAdministrativo !== 'Ativo') {
+    resumo = 'Esta venda não está ativa para receber pagamentos.';
+  } else if (!parcela) {
+    resumo = 'A parcela selecionada não pertence à venda consultada.';
+  } else if (parcela.situacao === 'Paga' || primeiraPendente?.id !== parcelaId) {
+    resumo = 'Selecione somente a primeira parcela pendente, sem saltar parcelas.';
+  }
+
+  if (valorRecebido !== null && parcela && valorRecebido < parcela.valorBaseCentavos) {
+    erros.valorRecebido = 'O valor recebido deve ser igual ou superior ao valor-base da parcela.';
+  }
+  if (Object.keys(erros).length || resumo || valorRecebido === null || !parcela) {
+    return { tipo: 'invalido', erros, resumo };
+  }
+  return {
+    tipo: 'sucesso',
+    comando: {
+      vendaId: detalhe.resumo.id,
       parcelaId,
       data: rascunho.data,
       forma: rascunho.forma,

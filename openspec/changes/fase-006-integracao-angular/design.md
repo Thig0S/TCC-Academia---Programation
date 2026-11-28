@@ -6,14 +6,15 @@ Ver `proposal.md/Why`. PRD/FON-047/048/RF-037–043/CA-069–078 e TDD/DEC-042 c
 o escopo e contrato técnico; este desenho organiza sua aplicação. Criar design é
 necessário: mudança transversal nas telas, composição, segurança e protocolo assíncrono.
 O planejamento foi concluído e o apply foi autorizado em 27/11/2026. As tarefas 1.1–3.5
-e 4.1–4.2 estão implementadas e verificadas; seguem pendentes as outras confirmações
-comerciais de INT-04 e as etapas INT-05/06. Evidências estão em `tasks.md` e
+e 4.1–4.4 estão implementadas e verificadas; seguem pendentes a correção de pagamento
+em INT-04, as etapas INT-05/06 e suas verificações. Evidências estão em `tasks.md` e
 `frontend/README.md`.
 
 Main integrada `a8de117`: API técnica v1 e specs da fase 005 disponíveis. As consultas de
 coleções, detalhe, Visão Geral, Relatórios, cadastro e edição de cliente usam a fonte assíncrona;
 App/Configurações selecionam explicações por composição e `serve:local` ativa o provider
-HTTP. Edição, status e recebimentos ainda dependem das tarefas restantes de INT-04. O PR #41/head
+HTTP. Edição, status e baixa individual já usam a fonte assíncrona; correção de pagamento
+permanece pendente em INT-04. O PR #41/head
 `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` foi integrado em 27/11/2026 e reconferido na
 tarefa 1.1. Rotas, campos, Bearer de ambiente e revisão textual estão equivalentes à
 referência; nenhum desvio material foi encontrado. Os IDs de PRD/TDD da fase 005

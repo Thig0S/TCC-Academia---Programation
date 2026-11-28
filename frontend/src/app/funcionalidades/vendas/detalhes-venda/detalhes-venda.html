@@ -12,6 +12,22 @@
       {{ mensagemStatus() }} A atualização do detalhe continua separada da confirmação.
     </p>
   }
+  @if (mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemRecebimento() }} A baixa continua acompanhada enquanto o detalhe é atualizado.
+    </p>
+  }
+  @if (erroRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
+    </p>
+  }
 } @else if (estado.tipo === 'erro') {
   <app-cabecalho titulo="Não foi possível carregar a venda" [compacto]="true" />
   <p
@@ -36,6 +52,27 @@
       role="status"
     >
       {{ mensagemStatus() }} A atualização do detalhe falhou; não repita a mudança de status.
+    </p>
+  }
+  @if (mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemRecebimento() }}
+      @if (erroRecebimento()) {
+        {{ erroRecebimento() }}
+      } @else {
+        A atualização do detalhe falhou; recarregue para conferir e não repita o pagamento.
+      }
+    </p>
+  }
+  @if (erroRecebimento() && !mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
     </p>
   }
   <button
@@ -81,6 +118,14 @@
       role="status"
     >
       {{ mensagemRecebimento() }}
+    </p>
+  }
+  @if (erroRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
     </p>
   }
   @if (mensagemCorrecao()) {
@@ -383,14 +428,12 @@
             >
               Forma de pagamento
             </th>
-            @if (vendaDemo) {
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Ações
-              </th>
-            }
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Ações
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -443,49 +486,53 @@
               <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
                 {{ parcela.formaPagamento ?? 'Não informada' }}
               </td>
-              @if (vendaDemo) {
-                @let parcelaDemo = parcelaDemonstrativa(vendaDemo, parcela.id);
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  @if (parcela.situacao !== 'Paga' && podePagar(venda) && parcelaDemo) {
-                    @if (primeiraPendente(detalhe, parcela)) {
-                      <button
-                        type="button"
-                        class="rounded-lg border-[1px] border-control-border bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-                        [attr.data-acao-pagar]="parcela.id"
-                        [attr.aria-label]="
-                          'Pagar parcela ' + parcela.numero + ' da venda de ' + venda.cliente.nome
-                        "
-                        (click)="abrirPagamento(parcela.id)"
-                      >
-                        Pagar
-                      </button>
-                    } @else {
-                      <span>Aguardando parcela anterior</span>
-                    }
-                  } @else if (
-                    parcela.situacao !== 'Paga' && venda.statusAdministrativo !== 'Ativo'
-                  ) {
-                    <span>Venda fora das cobranças ativas</span>
-                  } @else if (pagamentoIndividualParcela && podePagar(venda)) {
+              @let parcelaDemo = parcelaDemonstrativa(vendaDemo, parcela.id);
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                @if (parcela.situacao !== 'Paga' && primeiraPendente(detalhe, parcela)) {
+                  @if (podePagar(venda) && (modo === 'local' || parcelaDemo)) {
                     <button
                       type="button"
-                      class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-1 text-sm font-semibold text-text shadow-sm transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-                      [attr.data-acao-corrigir]="pagamentoIndividualParcela.id"
+                      class="rounded-lg border-[1px] border-control-border bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                      [attr.data-acao-pagar]="parcela.id"
                       [attr.aria-label]="
-                        'Corrigir pagamento da parcela ' +
-                        parcela.numero +
-                        ' da venda de ' +
-                        venda.cliente.nome
+                        'Pagar parcela ' + parcela.numero + ' da venda de ' + venda.cliente.nome
                       "
-                      (click)="abrirCorrecao(pagamentoIndividualParcela.id)"
+                      (click)="abrirPagamento(parcela.id)"
                     >
-                      Corrigir pagamento
+                      Pagar
                     </button>
-                  } @else {
+                  } @else if (venda.statusAdministrativo === 'Ativo' && modo === 'local') {
+                    <span>{{ bloqueioPagamento(venda) }}</span>
+                  } @else if (venda.statusAdministrativo === 'Ativo') {
                     <span aria-hidden="true">—</span>
+                  } @else {
+                    <span>Venda fora das cobranças ativas</span>
                   }
-                </td>
-              }
+                } @else if (parcela.situacao !== 'Paga' && venda.statusAdministrativo !== 'Ativo') {
+                  <span>Venda fora das cobranças ativas</span>
+                } @else if (parcela.situacao !== 'Paga') {
+                  <span>Aguardando parcela anterior</span>
+                } @else if (
+                  pagamentoIndividualParcela && podePagar(venda) && modo === 'demonstrativo'
+                ) {
+                  <button
+                    type="button"
+                    class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-1 text-sm font-semibold text-text shadow-sm transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                    [attr.data-acao-corrigir]="pagamentoIndividualParcela.id"
+                    [attr.aria-label]="
+                      'Corrigir pagamento da parcela ' +
+                      parcela.numero +
+                      ' da venda de ' +
+                      venda.cliente.nome
+                    "
+                    (click)="abrirCorrecao(pagamentoIndividualParcela.id)"
+                  >
+                    Corrigir pagamento
+                  </button>
+                } @else {
+                  <span aria-hidden="true">—</span>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -583,7 +630,7 @@
       <p class="mb-0 px-3 pb-3 text-text-muted">Nenhum recebimento registrado.</p>
     }
   </details>
-  @if (vendaDemo) {
+  @if (modo === 'demonstrativo' && vendaDemo) {
     @if (parcelaPagamento(); as parcelaId) {
       @if (parcelaAlvo(vendaDemo); as parcela) {
         <app-registrar-pagamento
@@ -605,6 +652,19 @@
             (encerrado)="fecharCorrecao($event)"
           />
         }
+      }
+    }
+  }
+  @if (modo === 'local') {
+    @if (parcelaPagamento(); as parcelaId) {
+      @if (parcelaAlvoLeitura(detalhe, parcelaId); as parcela) {
+        <app-registrar-pagamento
+          [detalhe]="detalhe"
+          [parcelaLeitura]="parcela"
+          [restaurarFoco]="restaurarFoco"
+          (confirmacaoIniciada)="acompanharBaixaIniciada($event)"
+          (encerrado)="fecharRecebimento($event)"
+        />
       }
     }
   }

@@ -5005,3 +5005,39 @@ Verificações executadas em 28/11/2026:
 Os testes de componente usam fonte simulada; o teste SQLite verifica o backend
 existente, não constitui E2E da interface contra a API. A integração browser real
 continua pendente em INT-06.2. Zoom nativo de 200% não foi verificado nesta tarefa.
+
+## OpenSpec `fase-006-integracao-angular` — baixa individual (INT-04.4) — 28/11/2026
+
+No modo local, o modal usa o snapshot de leitura recebido no detalhe: ID da venda,
+ID/valor-base da parcela, sequência e revisão observada. Só a primeira parcela
+pendente fica acionável; entrada já liquidada não é alvo. A baixa envia uma vez o
+comando explícito de valor recebido, data civil, forma, observação e parcela para a
+fonte assíncrona. A validação compara o valor informado com o valor-base do snapshot,
+aceita acréscimo e conta caracteres Unicode sem recalcular valores financeiros da API.
+
+Um conflito mantém o mesmo alvo e o rascunho. A ação “Recarregar venda e revisar” faz
+uma leitura explícita da mesma venda; só então a revisão pode ser renovada, e somente
+se a parcela original ainda for a primeira pendente. Resposta perdida/incompatível
+bloqueia replay na aba. Cancelar antes do envio não escreve; fechar após o envio não
+afirma rollback. Após sucesso, consultas dependentes são invalidadas, com mensagem
+separada se o refresh falhar; o foco vai para a próxima baixa ou para o título após
+quitação.
+
+Verificações executadas em 28/11/2026:
+
+- Testes de baixa pela fonte local: **8/8**; regressão `npm test -- --watch=false`:
+  **529/529 em 42 arquivos**.
+- `npm run test:e2e -- formularios-vendas.spec.ts`: **50/50** em Chromium 1366×768 e
+  390×844; inclui pagamentos demonstrativos, modais, foco e temas.
+- `npm run test:e2e -- --config=playwright.local.config.ts`: **2/2** nos viewports
+  1366×768 e 390×844. Essa suíte verifica indisponibilidade e ausência de fallback,
+  não executa baixa contra a API.
+- `npm run build`: aprovado, **326,86 kB** iniciais; `npm exec ng build -- --configuration local`:
+  aprovado, **1,54 MB** iniciais. Testes HTTP existentes cobrem POST `/api/v1/recebimentos`
+  e corpo wire; não houve mudança no backend.
+- Prettier direcionado, `git diff --check` e `openspec validate
+  fase-006-integracao-angular --strict`: aprovados.
+
+Os testes de componente usam `FonteVendas` simulada e o E2E de formulários percorre a
+demonstração; não são teste browser/API/SQLite real. Esse cenário permanece pendente
+em INT-06.2. Zoom nativo de 200% não foi verificado nesta tarefa.

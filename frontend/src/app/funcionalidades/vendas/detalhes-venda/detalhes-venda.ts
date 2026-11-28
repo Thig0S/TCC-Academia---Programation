@@ -53,6 +53,11 @@ interface ConfirmacaoStatusPreparada {
   readonly revisaoEsperada: string | null;
 }
 
+interface AcompanhamentoBaixa {
+  readonly vendaId: string;
+  readonly parcelaId: string;
+}
+
 @Component({
   selector: 'app-detalhes-venda',
   imports: [Cabecalho, RouterLink, SeloSituacao, RegistrarPagamento, CorrigirPagamento, Modal],
@@ -85,6 +90,7 @@ export class DetalhesVenda {
     computation: () => null,
   });
   protected readonly mensagemRecebimento = signal('');
+  protected readonly erroRecebimento = signal('');
   protected readonly mensagemCorrecao = signal('');
   protected readonly mensagemStatus = signal('');
   protected readonly erroStatus = signal('');
@@ -101,8 +107,96 @@ export class DetalhesVenda {
   private readonly alertaStatus = viewChild<ElementRef<HTMLElement>>('alertaStatus');
   private readonly focoProxima = signal(false);
   private readonly acionadorPagamento = signal<string | null>(null);
+  private readonly baixaAcompanhada = signal<AcompanhamentoBaixa | null>(null);
+  private readonly baixaEnviando = signal(false);
+  private readonly baixaConfirmadaId = signal<string | null>(null);
   private readonly acionadorCorrecao = signal<string | null>(null);
   protected readonly estadoConsulta = this.consultaInterna.estado;
+  private readonly acompanharBaixa = effect(() => {
+    const acompanhamento = this.baixaAcompanhada();
+    if (!acompanhamento) return;
+    const estado = this.confirmacoes.estado();
+    const contexto =
+      estado.tipo === 'enviando' || estado.tipo === 'incerto'
+        ? estado.contexto
+        : estado.ultimoResultado?.contexto;
+    if (
+      !contexto ||
+      contexto.operacao !== 'baixa' ||
+      contexto.alvo.tipo !== 'detalhe' ||
+      contexto.alvo.vendaId !== acompanhamento.vendaId ||
+      (contexto.rascunho as { readonly parcelaId?: unknown }).parcelaId !== acompanhamento.parcelaId
+    ) {
+      return;
+    }
+    if (estado.tipo === 'enviando') {
+      this.baixaEnviando.set(true);
+      return;
+    }
+    if (estado.tipo === 'incerto') {
+      this.erroRecebimento.set(
+        'O resultado do pagamento está incerto. Não reenvie; consulte e confira os dados antes de outra confirmação.',
+      );
+      this.mensagemRecebimento.set('');
+      this.parcelaPagamento.set(null);
+      this.baixaEnviando.set(false);
+      this.baixaAcompanhada.set(null);
+      afterNextRender(
+        () => this.elemento.nativeElement.querySelector<HTMLElement>('#titulo-parcelas')?.focus(),
+        { injector: this.injector },
+      );
+      return;
+    }
+    const ultimoResultado = estado.ultimoResultado;
+    if (!ultimoResultado) return;
+    if (ultimoResultado.tipo === 'confirmado' && ultimoResultado.resultado.tipo === 'sucesso') {
+      this.mensagemRecebimento.set(ultimoResultado.resultado.mensagem);
+      this.erroRecebimento.set('');
+      this.baixaConfirmadaId.set(acompanhamento.vendaId);
+      this.focoProxima.set(true);
+    }
+    this.baixaEnviando.set(false);
+    this.baixaAcompanhada.set(null);
+  });
+  private readonly reconciliarBaixaConfirmada = effect(() => {
+    const vendaId = this.baixaConfirmadaId();
+    if (!vendaId) return;
+    const estado = this.estadoConsulta();
+    if (
+      estado.tipo === 'erro' &&
+      estado.chave.tipo === 'detalhe' &&
+      estado.chave.vendaId === vendaId
+    ) {
+      this.erroRecebimento.set(
+        'A baixa foi confirmada, mas não foi possível atualizar o detalhe. Recarregue para consultar o resultado; não repita o pagamento.',
+      );
+      return;
+    }
+    if (
+      estado.tipo === 'pronto' &&
+      estado.chave.tipo === 'detalhe' &&
+      estado.chave.vendaId === vendaId
+    ) {
+      this.baixaConfirmadaId.set(null);
+      this.erroRecebimento.set('');
+    }
+  });
+  private readonly focarProximaAcaoBaixa = effect(() => {
+    if (!this.focoProxima()) return;
+    const estado = this.estadoConsulta();
+    if (estado.tipo !== 'pronto') return;
+    afterNextRender(
+      () => {
+        const host = this.elemento.nativeElement;
+        (
+          host.querySelector<HTMLElement>('[data-acao-pagar]') ??
+          host.querySelector<HTMLElement>('#titulo-parcelas')
+        )?.focus();
+        this.focoProxima.set(false);
+      },
+      { injector: this.injector },
+    );
+  });
   private readonly consultaDemonstrativa = computed(() => {
     const id = this.id().get('id');
     return id === null || this.servico === null ? null : this.servico.consultarVenda(id);
@@ -245,12 +339,25 @@ export class DetalhesVenda {
     this.parcelaPagamento.set(null);
     if (mensagem) {
       this.mensagemRecebimento.set(mensagem);
+      this.erroRecebimento.set('');
       this.focoProxima.set(true);
+    } else if (this.baixaEnviando()) {
+      this.mensagemRecebimento.set(
+        'A baixa foi enviada. Fechar o diálogo não cancela a operação; o resultado continuará sendo acompanhado nesta aba.',
+      );
     }
+  }
+
+  protected acompanharBaixaIniciada(alvo: AcompanhamentoBaixa): void {
+    this.baixaAcompanhada.set(alvo);
+    this.baixaEnviando.set(true);
+    this.mensagemRecebimento.set('');
+    this.erroRecebimento.set('');
   }
 
   protected abrirPagamento(parcelaId: string): void {
     this.mensagemRecebimento.set('');
+    this.erroRecebimento.set('');
     this.acionadorPagamento.set(parcelaId);
     this.parcelaPagamento.set(parcelaId);
   }
@@ -519,12 +626,33 @@ export class DetalhesVenda {
   }
 
   protected podePagar(venda: VendaResumoLeitura): boolean {
-    return venda.statusAdministrativo === 'Ativo';
+    if (venda.statusAdministrativo !== 'Ativo') return false;
+    return (
+      this.modo !== 'local' ||
+      (venda.revisao !== null && this.confirmacoes.estado().tipo === 'disponivel')
+    );
+  }
+
+  protected bloqueioPagamento(venda: VendaResumoLeitura): string {
+    if (venda.revisao === null) return 'A consulta não forneceu revisão para confirmar a baixa.';
+    const estado = this.confirmacoes.estado();
+    return estado.tipo === 'enviando'
+      ? 'Aguarde a confirmação em andamento.'
+      : estado.tipo === 'incerto'
+        ? 'Confira o resultado da confirmação anterior antes de outra baixa.'
+        : 'A baixa não está disponível nesta venda.';
   }
 
   protected parcelaAlvo(venda: ProjecaoVenda): ProjecaoParcela | null {
     const id = this.parcelaPagamento();
     return id ? (venda.parcelas.find((parcela) => parcela.id === id) ?? null) : null;
+  }
+
+  protected parcelaAlvoLeitura(
+    detalhe: VendaDetalheLeitura,
+    parcelaId: string,
+  ): ParcelaLeitura | null {
+    return detalhe.parcelas.find((parcela) => parcela.id === parcelaId) ?? null;
   }
 
   protected pagamentoIndividual(
@@ -573,8 +701,11 @@ export class DetalhesVenda {
     return detalhe.parcelas.find((parcela) => parcela.id === parcelaId)?.numero ?? null;
   }
 
-  protected parcelaDemonstrativa(venda: ProjecaoVenda, parcelaId: string): ProjecaoParcela | null {
-    return venda.parcelas.find((parcela) => parcela.id === parcelaId) ?? null;
+  protected parcelaDemonstrativa(
+    venda: ProjecaoVenda | null,
+    parcelaId: string,
+  ): ProjecaoParcela | null {
+    return venda?.parcelas.find((parcela) => parcela.id === parcelaId) ?? null;
   }
 
   protected recarregar(): void {

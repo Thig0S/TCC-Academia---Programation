@@ -331,7 +331,7 @@ silenciosamente nesta proposta nem mesclá-lo. Se contrato mudar, revisar primei
 | INT-01 | Reconferir baseline integrada; composição demo/local; gate proxy/segredo e logging | Pré-requisitos acima | Demo sem API; CLI real recusa origem/Host antes de proxy; segredo não vaza | Não implementado |
 | INT-02 | Fronteira/modelos/cliente/adaptador demo e estado de confirmação | INT-01 | Tipos exatos, uma escrita, referência fixa, revisão observada e testes de protocolo | Não implementado |
 | INT-03 | Quatro coleções, detalhe, Visão Geral e mês; funcionalidades separadas | INT-02 | Pronto/erro/vazio/ausente, corridas e busca/paginação; sem cálculos financeiros HTTP | Não implementado |
-| INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Em andamento: cadastro, edição e status concluídos; baixa/correção pendentes |
+| INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Em andamento: cadastro, edição, status e baixa concluídos; correção pendente |
 | INT-05 | Conferência integrada/alerta por aba e recovery pós-sucesso | INT-02/04; protocolo básico já testado antes | Resposta perdida bloqueia toda aba; consulta+aceite liberam sem reenvio | Não implementado |
 | INT-06 | E2E real/reinício/duas abas, regressão demo/backend, auditoria e evidências | INT-01–05 | CA-069–078 rastreados, privacidade e limitações reais documentadas | Não implementado |
 
