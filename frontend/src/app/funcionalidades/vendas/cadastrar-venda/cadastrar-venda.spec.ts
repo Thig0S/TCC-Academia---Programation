@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../../app.routes';
+import { appConfig } from '../../../app.config';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 
 describe('Cadastro demonstrativo pela interface', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     }),
@@ -222,21 +222,17 @@ describe('Cadastro demonstrativo pela interface', () => {
     expect(harness.routeNativeElement?.querySelector('[role="status"]')).toBeNull();
   });
 
-  it.each(['resultado', 'excecao'])('preserva rascunho e permite retry após %s', async (modo) => {
-    const { harness, fonte, pagina, validos, enviar } = await abrir();
+  it('preserva rascunho e permite nova confirmação após recusa conhecida', async () => {
+    const { harness, fonte, pagina, preencher, validos, enviar } = await abrir();
     await validos();
     const antes = structuredClone(fonte.vendas());
     const comando = vi.spyOn(fonte, 'cadastrarVenda');
-    if (modo === 'resultado')
-      comando.mockReturnValueOnce({
-        tipo: 'falha',
-        codigo: 'teste',
-        mensagem: 'Falha controlada sem publicação.',
-      });
-    else
-      comando.mockImplementationOnce(() => {
-        throw new Error('Teste');
-      });
+    comando.mockReturnValueOnce({
+      tipo: 'validacao',
+      codigo: 'cpf-invalido',
+      mensagem: 'Falha controlada sem publicação.',
+      campo: 'cpf',
+    });
     enviar();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe('/vendas/nova');
@@ -252,10 +248,35 @@ describe('Cadastro demonstrativo pela interface', () => {
     );
     expect(pagina.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled).toBe(false);
     expect(fonte.vendas()).toEqual(antes);
+    await preencher('cpf-cliente', '90000000175');
     enviar();
     await harness.fixture.whenStable();
     expect(comando).toHaveBeenCalledTimes(2);
     expect(TestBed.inject(Router).url).toBe('/vendas/sessao%2Fvenda%2F1');
+  });
+
+  it('preserva rascunho e bloqueia novo envio após resultado incerto', async () => {
+    const { harness, fonte, pagina, validos, enviar } = await abrir();
+    await validos();
+    const antes = structuredClone(fonte.vendas());
+    const comando = vi.spyOn(fonte, 'cadastrarVenda');
+    comando.mockImplementationOnce(() => {
+      throw new Error('Resposta não observada.');
+    });
+    enviar();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/vendas/nova');
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain('não reenvie');
+    expect(pagina.querySelector<HTMLInputElement>('#nome-cliente')?.value).toBe(
+      'Cliente DEMO cadastro',
+    );
+    expect(pagina.querySelector<HTMLButtonElement>('[type="submit"]')?.disabled).toBe(true);
+    expect(fonte.vendas()).toEqual(antes);
+    enviar();
+    await harness.fixture.whenStable();
+    expect(comando).toHaveBeenCalledTimes(1);
+    expect(TestBed.inject(Router).url).toBe('/vendas/nova');
   });
 
   it('cancelar retorna a Vendas com identidade lógica de foco, sem publicar', async () => {

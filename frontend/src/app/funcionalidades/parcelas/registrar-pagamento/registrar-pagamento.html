@@ -1,21 +1,28 @@
 <app-modal titulo="Pagar parcela" [restaurarFoco]="restaurarFoco()" (fechado)="fechar()">
-  <p class="mb-3 text-text-muted">
-    Pagamento demonstrativo de {{ venda().cliente.nome }}. Use somente dados sintéticos; as
-    alterações são descartadas ao recarregar a aplicação.
-  </p>
+  @if (modo === 'demonstrativo') {
+    <p class="mb-3 text-text-muted">
+      Pagamento demonstrativo de {{ nomeCliente() }}. Use somente dados sintéticos; as alterações
+      são descartadas ao recarregar a aplicação.
+    </p>
+  } @else {
+    <p class="mb-3 text-text-muted">
+      Baixa local persistida de {{ nomeCliente() }}. Confira os dados sintéticos antes de enviar à
+      fonte local.
+    </p>
+  }
   <dl
     class="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg border border-border bg-surface-muted p-3"
   >
     <dt>Cliente</dt>
-    <dd>{{ venda().cliente.nome }}</dd>
+    <dd>{{ nomeCliente() }}</dd>
     <dt>Parcela</dt>
-    <dd>{{ parcela().numero }} de {{ venda().parcelas.length }}</dd>
+    <dd>{{ numeroParcela() }} de {{ quantidadeParcelas() }}</dd>
     <dt>Vencimento</dt>
-    <dd>{{ formatarDataCivil(parcela().vencimento) }}</dd>
+    <dd>{{ formatarDataCivil(vencimento()) }}</dd>
     <dt>Valor-base</dt>
-    <dd class="font-semibold tabular-nums">{{ formatarDinheiro(parcela().valorCentavos) }}</dd>
+    <dd class="font-semibold tabular-nums">{{ formatarDinheiro(valorBase()) }}</dd>
   </dl>
-  @if (parcela().situacao === 'Atrasado') {
+  @if (atrasada()) {
     <p
       class="mb-3 rounded-lg border border-warning-badge bg-warning-badge px-3 py-2 font-semibold text-warning-badge-text"
       role="note"
@@ -95,20 +102,43 @@
         {{ mensagem() }}
       </p>
     }
+    @if (enviando()) {
+      <p class="mb-3 text-sm text-text-muted" role="status" aria-live="polite" aria-busy="true">
+        A confirmação foi enviada. Fechar este diálogo não cancela a operação.
+      </p>
+    }
+    @if (conflito()) {
+      <button
+        type="button"
+        class="mb-3 rounded-lg border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="recarregando()"
+        (click)="recarregarAposConflito()"
+      >
+        {{ recarregando() ? 'Recarregando venda…' : 'Recarregar venda e revisar' }}
+      </button>
+    }
     <div class="flex flex-wrap gap-3">
       <button
         type="submit"
+        #botaoConfirmar
         class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        [disabled]="campos().submitting() || concluido()"
+        [disabled]="
+          campos().submitting() ||
+          concluido() ||
+          enviando() ||
+          incerto() ||
+          conflito() ||
+          alvoDesatualizado()
+        "
       >
-        Confirmar pagamento
+        {{ enviando() ? 'Enviando…' : 'Confirmar pagamento' }}
       </button>
       <button
         type="button"
         class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         (click)="cancelar()"
       >
-        Cancelar
+        {{ incerto() ? 'Fechar para conferir' : enviando() ? 'Fechar (não cancela)' : 'Cancelar' }}
       </button>
     </div>
   </form>

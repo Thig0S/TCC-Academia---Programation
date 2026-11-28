@@ -1,0 +1,71 @@
+@let atual = estado();
+@if (atual.tipo === 'incerto') {
+  <section
+    class="mb-3 rounded-xl border border-control-border bg-surface p-3 shadow-sm"
+    role="alert"
+    aria-labelledby="titulo-confirmacao-incerta"
+    data-testid="aviso-confirmacao-incerta"
+  >
+    <h2
+      id="titulo-confirmacao-incerta"
+      class="mb-2 text-base font-bold text-error"
+      tabindex="-1"
+      data-foco-confirmacao-incerta
+    >
+      Resultado de confirmação incerto
+    </h2>
+    <p class="mb-2">
+      O resultado da {{ nomeOperacao() }} não foi confirmado. O rascunho permanece somente na
+      memória desta aba; não reenvie a operação.
+    </p>
+    @if (atual.contexto.alvo.tipo === 'colecao') {
+      <p class="mb-2">
+        Consulte a coleção de vendas abertas. Não é possível identificar um cadastro por semelhança
+        de nome ou outros dados do cliente.
+      </p>
+    } @else {
+      <p class="mb-2">Consulte o detalhe da venda original: {{ atual.contexto.alvo.vendaId }}.</p>
+    }
+
+    @if (atual.consulta === 'consultando') {
+      <p class="mb-2 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+        Consultando {{ nomeDestino() }} antes de habilitar o reconhecimento…
+      </p>
+    } @else if (atual.consulta === 'falhou') {
+      <p class="mb-2 text-error" role="status" aria-live="polite">{{ erroAtual() }}</p>
+    } @else if (atual.consulta === 'concluida' && leituraAtual(); as leitura) {
+      <p class="mb-2" role="status" aria-live="polite">{{ resumoLeitura(leitura) }}</p>
+      <a
+        class="mb-3 inline-block font-semibold text-brand underline underline-offset-2 focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        [routerLink]="destino()"
+      >
+        Abrir {{ nomeDestino() }} para conferir
+      </a>
+    }
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-testid="consultar-conferencia"
+        class="rounded-lg border border-control-border bg-action px-3 py-2 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="atual.consulta === 'consultando'"
+        (click)="consultar()"
+      >
+        {{
+          atual.consulta === 'falhou'
+            ? 'Tentar consultar novamente'
+            : 'Consultar dados para conferência'
+        }}
+      </button>
+      <button
+        type="button"
+        data-testid="reconhecer-conferencia"
+        class="rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="!podeReconhecer()"
+        (click)="reconhecer()"
+      >
+        Reconheço que conferi os dados
+      </button>
+    </div>
+  </section>
+}

@@ -19,6 +19,18 @@ test('preserva os indicadores e refina espaçamento dos três resumos', async ({
       await expect(resumo.getByRole('link')).toHaveCount(5);
       await expect(resumo.getByRole('heading')).toHaveCSS('margin-bottom', '12px');
     }
+    const recentes = page.getByRole('region', { name: 'Vendas recentes' });
+    const primeiraVenda = recentes.getByRole('link').nth(0);
+    const segundaVenda = recentes.getByRole('link').nth(1);
+    await primeiraVenda.focus();
+    await page.keyboard.press('Tab');
+    await expect(segundaVenda).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(primeiraVenda).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { name: 'Detalhes da venda' })).toBeVisible();
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: 'Visão Geral' })).toBeVisible();
     await expect(page.locator('main div.grid').last()).toHaveCSS('row-gap', '16px');
     await expect(page.locator('main input, main button, main canvas')).toHaveCount(0);
     await page.screenshot({

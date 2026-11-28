@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../../app.routes';
+import { appConfig } from '../../../app.config';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 
 describe('Edição dos quatro campos do cliente pela UI', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     }),
@@ -37,6 +37,7 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
     const [a, b] = fonte.vendas();
     const antes = structuredClone(fonte.vendas());
     const harness = await RouterTestingHarness.create(url(a.id));
+    await harness.fixture.whenStable();
     expect(harness.routeNativeElement!.querySelectorAll('input, textarea')).toHaveLength(4);
     expect(
       harness.routeNativeElement?.querySelector<HTMLInputElement>('#nome-cliente')!.value,
@@ -44,10 +45,12 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
     await preencher(harness, 'nome-cliente', 'Rascunho sem publicação');
     expect(fonte.vendas()).toEqual(antes);
     await harness.navigateByUrl(url(b.id));
+    await harness.fixture.whenStable();
     expect(
       harness.routeNativeElement?.querySelector<HTMLInputElement>('#nome-cliente')!.value,
     ).toBe(b.cliente.nome);
     await harness.navigateByUrl(url('ausente/com/barra'));
+    await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain('Venda não encontrada');
     expect(harness.routeNativeElement?.querySelector('form')).toBeNull();
     expect(harness.routeNativeElement?.querySelectorAll('a')).toHaveLength(2);
@@ -125,23 +128,20 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
     },
   );
 
-  it.each(['resultado', 'excecao'])('mantém rascunho e permite retry em %s', async (modo) => {
+  it('mantém o rascunho e permite corrigir campo após recusa identificável', async () => {
     const fonte = TestBed.inject(ServicoDemonstracao);
     const alvo = fonte.abertas()[0];
     const antes = structuredClone(fonte.vendas());
     const harness = await RouterTestingHarness.create(url(alvo.id));
+    await harness.fixture.whenStable();
     await preencher(harness, 'nome-cliente', 'DEMO retry');
     const comando = vi.spyOn(fonte, 'editarCliente');
-    if (modo === 'resultado')
-      comando.mockReturnValueOnce({
-        tipo: 'falha',
-        codigo: 'teste',
-        mensagem: 'Falha controlada na edição.',
-      });
-    else
-      comando.mockImplementationOnce(() => {
-        throw new Error('Teste');
-      });
+    comando.mockReturnValueOnce({
+      tipo: 'validacao',
+      codigo: 'cpf-invalido',
+      mensagem: 'Falha controlada na edição.',
+      campo: 'cpf',
+    });
     enviar(harness);
     await harness.fixture.whenStable();
     expect(fonte.vendas()).toEqual(antes);
@@ -162,10 +162,40 @@ describe('Edição dos quatro campos do cliente pela UI', () => {
     expect(
       harness.routeNativeElement?.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled,
     ).toBe(false);
+    await preencher(harness, 'cpf-cliente', '529.982.247-25');
     enviar(harness);
     await harness.fixture.whenStable();
     expect(comando).toHaveBeenCalledTimes(2);
     expect(harness.routeNativeElement?.textContent).toContain('Dados do cliente atualizados');
+  });
+
+  it('mantém rascunho e bloqueia retry automático após resposta incerta', async () => {
+    const fonte = TestBed.inject(ServicoDemonstracao);
+    const alvo = fonte.abertas()[0];
+    const antes = structuredClone(fonte.vendas());
+    const harness = await RouterTestingHarness.create(url(alvo.id));
+    await harness.fixture.whenStable();
+    await preencher(harness, 'nome-cliente', 'DEMO incerteza');
+    const comando = vi.spyOn(fonte, 'editarCliente');
+    comando.mockImplementationOnce(() => {
+      throw new Error('Resposta não observada.');
+    });
+    enviar(harness);
+    await harness.fixture.whenStable();
+
+    expect(fonte.vendas()).toEqual(antes);
+    expect(
+      harness.routeNativeElement?.querySelector<HTMLInputElement>('#nome-cliente')?.value,
+    ).toBe('DEMO incerteza');
+    expect(harness.routeNativeElement?.querySelector('[role="alert"]')?.textContent).toContain(
+      'não reenvie',
+    );
+    expect(
+      harness.routeNativeElement?.querySelector<HTMLButtonElement>('[type="submit"]')?.disabled,
+    ).toBe(true);
+    enviar(harness);
+    await harness.fixture.whenStable();
+    expect(comando).toHaveBeenCalledTimes(1);
   });
 
   it('envio inválido revela erro e foco, cancelar descarta e acesso direto retorna ao detalhe', async () => {

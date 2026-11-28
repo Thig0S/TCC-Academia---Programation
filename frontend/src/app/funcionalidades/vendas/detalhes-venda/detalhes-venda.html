@@ -1,160 +1,307 @@
-@if (consulta(); as resultado) {
-  @if (resultado.tipo === 'sucesso') {
-    <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
-    @if (sucesso) {
-      <p
-        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
-        role="status"
-      >
-        {{ sucesso }}
-      </p>
-    }
-    @if (mensagemRecebimento()) {
-      <p
-        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
-        role="status"
-      >
-        {{ mensagemRecebimento() }}
-      </p>
-    }
-    @if (mensagemCorrecao()) {
-      <p
-        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
-        role="status"
-      >
-        {{ mensagemCorrecao() }}
-      </p>
-    }
-    @if (mensagemStatus()) {
-      <p
-        class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
-        role="status"
-      >
-        {{ mensagemStatus() }}
-      </p>
-    }
-    <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-      <p class="mb-0 text-text-muted">
-        Referência da demonstração: {{ formatarDataCivil(referencia) }}
-      </p>
-      <nav aria-label="Retornos de Vendas" class="flex flex-wrap items-center gap-3">
-        <a [routerLink]="rotaRetorno(resultado.valor)">{{ textoRetorno(resultado.valor) }}</a>
-        <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
-        <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
-        <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
+@let estado = estadoConsulta();
+@if (estado.tipo === 'inicial' || estado.tipo === 'carregando') {
+  <app-cabecalho titulo="Carregando venda" [compacto]="true" />
+  <p class="mb-3 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+    Carregando detalhes da venda…
+  </p>
+  @if (mensagemStatus()) {
+    <p
+      class="mb-3 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemStatus() }} A atualização do detalhe continua separada da confirmação.
+    </p>
+  }
+  @if (mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemRecebimento() }} A baixa continua acompanhada enquanto o detalhe é atualizado.
+    </p>
+  }
+  @if (erroRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
+    </p>
+  }
+  @if (mensagemCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemCorrecao() }} A atualização do detalhe continua separada da correção.
+    </p>
+  }
+  @if (erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroCorrecao() }}
+    </p>
+  }
+} @else if (estado.tipo === 'erro') {
+  <app-cabecalho titulo="Não foi possível carregar a venda" [compacto]="true" />
+  <p
+    class="mb-3 rounded-xl border border-control-border bg-surface-muted p-3 text-text-muted"
+    role="alert"
+  >
+    O detalhe não foi carregado. Verifique a conexão e tente novamente.
+  </p>
+  @if (erroStatus()) {
+    <p
+      #alertaStatus
+      class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+      tabindex="-1"
+    >
+      {{ erroStatus() }}
+    </p>
+  }
+  @if (mensagemStatus()) {
+    <p
+      class="mb-3 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemStatus() }} A atualização do detalhe falhou; não repita a mudança de status.
+    </p>
+  }
+  @if (mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemRecebimento() }}
+      @if (erroRecebimento()) {
+        {{ erroRecebimento() }}
+      } @else {
+        A atualização do detalhe falhou; recarregue para conferir e não repita o pagamento.
+      }
+    </p>
+  }
+  @if (erroRecebimento() && !mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
+    </p>
+  }
+  @if (mensagemCorrecao() || erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      [attr.role]="erroCorrecao() ? 'alert' : 'status'"
+      aria-live="polite"
+    >
+      {{ mensagemCorrecao() }} {{ erroCorrecao() }}
+      @if (erroCorrecao()) {
+        Recarregue para consultar o resultado; não repita a correção.
+      } @else {
+        A atualização do detalhe falhou; não repita a correção.
+      }
+    </p>
+  }
+  <button
+    type="button"
+    class="mb-3 rounded-lg border-[1px] border-control-border bg-action px-3 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+    (click)="recarregar()"
+  >
+    Recarregar detalhe
+  </button>
+  <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
+    <a routerLink="/vendas">Voltar para Vendas</a>
+    <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+    <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+    <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
+  </nav>
+} @else if (estado.tipo === 'inexistente') {
+  <app-cabecalho titulo="Venda não encontrada" />
+  <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
+    Não existe uma venda com este identificador.
+  </p>
+  <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
+    <a routerLink="/vendas">Voltar para Vendas</a>
+    <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+    <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+    <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
+  </nav>
+} @else if (estado.tipo === 'pronto' && estado.valor) {
+  @let detalhe = estado.valor;
+  @let venda = detalhe.resumo;
+  @let vendaDemo = vendaDemonstrativa();
+  <app-cabecalho titulo="Detalhes da venda" [compacto]="true" />
+  @if (sucesso) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ sucesso }}
+    </p>
+  }
+  @if (mensagemRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemRecebimento() }}
+    </p>
+  }
+  @if (erroRecebimento()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroRecebimento() }}
+    </p>
+  }
+  @if (erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroCorrecao() }}
+    </p>
+  }
+  @if (mensagemCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemCorrecao() }}
+    </p>
+  }
+  @if (mensagemStatus()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemStatus() }}
+    </p>
+  }
+  <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+    <p class="mb-0 text-text-muted">Referência: {{ formatarDataCivil(referencia) }}</p>
+    <nav aria-label="Retornos de Vendas" class="flex flex-wrap items-center gap-3">
+      <a [routerLink]="rotaRetorno(venda)">{{ textoRetorno(venda) }}</a>
+      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+      <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
+      <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
+      @if (podeEditar()) {
         <a
-          [routerLink]="['/vendas', resultado.valor.id, 'editar']"
+          [routerLink]="['/vendas', venda.id, 'editar']"
           [state]="{ origemEdicao: 'detalhe' }"
-          [attr.data-foco-formulario]="'editar-' + resultado.valor.id"
+          [attr.data-foco-formulario]="'editar-' + venda.id"
           [attr.aria-label]="
-            'Editar dados do cliente da venda de ' +
-            resultado.valor.cliente.nome +
-            ', ID ' +
-            resultado.valor.id
+            'Editar dados do cliente da venda de ' + venda.cliente.nome + ', ID ' + venda.id
           "
           >Editar</a
         >
-      </nav>
-    </div>
+      }
+    </nav>
+  </div>
 
-    <div class="detalhe-resumo">
-      <section
-        class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
-        aria-labelledby="identificacao-venda"
+  <div class="detalhe-resumo">
+    <section
+      class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
+      aria-labelledby="identificacao-venda"
+    >
+      <h2
+        id="identificacao-venda"
+        class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
       >
-        <h2
-          id="identificacao-venda"
-          class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
-        >
-          {{ resultado.valor.cliente.nome }}
-        </h2>
-        <dl class="detalhe-campos mb-0">
-          <dt>CPF</dt>
-          <dd>{{ formatarCpf(resultado.valor.cliente.cpf) }}</dd>
-          <dt>Telefone</dt>
-          <dd>{{ formatarTelefone(resultado.valor.cliente.telefone) }}</dd>
-          @if (resultado.valor.cliente.descricao) {
-            <dt>Descrição</dt>
-            <dd>{{ resultado.valor.cliente.descricao }}</dd>
-          }
-        </dl>
-      </section>
-
-      <section
-        class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
-        aria-labelledby="dados-financeiros"
-      >
-        <h2
-          id="dados-financeiros"
-          class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
-        >
-          Dados da venda
-        </h2>
-        <dl class="detalhe-campos mb-2">
-          <dt>Data da venda</dt>
-          <dd>{{ formatarDataCivil(resultado.valor.dataVenda) }}</dd>
-          <dt>Valor total-base</dt>
-          <dd class="font-semibold tabular-nums">
-            {{ formatarDinheiro(resultado.valor.valorTotalCentavos) }}
-          </dd>
-          <dt>Total efetivo</dt>
-          <dd class="font-semibold tabular-nums">
-            {{ formatarDinheiro(resultado.valor.valorTotalEfetivoCentavos) }}
-          </dd>
-          <dt>Total pago</dt>
-          <dd class="tabular-nums">{{ formatarDinheiro(resultado.valor.totalPagoCentavos) }}</dd>
-          <dt>Saldo devedor</dt>
-          <dd class="text-xl font-bold text-brand tabular-nums">
-            {{ formatarDinheiro(resultado.valor.saldoCentavos) }}
-          </dd>
-          <dt>Próximo vencimento</dt>
-          <dd>
-            {{
-              resultado.valor.proximoVencimento
-                ? formatarDataCivil(resultado.valor.proximoVencimento)
-                : 'Não há parcelas pendentes'
-            }}
-          </dd>
-          <dt>Situação</dt>
-          <dd><app-selo-situacao [situacao]="resultado.valor.situacao" /></dd>
-          <dt>Parcelas pagas</dt>
-          <dd>{{ resultado.valor.quantidadePaga }} de {{ resultado.valor.parcelas.length }}</dd>
-        </dl>
-        <section class="entrada-detalhe" aria-labelledby="titulo-entrada">
-          <h3 id="titulo-entrada" class="mb-2 text-base font-semibold tracking-tight">Entrada</h3>
-          @if (resultado.valor.entrada; as entrada) {
-            <dl class="detalhe-campos mb-0 rounded-lg bg-surface-muted p-2">
-              <dt>Valor</dt>
-              <dd>{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
-              <dt>Data</dt>
-              <dd>{{ formatarDataCivil(entrada.data) }}</dd>
-              <dt>Forma</dt>
-              <dd>{{ entrada.forma }}</dd>
-            </dl>
-          } @else {
-            <p class="mb-0 rounded-lg bg-surface-muted px-2 py-2 text-text-muted">Sem entrada</p>
-          }
-        </section>
-      </section>
-    </div>
+        {{ venda.cliente.nome }}
+      </h2>
+      <dl class="detalhe-campos mb-0">
+        <dt>CPF</dt>
+        <dd>{{ formatarCpf(venda.cliente.cpf) }}</dd>
+        <dt>Telefone</dt>
+        <dd>{{ formatarTelefone(venda.cliente.telefone) }}</dd>
+        @if (venda.cliente.descricao) {
+          <dt>Descrição</dt>
+          <dd>{{ venda.cliente.descricao }}</dd>
+        }
+      </dl>
+    </section>
 
     <section
-      class="mb-2 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
-      aria-labelledby="titulo-status-administrativo"
+      class="detalhe-bloco rounded-xl border-[1px] border-border bg-surface p-2 shadow-sm"
+      aria-labelledby="dados-financeiros"
     >
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2
-            id="titulo-status-administrativo"
-            class="mb-1 text-lg font-semibold tracking-tight"
-            tabindex="-1"
-          >
-            Status administrativo
-          </h2>
-          <p class="mb-0 font-semibold">{{ resultado.valor.statusAdministrativo }}</p>
-        </div>
+      <h2
+        id="dados-financeiros"
+        class="mb-2 border-b border-border pb-1 text-lg font-semibold tracking-tight"
+      >
+        Dados da venda
+      </h2>
+      <dl class="detalhe-campos mb-2">
+        <dt>Data da venda</dt>
+        <dd>{{ formatarDataCivil(venda.dataVenda) }}</dd>
+        <dt>Valor total-base</dt>
+        <dd class="font-semibold tabular-nums">
+          {{ formatarDinheiro(venda.valorTotalCentavos) }}
+        </dd>
+        <dt>Total efetivo</dt>
+        <dd class="font-semibold tabular-nums">
+          {{ formatarDinheiro(venda.valorTotalEfetivoCentavos) }}
+        </dd>
+        <dt>Total pago</dt>
+        <dd class="tabular-nums">{{ formatarDinheiro(venda.totalRecebidoCentavos) }}</dd>
+        <dt>Saldo devedor</dt>
+        <dd class="text-xl font-bold text-brand tabular-nums">
+          {{ formatarDinheiro(venda.saldoCentavos) }}
+        </dd>
+        <dt>Próximo vencimento</dt>
+        <dd>
+          {{
+            venda.proximoVencimento
+              ? formatarDataCivil(venda.proximoVencimento)
+              : 'Não há parcelas pendentes'
+          }}
+        </dd>
+        <dt>Situação</dt>
+        <dd><app-selo-situacao [situacao]="venda.situacao" /></dd>
+        <dt>Parcelas pagas</dt>
+        <dd>{{ venda.quantidadePaga }} de {{ venda.quantidadeParcelas }}</dd>
+      </dl>
+      <section class="entrada-detalhe" aria-labelledby="titulo-entrada">
+        <h3 id="titulo-entrada" class="mb-2 text-base font-semibold tracking-tight">Entrada</h3>
+        @if (entrada(detalhe); as entrada) {
+          <dl class="detalhe-campos mb-0 rounded-lg bg-surface-muted p-2">
+            <dt>Valor</dt>
+            <dd>{{ formatarDinheiro(entrada.valorCentavos) }}</dd>
+            <dt>Data</dt>
+            <dd>{{ formatarDataCivil(entrada.data) }}</dd>
+            <dt>Forma</dt>
+            <dd>{{ entrada.forma }}</dd>
+          </dl>
+        } @else {
+          <p class="mb-0 rounded-lg bg-surface-muted px-2 py-2 text-text-muted">Sem entrada</p>
+        }
+      </section>
+    </section>
+  </div>
+
+  <section
+    class="mb-2 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+    aria-labelledby="titulo-status-administrativo"
+  >
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2
+          id="titulo-status-administrativo"
+          class="mb-1 text-lg font-semibold tracking-tight"
+          tabindex="-1"
+        >
+          Status administrativo
+        </h2>
+        <p class="mb-0 font-semibold">{{ venda.statusAdministrativo }}</p>
+      </div>
+      @if (podeAbrirStatus(venda)) {
         <div class="flex flex-wrap gap-2">
-          @if (resultado.valor.statusAdministrativo === 'Ativo') {
+          @if (venda.statusAdministrativo === 'Ativo') {
             <button
               type="button"
               class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -163,7 +310,7 @@
             >
               Inativar venda
             </button>
-            @if (resultado.valor.saldoCentavos > 0) {
+            @if (venda.saldoCentavos > 0) {
               <button
                 type="button"
                 class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -173,7 +320,7 @@
                 Marcar como Prejuízo
               </button>
             }
-          } @else if (resultado.valor.statusAdministrativo === 'Inativo') {
+          } @else if (venda.statusAdministrativo === 'Inativo') {
             <button
               type="button"
               class="rounded-lg border-[1px] border-control-border bg-action px-3 py-2 text-sm font-semibold text-white transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
@@ -193,190 +340,342 @@
             </button>
           }
         </div>
-      </div>
-    </section>
-
-    <section
-      class="parcelas-detalhe overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
-      aria-labelledby="titulo-parcelas"
-    >
-      <h2
-        id="titulo-parcelas"
-        class="border-b border-border px-2 py-1 text-lg font-semibold tracking-tight"
-        tabindex="-1"
-      >
-        Parcelas
-      </h2>
-      <p id="orientacao-parcelas" class="sr-only">
-        Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
-      </p>
-      <div
-        class="max-w-full overflow-x-auto"
-        [class.parcelas-com-rolagem]="resultado.valor.parcelas.length > 10"
-        role="region"
-        aria-label="Parcelas da venda"
-        aria-describedby="orientacao-parcelas"
-        tabindex="0"
-      >
-        <table
-          class="w-full min-w-max border-collapse text-left text-lg leading-5 tabela-parcelas-detalhe"
+      } @else if (bloqueioStatus(venda); as bloqueio) {
+        <p
+          class="mb-0 max-w-2xl rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-text-muted"
+          [attr.role]="modo === 'local' && venda.revisao === null ? 'alert' : 'status'"
+          aria-live="polite"
         >
-          <caption class="sr-only">
-            Parcelas da venda de
-            {{
-              resultado.valor.cliente.nome
-            }}
-          </caption>
-          <thead class="sticky top-0 z-[2] bg-surface-muted text-text">
-            <tr>
+          {{ bloqueio }}
+        </p>
+      }
+    </div>
+    @if (erroStatus() && !statusAlvo() && conflitoStatus()) {
+      <div
+        class="mt-3 rounded-lg border border-control-border bg-surface-muted p-3"
+        role="group"
+        aria-label="Revisar mudança de status"
+      >
+        <p class="mb-2 text-sm text-error" role="alert">{{ erroStatus() }}</p>
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="rounded-lg border-[1px] border-control-border bg-action px-3 py-2 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="recarregandoStatus()"
+            (click)="recarregarStatusAposConflito()"
+          >
+            {{ recarregandoStatus() ? 'Recarregando venda…' : 'Recarregar venda e revisar' }}
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+            (click)="descartarMudancaStatus()"
+          >
+            Descartar mudança preparada
+          </button>
+        </div>
+      </div>
+    } @else if (erroStatus() && !statusAlvo()) {
+      <p
+        class="mt-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+        role="alert"
+      >
+        {{ erroStatus() }}
+      </p>
+    }
+  </section>
+
+  <section
+    class="parcelas-detalhe overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
+    aria-labelledby="titulo-parcelas"
+  >
+    <h2
+      id="titulo-parcelas"
+      class="border-b border-border px-2 py-1 text-lg font-semibold tracking-tight"
+      tabindex="-1"
+    >
+      Parcelas
+    </h2>
+    <p id="orientacao-parcelas" class="sr-only">
+      Para mais de dez parcelas, use as setas do teclado para percorrer a tabela rolável.
+    </p>
+    <div
+      class="max-w-full overflow-x-auto"
+      [class.parcelas-com-rolagem]="detalhe.parcelas.length > 10"
+      role="region"
+      aria-label="Parcelas da venda"
+      aria-describedby="orientacao-parcelas"
+      tabindex="0"
+    >
+      <table
+        class="w-full min-w-max border-collapse text-left text-lg leading-5 tabela-parcelas-detalhe"
+      >
+        <caption class="sr-only">
+          Parcelas da venda de
+          {{
+            venda.cliente.nome
+          }}
+        </caption>
+        <thead class="sticky top-0 z-[2] bg-surface-muted text-text">
+          <tr>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Parcela
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+            >
+              Valor-base
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+            >
+              Valor recebido
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+            >
+              Acréscimo
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Vencimento
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Situação
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Data do pagamento
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Forma de pagamento
+            </th>
+            <th
+              scope="col"
+              class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+            >
+              Ações
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (parcela of detalhe.parcelas; track parcela.id) {
+            @let pagamentoIndividualParcela = pagamentoIndividual(detalhe, parcela);
+            <tr class="hover:bg-surface-muted">
               <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
+                scope="row"
+                class="whitespace-nowrap border-b border-border px-2.5 py-1 font-medium"
               >
-                Parcela
+                {{ parcela.numero }} de {{ detalhe.parcelas.length }}
+                @if (entrada(detalhe) && parcela.numero === 1) {
+                  · Entrada
+                }
               </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+              <td
+                class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
               >
-                Valor-base
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+                {{ formatarDinheiro(parcela.valorBaseCentavos) }}
+              </td>
+              <td
+                class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
               >
-                Valor recebido
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right font-semibold"
+                @if (valorRecebido(parcela); as valorRecebido) {
+                  {{ formatarDinheiro(valorRecebido) }}
+                } @else {
+                  <span aria-hidden="true">—</span>
+                }
+              </td>
+              <td
+                class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
               >
-                Acréscimo
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Vencimento
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Situação
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Data do pagamento
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Forma de pagamento
-              </th>
-              <th
-                scope="col"
-                class="whitespace-nowrap border-b border-border px-2.5 py-2 font-semibold"
-              >
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (parcela of resultado.valor.parcelas; track parcela.id) {
-              @let pagamento = pagamentoDaParcela(resultado.valor, parcela);
-              @let pagamentoIndividualParcela = pagamentoIndividual(resultado.valor, parcela);
-              <tr class="hover:bg-surface-muted">
-                <th
-                  scope="row"
-                  class="whitespace-nowrap border-b border-border px-2.5 py-1 font-medium"
-                >
-                  {{ parcela.numero }} de {{ resultado.valor.parcelas.length }}
-                  @if (resultado.valor.entrada && parcela.numero === 1) {
-                    · Entrada
-                  }
-                </th>
-                <td
-                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
-                >
-                  {{ formatarDinheiro(parcela.valorCentavos) }}
-                </td>
-                <td
-                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
-                >
-                  @if (valorAlocado(pagamento, parcela); as valorRecebido) {
-                    {{ formatarDinheiro(valorRecebido) }}
-                  } @else {
+                @if (pagamentoIndividualParcela; as individual) {
+                  {{ formatarDinheiro(individual.acrescimoCentavos) }}
+                } @else {
+                  <span aria-hidden="true">—</span>
+                }
+              </td>
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                {{ formatarDataCivil(parcela.vencimento) }}
+              </td>
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                <app-selo-situacao [situacao]="parcela.situacao" />
+              </td>
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                {{
+                  parcela.dataPagamento ? formatarDataCivil(parcela.dataPagamento) : 'Não informada'
+                }}
+              </td>
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                {{ parcela.formaPagamento ?? 'Não informada' }}
+              </td>
+              @let parcelaDemo = parcelaDemonstrativa(vendaDemo, parcela.id);
+              <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                @if (parcela.situacao !== 'Paga' && primeiraPendente(detalhe, parcela)) {
+                  @if (podePagar(venda) && (modo === 'local' || parcelaDemo)) {
+                    <button
+                      type="button"
+                      class="rounded-lg border-[1px] border-control-border bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                      [attr.data-acao-pagar]="parcela.id"
+                      [attr.aria-label]="
+                        'Pagar parcela ' + parcela.numero + ' da venda de ' + venda.cliente.nome
+                      "
+                      (click)="abrirPagamento(parcela.id)"
+                    >
+                      Pagar
+                    </button>
+                  } @else if (venda.statusAdministrativo === 'Ativo' && modo === 'local') {
+                    <span>{{ bloqueioPagamento(venda) }}</span>
+                  } @else if (venda.statusAdministrativo === 'Ativo') {
                     <span aria-hidden="true">—</span>
-                  }
-                </td>
-                <td
-                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
-                >
-                  @if (pagamentoIndividualParcela; as individual) {
-                    {{ formatarDinheiro(individual.acrescimoCentavos) }}
                   } @else {
-                    <span aria-hidden="true">—</span>
-                  }
-                </td>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  {{ formatarDataCivil(parcela.vencimento) }}
-                </td>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  <app-selo-situacao [situacao]="parcela.situacao" />
-                </td>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  {{
-                    parcela.dataPagamento
-                      ? formatarDataCivil(parcela.dataPagamento)
-                      : 'Não informada'
-                  }}
-                </td>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  {{ parcela.formaPagamento ?? 'Não informada' }}
-                </td>
-                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
-                  @if (parcela.situacao !== 'Paga' && podePagar(resultado.valor)) {
-                    @if (primeiraPendente(resultado.valor, parcela)) {
-                      <button
-                        type="button"
-                        class="rounded-lg border-[1px] border-control-border bg-action px-3 py-1 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-                        [attr.data-acao-pagar]="parcela.id"
-                        [attr.aria-label]="
-                          'Pagar parcela ' +
-                          parcela.numero +
-                          ' da venda de ' +
-                          resultado.valor.cliente.nome
-                        "
-                        (click)="abrirPagamento(parcela.id)"
-                      >
-                        Pagar
-                      </button>
-                    } @else {
-                      <span>Aguardando parcela anterior</span>
-                    }
-                  } @else if (parcela.situacao !== 'Paga') {
                     <span>Venda fora das cobranças ativas</span>
-                  } @else if (pagamentoIndividualParcela && podePagar(resultado.valor)) {
+                  }
+                } @else if (parcela.situacao !== 'Paga' && venda.statusAdministrativo !== 'Ativo') {
+                  <span>Venda fora das cobranças ativas</span>
+                } @else if (parcela.situacao !== 'Paga') {
+                  <span>Aguardando parcela anterior</span>
+                } @else if (
+                  pagamentoIndividualParcela && podeCorrigir(venda) && modo === 'demonstrativo'
+                ) {
+                  <button
+                    type="button"
+                    class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-1 text-sm font-semibold text-text shadow-sm transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                    [attr.data-acao-corrigir]="pagamentoIndividualParcela.id"
+                    [attr.aria-label]="
+                      'Corrigir pagamento da parcela ' +
+                      parcela.numero +
+                      ' da venda de ' +
+                      venda.cliente.nome
+                    "
+                    (click)="abrirCorrecao(pagamentoIndividualParcela.id)"
+                  >
+                    Corrigir pagamento
+                  </button>
+                } @else if (recebimentoCorrigivel(detalhe, parcela); as recebimentoCorrigivel) {
+                  @if (podeCorrigir(venda)) {
                     <button
                       type="button"
                       class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-1 text-sm font-semibold text-text shadow-sm transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-                      [attr.data-acao-corrigir]="pagamentoIndividualParcela.id"
+                      [attr.data-acao-corrigir]="recebimentoCorrigivel.id"
                       [attr.aria-label]="
                         'Corrigir pagamento da parcela ' +
                         parcela.numero +
                         ' da venda de ' +
-                        resultado.valor.cliente.nome
+                        venda.cliente.nome
                       "
-                      (click)="abrirCorrecao(pagamentoIndividualParcela.id)"
+                      (click)="abrirCorrecao(recebimentoCorrigivel.id)"
                     >
                       Corrigir pagamento
                     </button>
+                  } @else if (modo === 'local') {
+                    <span>{{ bloqueioCorrecao(venda) }}</span>
+                  }
+                } @else {
+                  <span aria-hidden="true">—</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <details class="mb-2 rounded-xl border-[1px] border-border bg-surface shadow-sm">
+    <summary
+      class="cursor-pointer px-3 py-2 font-semibold focus-visible:outline-3 focus-visible:outline-focus"
+    >
+      Histórico de recebimentos ({{ detalhe.recebimentos.length }})
+    </summary>
+    @if (detalhe.recebimentos.length > 0) {
+      <div class="max-w-full overflow-x-auto" role="region" aria-label="Histórico de recebimentos">
+        <table class="w-full min-w-max border-collapse text-left text-lg leading-5">
+          <caption class="sr-only">
+            Recebimentos e alocações da venda de
+            {{
+              venda.cliente.nome
+            }}
+          </caption>
+          <thead class="bg-surface-muted text-text">
+            <tr>
+              <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2">Data</th>
+              <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2">
+                Origem
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right"
+              >
+                Valor
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap border-b border-border px-2.5 py-2 text-right"
+              >
+                Acréscimo
+              </th>
+              <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2">
+                Forma
+              </th>
+              <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2">
+                Observação
+              </th>
+              <th scope="col" class="whitespace-nowrap border-b border-border px-2.5 py-2">
+                Alocações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (recebimento of detalhe.recebimentos; track recebimento.id) {
+              <tr>
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                  {{ formatarDataCivil(recebimento.data) }}
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                  {{ recebimento.origem }}
+                </td>
+                <td
+                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
+                >
+                  {{ formatarDinheiro(recebimento.valorCentavos) }}
+                </td>
+                <td
+                  class="whitespace-nowrap border-b border-border px-2.5 py-1 text-right tabular-nums"
+                >
+                  @if (recebimento.acrescimoCentavos > 0) {
+                    {{ formatarDinheiro(recebimento.acrescimoCentavos) }}
                   } @else {
                     <span aria-hidden="true">—</span>
+                  }
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                  {{ recebimento.forma }}
+                </td>
+                <td class="whitespace-nowrap border-b border-border px-2.5 py-1">
+                  {{ recebimento.observacao || '—' }}
+                </td>
+                <td class="border-b border-border px-2.5 py-1">
+                  @for (alocacao of recebimento.alocacoes; track alocacao.parcelaId) {
+                    @let numero = numeroParcela(detalhe, alocacao.parcelaId);
+                    <span class="block whitespace-nowrap">
+                      Parcela {{ numero !== null ? numero : alocacao.parcelaId }}:
+                      {{ formatarDinheiro(alocacao.valorCentavos) }}
+                    </span>
                   }
                 </td>
               </tr>
@@ -384,11 +683,15 @@
           </tbody>
         </table>
       </div>
-    </section>
+    } @else {
+      <p class="mb-0 px-3 pb-3 text-text-muted">Nenhum recebimento registrado.</p>
+    }
+  </details>
+  @if (modo === 'demonstrativo' && vendaDemo) {
     @if (parcelaPagamento(); as parcelaId) {
-      @if (parcelaAlvo(resultado.valor); as parcela) {
+      @if (parcelaAlvo(vendaDemo); as parcela) {
         <app-registrar-pagamento
-          [venda]="resultado.valor"
+          [venda]="vendaDemo"
           [parcela]="parcela"
           [restaurarFoco]="restaurarFoco"
           (encerrado)="fecharRecebimento($event)"
@@ -396,10 +699,10 @@
       }
     }
     @if (recebimentoCorrecao(); as recebimentoId) {
-      @if (pagamentoAlvo(resultado.valor); as pagamento) {
-        @if (parcelaDoPagamento(resultado.valor, pagamento); as parcela) {
+      @if (pagamentoAlvo(vendaDemo); as pagamento) {
+        @if (parcelaDoPagamento(vendaDemo, pagamento); as parcela) {
           <app-corrigir-pagamento
-            [venda]="resultado.valor"
+            [venda]="vendaDemo"
             [parcela]="parcela"
             [pagamento]="pagamento"
             [restaurarFoco]="restaurarFocoCorrecao"
@@ -408,63 +711,88 @@
         }
       }
     }
-    @if (statusAlvo(); as status) {
-      <app-modal
-        titulo="Confirmar mudança de status"
-        [restaurarFoco]="restaurarFocoStatus"
-        (fechado)="fecharConfirmacaoStatus()"
-      >
-        <p class="mb-3 text-text-muted">{{ textoConfirmacaoStatus(status) }}</p>
-        @if (erroStatus()) {
-          <p
-            #alertaStatus
-            class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
-            role="alert"
-            tabindex="-1"
-          >
-            {{ erroStatus() }}
-          </p>
-        }
-        <div class="flex flex-wrap gap-3">
-          <button
-            type="button"
-            class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            data-foco-inicial
-            (click)="confirmarMudancaStatus()"
-          >
-            Confirmar mudança
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-            (click)="cancelarConfirmacaoStatus()"
-          >
-            Cancelar
-          </button>
-        </div>
-      </app-modal>
-    }
-  } @else {
-    <app-cabecalho titulo="Venda não encontrada" />
-    <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
-      Não existe uma venda com este identificador.
-    </p>
-    <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
-      <a routerLink="/vendas">Voltar para Vendas</a>
-      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
-      <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
-      <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
-    </nav>
   }
-} @else {
-  <app-cabecalho titulo="Venda não encontrada" />
-  <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
-    Não existe uma venda com este identificador.
-  </p>
-  <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
-    <a routerLink="/vendas">Voltar para Vendas</a>
-    <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
-    <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
-    <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
-  </nav>
+  @if (modo === 'local') {
+    @if (parcelaPagamento(); as parcelaId) {
+      @if (parcelaAlvoLeitura(detalhe, parcelaId); as parcela) {
+        <app-registrar-pagamento
+          [detalhe]="detalhe"
+          [parcelaLeitura]="parcela"
+          [restaurarFoco]="restaurarFoco"
+          (confirmacaoIniciada)="acompanharBaixaIniciada($event)"
+          (encerrado)="fecharRecebimento($event)"
+        />
+      }
+    }
+    @if (recebimentoCorrecao(); as recebimentoId) {
+      @if (recebimentoAlvoLeitura(detalhe, recebimentoId); as recebimento) {
+        <app-corrigir-pagamento
+          [detalhe]="detalhe"
+          [recebimento]="recebimento"
+          [restaurarFoco]="restaurarFocoCorrecao"
+          (resultadoIncerto)="registrarCorrecaoIncerta($event)"
+          (encerrado)="fecharCorrecao($event)"
+        />
+      }
+    }
+  }
+  @if (statusAlvo(); as status) {
+    <app-modal
+      titulo="Confirmar mudança de status"
+      [restaurarFoco]="restaurarFocoStatus"
+      (fechado)="fecharConfirmacaoStatus()"
+    >
+      <p class="mb-3 text-text-muted">{{ textoConfirmacaoStatus(status) }}</p>
+      @if (statusEnviando()) {
+        <p class="mb-3 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+          A confirmação foi enviada. Fechar este diálogo não cancela a operação.
+        </p>
+      }
+      @if (erroStatus()) {
+        <p
+          #alertaStatus
+          class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm"
+          [attr.role]="recarregandoStatus() || statusRevisaoRecarregada() ? 'status' : 'alert'"
+          aria-live="polite"
+          tabindex="-1"
+        >
+          {{ erroStatus() }}
+        </p>
+      }
+      @if (conflitoStatus()) {
+        <button
+          type="button"
+          class="mb-3 rounded-lg border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="recarregandoStatus()"
+          (click)="recarregarStatusAposConflito()"
+        >
+          {{ recarregandoStatus() ? 'Recarregando venda…' : 'Recarregar venda e revisar' }}
+        </button>
+      }
+      <div class="flex flex-wrap gap-3">
+        <button
+          type="button"
+          class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          data-foco-inicial
+          [disabled]="!podeConfirmarStatus()"
+          (click)="confirmarMudancaStatus()"
+        >
+          {{ statusEnviando() ? 'Enviando mudança…' : 'Confirmar mudança' }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+          (click)="cancelarConfirmacaoStatus()"
+        >
+          {{
+            estadoConfirmacao().tipo === 'incerto'
+              ? 'Fechar para conferir'
+              : statusEnviando()
+                ? 'Fechar (não cancela)'
+                : 'Cancelar'
+          }}
+        </button>
+      </div>
+    </app-modal>
+  }
 }

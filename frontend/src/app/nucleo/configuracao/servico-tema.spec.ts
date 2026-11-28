@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../app.routes';
+import { appConfig } from '../../app.config';
 import { ServicoTema } from './servico-tema';
 
 describe('Tema em memória', () => {
@@ -15,7 +15,7 @@ describe('Tema em memória', () => {
   });
 
   it('mantém uma instância compartilhada pelas páginas lazy', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] });
     const servico = TestBed.inject(ServicoTema);
     const harness = await RouterTestingHarness.create('/visao-geral');
     servico.alternar();

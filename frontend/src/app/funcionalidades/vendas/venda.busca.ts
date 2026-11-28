@@ -1,6 +1,11 @@
 import { interpretarDataCivil } from './data-civil';
-import { ProjecaoVenda } from './venda.calculos';
+import { VendaResumoLeitura } from '../../nucleo/dados/modelos-leitura';
 import { SituacaoVenda } from './venda.modelos';
+
+type VendaPesquisavel = Pick<
+  VendaResumoLeitura,
+  'id' | 'cliente' | 'dataVenda' | 'situacao' | 'proximoVencimento'
+>;
 
 export type FiltroSituacaoVenda = 'Todas' | Exclude<SituacaoVenda, 'Quitada'>;
 
@@ -15,7 +20,7 @@ function somenteDigitos(valor: string): string {
   return valor.replace(/\D/g, '');
 }
 
-function correspondeTexto(venda: ProjecaoVenda, termo: string): boolean {
+function correspondeTexto(venda: VendaPesquisavel, termo: string): boolean {
   const consulta = normalizarTexto(termo);
   if (
     [venda.cliente.nome, venda.cliente.cpf, venda.cliente.telefone].some((campo) =>
@@ -33,11 +38,11 @@ function correspondeTexto(venda: ProjecaoVenda, termo: string): boolean {
 }
 
 /** Filtra somente a coleção recebida, preservando ordem e sem alterar as projeções. */
-export function buscarVendas(
-  vendas: readonly ProjecaoVenda[],
+export function buscarVendas<T extends VendaPesquisavel>(
+  vendas: readonly T[],
   termo: string,
   situacao: FiltroSituacaoVenda = 'Todas',
-): readonly ProjecaoVenda[] {
+): readonly T[] {
   const consulta = termo.trim();
   const ehDataCompleta = /^\d{2}\/\d{2}\/\d{4}$/.test(consulta);
   let dataCivil: string | null = null;

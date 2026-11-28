@@ -54,12 +54,20 @@ export interface ComandoMudancaStatus {
   readonly status: StatusAdministrativoVenda;
 }
 
+export interface ErroValidacaoResultado {
+  readonly codigo: string;
+  readonly mensagem: string;
+  readonly campo: string | null;
+}
+
 export type Resultado<T> =
   | { readonly tipo: 'sucesso'; readonly valor: T; readonly mensagem: string }
   | {
       readonly tipo: 'validacao' | 'inexistencia' | 'inelegibilidade' | 'falha';
       readonly codigo: string;
       readonly mensagem: string;
+      readonly campo?: string;
+      readonly erros?: readonly ErroValidacaoResultado[];
     };
 
 export type SituacaoVenda = 'Quitada' | 'Atrasada' | 'Próximos dias' | 'Em aberto';

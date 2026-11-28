@@ -1,149 +1,266 @@
-import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { of, Subject, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
-import { ProjecaoParcela } from '../parcelas/parcela.calculos';
-import { ResumoVendas, ProjecaoVenda } from '../vendas/venda.calculos';
+import { ControleConsultas } from '../../nucleo/dados/controle-consultas';
+import { FONTE_VENDAS, FonteVendas } from '../../nucleo/dados/fonte-vendas';
+import {
+  ParcelaVisaoGeralLeitura,
+  VisaoGeralLeitura,
+  VendaResumoLeitura,
+} from '../../nucleo/dados/modelos-leitura';
 import { ServicoDemonstracao } from '../../nucleo/demonstracao/servico-demonstracao';
 
 const referencia = '2027-03-31';
-const resumoVazio: ResumoVendas = {
-  totalEmAbertoCentavos: 0,
-  valoresEmAtrasoCentavos: 0,
-  recebidoNoMesCentavos: 0,
-  vendasCadastradas: 0,
-};
 
-function texto(elemento: Element): string {
-  return (elemento.textContent ?? '').replaceAll('\u00a0', ' ');
-}
-
-function venda(
-  id: string,
-  nome: string,
-  dataVenda: string,
-  parcelas: readonly ProjecaoParcela[] = [],
-  situacao: ProjecaoVenda['situacao'] = 'Em aberto',
-): ProjecaoVenda {
+function resumo(id: string, nome: string, indice = 0): VendaResumoLeitura {
   return {
     id,
-    statusAdministrativo: 'Ativo',
-    cliente: { nome, cpf: '90000000175', telefone: '00900000001', descricao: null },
-    dataVenda,
-    valorTotalCentavos: 10000,
-    valorTotalEfetivoCentavos: 10000,
-    entrada: null,
-    parcelas,
-    recebimentos: [],
-    totalPagoCentavos: situacao === 'Quitada' ? 10000 : 0,
-    saldoCentavos: situacao === 'Quitada' ? 0 : 10000,
-    quantidadePaga: situacao === 'Quitada' ? parcelas.length : 0,
-    proximoVencimento: parcelas.find((parcela) => parcela.situacao !== 'Paga')?.vencimento ?? null,
-    situacao,
+    cliente: {
+      nome,
+      cpf: '90000000175',
+      telefone: '11900000001',
+      descricao: null,
+    },
+    dataVenda: `2027-03-${String(indice + 1).padStart(2, '0')}`,
+    statusAdministrativo: (['Ativo', 'Inativo', 'Prejuízo'] as const)[indice % 3],
+    situacao: (['Em aberto', 'Quitada', 'Atrasada', 'Próximos dias'] as const)[indice % 4],
+    valorTotalCentavos: 100000 + indice,
+    acrescimosCentavos: 500,
+    valorTotalEfetivoCentavos: 100500 + indice,
+    totalRecebidoCentavos: 25000,
+    saldoCentavos: 75500 + indice,
+    quantidadePaga: 1,
+    quantidadeParcelas: 4,
+    proximoVencimento: '2027-04-01',
+    revisao: '9007199254740993',
+    referencia,
   };
 }
 
 function parcela(
   id: string,
+  venda: VendaResumoLeitura,
   numero: number,
   vencimento: string,
-  situacao: ProjecaoParcela['situacao'],
-): ProjecaoParcela {
+): ParcelaVisaoGeralLeitura {
   return {
-    id,
-    numero,
-    valorCentavos: 10000,
-    vencimento,
-    situacao,
-    dataPagamento: situacao === 'Paga' ? vencimento : null,
-    formaPagamento: situacao === 'Paga' ? 'Pix' : null,
+    venda,
+    parcela: {
+      id,
+      numero,
+      valorBaseCentavos: 12500,
+      acrescimoCentavos: 300,
+      valorEfetivoCentavos: 12800,
+      valorRecebidoCentavos: 0,
+      saldoCentavos: 12800,
+      vencimento,
+      situacao: 'Próximos dias',
+      dataPagamento: null,
+      formaPagamento: null,
+    },
   };
 }
 
-describe('Visão Geral', () => {
-  const vendas = signal<readonly ProjecaoVenda[]>([]);
-  const resumo = signal(resumoVazio);
+function painelLiteral(): VisaoGeralLeitura {
+  return {
+    referencia,
+    revisao: '9007199254740993',
+    indicadores: {
+      totalEmAbertoCentavos: 123456,
+      valoresEmAtrasoCentavos: 45678,
+      recebidoNoMesCentavos: 345678,
+      vendasCadastradas: 12,
+    },
+    vendasRecentes: Array.from({ length: 5 }, (_, indice) =>
+      resumo(`unidade/externa/recente-${indice}`, `Venda recente ${indice + 1}`, indice),
+    ),
+    parcelasProximas: Array.from({ length: 5 }, (_, indice) => {
+      const venda = resumo(`unidade/externa/proxima-${indice}`, `Próxima ${indice + 1}`, indice);
+      return parcela(`parcela-proxima-${indice}`, venda, indice + 1, '2027-04-01');
+    }),
+    parcelasAtrasadas: Array.from({ length: 5 }, (_, indice) => {
+      const venda = resumo(`unidade/externa/atrasada-${indice}`, `Atrasada ${indice + 1}`, indice);
+      return {
+        ...parcela(`parcela-atrasada-${indice}`, venda, indice + 1, '2027-03-30'),
+        parcela: {
+          ...parcela(`parcela-atrasada-${indice}`, venda, indice + 1, '2027-03-30').parcela,
+          situacao: 'Atrasado',
+        },
+      };
+    }),
+  };
+}
+
+function criarFonte(consultarVisaoGeral: FonteVendas['consultarVisaoGeral']): FonteVendas {
+  return {
+    referencia,
+    consultarColecao: vi.fn(),
+    consultarVenda: vi.fn(),
+    consultarVisaoGeral: vi.fn(consultarVisaoGeral),
+    consultarRelatorioMensal: vi.fn(),
+    cadastrarVenda: vi.fn(),
+    editarCliente: vi.fn(),
+    alterarStatus: vi.fn(),
+    registrarPagamento: vi.fn(),
+    corrigirPagamento: vi.fn(),
+  } as unknown as FonteVendas;
+}
+
+function texto(elemento: Element): string {
+  return (elemento.textContent ?? '').replaceAll('\u00a0', ' ');
+}
+
+describe('Visão Geral integrada à fonte', () => {
+  let fonte: FonteVendas;
 
   beforeEach(() => {
-    vendas.set([]);
-    resumo.set(resumoVazio);
+    fonte = criarFonte(() => of(painelLiteral()));
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
+        { provide: FONTE_VENDAS, useFactory: () => fonte },
         {
           provide: ServicoDemonstracao,
-          useValue: { referencia, vendas, resumo },
+          useFactory: vi.fn(() => {
+            throw new Error('A Visão Geral não deve injetar o serviço demonstrativo.');
+          }),
         },
       ],
     });
   });
 
-  it('exibe referência, indicadores zerados e vazios próprios por resumo', async () => {
+  it('renderiza os quatro indicadores e os limites/links dos três resumos da resposta literal', async () => {
+    const harness = await RouterTestingHarness.create('/visao-geral');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    const conteudo = texto(pagina);
+
+    expect(fonte.consultarVisaoGeral).toHaveBeenCalledTimes(1);
+    expect(fonte.consultarColecao).not.toHaveBeenCalled();
+    expect(fonte.consultarVenda).not.toHaveBeenCalled();
+    expect(conteudo).toContain('Referência da sessão: 31/03/2027');
+    expect(conteudo).toContain('01/03/2027 a 31/03/2027');
+    expect(
+      pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"] article'),
+    ).toHaveLength(4);
+    expect(conteudo).toContain('R$ 1.234,56');
+    expect(conteudo).toContain('R$ 456,78');
+    expect(conteudo).toContain('R$ 3.456,78');
+    expect(conteudo).toContain('12');
+
+    const secoes = [
+      { seletor: '#vendas-recentes', prefixo: 'unidade/externa/recente-', total: 5 },
+      { seletor: '#parcelas-proximas', prefixo: 'unidade/externa/proxima-', total: 5 },
+      { seletor: '#parcelas-atrasadas', prefixo: 'unidade/externa/atrasada-', total: 5 },
+    ];
+    for (const secao of secoes) {
+      const elemento = pagina.querySelector<HTMLElement>(secao.seletor)!.parentElement!;
+      const links = [...elemento.querySelectorAll<HTMLAnchorElement>('a')];
+      expect(links).toHaveLength(secao.total);
+      for (const [indice, link] of links.entries()) {
+        const esperado = TestBed.inject(Router).serializeUrl(
+          TestBed.inject(Router).createUrlTree(['/vendas', `${secao.prefixo}${indice}`]),
+        );
+        expect(link.getAttribute('href')).toBe(esperado);
+      }
+    }
+    expect(conteudo).toContain('R$ 125,00');
+  });
+
+  it('anuncia carregamento sem apresentar indicadores ou listas vazias antes da resposta', async () => {
+    const resposta = new Subject<VisaoGeralLeitura>();
+    fonte = criarFonte(() => resposta);
     const harness = await RouterTestingHarness.create('/visao-geral');
     const pagina = harness.routeNativeElement!;
 
-    const conteudo = texto(pagina);
-    expect(conteudo).toContain('Referência da demonstração: 31/03/2027');
-    expect(conteudo).toContain('01/03/2027 a 31/03/2027');
-    expect(conteudo).toContain('R$ 0,00');
-    expect(conteudo).toContain('Nenhuma venda cadastrada nesta sessão.');
-    expect(conteudo).toContain('Nenhuma parcela pendente vence de hoje a +7 dias.');
-    expect(conteudo).toContain('Nenhuma parcela pendente está atrasada.');
+    expect(pagina.querySelector('[role="status"]')?.textContent).toContain(
+      'Carregando Visão Geral',
+    );
+    expect(pagina.querySelector('[aria-label="Indicadores financeiros globais"]')).toBeNull();
+    expect(pagina.textContent).not.toContain('Nenhuma venda cadastrada nesta sessão.');
+    expect(fonte.consultarVisaoGeral).toHaveBeenCalledTimes(1);
+
+    resposta.next(painelLiteral());
+    await harness.fixture.whenStable();
+    expect(
+      pagina.querySelector('[aria-label="Indicadores financeiros globais"] article'),
+    ).not.toBeNull();
+  });
+
+  it('mostra vazio independente por resumo sem ocultar os demais blocos', async () => {
+    const painel = painelLiteral();
+    const proxima = painel.parcelasProximas[0];
+    fonte = criarFonte(() =>
+      of({
+        ...painel,
+        vendasRecentes: [],
+        parcelasProximas: [proxima],
+        parcelasAtrasadas: [],
+      }),
+    );
+    const harness = await RouterTestingHarness.create('/visao-geral');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+
+    const recentes = pagina.querySelector<HTMLElement>('#vendas-recentes')!.parentElement!;
+    const proximas = pagina.querySelector<HTMLElement>('#parcelas-proximas')!.parentElement!;
+    const atrasadas = pagina.querySelector<HTMLElement>('#parcelas-atrasadas')!.parentElement!;
+    expect(texto(recentes)).toContain('Nenhuma venda cadastrada nesta sessão.');
+    expect(recentes.querySelectorAll('a')).toHaveLength(0);
+    expect(texto(proximas)).toContain('Próxima 1');
+    expect(proximas.querySelectorAll('a')).toHaveLength(1);
+    expect(texto(atrasadas)).toContain('Nenhuma parcela pendente está atrasada.');
+    expect(atrasadas.querySelectorAll('a')).toHaveLength(0);
+  });
+
+  it('separa falha de vazio e só consulta novamente por ação explícita', async () => {
+    let tentativas = 0;
+    fonte = criarFonte(() =>
+      tentativas++ === 0 ? throwError(() => new Error('API indisponível')) : of(painelLiteral()),
+    );
+    const harness = await RouterTestingHarness.create('/visao-geral');
+    const pagina = harness.routeNativeElement!;
+
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain('Verifique a conexão');
+    expect(pagina.textContent).not.toContain('Nenhuma venda cadastrada nesta sessão.');
+    expect(pagina.querySelector('[aria-label="Indicadores financeiros globais"]')).toBeNull();
+    expect(fonte.consultarVisaoGeral).toHaveBeenCalledTimes(1);
+    expect(fonte.consultarColecao).not.toHaveBeenCalled();
+    expect(fonte.consultarVenda).not.toHaveBeenCalled();
+
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+    expect(fonte.consultarVisaoGeral).toHaveBeenCalledTimes(2);
+    expect(pagina.querySelector('[role="alert"]')).toBeNull();
     expect(
       pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"] article'),
     ).toHaveLength(4);
   });
 
-  it('atualiza indicadores e resumos reativamente e liga itens à venda pelo ID completo', async () => {
+  it('descarta leitura pendente quando a geração é invalidada e mantém a referência da sessão', async () => {
+    const respostas: Subject<VisaoGeralLeitura>[] = [];
+    fonte = criarFonte(() => {
+      const resposta = new Subject<VisaoGeralLeitura>();
+      respostas.push(resposta);
+      return resposta;
+    });
     const harness = await RouterTestingHarness.create('/visao-geral');
-    const id = 'venda/opaca/42';
-    const item = venda(id, 'Cliente atualizado', '2027-03-01', [
-      parcela('p-proxima', 1, '2027-04-01', 'Próximos dias'),
-      parcela('p-atrasada', 2, '2027-03-30', 'Atrasado'),
-    ]);
-    vendas.set([item]);
-    resumo.set({
-      totalEmAbertoCentavos: 10000,
-      valoresEmAtrasoCentavos: 10000,
-      recebidoNoMesCentavos: 5000,
-      vendasCadastradas: 1,
+    TestBed.inject(ControleConsultas).invalidarTodas();
+    await harness.fixture.whenStable();
+
+    expect(fonte.referencia).toBe(referencia);
+    expect(fonte.consultarVisaoGeral).toHaveBeenCalledTimes(2);
+    respostas[0].next({
+      ...painelLiteral(),
+      indicadores: { ...painelLiteral().indicadores, recebidoNoMesCentavos: 1 },
     });
-    harness.detectChanges();
-
-    const pagina = harness.routeNativeElement!;
-    expect(texto(pagina)).toContain('Cliente atualizado');
-    expect(texto(pagina)).toContain('R$ 100,00');
-    expect(texto(pagina)).toContain('R$ 50,00');
-    const links = [...pagina.querySelectorAll<HTMLAnchorElement>('a')];
-    expect(links).toHaveLength(3);
-    const esperado = TestBed.inject(Router).serializeUrl(
-      TestBed.inject(Router).createUrlTree(['/vendas', id]),
-    );
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([esperado, esperado, esperado]);
-
-    // Uma edição só de identificação muda rótulos sem mudar os indicadores financeiros.
-    const resumoAntesEdicao = resumo();
-    vendas.set([venda(id, 'Identificação corrigida', item.dataVenda, item.parcelas)]);
-    harness.detectChanges();
-    expect(texto(pagina)).toContain('Identificação corrigida');
-    expect(resumo()).toBe(resumoAntesEdicao);
-
-    // Uma publicação aceita de recebimento atualiza ambas as projeções da mesma sessão.
-    vendas.set([
-      venda(id, 'Identificação corrigida', item.dataVenda, [
-        parcela('p-proxima', 1, '2027-04-01', 'Paga'),
-        parcela('p-atrasada', 2, '2027-03-30', 'Atrasado'),
-      ]),
-    ]);
-    resumo.set({
-      totalEmAbertoCentavos: 10000,
-      valoresEmAtrasoCentavos: 10000,
-      recebidoNoMesCentavos: 10000,
-      vendasCadastradas: 1,
-    });
-    harness.detectChanges();
-    expect(texto(pagina)).not.toContain('Parcela 1 · 01/04/2027');
-    expect(texto(pagina)).toContain('R$ 100,00');
+    harness.fixture.detectChanges();
+    expect(texto(harness.routeNativeElement!)).not.toContain('R$ 0,01');
+    respostas[1].next(painelLiteral());
+    await harness.fixture.whenStable();
+    expect(texto(harness.routeNativeElement!)).toContain('R$ 3.456,78');
+    expect(fonte.referencia).toBe(referencia);
   });
 });

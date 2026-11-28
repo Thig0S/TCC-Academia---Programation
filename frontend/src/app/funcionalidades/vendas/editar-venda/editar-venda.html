@@ -1,53 +1,119 @@
-@if (consulta(); as resultado) {
-  @if (resultado.tipo === 'sucesso') {
-    <app-cabecalho titulo="Editar dados do cliente" />
-    <p class="mb-3 rounded-lg border border-border bg-surface-muted px-3 py-2 text-text-muted">
-      Somente nome, CPF, telefone e descrição desta venda podem ser alterados. Use somente dados
-      sintéticos.
-    </p>
-    <nav aria-label="Retornos da edição" class="mb-3 flex flex-wrap gap-3">
-      <a routerLink="/vendas">Voltar para Vendas</a>
-      <a [routerLink]="['/vendas', id()]">Voltar ao detalhe</a>
-    </nav>
-    <form
-      class="rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
-      novalidate
-      (submit)="confirmar($event)"
+@let consulta = estadoConsulta();
+@if (consulta.tipo === 'inicial' || consulta.tipo === 'carregando') {
+  <app-cabecalho titulo="Carregando venda para edição" [compacto]="true" />
+  <p class="mb-3 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+    Consultando os dados e a revisão da venda…
+  </p>
+} @else if (consulta.tipo === 'erro') {
+  <app-cabecalho titulo="Não foi possível carregar a venda" [compacto]="true" />
+  <p
+    class="mb-3 rounded-xl border border-control-border bg-surface-muted p-3 text-text-muted"
+    role="alert"
+  >
+    O detalhe não foi carregado. Nenhuma edição foi enviada.
+  </p>
+  <button
+    type="button"
+    class="mb-3 rounded-lg border border-control-border bg-action px-3 py-2 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+    (click)="recarregarDetalhe()"
+  >
+    Recarregar detalhe
+  </button>
+  <a [routerLink]="['/vendas', id()]">Voltar ao detalhe</a>
+} @else if (consulta.tipo === 'inexistente') {
+  <app-cabecalho titulo="Venda não encontrada" />
+  <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
+    Não existe uma venda com este identificador para editar.
+  </p>
+  <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
+    <a routerLink="/vendas">Voltar para Vendas</a>
+    <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
+  </nav>
+} @else if (consulta.tipo === 'pronto' && consulta.valor.tipo === 'sucesso') {
+  <app-cabecalho titulo="Editar dados do cliente" />
+  <p class="mb-3 rounded-lg border border-border bg-surface-muted px-3 py-2 text-text-muted">
+    Somente nome, CPF, telefone e descrição desta venda podem ser alterados. Use somente dados
+    sintéticos.
+  </p>
+  @if (modo === 'local' && consulta.valor.valor.resumo.revisao === null) {
+    <p
+      class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm"
+      role="alert"
     >
-      <app-identificacao-cliente [campos]="campos" />
-      @if (mensagem()) {
-        <p
-          class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
-          role="alert"
-        >
-          {{ mensagem() }}
-        </p>
-      }
-      <div class="mb-0 flex flex-wrap gap-3 border-t border-border pt-3">
-        <button
-          type="submit"
-          class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          [disabled]="campos().submitting() || concluido()"
-        >
-          Confirmar edição demonstrativa
-        </button>
+      A consulta não forneceu uma revisão válida. Nenhuma edição foi enviada.
+      <button
+        type="button"
+        class="ml-2 rounded-lg border border-control-border bg-surface px-3 py-1.5 font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="recarregarDetalhe()"
+      >
+        Recarregar detalhe
+      </button>
+    </p>
+  }
+  <nav aria-label="Retornos da edição" class="mb-3 flex flex-wrap gap-3">
+    <a routerLink="/vendas">Voltar para Vendas</a>
+    <a [routerLink]="['/vendas', id()]">Voltar ao detalhe</a>
+  </nav>
+  <form
+    class="rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm"
+    novalidate
+    (submit)="confirmar($event)"
+  >
+    <app-identificacao-cliente [campos]="campos" />
+    @if (mensagem()) {
+      <p
+        class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+        role="alert"
+      >
+        {{ mensagem() }}
+      </p>
+    }
+    @if (conflitoRevisao()) {
+      <div
+        class="mb-3 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm"
+        role="group"
+        aria-label="Atualizar revisão da edição"
+      >
         <button
           type="button"
-          class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
-          (click)="cancelar()"
+          class="rounded-lg border border-control-border bg-surface px-3 py-2 font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:opacity-60"
+          (click)="renovarRevisao()"
         >
-          Cancelar
+          Recarregar detalhe antes de confirmar novamente
         </button>
       </div>
-    </form>
-  } @else {
-    <app-cabecalho titulo="Venda não encontrada" />
-    <p class="mb-3 rounded-xl border border-border bg-surface-muted p-3 text-text-muted">
-      Não existe uma venda com este identificador para editar.
-    </p>
-    <nav aria-label="Retornos de Vendas" class="flex flex-wrap gap-3">
-      <a routerLink="/vendas">Voltar para Vendas</a>
-      <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
-    </nav>
-  }
+    }
+    <div class="mb-0 flex flex-wrap gap-3 border-t border-border pt-3">
+      <button
+        type="submit"
+        class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="campos().submitting() || enviando() || concluido() || !podeConfirmar()"
+      >
+        {{ modo === 'local' ? 'Confirmar edição' : 'Confirmar edição demonstrativa' }}
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="cancelar()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+} @else if (consulta.tipo === 'pronto') {
+  <app-cabecalho titulo="Não foi possível preparar a edição" [compacto]="true" />
+  <p
+    class="mb-3 rounded-xl border border-control-border bg-surface-muted p-3 text-text-muted"
+    role="alert"
+  >
+    {{ consulta.valor.mensagem }} Nenhuma edição foi enviada.
+  </p>
+  <button
+    type="button"
+    class="mb-3 rounded-lg border border-control-border bg-action px-3 py-2 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+    (click)="recarregarDetalhe()"
+  >
+    Recarregar detalhe
+  </button>
+  <a [routerLink]="['/vendas', id()]">Voltar ao detalhe</a>
 }

@@ -1,5 +1,10 @@
 import { compararDatasCivis } from './data-civil';
-import { ProjecaoVenda } from './venda.calculos';
+import { VendaResumoLeitura } from '../../nucleo/dados/modelos-leitura';
+
+type VendaOrdenavel = Pick<
+  VendaResumoLeitura,
+  'id' | 'cliente' | 'dataVenda' | 'proximoVencimento'
+>;
 
 export const CRITERIOS_ORDENACAO_VENDAS = [
   { valor: 'original', rotulo: 'Ordem atual' },
@@ -17,10 +22,10 @@ function compararId(a: string, b: string): number {
 }
 
 /** Ordena uma cópia da consulta; ausência de critério preserva a ordem da coleção de origem. */
-export function ordenarVendas(
-  vendas: readonly ProjecaoVenda[],
+export function ordenarVendas<T extends VendaOrdenavel>(
+  vendas: readonly T[],
   criterio: CriterioOrdenacaoVenda = 'original',
-): readonly ProjecaoVenda[] {
+): readonly T[] {
   return [...vendas].sort((a, b) => {
     if (criterio === 'cliente') {
       return comparadorCliente.compare(a.cliente.nome, b.cliente.nome) || compararId(a.id, b.id);

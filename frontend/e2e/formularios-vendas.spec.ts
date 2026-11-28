@@ -279,7 +279,7 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
     const referenciaTexto = await page
       .getByRole('main')
       .locator('p')
-      .filter({ hasText: 'Referência da demonstração:' })
+      .filter({ hasText: 'Referência:' })
       .innerText();
     const [, dia, mes, ano] = referenciaTexto.match(/(\d{2})\/(\d{2})\/(\d{4})/)!;
     const referencia = `${ano}-${mes}-${dia}`;
@@ -861,7 +861,9 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
       .filter({ hasText: /^Parcelas pagas$/ })
       .locator('+ dd'),
   ).toContainText('1 de 4');
-  await expect(page.locator('tbody tr')).toHaveCount(4);
+  await expect(
+    page.getByRole('region', { name: 'Parcelas da venda' }).locator('tbody tr'),
+  ).toHaveCount(4);
   await page.getByRole('link', { name: 'Voltar para Vendas', exact: true }).click();
   await page
     .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })
@@ -997,7 +999,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
     const referencia = await page
       .getByRole('main')
       .locator('p')
-      .filter({ hasText: 'Referência da demonstração:' })
+      .filter({ hasText: 'Referência da sessão:' })
       .innerText();
     await page
       .getByRole('navigation', { name: 'Navegação principal' })

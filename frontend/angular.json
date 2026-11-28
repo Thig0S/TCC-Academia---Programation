@@ -52,6 +52,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/configuracoes/provedores-fonte-vendas.ts",
+                  "with": "src/configuracoes/provedores-fonte-vendas.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -81,6 +92,12 @@
             },
             "development": {
               "buildTarget": "vendas-em-aberto:build:development"
+            },
+            "local": {
+              "buildTarget": "vendas-em-aberto:build:local",
+              "host": "127.0.0.1",
+              "port": 4200,
+              "proxyConfig": "proxy-local.cjs"
             }
           },
           "defaultConfiguration": "development"

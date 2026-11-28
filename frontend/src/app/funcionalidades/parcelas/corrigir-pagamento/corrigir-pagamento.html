@@ -7,25 +7,41 @@
     A correção substitui este recebimento mantendo sua identidade e o vínculo com a parcela.
     Entradas e recebimentos históricos em lote não podem ser editados.
   </p>
+  @if (enviando()) {
+    <p class="mb-3 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+      A correção foi enviada. Fechar este diálogo não cancela a operação.
+    </p>
+  }
+  @let resumoRecebimento = recebimentoAtual();
   <dl
     class="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg border border-border bg-surface-muted p-3"
   >
     <dt>Cliente</dt>
-    <dd>{{ venda().cliente.nome }}</dd>
+    <dd>{{ clienteNome() }}</dd>
     <dt>Parcela</dt>
-    <dd>{{ parcela().numero }} de {{ venda().parcelas.length }}</dd>
+    <dd>{{ numeroParcela() }} de {{ quantidadeParcelas() }}</dd>
     <dt>Valor-base</dt>
-    <dd>{{ formatarDinheiro(parcela().valorCentavos) }}</dd>
+    <dd>{{ formatarDinheiro(valorBase()) }}</dd>
     <dt>Valor recebido atual</dt>
-    <dd>{{ formatarDinheiro(pagamento().valorCentavos) }}</dd>
+    <dd>
+      {{ resumoRecebimento ? formatarDinheiro(resumoRecebimento.valorCentavos) : 'Não disponível' }}
+    </dd>
     <dt>Acréscimo atual</dt>
-    <dd>{{ formatarDinheiro(pagamento().acrescimoCentavos) }}</dd>
+    <dd>
+      {{
+        resumoRecebimento ? formatarDinheiro(resumoRecebimento.acrescimoCentavos) : 'Não disponível'
+      }}
+    </dd>
     <dt>Data atual</dt>
-    <dd>{{ formatarDataCivil(pagamento().data) }}</dd>
+    <dd>
+      {{ resumoRecebimento ? formatarDataCivil(resumoRecebimento.data) : 'Não disponível' }}
+    </dd>
     <dt>Forma atual</dt>
-    <dd>{{ pagamento().forma }}</dd>
+    <dd>{{ resumoRecebimento?.forma ?? 'Não disponível' }}</dd>
     <dt>Observação atual</dt>
-    <dd>{{ pagamento().observacao || 'Sem observação' }}</dd>
+    <dd>
+      {{ resumoRecebimento ? resumoRecebimento.observacao || 'Sem observação' : 'Não disponível' }}
+    </dd>
   </dl>
   <form novalidate (submit)="confirmar($event)">
     <div class="mb-3">
@@ -97,13 +113,32 @@
         {{ mensagem() }}
       </p>
     }
+    @if (conflito()) {
+      <button
+        type="button"
+        class="mb-3 rounded-lg border-[1px] border-control-border bg-surface px-3 py-2 text-sm font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="recarregando()"
+        (click)="recarregarAposConflito()"
+      >
+        {{ recarregando() ? 'Recarregando venda…' : 'Recarregar venda e revisar' }}
+      </button>
+    }
     <div class="flex flex-wrap gap-3">
       <button
         type="submit"
+        #botaoConfirmar
         class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        [disabled]="campos().submitting() || concluido()"
+        [disabled]="
+          campos().submitting() ||
+          concluido() ||
+          enviando() ||
+          incerto() ||
+          alvoDesatualizado() ||
+          conflito() ||
+          (modo === 'local' && preparada()?.revisaoEsperada === null)
+        "
       >
-        Confirmar correção
+        {{ enviando() ? 'Enviando correção…' : 'Confirmar correção' }}
       </button>
       <button
         type="button"

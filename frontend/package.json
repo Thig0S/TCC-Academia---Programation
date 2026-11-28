@@ -9,11 +9,14 @@
   },
   "scripts": {
     "start": "ng serve --host 127.0.0.1 --port 4200",
+    "start:local": "node -r ./start-local.cjs ./node_modules/@angular/cli/bin/ng.js serve --configuration local",
     "start:paginacao-fixture": "ng run vendas-em-aberto:serve-paginacao-fixture",
     "build": "ng build",
     "test": "ng test",
     "test:e2e": "playwright test",
+    "test:e2e:local": "playwright test --config=playwright.local.config.ts",
     "test:e2e:paginacao-fixture": "playwright test --config=playwright.paginacao-fixture.config.ts",
+    "test:proxy-local:cli": "node --test proxy-local-cli.test.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

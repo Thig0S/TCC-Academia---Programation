@@ -471,7 +471,7 @@ test('hierarquia de Vendas apresenta cabeçalho e critérios com controles desta
     );
     await expect(titulo).toHaveCSS('font-size', '30px');
     await expect(painel).toHaveCSS('font-size', '20px');
-    await expect(page.getByText(/Referência da demonstração:/)).toBeVisible();
+    await expect(page.getByText(/Referência da sessão:/)).toBeVisible();
     await expect(page.getByRole('searchbox', { name: /Buscar por nome/ })).toBeVisible();
     await expect(page.getByLabel('Filtrar por situação')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Limpar pesquisa' })).toBeVisible();

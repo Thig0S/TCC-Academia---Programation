@@ -11,6 +11,7 @@ import { cpfValido, telefoneValido } from '../identificacao.validacoes';
 import { ComandoCadastro, ComandoEdicaoCliente, Venda } from '../venda.modelos';
 import { prepararCadastro } from '../venda.validacoes';
 import { projetarVenda } from '../venda.calculos';
+import { RecebimentoLeitura, VendaDetalheLeitura } from '../../../nucleo/dados/modelos-leitura';
 
 export interface RascunhoCliente {
   nome: string;
@@ -60,7 +61,27 @@ export function copiarCliente(cliente: ComandoCadastro['cliente']): RascunhoClie
     nome: cliente.nome,
     cpf: cliente.cpf,
     telefone: cliente.telefone,
-    descricao: cliente.descricao ?? '',
+    descricao: cliente.descricao?.trim() || '',
+  };
+}
+
+function copiarClienteParaComando(rascunho: RascunhoCliente): ComandoCadastro['cliente'] {
+  return {
+    nome: rascunho.nome,
+    cpf: rascunho.cpf,
+    telefone: rascunho.telefone,
+    descricao: rascunho.descricao,
+  };
+}
+
+function copiarClienteParaCadastro(rascunho: RascunhoCliente): ComandoCadastro['cliente'] {
+  const cliente = copiarClienteParaComando(rascunho);
+  const descricao = cliente.descricao?.trim();
+  return {
+    nome: cliente.nome,
+    cpf: cliente.cpf,
+    telefone: cliente.telefone,
+    ...(descricao ? { descricao } : {}),
   };
 }
 
@@ -94,7 +115,7 @@ export function iniciarRecebimento(referencia: string): RascunhoRecebimento {
 }
 
 export function iniciarEdicaoRecebimento(
-  pagamento: PagamentoIndividualDemonstrativo,
+  pagamento: PagamentoIndividualDemonstrativo | RecebimentoLeitura,
 ): RascunhoRecebimento {
   return {
     data: pagamento.data,
@@ -167,7 +188,7 @@ export function converterCadastro(
   return {
     tipo: 'sucesso',
     comando: {
-      cliente: copiarCliente(rascunho),
+      cliente: copiarClienteParaCadastro(rascunho),
       dataVenda: rascunho.dataVenda,
       valorTotalCentavos: total,
       quantidadeParcelas: quantidade,
@@ -191,7 +212,7 @@ export function converterEdicao(
   const erros = errosCliente(rascunho);
   return Object.keys(erros).length
     ? { tipo: 'invalido', erros, resumo: null }
-    : { tipo: 'sucesso', comando: { vendaId, cliente: copiarCliente(rascunho) } };
+    : { tipo: 'sucesso', comando: { vendaId, cliente: copiarClienteParaComando(rascunho) } };
 }
 
 /** IDs são os capturados pelo formulário, jamais substituídos por novas pendências. */
@@ -225,6 +246,51 @@ export function converterRecebimento(
     tipo: 'sucesso',
     comando: {
       vendaId: venda.id,
+      parcelaId,
+      data: rascunho.data,
+      forma: rascunho.forma,
+      valorCentavos: valorRecebido,
+      observacao: rascunho.observacao,
+    },
+  };
+}
+
+/** Converte baixa local usando somente parcela e revisão observadas no snapshot da API. */
+export function converterRecebimentoLocal(
+  rascunho: RascunhoRecebimento,
+  detalhe: VendaDetalheLeitura,
+  parcelaId: string,
+  referencia: string,
+): Conversao<ComandoPagamento, RascunhoRecebimento> {
+  const erros: ErrosCampos<RascunhoRecebimento> = {};
+  const data = erroData(rascunho.data, detalhe.resumo.dataVenda, referencia);
+  if (data) erros.data = data;
+  if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione a forma do recebimento.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
+
+  const parcela = detalhe.parcelas.find((item) => item.id === parcelaId);
+  const primeiraPendente = detalhe.parcelas.find((item) => item.situacao !== 'Paga');
+  let resumo: string | null = null;
+  if (detalhe.resumo.statusAdministrativo !== 'Ativo') {
+    resumo = 'Esta venda não está ativa para receber pagamentos.';
+  } else if (!parcela) {
+    resumo = 'A parcela selecionada não pertence à venda consultada.';
+  } else if (parcela.situacao === 'Paga' || primeiraPendente?.id !== parcelaId) {
+    resumo = 'Selecione somente a primeira parcela pendente, sem saltar parcelas.';
+  }
+
+  if (valorRecebido !== null && parcela && valorRecebido < parcela.valorBaseCentavos) {
+    erros.valorRecebido = 'O valor recebido deve ser igual ou superior ao valor-base da parcela.';
+  }
+  if (Object.keys(erros).length || resumo || valorRecebido === null || !parcela) {
+    return { tipo: 'invalido', erros, resumo };
+  }
+  return {
+    tipo: 'sucesso',
+    comando: {
+      vendaId: detalhe.resumo.id,
       parcelaId,
       data: rascunho.data,
       forma: rascunho.forma,
@@ -281,6 +347,62 @@ export function converterEdicaoRecebimento(
     comando: {
       vendaId: venda.id,
       recebimentoId: pagamento.id,
+      valorCentavos: valorRecebido,
+      data: rascunho.data,
+      forma: rascunho.forma,
+      observacao: rascunho.observacao,
+    },
+  };
+}
+
+/** Converte correção local a partir do snapshot HTTP, sem reconstruir a venda de domínio. */
+export function converterEdicaoRecebimentoLocal(
+  rascunho: RascunhoRecebimento,
+  detalhe: VendaDetalheLeitura,
+  recebimentoId: string,
+  referencia: string,
+): Conversao<ComandoCorrecaoPagamento, RascunhoRecebimento> {
+  const erros: ErrosCampos<RascunhoRecebimento> = {};
+  const data = erroData(rascunho.data, detalhe.resumo.dataVenda, referencia);
+  if (data) erros.data = data;
+  if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione uma forma aceita.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
+
+  let resumo: string | null = null;
+  const recebimento = detalhe.recebimentos.find((item) => item.id === recebimentoId);
+  let parcelaId: string | null = null;
+  let valorBase: number | null = null;
+  if (detalhe.resumo.statusAdministrativo !== 'Ativo') {
+    resumo = 'Somente recebimentos de vendas ativas podem ser corrigidos.';
+  } else if (!recebimento || recebimento.origem !== 'Individual') {
+    resumo = 'Este recebimento não está disponível para correção nesta venda.';
+  } else if (recebimento.alocacoes.length !== 1) {
+    resumo = 'Somente recebimentos individuais vinculados a uma parcela podem ser corrigidos.';
+  } else {
+    const alocacao = recebimento.alocacoes[0];
+    const parcela = alocacao
+      ? detalhe.parcelas.find((item) => item.id === alocacao.parcelaId)
+      : undefined;
+    if (!alocacao || !parcela) {
+      resumo = 'Não foi possível localizar a parcela deste recebimento.';
+    } else {
+      parcelaId = parcela.id;
+      valorBase = parcela.valorBaseCentavos;
+    }
+  }
+
+  if (valorRecebido !== null && valorBase !== null && valorRecebido < valorBase)
+    erros.valorRecebido = 'O valor corrigido deve ser igual ou superior ao valor-base da parcela.';
+  if (Object.keys(erros).length || resumo || valorRecebido === null || parcelaId === null)
+    return { tipo: 'invalido', erros, resumo };
+
+  return {
+    tipo: 'sucesso',
+    comando: {
+      vendaId: detalhe.resumo.id,
+      recebimentoId,
       valorCentavos: valorRecebido,
       data: rascunho.data,
       forma: rascunho.forma,

@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../../app.routes';
+import { appConfig } from '../../../app.config';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
 
@@ -11,7 +10,7 @@ describe('Pagamento individual pela UI e ciclo de vida do dialog (DOM simulado)'
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        ...(appConfig.providers ?? []),
         { provide: REFERENCIA_DEMONSTRACAO, useValue: '2027-01-31' },
       ],
     });

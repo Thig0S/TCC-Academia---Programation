@@ -59,7 +59,9 @@
         class="w-full rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-text hover:border-brand focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         rows="3"
         [formField]="campos().descricao"
+        aria-describedby="erro-descricao"
       ></textarea>
+      <app-erro-campo id="erro-descricao" [campo]="campos().descricao" />
     </div>
   </div>
 </fieldset>

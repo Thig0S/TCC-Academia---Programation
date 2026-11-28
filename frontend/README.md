@@ -307,6 +307,897 @@ formatação que já existem nesses documentos em `HEAD`; eles não foram reform
 integralmente. As verificações usaram somente dados sintéticos e não constituem
 aceite operacional.
 
+## Apply `fase-006-integracao-angular` — tarefa 1.1 — baseline integrada (27/11/2026)
+
+O PR #41 (`feature/fase-005-contrato-e-api-local`, head
+`4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`) foi integrado à `main` em 27/11/2026,
+merge commit `a8de1173a7df84ac3af860688b46a094b74bd1f2`. A branch desta Change estava
+limpa antes da integração; a `main` foi incorporada aqui pelo merge `9e3a0e9`. Os
+conflitos limitados ao PRD/TDD foram reconciliados mantendo os registros das fases 005 e 006. A especificação integrada `openspec/specs/api-local-vendas/spec.md` e o código
+`backend/src/VendasEmAberto.Api/` foram comparados à referência DEC-041/D3:
+
+| Contrato   | Especificação/código integrados                                                                                                                                     | Resultado da comparação                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Rotas      | Seis GETs de coleções, detalhe, resumo, período, relatório mensal e Visão Geral; cinco comandos POST/PUT de venda, cliente, status, baixa e correção, sob `/api/v1` | Equivalente; nenhum endpoint comercial planejado está ausente                                         |
+| Credencial | `Backend__SegredoLocal`, Base64 canônico de 32 bytes; grupo comercial exige Bearer e health permanece separado                                                      | Equivalente; sem login humano, CORS permissivo ou credencial no contrato de UI                        |
+| Tipos      | Revisão decimal textual canônica até `long.MaxValue`; centavos inteiros seguros; datas civis; enums textuais e IDs opacos                                           | Equivalente; conversor e leitor estrutural correspondem à especificação                               |
+| Operações  | Referência/revisão nos comandos; detalhe confirmado, erros Problem Details e consulta consolidada                                                                   | Equivalente; não existe endpoint de baixa em lote; origem histórica em lote permanece dado de leitura |
+
+Não foi encontrada divergência material entre código, spec e desenho. A API inicializa
+SQLite sintético antes de servir, valida o caminho e segredo no processo backend e usa
+loopback; isso não substitui o gate de proveniência que será implementado no proxy Node.
+Os resultados históricos da fase 005 permanecem no `backend/README.md` (incluindo
+389/389 testes backend); nenhum build ou teste de aplicação foi executado nesta tarefa.
+
+Toolchain conferida sem alterar manifestos/lockfiles:
+
+| Projeto  | Fixado                                                        | Observado                                                                                                   |
+| -------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Frontend | Node `>=24.15.0 <25.0.0`, npm `11.19.0`, Angular/CLI `22.2.6` | Node `24.21.0`, npm `11.19.0`, `npm exec -- ng version` em `frontend/` confirmou Angular/CLI local `22.2.6` |
+| Backend  | SDK .NET `10.0.404`, `latestPatch`                            | `dotnet --version` em `backend/`: `10.0.404`                                                                |
+
+Observação operacional: `npx ng version` executado na raiz resolveu CLI global `22.2.4`;
+no diretório do projeto, a CLI local fixada em `22.2.6` foi confirmada com `npm exec -- ng`.
+Usar a CLI local explicitamente nos gates seguintes. Não houve instalação global, alteração
+de baseline, build ou teste de aplicação nesta conferência.
+
+### Apply `fase-006-integracao-angular` — tarefa 1.2 — gate Node do proxy (27/11/2026)
+
+`proxy-local-gate.cjs` constrói a configuração e valida os pedidos antes de o Vite
+encaminhá-los; `proxy-local.cjs` é o módulo CommonJS do CLI. Ao concluir a tarefa 1.2,
+ele ainda não estava referenciado pelo `angular.json`; a ligação foi feita na tarefa 1.3.
+O proxy segue desligado em `npm start`, `npm run build` e Pages.
+
+O módulo exige `Backend__SegredoLocal` como Base64 canônico de 32 bytes e aceita
+`Backend__Porta` de 1024–65535 (padrão 5070). A origem upstream é sempre
+`http://127.0.0.1:<porta>`; variáveis de URL/alvo não são lidas. A API deve ser iniciada
+separadamente, usando o mesmo segredo apenas nos ambientes dos processos e um caminho
+absoluto para banco sintético, conforme `backend/README.md`. Não gravar a credencial em
+arquivo, argumento, configuração Angular, bundle ou histórico de comandos. O gate não
+inicia nem prepara a API e não configura banco.
+
+Antes de qualquer encaminhamento, o gate exige Host único `127.0.0.1:4200`,
+`Sec-Fetch-Site: same-origin` único, Origin exato quando presente (obrigatório em POST/
+PUT) e método GET/POST/PUT. Lê `rawHeaders` para rejeitar duplicatas; nega caminhos fora
+de `/api/v1` e descendentes, `Origin: null`, origens externas, metadados ausentes ou
+cross-site/same-site/none, `Upgrade`, `Expect` e conexões WebSocket. A recusa encerra
+403 genérico com `Cache-Control: no-store`, substitui o caminho por sentinel fixo para
+evitar log de query e interrompe o hook antes de `next()`/`proxy.web`. `Expect` é negado
+porque o Vite 8.3.5 do builder não emite `proxyReq` nesse caso. Para pedidos admitidos,
+o hook de saída remove Authorization/cookie recebidos e injeta o Bearer do processo Node.
+
+Teste direcionado, sem servidor ou dependências extras, executado em `frontend/`:
+
+```powershell
+node --test proxy-local.test.cjs
+```
+
+Resultado em 27/11/2026: **7/7 testes aprovados** para segredo/porta, alvo fixo, fronteira
+de rota, proveniência, duplicatas, métodos/upgrade/Expect, recusa sem chamada upstream e
+remoção/injeção de credenciais. Os hooks também foram exercitados pelo CLI real na tarefa
+1.3. Cabeçalhos de
+proveniência defendem o browser contra sites externos, não contra processo local malicioso
+com capacidade de forjar requisições ou ler o ambiente. Usar somente dados sintéticos;
+clientes técnicos autenticam-se diretamente na API e não recebem bypass do proxy.
+
+### Apply `fase-006-integracao-angular` — tarefa 1.3 — perfil local e prova do CLI (27/11/2026)
+
+O `angular.json` oferece a configuração `serve:local` em `127.0.0.1:4200` com
+`proxy-local.cjs`; `npm run start:local` usa `start-local.cjs` para limpar `DEBUG` e
+`PORT` antes de iniciar o CLI local fixado. O teste executou `npm run start:local` com
+`DEBUG=vite:proxy` e `PORT=4300`; o servidor permaneceu em 4200, verificando a
+limpeza do ambiente e o perfil local. Os scripts padrão `start` e `build` não foram
+alterados. Neste estágio, o perfil local ainda usa os providers demonstrativos e é somente
+um smoke do transporte, não um modo persistido. A tarefa 2.1 define a fronteira/adaptador
+e composições testáveis; o cliente HTTP vem em 2.2 e o perfil só selecionará esse provider
+após a integração das telas e da configuração em 3.1–3.5. Pages continua sem proxy.
+
+Executado em Node 24.21.0, Angular CLI/build 22.2.6, Vite 8.3.5 e Chromium headless:
+
+```powershell
+node --test --test-concurrency=1 proxy-local.test.cjs proxy-local-cli.test.cjs
+npm run build
+```
+
+Resultado: **9/9 testes passaram**. No browser real, um GET same-origin admitido manteve
+query e ID reservado intactos; o upstream viu Bearer injetado pelo servidor. Authorization
+e Cookie controlados pelo chamador foram removidos/substituídos. Proveniência cross-site
+recebeu 403/no-store sem chegar ao upstream. Upgrade WebSocket recebeu 404 sem chamada a
+`proxy.ws`. Um upstream de teste que encerrou o socket produziu 502/no-store com somente o
+código `local-api-unavailable`; logs do CLI não continham marcadores da query, body,
+segredo ou credencial recebida. Capturas de assets/respostas/requests do browser também não
+continham segredo.
+
+Um teste adicional iniciou a API .NET 10 real com SQLite sintético temporário e usou um
+Bearer diferente, ainda canônico e de 32 bytes: a API respondeu 401/no-store, sem expor o
+segredo configurado ou o apresentado. Os dois segredos foram gerados em memória e não
+persistidos. `npm run build` padrão passou com bundle inicial de 316,87 kB. Prettier,
+`node --check` dos arquivos CommonJS e `git diff --check` também passaram. Não houve
+alteração de lockfile ou instalação de dependência. A prova cobre a infraestrutura do
+proxy, não a composição/fonte HTTP local nem aceite funcional das telas.
+
+### Apply `fase-006-integracao-angular` — tarefa 2.1 — fronteira e composição de fontes (27/11/2026)
+
+`FonteVendas` define as consultas de coleção, detalhe, Visão Geral e relatório mensal,
+além dos cinco comandos, todos com retornos `Observable` tipados. `modelos-leitura.ts`
+separa as representações de tela das entidades demonstrativas e reserva a revisão textual
+para a fonte persistida; o adaptador demo publica `revisao: null`. `FonteVendasDemonstracao`
+reutiliza `ServicoDemonstracao`, `selecionar*` e `calcularRelatorio`, sem remover fórmulas,
+projeções ou testes existentes. Leituras e comandos são diferidos até a assinatura; o
+coordenador que limita comandos a uma subscription permanece na tarefa 2.3.
+
+O `app.config.ts` usa os providers demonstrativos por padrão. O build configuration
+`local` exercita `fileReplacement` para o provider local, que encaminha `FONTE_VENDAS` a
+`FONTE_VENDAS_LOCAL`; o token permanece sem implementação concreta até a tarefa 2.2 e
+falha sem fallback se consumido sem provider. Testes substituem o token local e comprovam
+que a composição não instancia `ServicoDemonstracao`. **Isso ainda não é um modo local
+operacional:** `serve:local` continua apontando para `build:development` e serve demo mais
+proxy apenas como smoke de transporte. Nenhuma tela consome `FonteVendas` nesta etapa; a
+ativação da fonte HTTP depende das tarefas 2.2 e 3.1–3.5. Nenhum segredo ou cliente HTTP
+foi adicionado ao build padrão.
+
+`REFERENCIA_SESSAO` captura a data civil local uma vez por injector e não grava storage;
+`REFERENCIA_DEMONSTRACAO` delega a esse token, sem mudar a referência fixada na sessão
+existente. Testes cobrem virada à meia-noite e nova abertura com a referência renovada.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/composicao-fonte-vendas.spec.ts --include src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+```
+
+Resultado: **7/7 testes direcionados** e **437/437 testes em 35 arquivos**; build padrão
+aprovado (322,04 kB iniciais) e build da configuração `local` aprovado (1,48 MB sem
+otimização). O segundo build comprova somente o `fileReplacement`, não inicialização local,
+uso de HTTP ou integração das telas. Prettier direcionado aos arquivos TS/JSON e
+`git diff --check` passaram. Sem E2E novo, alteração de dependências, API, armazenamento,
+`start:local` ou ativação da fonte HTTP.
+
+### Apply `fase-006-integracao-angular` — tarefa 2.2 — cliente HTTP wire v1 (27/11/2026)
+
+`FonteVendasHttp` usa somente `/api/v1` relativo à origem same-origin do proxy. GET de
+coleção, detalhe, Visão Geral e relatório mensal transportam a referência capturada na
+sessão; coleção preserva `revisao` no envelope inclusive sem vendas. Os cinco comandos
+recebem `{ comando, revisaoEsperada }`, validam revisão decimal textual canônica até
+`9223372036854775807` antes de enviar e nunca fazem refresh. O cliente não envia token,
+Authorization nem credencial de proxy; o gate Node continua responsável pelo Bearer no
+upstream.
+
+`contratos-api.ts` recebe sucesso como `unknown` e valida objeto/campos obrigatórios,
+listas/null, enums exatos, centavos inteiros seguros, datas civis sem `Date`/UTC e revisões
+sem conversão numérica. Os mappers mantêm campos wire e modelos de apresentação separados,
+conferem referência/revisão dos resumos aninhados e não recalculam saldos/totais. IDs de
+consulta usam codec RFC 3986 estrito no `HttpParams`, preservados sem aparar e codificados
+uma única vez. Enum wire `Prejuizo`, `ProximosDias`, `CartaoDebito` e `HistoricoLote` é
+traduzido explicitamente para os modelos de leitura; `descricao`, datas/pagamento nulos e
+arrays vazios são preservados. Erros Problem Details estruturados viram `Resultado` tipado;
+falhas de transporte ou resposta incompatível permanecem no canal de erro para a camada de
+coordenação classificá-las sem publicar sucesso.
+
+O build configuration `local` agora registra `provideHttpClient()` e liga
+`FONTE_VENDAS_LOCAL` ao cliente. O build padrão continua só com provider demo; `serve:local`
+segue apontando para `build:development`, sem ativar HTTP antes da conexão das telas.
+Fixture mensal sintética cobre `HistoricoLote` como recebimento `Lote`; não foi criado
+comando ou endpoint de lote. `ComandoPagamento.valorCentavos` ausente falha antes do envio,
+sem inferir valor financeiro no cliente.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/fonte-vendas-http.spec.ts --include src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts --include src/app/nucleo/dados/composicao-fonte-vendas.spec.ts
+npm run build -- --configuration local
+npm test -- --watch=false
+npm run build
+```
+
+Resultado: **22/22 testes direcionados** e **452/452 testes em 36 arquivos**. Build local
+compilou com provider HTTP (1,58 MB sem otimização); build padrão passou com 322,14 kB
+iniciais. A compilação local não representa ativação em `serve:local` nem aceite de telas.
+Prettier direcionado aos arquivos TS/JSON, `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Sem novas dependências,
+alteração da API, exposição de credencial, seletor runtime ou ativação do proxy na demo.
+
+### Apply `fase-006-integracao-angular` — tarefa 2.3 — gerações e confirmação por aba (27/11/2026)
+
+`EstadoConsultaPorChave` expõe `inicial/carregando/pronto/erro/inexistente` com chave
+(coleção/ID/mês/referência) e geração local. Trocar a chave cancela a leitura anterior;
+invalidação transversal avança apenas uma época numérica, sem cache de dados. Leituras
+iniciadas antes de uma confirmação aceita não podem voltar a publicar resultado. Erro,
+resposta vazia e inexistência ficam separados de lista vazia.
+
+`ControleConfirmacoes` vive no injector root da aba, não na tela/modal. Ao iniciar o envio,
+fixa referência, alvo original, revisão observada e cópia profunda congelada do rascunho;
+abre exatamente uma subscription e rejeita confirmações concorrentes. Não há retry ou
+resubscription em navegação. Sucesso guarda o resultado e invalida consultas; recusa
+reconhecida guarda resultado/alvo/rascunho para correção ou novo aceite. Falha de transporte
+(status 0/timeout), 502/504/5xx, corpo/resultado inválido ou vazio, código não reconhecido
+e `confirmacao-indeterminada` entram no estado `incerto`, sem presumir rollback.
+
+Estados da confirmação: `disponivel → enviando → confirmado → invalidar consultas`;
+`enviando → recusa conhecida`; ou `enviando → incerto → conferência`. A conferência usa
+sempre alvo e referência capturados (coleção no cadastro, detalhe nas outras operações).
+Falha ou leitura sem sucesso mantém o bloqueio. Consulta bem-sucedida ainda exige ação
+humana explícita; reconhecer invalida novamente as leituras, libera a aba e não reenvia a
+escrita. Classificação de recusas usa códigos/status permitidos pela API e resultados
+conhecidos do adaptador demonstrativo; respostas desconhecidas ficam no ramo incerto. A cópia
+em memória não oferece recuperação após recarga, exactly-once, idempotency key, persistência
+em storage ou coordenação entre abas.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/controle-confirmacoes.spec.ts
+npm test -- --watch=false
+npm run build -- --configuration local
+npm run build
+```
+
+Resultado: **24/24 testes direcionados** e **476/476 testes em 37 arquivos**. Build local
+compilou; build padrão passou com 322,14 kB iniciais. Prettier dos quatro arquivos novos,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+Não houve alterações de storage/backend/dependências, integração de telas ou mudança de
+`serve:local`.
+
+### Apply `fase-006-integracao-angular` — tarefa 3.1 — consultas das listas (27/11/2026)
+
+Vendas abertas, quitadas e as duas coleções administrativas (`inativas` e `prejuizos`)
+consultam `FONTE_VENDAS.consultarColecao` e apresentam exclusivamente `VendaResumoLeitura`;
+listar nunca consulta detalhe por item. Os quatro destinos, links por ID opaco, busca,
+filtro de situação nas abertas, ordenação e paginação locais permanecem. Mudança de busca,
+filtro ou ordenação reinicia a página; diminuição da coleção limita a página atual ao novo
+último índice.
+
+Cada tela diferencia primeiro carregamento, carregamento subsequente, erro e coleção vazia.
+Vazio só é mostrado depois de resposta bem-sucedida; erro tem mensagem acessível e retry
+somente por botão explícito. A falha da fonte não aciona demonstração/seed. Para manter a
+demonstração reativa enquanto telas de comando ainda usam diretamente o serviço legado,
+`FonteVendasDemonstracao` observa a coleção do serviço e invalida a geração compartilhada
+quando ela muda; a composição HTTP não instancia essa fonte nem o serviço demo. `serve:local`
+segue apontando para o build de desenvolvimento e não foi ativado.
+
+Verificação de acessibilidade/tema: status e erro usam `role`, `aria-live` e `aria-busy`;
+links/botões/inputs são controles nativos com foco visível e tabela horizontal focável. Os
+testes cobrem foco após limpar pesquisa e controles de paginação; a navegação por abertas,
+quitadas, inativas e prejuízo conserva o tema compartilhado. Nenhum redesenho visual foi
+introduzido.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/funcionalidades/vendas/listas-vendas.spec.ts --include src/app/funcionalidades/vendas/listar-vendas-administrativas/listar-vendas-administrativas.spec.ts
+npm test -- --watch=false
+npm run build -- --configuration local
+npm run build
+```
+
+Resultado: **16/16 testes direcionados em 2 arquivos** e **479/479 testes em 37 arquivos**;
+build local compilou (1,58 MB iniciais) e build padrão passou (323,15 kB iniciais). Specs de
+rotas e fluxos demo foram alinhadas aos providers reais de `appConfig`. Prettier nos arquivos
+TypeScript/HTML tocados, `git diff --check` e `openspec validate fase-006-integracao-angular
+--strict` passaram. Sem alteração de API, dependências, proxy ou configuração de `serve:local`.
+
+### Apply `fase-006-integracao-angular` — tarefa 3.2 — detalhe por ID (28/11/2026)
+
+Detalhes consulta `FONTE_VENDAS.consultarVenda` com o ID completo, referência fixa e estado
+por chave/geração. Somente `inexistencia` com código contratual `venda-inexistente` mostra
+ausência; erro físico, transporte e códigos de inexistência diferentes apresentam falha
+recarregável, sem reaproveitar outro detalhe nem cair na demonstração. Troca rápida de ID e
+invalidação descartam respostas anteriores.
+
+A tela renderiza diretamente os modelos de leitura: resumo, entrada, parcelas e histórico
+expansível com origem, recebimentos, observações e todas as alocações. Não reconstrói
+entidades nem recalcula valores financeiros. No adaptador demonstrativo, ações existentes
+continuam ligadas ao serviço legado; em fonte HTTP, editar/status/baixa/correção não são
+expostos antes das tarefas de escrita correspondentes, e a composição local não instancia
+o serviço ou usa seed demonstrativo. A consulta não prepara nem grava comandos.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/detalhe-venda.spec.ts --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/demonstracao-inicial.spec.ts --grep "abre detalhes por URL opaca" --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/status-administrativo.spec.ts --workers=1
+```
+
+Resultados: testes direcionados **15/15**; suíte **483/483 em 37 arquivos**; E2E de detalhe,
+retorno/foco e regressão de status passaram em **2/2**, **2/2** e **8/8** casos. As execuções
+cobriram 1366×768 e 390×844. O cenário novo percorre a parcela 11 pelo teclado em ambos os
+temas; a suíte de componente também verifica contagens 1/10/11.
+Build padrão passou (323,06 kB iniciais) e build local passou (1,58 MB iniciais). Prettier
+nos arquivos de código/testes e `git diff --check` são verificados antes do commit. A
+verificação global `npm run format:check`, executada antes desta edição do README, apontou
+somente `README.md`; o arquivo não foi reformatado integralmente para evitar mudanças
+históricas fora do escopo.
+
+### Apply `fase-006-integracao-angular` — tarefa 3.3 — Visão Geral consolidada (28/11/2026)
+
+Visão Geral consulta uma vez `FONTE_VENDAS.consultarVisaoGeral` usando a chave de painel e a
+referência fixa da sessão. A tela apresenta os quatro indicadores e as listas já limitadas
+pela fonte para vendas recentes, parcelas próximas e parcelas atrasadas; links preservam o
+ID opaco completo. O componente não consulta coleções/detalhes para montar o painel nem
+recalcula indicadores ou seleciona registros no modo HTTP. Cada bloco vazio é independente.
+Loading tem anúncio próprio e erro de conexão oferece repetição explícita, sem exibir vazio,
+reaproveitar resposta antiga ou inicializar seed. O adaptador demo continua usando resumo,
+projeções e seleções financeiras existentes.
+
+O teste do adaptador criou recebimentos de entrada durante o mês para vendas Ativa, Inativa
+e em Prejuízo; o indicador mensal aumentou pelos três recebimentos, enquanto referência e
+data de corte permaneceram fixas. Testes do componente usam resposta literal e verificam
+indicadores, três limites/links, vazio independente, carregamento, falha/retry, chamada única,
+ausência de fan-out e descarte após invalidação.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/visao-geral/visao-geral.spec.ts"
+npm test -- --watch=false --include="src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/visao-geral-refinamento.spec.ts --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/refinamento-visual.spec.ts e2e/formularios-vendas.spec.ts --grep "cabeçalhos e mensagens de sucesso|paga parcelas individualmente|reconcilia cadastro, entrada, quitação" --workers=1
+npx playwright test --config=playwright.paginacao-fixture.config.ts e2e/paginacao-fixture.spec.ts --grep "hierarquia de Vendas apresenta cabeçalho" --workers=1
+```
+
+Resultados: testes direcionados **5/5** do componente e **4/4** do adaptador; regressão
+**487/487 em 37 arquivos**; E2E de Visão Geral **2/2**, E2E de referência/fluxos **6/6** e
+E2E de hierarquia das listas **2/2**. Playwright cobriu 1366×768 e 390×844; o teste de
+Visão Geral percorreu links com Tab/Shift+Tab e Enter nos temas escuro/claro. Build padrão
+passou (323,05 kB iniciais) e build local passou (1,58 MB iniciais). Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+`serve:local` continua sem seleção HTTP até as tarefas 3.4 e 3.5.
+
+### Apply `fase-006-integracao-angular` — tarefa 3.4 — Relatórios mensais (28/11/2026)
+
+Relatórios consulta `FONTE_VENDAS.consultarRelatorioMensal` uma vez por mês aplicado, com
+chave que inclui mês e referência fixa da sessão. A seleção só dispara leitura após validação;
+se inválida, mantém mês/dados válidos anteriores. Ao trocar o mês, a tela não apresenta os
+valores anteriores como se fossem atuais: loading e erro ficam explícitos, o erro permite
+repetição manual e nenhuma posição é apresentada até chegar o snapshot selecionado. Os cinco
+`details` permanecem montados durante a troca para conservar expansão e foco.
+
+Os totais dos cinco cartões, linhas e série diária são lidos diretamente do modelo mensal; o
+componente não recalcula universos, recebimentos, vendas, saldos ou prejuízo. O gráfico só usa
+a série recebida para escala/posicionamento geométricos e conserva a tabela equivalente com
+todos os dias do mês. Origem Entrada/Lote/Individual, ID opaco e campos nulos são apresentados
+conforme o contrato. `FonteVendasDemonstracao` permanece responsável por adaptar os cálculos
+existentes para a demo. As cinco seções expansíveis e a exportação indisponível foram mantidas.
+
+Testes do componente usam snapshots literais e cobrem dados e totais independentes, cinco
+cartões/seções, tabela diária completa, mês vazio com posições não vazias, seleção inválida,
+foco/expansão, invalidação, troca com respostas invertidas e falha/retry sem mês antigo. Os
+testes HTTP cobrem origens, histórico de lote, nulabilidade e períodos civis `0001`/`9999` na
+fixture wire mensal.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/relatorios/relatorios.spec.ts"
+npm test -- --watch=false --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.config.ts e2e/relatorios-cobranca.spec.ts --grep "detalhes independentes|Relatórios separa Prejuízo" --workers=1
+npx playwright test --config=playwright.config.ts e2e/demonstracao-inicial.spec.ts --grep "Relatórios mantém tabelas completas|Exportar relatório anuncia" --workers=1
+npx playwright test --config=playwright.config.ts e2e/refinamento-visual.spec.ts e2e/formularios-vendas.spec.ts --grep "alinha valores das quatro tabelas de Relatórios|corrige pagamento individual com foco|reconcilia cadastro, entrada, quitação e edição entre listas, Visão Geral e Relatórios|concilia correção mensal, status, posições atuais e descarte da sessão no Relatório" --workers=1
+```
+
+Resultados: testes direcionados **11/11** do componente e **17/17** do cliente HTTP; suíte
+**489/489 em 37 arquivos**; E2E de cobrança/expansão **6/6**, conteúdo demo/exportação
+**4/4** e alinhamento/reconciliação **8/8**. Playwright cobriu 1366×768 e 390×844 e os dois
+temas. Build padrão passou (323,24 kB iniciais) e local passou (1,58 MB iniciais). Prettier
+direcionado, `git diff --check` e `openspec validate fase-006-integracao-angular --strict`
+passaram. `serve:local` continua sem selecionar HTTP; a integração aguarda a tarefa 3.5.
+
+### Apply `fase-006-integracao-angular` — tarefa 3.5 — App e Configurações (28/11/2026)
+
+`MODO_APLICACAO` é fornecido junto à composição demonstrativa ou local; `App` não injeta mais
+`ServicoDemonstracao` e inicia pela interface `FONTE_VENDAS`, fixando a referência ao abrir sem
+conhecer a implementação concreta. O estado de retorno/foco de formulários foi movido para
+`nucleo/navegacao`, sem depender do namespace demonstrativo. O cabeçalho existente identifica
+“Demonstração independente” ou “Modo local persistido”, sem adicionar banner global.
+
+Configurações mantém quatro explicações e nenhum controle: dados sempre sintéticos; negócios em
+memória no demo ou persistidos pelo backend SQLite local; tema somente em memória; e descarte ou
+recuperação após recarga, incluindo referência civil exibida, fixa durante a abertura e renovada
+quando reabre. O modo local orienta a consultar os dados e concluir conferência explícita antes de
+repetir uma confirmação cuja resposta se perdeu. Ambos os modos avisam que não são operacionais.
+
+Após a conclusão de 3.1–3.5, `serve:local` passou a selecionar `build:local` e o provider HTTP, sem
+alterar o build/start padrão. O E2E local usa segredo sintético aleatório apenas no ambiente do
+processo de teste e intercepta a API com 502: as rotas integradas mostram falha, não dados seed.
+Esse teste não valida o backend real nem os comandos, que pertencem às tarefas 4.1–4.5.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/configuracoes/configuracoes.spec.ts" --include="src/app/nucleo/dados/composicao-fonte-vendas.spec.ts" --include="src/app/app.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.config.ts e2e/demonstracao-inicial.spec.ts --grep "Configurações explica os quatro limites|abre e recarrega cada destino" --workers=1
+npx playwright test --config=playwright.local.config.ts
+npm exec -- prettier --check angular.json playwright.local.config.ts e2e/modo-local.spec.ts `
+  src/app/app.ts src/app/app.html src/app/nucleo/configuracao/modo-aplicacao.ts `
+  src/app/nucleo/navegacao/retorno-formulario.ts src/app/nucleo/dados/composicao-fonte-vendas.spec.ts `
+  src/app/funcionalidades/configuracoes/configuracoes.ts `
+  src/app/funcionalidades/configuracoes/configuracoes.html `
+  src/app/funcionalidades/configuracoes/configuracoes.spec.ts `
+  src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.ts `
+  src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts `
+  src/app/funcionalidades/vendas/editar-venda/editar-venda.ts `
+  src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts `
+  src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.ts `
+  src/configuracoes/provedores-fonte-vendas.ts `
+  src/configuracoes/provedores-fonte-vendas.local.ts
+```
+
+Resultados: testes direcionados **12/12 em 3 arquivos**, suíte **491/491 em 38 arquivos**;
+E2E demonstrativo **4/4** e local **2/2**, nos viewports 1366×768 e 390×844. No modo local, foram
+acessadas diretamente e recarregadas Visão Geral, Vendas abertas/quitadas/inativas/Prejuízo,
+Relatórios e Configurações; a falha 502 não ativou seed, e a recarga restaurou o tema escuro.
+Build padrão passou (323,40 kB iniciais) e local passou (1,53 MB iniciais). Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+
+### Apply `fase-006-integracao-angular` — tarefa 4.1 — cadastro pela fonte (27/11/2026)
+
+Cadastro agora consulta a coleção `abertas` da fonte configurada antes de habilitar a
+confirmação. A revisão textual é fixada do snapshot exibido e enviada uma única vez com o
+comando; falha de consulta e revisão ausente/nula bloqueiam escrita e não ativam dados
+demonstrativos. Após 409, o rascunho permanece e uma ação explícita recarrega a coleção antes
+de nova confirmação. Recusa estruturada preserva entradas e associa erros wire conhecidos
+ao campo correspondente (inclusive `entrada.forma`); campo não reconhecido recebe mensagem
+segura. Resposta incompatível/transportada como exceção preserva o rascunho, não navega nem
+anuncia sucesso e bloqueia replay pelo `ControleConfirmacoes`. Sucesso invalida as consultas
+e só então navega para o ID retornado. Cancelar antes do envio não publica cadastro. A prévia,
+validações locais, centavos e datas civis permanecem no formulário; descrição ausente é
+omitida no comando e no JSON.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.fonte.spec.ts" --include="src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts" --include="src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts" --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts" --include="src/app/nucleo/dados/controle-confirmacoes.spec.ts"
+npm test -- --watch=false
+npm run build
+npx ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "Nova venda|cadastra sem entrada|cadastra com entrada|seleção por teclado|revela erros por campo"
+```
+
+Resultados: direcionados **110/110 em 5 arquivos**; regressão **504/504 em 39 arquivos**;
+build padrão aprovado (**327,02 kB** iniciais) e local aprovado (**1,54 MB** iniciais). E2E
+Chromium **10/10** nos viewports 1366×768 e 390×844, nos dois temas; cobriu cadastro com e
+sem entrada, envio único apesar de Enter/clique repetidos, foco/validação por teclado,
+cancelamento e responsividade sem overflow global. Um seletor E2E foi restringido à região
+“Parcelas da venda”, pois o histórico também contém a linha da entrada e não deve ser contado
+como parcela. Prettier direcionado, `git diff --check` e validação OpenSpec estrita passaram.
+Prettier passou para os arquivos de código e E2E. `prettier --check README.md` ainda aponta
+somente a formatação de tabelas no bloco histórico de baseline 1.1; a reformatação dessas
+linhas foi revertida para manter o diff documental no escopo. Os testes usam fonte HTTP
+simulada em componente e dados sintéticos na demonstração; não constituem execução de
+cadastro contra SQLite/API real nem aceite operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 4.2 — edição pela fonte (27/11/2026)
+
+Detalhes de venda no modo local agora oferecem o acesso à edição. A tela consulta o ID
+completo pela `FONTE_VENDAS` antes de preencher nome, CPF, telefone e descrição; resposta
+de outro ID não inicializa o rascunho. Trocar ID invalida a leitura anterior. O comando
+contém somente o ID e os quatro campos do cliente, com a revisão do detalhe que originou
+o rascunho. CPF repetido não é rejeitado localmente; o servidor continua validando os
+campos e reconhecendo no-op. Status, parcelas, recebimentos e valores financeiros não
+são editáveis pelo formulário.
+
+Após conflito, a interface conserva os quatro valores e exige recarga explícita do detalhe
+antes de aceitar nova confirmação; recarregar não substitui o rascunho. Recusas estruturadas
+são associadas e focadas no campo conhecido, e campos desconhecidos usam resumo seguro.
+Resposta incompatível ou sucesso que retorna ID diferente é tratada como resultado incerto:
+sem sucesso visual, navegação ou replay. A confirmação consome uma fonte uma única vez e
+invalida consultas apenas com a resposta confirmada. Cancelar antes de enviar retorna ao
+detalhe e não publica alterações.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/editar-venda/editar-venda.fonte.spec.ts" --include="src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts" --include="src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts" --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts" --include="src/app/nucleo/dados/controle-confirmacoes.spec.ts"
+npm test -- --watch=false
+npm run build
+npx ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "edita nome e descrição|edição e recebimento preservam foco"
+```
+
+Resultados: direcionados **127/127 em 6 arquivos**, regressão **515/515 em 40 arquivos**;
+build padrão aprovado (**326,79 kB** iniciais) e local aprovado (**1,54 MB** iniciais). E2E
+Chromium **22/22**, nos viewports de projeto 1366×768 e 390×844; os cenários percorrem
+ambos os temas e larguras 390, 767, 768, 1024 e 1366 px, checando foco de validação, texto
+extenso, navegação e finanças sem alteração. Prettier direcionado para código/E2E passou;
+ver observação da tarefa 4.1 sobre formatação histórica do README. `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Cobertura local usa fonte
+HTTP simulada; não representa teste real contra SQLite/API nem aceite operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 4.5 — correção pela fonte local (28/11/2026)
+
+No modo local, a ação de correção aparece somente para recebimento `Individual` ligado a
+uma única parcela de venda ativa; entrada e histórico em lote não recebem ação. O modal
+captura do detalhe consultado o ID do recebimento, parcela, referência e revisão original.
+A conversão usa os modelos de leitura da API, sem reconstruir a venda de domínio, e exige
+valor corrigido não inferior ao valor-base, data civil válida, forma conhecida e nota de
+até 20 caracteres. A confirmação passa uma vez pelo `ControleConfirmacoes` e pelo comando
+HTTP existente, sem troca do ID/alocação nem escrita otimista.
+
+A resposta é conferida antes de ser aceita: venda e recebimento devem manter suas
+identidades, quantidade de recebimentos e demais movimentos devem permanecer iguais, e a
+alocação deve continuar na parcela original com o valor corrigido. Após sucesso, consultas
+são invalidadas para refletir inclusive a mudança de mês, sem repetir a escrita. Recusa
+preserva rascunho; conflito só permite nova confirmação após consulta explícita da mesma
+venda/recebimento e revisão nova, e bloqueia a ação se o alvo não continuar elegível. A
+consulta de conflito atualiza os dados atuais mostrados no modal, sem sobrescrever os
+valores editados. Cancelar antes do envio não grava; resultado incerto mantém contexto no
+coordenador e orienta conferência sem retry. Foco retorna ao acionador após cancelamento
+e à ação correspondente após confirmação.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts" --include="src/app/funcionalidades/relatorios/relatorios.spec.ts"
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "corrige pagamento individual com foco, validação e relatório nos dois temas" --workers=1
+npm exec -- prettier --check src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.ts src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.html src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.ts src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.html src/app/funcionalidades/vendas/formulario-venda/rascunhos.ts
+```
+
+Resultados: testes direcionados **41/41 em 4 arquivos**; suíte completa **538/538 em 43
+arquivos**; build padrão aprovado (326,86 kB iniciais) e build local aprovado (1,54 MB
+iniciais). E2E de regressão demonstrativa passou **2/2** projetos Chromium, 1366×768 e
+390×844, exercitando os dois temas. `git diff --check` e `openspec validate
+fase-006-integracao-angular --strict` passaram. A correção local de componente usa fonte
+simulada; o E2E executado cobre a demonstração existente, não API/SQLite real. A
+integração browser com backend real permanece para INT-06.2; estes resultados não são
+aceite operacional.
+`prettier --check README.md`, executado adicionalmente, ainda aponta formatação histórica
+do README já registrada antes desta tarefa; não foi reformatado o documento inteiro.
+
+### Apply `fase-006-integracao-angular` — tarefa 5.1 — recuperação e conferência transversal (28/11/2026)
+
+`AvisoConfirmacaoIncerta` foi adicionado ao shell da aplicação, fora do `router-outlet`;
+assim, o aviso e o contexto imutável mantido pelo coordenador continuam disponíveis ao
+navegar entre cadastro, detalhe, coleções, Relatórios e Configurações. O cadastro consulta
+a coleção aberta original. Edição, mudança de status, baixa e correção consultam o detalhe
+do ID original e referência capturados no envio; a interface não procura nem associa uma
+venda pela semelhança do cliente.
+
+O alerta distingue consulta em andamento, falha e leitura concluída. Apenas uma leitura
+válida do alvo/referência habilita **Reconheço que conferi os dados**. Falha mantém o bloqueio
+e permite repetir somente a consulta. Depois do reconhecimento, o coordenador invalida as
+consultas e libera futuras confirmações sem reenviar a operação incerta. A leitura apresenta
+um resumo e um link para abrir a coleção/detalhe; ela não declara sucesso, rollback ou
+deduplicação. O rascunho e o alvo ficam somente em memória nesta aba. Reabrir a aplicação
+não restaura nem envia o comando; permanece a orientação para conferir antes de repetir.
+
+Nos fluxos de baixa e status, o controle de fechamento do modal identifica explicitamente
+**Fechar para conferir** após incerteza. Ao restaurar o foco após o fechamento, o detalhe
+prioriza o título focável do aviso global, evitando direcioná-lo à ação bloqueada. Correção
+já fecha o modal ao entrar em incerteza; cadastro e edição permanecem nas respectivas telas,
+com o aviso compartilhado fora do conteúdo roteado.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/compartilhado/componentes/aviso-confirmacao-incerta/aviso-confirmacao-incerta.spec.ts --include src/app/app.spec.ts
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+npm exec -- playwright test --config=playwright.config.ts e2e/formularios-vendas.spec.ts e2e/status-administrativo.spec.ts --grep "paga parcelas individualmente|corrige pagamento individual com foco" --workers=1
+npm exec -- playwright test --config=playwright.config.ts e2e/status-administrativo.spec.ts --workers=1
+```
+
+Resultados: testes focados **13/13 em 2 arquivos**; regressão **545/545 em 44 arquivos**;
+build padrão **340,09 kB** iniciais e build local **1,56 MB** iniciais; E2E demonstrativo
+de baixa/correção **4/4** e de status **8/8**, em 1366×768 e 390×844 (status também nos
+temas claro/escuro). Prettier direcionado aos TypeScript/templates, `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Os testes do alerta usam
+fonte sintética e cobrem os cinco alvos, consulta falha/retry, reconhecimento sem replay e
+preservação do snapshot na navegação do shell. Os E2E executados exercitam a demonstração,
+não perda de resposta contra API/SQLite; o fluxo com persistência real continua pendente das
+tarefas INT-06.2/6.3 e não há alegação de exactly-once ou aceite operacional. O README não
+foi reformatado integralmente; o histórico da Change já registra formatação preexistente.
+
+### Apply `fase-006-integracao-angular` — tarefa 5.2 — concorrência e refresh (28/11/2026)
+
+A verificação transversal confirmou que o coordenador mantém apenas uma assinatura por
+confirmação. Enquanto uma edição está em voo, tentativa de cadastro concorrente é bloqueada
+antes de chamar sua fonte. O teste acompanha o status após navegação para outra coleção e
+confirma que a escrita original continua única; consultas dependentes são atualizadas apenas
+depois da resposta confirmada. Uma leitura do painel iniciada antes do commit termina com
+revisão antiga depois de uma nova consulta com revisão `18`; a geração/invalidação mantém a
+consulta atual e impede que o valor antigo sobrescreva o estado confirmado.
+
+Nos fluxos de baixa e correção, testes de fonte simulam sucesso confirmado seguido de falha
+no refresh do detalhe. A interface conserva a mensagem de sucesso separada da falha de
+apresentação, orienta a não repetir o comando, mantém o resultado confirmado no coordenador,
+e foca o título da tela de falha, que oferece **Recarregar detalhe**. A recarga é explicitamente
+acionada e não reenvia baixa/correção. O rascunho capturado pelo coordenador segue imutável;
+nenhum retry automático ou polling foi adicionado. O ajuste de foco foi necessário porque o
+modal de baixa é destruído no sucesso confirmado e, portanto, seu callback de restauração não
+é executado quando a consulta subsequente falha.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/controle-confirmacoes.spec.ts --include src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts --include src/app/funcionalidades/parcelas/registrar-pagamento/registrar-pagamento.fonte.spec.ts --include src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+```
+
+Resultados: direcionados **49/49 em 4 arquivos**; regressão **547/547 em 44 arquivos**;
+build padrão **340,09 kB** iniciais e build local **1,56 MB** iniciais. Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+Nenhum E2E foi executado especificamente nesta tarefa; os testes usam fonte controlada e não
+provam falha de transporte com API/SQLite real. Os cenários reais de refresh, duas abas e
+resposta perdida permanecem pendentes de INT-06.3; não há alegação de exactly-once ou aceite
+operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.1 — fixture Playwright local (28/11/2026)
+
+O perfil `playwright.local.config.ts` agora está isolado do perfil demonstrativo e usa
+`workers: 1`. Cada worker inicia seus próprios processos .NET e Angular CLI, ambos presos
+a `127.0.0.1`; a porta fixa da UI (`4200`, exigida pelo gate de proveniência) deve estar
+livre e nunca é reutilizada. A API recebe uma porta loopback temporária, segredo Base64
+efêmero e caminho SQLite absoluto dentro de diretório único criado pela fixture. O segredo
+é mantido em memória no processo Playwright de servidor e nos ambientes dos processos API/
+proxy; o ambiente de lançamento do browser remove variáveis de credencial. O helper
+`apiRequest` autentica chamadas Node diretamente à API para preparar dados sintéticos, sem
+injetar credencial no browser nem adicionar endpoint seed. A API não recebe seed/reset e
+inicia com o banco vazio. Logs dos processos são capturados em arquivos temporários; a
+fixture detecta o segredo mesmo entre fragmentos de saída, redige o valor antes de gravar
+e falha se encontrar vazamento. Ao terminar, encerra apenas os filhos que iniciou, confirma
+que as portas foram liberadas e remove somente o diretório que criou.
+
+`npm run test:e2e:local` executa o perfil isolado. A suíte de infraestrutura comprova, em
+cada viewport, banco inicialmente vazio e estável após leitura, falha de inicialização sem
+segredo sem criar SQLite, proxy admitido same-origin/negado cross-site, ausência de Bearer,
+cookie e segredo em tráfego/logs do browser, e criação de uma venda exclusivamente por POST
+autenticado direto da fixture. Essa venda sintética é descartada junto com o banco temporário.
+O teste local de no-fallback continua interceptando API indisponível, separado das chamadas
+reais de infraestrutura. A fixture é worker-scoped e sequencial; os dois projetos de
+viewport recebem bancos/processos diferentes.
+
+A execução em Windows (`Node 24.21.0`, `npm 11.19.0`, `.NET SDK 10.0.404`) passou:
+
+```powershell
+npm run test:e2e:local
+npm run test:proxy-local:cli
+```
+
+Resultados: E2E local **10/10** em dois projetos Chromium (1366×768 e 390×844), incluindo
+API/SQLite/CLI reais e cleanup com portas livres; testes do proxy com CLI real **2/2**,
+incluindo recusa sem encaminhamento upstream e API .NET com credencial incompatível. Durante
+essa validação, o smoke CLI existente foi ajustado para abrir Configurações em vez de `/`:
+Visão Geral agora faz uma consulta comercial real no modo local e contaminava a contagem da
+requisição controlada. O perfil Playwright demo passou a ignorar somente os specs locais e
+de fixture, sem alterar a suíte demo; `npm run test:e2e -- --list` listou **158 testes em 11
+arquivos** sem specs/fixture local. Os dados são sintéticos; isso é verificação de
+infraestrutura, não aceite operacional nem prova de falha transacional nativa.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.2 — integração E2E real (28/11/2026)
+
+`persistencia-local.local.spec.ts` percorre a interface Angular contra a API .NET real e o
+SQLite isolado da fixture. Cadastra vendas sintéticas com e sem entrada; edita os dados do
+cliente; confirma Ativo→Prejuízo→Ativo→Inativo→Ativo; registra baixa individual de R$ 55,00,
+corrige-a para R$ 53,00 em mês anterior sem substituir o ID do recebimento e paga a segunda
+parcela por R$ 50,00. Consulta Vendas abertas, quitadas, Prejuízo e Inativas, os quatro
+indicadores da Visão Geral e Relatórios, conferindo R$ 53,00 no mês da correção e R$ 50,00
+no mês da segunda baixa. Cadastro, edição, pagamento e transições exercitam teclado/foco e
+confirmações nativas.
+
+Depois de abrir o detalhe no browser, a fixture encerra e reinicia somente seu próprio
+processo API, mantendo porta, caminho SQLite e processos Angular. O reload seguinte consulta
+a mesma venda, agora com referência civil avançada em um dia; ID, revisão, recebimentos e IDs
+de todas as coleções permanecem iguais. O cenário de paginação cria 11 vendas por chamadas
+autenticadas da fixture (sem endpoint seed) e percorre busca, limpar, ordenação e páginas
+10+1 nos temas escuro/claro. A suíte repete tudo nos viewports 1366×768 e 390×844; o perfil
+local permanece serial e com banco próprio por projeto. A infraestrutura de 6.1 comprova o
+banco inicial vazio e as consultas sem seed. Todos os registros e valores são sintéticos.
+
+O E2E encontrou um caso real de ciclo de vida: uma confirmação de status bem-sucedida
+invalidava a consulta e desmontava temporariamente o detalhe enquanto o alvo do modal ainda
+estava selecionado; ao retornar a leitura, reaparecia um modal desabilitado. O detalhe agora
+limpa o alvo confirmado e restaura foco no título somente depois da leitura da mesma venda,
+inclusive sem permitir que um refresh antigo mova o foco para outro registro.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --no-watch --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts
+npm run test:e2e:local
+```
+
+Resultados: teste focado de detalhe **15/15**; suíte local completa **14/14** nos dois
+projetos Chromium (infraestrutura, no-fallback, cinco comandos, persistência/reinício e
+paginação). Prettier direcionado aos arquivos TypeScript tocados e `git diff --check` passaram.
+`npm run format:check`, executado antes de editar este README, já apontava somente este
+arquivo; o arquivo inteiro não foi reformatado para evitar alterações documentais fora do
+escopo, e a formatação global fica registrada para a auditoria 6.4/6.5. Não se alega aceite
+operacional nem prova de exatamente uma vez diante de desconexão.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.3 — concorrência e resultado incerto (28/11/2026)
+
+`zz-confirmacoes-incertas.local.spec.ts` cobre quatro cenários com Chromium, Angular, proxy
+local e API .NET/SQLite reais. Em duas abas, a primeira altera o cliente e avança a revisão;
+a segunda tenta inativar com snapshot antigo, recebe 409 sem atualizar silenciosamente o
+rascunho, relê a venda e precisa de um segundo clique explícito. O teste observa no wire a
+revisão antiga no primeiro PUT e a nova no PUT confirmado, além do status persistido e sua
+revisão.
+
+O cenário pré-encaminhamento aborta o POST no browser antes de atingir o proxy e comprova por
+consulta direta que a API não alterou revisão nem recebimentos. A tentativa de consulta do
+alvo original também falha; o controle de reconhecimento permanece bloqueado. Só depois de
+uma leitura real bem-sucedida a interface habilita reconhecimento, sem repetir o comando.
+
+No cenário pós-commit, o handler encaminha o POST original pela proveniência same-origin ao
+proxy e à API reais, observa a resposta HTTP 200 real e descarta apenas sua entrega ao browser.
+Uma leitura autenticada independente verifica o commit, a revisão avançada e um recebimento
+único. A interface continua bloqueada até consultar o detalhe e o operador reconhecer a
+conferência; depois, revisão, valor e ID permanecem iguais, sem segundo POST. É uma falha de
+transporte injetada após resposta observada do backend — não uma queda nativa durante o
+commit, prova de rollback, garantia geral exactly-once ou aceite operacional.
+
+O quarto cenário entrega à interface a resposta real 200 da baixa e falha apenas o GET de
+refresh subsequente. A mensagem distingue sucesso conhecido de falha de apresentação, sem
+mostrar resultado incerto. **Recarregar detalhe** faz uma consulta explícita e não reenvia o
+POST; a revisão, o recebimento e seu ID permanecem estáveis.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --no-watch --include=src/app/nucleo/dados/controle-confirmacoes.spec.ts --include=src/app/compartilhado/componentes/aviso-confirmacao-incerta/aviso-confirmacao-incerta.spec.ts --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts --include=src/app/funcionalidades/parcelas/registrar-pagamento/registrar-pagamento.fonte.spec.ts
+npm run test:e2e:local
+```
+
+Resultados: testes unitários focados **60/60** em 5 arquivos; E2E local **22/22** nos dois
+viewports, incluindo infraestrutura inicialmente vazia, cenários integrados anteriores e
+os quatro cenários 6.3. A fixture de banco é sequencial e compartilhada pelo worker; por isso
+o spec `zz-...` executa depois da comprovação inicial vazia e dos cenários 6.1/6.2. Todos os
+dados são sintéticos. O status 200 e a leitura independente provam somente o caso controlado
+observado; não demonstram falha transacional nativa, exactly-once ou sucesso operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.4 — regressão e auditoria técnica (28/11/2026)
+
+Toolchain observada: Node 24.21.0, npm 11.19.0, Angular CLI/Core 22.2.6 e Playwright
+1.65.0 em `frontend/`; .NET SDK 10.0.404, `latestPatch`, e MSTest SDK 4.5.3 em
+`backend/`. As portas 4200, 4301 e 5070 estavam livres antes da regressão demonstrativa.
+O perfil Playwright padrão sobe apenas `npm start`, usa os providers demo e ignora specs
+locais/fixture; não inicia a API. As execuções terminaram com as portas próprias liberadas.
+
+Verificações frontend executadas:
+
+```powershell
+npm test -- --watch=false
+npm run test:e2e
+npm run test:e2e:paginacao-fixture
+npm run build
+npm run build -- --base-href=/TCC-Academia---Programation/
+npm run build -- --configuration local
+npm run test:proxy-local:cli
+npm run format:check
+npm run test:e2e:local
+```
+
+Resultados: unitários **547/547** em 44 arquivos; E2E demo **158/158**; fixture responsiva
+**24/24**; local integrado **22/22**; proxy CLI real **2/2**. O build padrão e o build do
+workflow Pages passaram com 340,09 kB de chunks iniciais (92,29 kB estimados para
+transferência); o build local passou com 1,56 MB iniciais não otimizados. A primeira
+repetição da suíte demo revelou apenas duas expectativas antigas para `Referência:` em
+Visão Geral/Vendas. Atualizadas para `Referência da sessão:`, passaram os quatro casos
+focados (duas asserções × dois viewports) e a suíte integral passou **158/158**; nenhuma
+regra/produto foi modificada.
+
+O artefato Pages foi produzido com o `base-href` do workflow e `404.html` copiado de
+`index.html`, como no deploy configurado. Smoke HTTP estático simulou o prefixo do Pages e
+carregou Visão Geral, Vendas, Relatórios e Configurações por rotas diretas: **45** pedidos
+same-origin, zero pedido comercial `/api/v1`, externo ou com `Authorization`, sem falha de
+recurso. A varredura de todos os 33 arquivos compilados não encontrou `/api/v1`, o nome da
+variável de segredo, caminho SQLite, URL upstream ou marcador Bearer. O smoke foi local,
+sem publicar artefato nem chamar GitHub Pages.
+
+Backend executado sequencialmente a partir de `backend/`:
+
+```powershell
+dotnet --version
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build --list-tests
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+```
+
+Restore locked, build Release (0 avisos/erros), suite **389/389** (143 IntegrationTests,
+246 UnitTests), descoberta **389**, format verify e auditoria NuGet passaram; a auditoria
+não reportou vulnerabilidades nos seis projetos considerando as fontes disponíveis. Todos
+os comandos finais tiveram código 0. Nenhum SDK foi instalado e nenhum manifesto/lockfile foi
+alterado.
+
+`npm run format:check` inicialmente repetiu a falha conhecida somente em `README.md`; a
+comparação com Prettier em cópia temporária mostrou desvio restrito a tabelas/parágrafos
+preexistentes. O README foi formatado sem alteração semântica (13 linhas inseridas/14
+removidas em wrapping/alinhamento) e a verificação global passou. Os dados de teste são
+sintéticos; a regressão demo/Pages não representa aceite operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.5 — auditoria final (28/11/2026)
+
+A auditoria final relaciona as sete deltas às evidências (matriz detalhada em
+`openspec/changes/fase-006-integracao-angular/tasks.md`):
+
+| Critério | Verificação/evidência                                                                | Resultado e limite                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| CA-069   | Demo/Pages sem API, recursos externos ou browser storage; build padrão independente  | Aprovado nos E2E Chromium e smoke estático local; sem publicação no Pages                                              |
+| CA-070   | Cadastro, reload e reinício API no mesmo SQLite, tarefa 6.2                          | IDs/histórico/revisão preservados em banco sintético; referência renovada                                              |
+| CA-071   | Gate Node, CLI real, E2E proxy e auditoria de trace/logs/assets/browser              | Negados sem upstream; sem valor Bearer nos eventos/rede; ver nota de snapshots de fonte abaixo                         |
+| CA-072   | Mapper wire e contratos, valores/revisões grandes, centavos e datas, tarefas 2.2/6.2 | 547 unitários e E2E local aprovados; precisão é verificada sem conversão insegura                                      |
+| CA-073   | Testes de geração/chave, respostas fora de ordem, falha e duas abas, tarefas 2.3/6.3 | Respostas antigas não substituem seleção atual; conflito retorna 409 e exige aceite novo                               |
+| CA-074   | Cinco comandos e persistência real em SQLite, tarefas 4.1–4.5/6.2                    | Cobertura por comando e fluxo browser/API; dados exclusivamente sintéticos                                             |
+| CA-075   | Duas abas com revisão antiga e sucesso seguido de refresh falho, tarefa 6.3          | Conflito sem retry; sucesso conhecido permanece separado da falha de consulta                                          |
+| CA-076   | Resposta perdida antes/depois de confirmação, consulta e reconhecimento, tarefa 6.3  | Bloqueio/conferência demonstrados; falhas de transporte controladas não provam exactly-once nem queda nativa de commit |
+| CA-077   | Teclado, foco, anúncios, contraste, fronteira 767/768 e densidade, Chromium          | Aprovado nos testes automatizados em dois temas/viewports; zoom nativo 200% não verificado                             |
+| CA-078   | Regressão Angular, demo, fixture, proxy e backend com versões fixadas                | Resultados e códigos registrados nas tarefas 6.4/6.5; sem dados reais ou aceite operacional                            |
+
+Dois novos E2E de privacidade — `zzzz-auditoria-storage.spec.ts` e
+`zzzz-auditoria-storage.local.spec.ts` — percorrem Visão Geral, Vendas, Relatórios e
+Configurações nos modos demo e local. Verificam cookies, `document.cookie`, local/session
+storage, IndexedDB, Cache Storage e service workers; no demo alternam tema e recarregam,
+confirmando que a preferência é efêmera. Demo **2/2** e local **2/2** passaram em
+1366×768 e 390×844. No modo local, as rotas fizeram consultas same-origin à API/SQLite
+real sem preencher armazenamento do browser; no demo nenhuma rota chamou `/api/v1`.
+Inspeção de `frontend/src/` não encontrou uso de storage comercial em runtime; as únicas
+referências a local/session storage no código são as asserções que garantem sua ausência.
+
+Auditoria de credenciais: a suíte de infraestrutura compara as requisições/respostas do
+browser e logs com o segredo efêmero real da fixture, sem Authorization/Cookie no browser;
+os testes de proxy negam proveniência inválida antes do upstream (contador zero) e testam
+API .NET com segredo divergente. A varredura Pages/33 arquivos e o smoke HTTP estático
+registrados na tarefa 6.4 permanecem válidos (nenhum marcador de API/segredo/banco no
+bundle; quatro rotas, 45 pedidos same-origin). Em um trace Playwright explícito do teste
+real do proxy, cinco arquivos de evento/rede não continham atribuição do segredo, valor
+Bearer nem header Authorization. O trace inclui snapshots dos fontes E2E, que mencionam
+somente o nome `Backend__SegredoLocal` e o código da asserção, não o valor da credencial;
+isso foi distinguido de vazamento do segredo. Os artefatos de trace são de teste local e
+não foram publicados.
+
+Verificações finais executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false
+npm run test:e2e
+npm run test:e2e:local
+npm run test:e2e:paginacao-fixture
+node --test --test-concurrency=1 proxy-local.test.cjs proxy-local-cli.test.cjs
+```
+
+Resultados: unitários **547/547** em 44 arquivos; demo **160/160**; local real
+**24/24**; fixture de paginação/estados visuais **24/24**; gate Node + CLI real **9/9**.
+Os E2E demo/local passaram em Chromium 1366×768 e 390×844. A regressão mediu contraste
+nos dois temas: mínimo informado de 4,83:1 em texto/ícones da lateral light, 4,90:1 nos
+formulários; anéis de foco medidos em 5,75:1 light e 10,41:1 dark. Testes de formulário
+confirmaram duas colunas em 768 px, empilhamento em 767 px e nenhum overflow horizontal
+global. No pronto desktop, dez linhas, critérios e rodapé cabem no documento de 768 px;
+fonte de tabela mantida em 18 px.
+
+**Zoom nativo 200%:** Chrome instalado foi aberto em modo headed; cinco `Control+Equal`
+enviados pela automação não ativaram o controle do browser: `devicePixelRatio` ficou
+1,25, `innerWidth` 1036 e `visualViewport.scale` 1 antes/depois. Portanto zoom nativo não
+foi verificado; não se usou viewport, CSS zoom ou emulação como substituto. Também não
+foram executados testes manuais com leitor de tela/tecnologia assistiva nem suites Firefox
+ou WebKit. Os resultados são regressão técnica com Chromium e dados sintéticos, não
+homologação operacional, aceite da ótica ou autorização para dados reais.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
@@ -4459,3 +5350,71 @@ Verificações reais direcionadas:
 Refinamento visual posterior: o grupo usa `gap-2` (8 px) entre os links; cada link recebeu SVG inline de 16 px com check, pausa e alerta, todos decorativos e ocultos à tecnologia assistiva. E2E mediu ordem, separação mínima de 7 px, alinhamento dos ícones, nomes acessíveis e atributos decorativos nos dois temas e viewports. A suíte de navegação serial passou **4/4**; a suíte unitária passou **416/416** em 33 arquivos; build, Prettier direcionado, `git diff --check` e `openspec validate empilhar-links-sidebar --strict` passaram. Uma execução paralela anterior teve falha intermitente no teste preexistente de teclado/ordenação mobile; a repetição isolada e a regressão serial passaram.
 
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
+
+## OpenSpec `fase-006-integracao-angular` — confirmação de status (INT-04.3) — 28/11/2026
+
+O detalhe local prepara a mudança administrativa com o ID e a revisão do próprio
+snapshot consultado. A confirmação passa pela fonte assíncrona e pelo coordenador
+global: abrir/cancelar não envia comando, o status apresentado só muda após sucesso
+confirmado e nenhum valor financeiro é recalculado no cliente. Os controles refletem
+a matriz existente (incluindo saldo para Prejuízo), sem alterar regras de domínio.
+
+Conflito conserva o alvo original e não renova revisão sozinho. A pessoa solicita a
+recarga explicitamente; somente uma leitura válida para o mesmo ID atualiza a revisão,
+e uma nova confirmação ainda é necessária. Uma resposta de detalhe de outra venda é
+rejeitada, falha de recarga não envia novo comando e resultado incerto bloqueia replay.
+Fechar o modal ou navegar após envio não cancela a escrita; a aba continua acompanhando
+o resultado. Após sucesso, consultas dependentes são invalidadas sem repetir a operação.
+
+Verificações executadas em 28/11/2026:
+
+- `npm test -- --watch=false`: **521/521 testes em 41 arquivos**.
+- `npm run test:e2e -- status-administrativo.spec.ts`: **8/8** em Chromium 1366×768 e
+  390×844, nos temas claro e escuro; inclui transições, navegação, cancelamento e foco.
+- `npm run build`: aprovado, **326,86 kB** iniciais; `npm exec ng build -- --configuration local`:
+  aprovado, **1,54 MB** iniciais.
+- `dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj
+--configuration Release --filter "FullyQualifiedName~AlterarStatusViaSender_AplicaMatrizNoOpEConflitoSemPerderHistorico"`:
+  **1/1**; matriz/no-op sem incremento de revisão e preservação do histórico.
+- Prettier direcionado, `git diff --check` e `openspec validate
+fase-006-integracao-angular --strict`: aprovados.
+
+Os testes de componente usam fonte simulada; o teste SQLite verifica o backend
+existente, não constitui E2E da interface contra a API. A integração browser real
+continua pendente em INT-06.2. Zoom nativo de 200% não foi verificado nesta tarefa.
+
+## OpenSpec `fase-006-integracao-angular` — baixa individual (INT-04.4) — 28/11/2026
+
+No modo local, o modal usa o snapshot de leitura recebido no detalhe: ID da venda,
+ID/valor-base da parcela, sequência e revisão observada. Só a primeira parcela
+pendente fica acionável; entrada já liquidada não é alvo. A baixa envia uma vez o
+comando explícito de valor recebido, data civil, forma, observação e parcela para a
+fonte assíncrona. A validação compara o valor informado com o valor-base do snapshot,
+aceita acréscimo e conta caracteres Unicode sem recalcular valores financeiros da API.
+
+Um conflito mantém o mesmo alvo e o rascunho. A ação “Recarregar venda e revisar” faz
+uma leitura explícita da mesma venda; só então a revisão pode ser renovada, e somente
+se a parcela original ainda for a primeira pendente. Resposta perdida/incompatível
+bloqueia replay na aba. Cancelar antes do envio não escreve; fechar após o envio não
+afirma rollback. Após sucesso, consultas dependentes são invalidadas, com mensagem
+separada se o refresh falhar; o foco vai para a próxima baixa ou para o título após
+quitação.
+
+Verificações executadas em 28/11/2026:
+
+- Testes de baixa pela fonte local: **8/8**; regressão `npm test -- --watch=false`:
+  **529/529 em 42 arquivos**.
+- `npm run test:e2e -- formularios-vendas.spec.ts`: **50/50** em Chromium 1366×768 e
+  390×844; inclui pagamentos demonstrativos, modais, foco e temas.
+- `npm run test:e2e -- --config=playwright.local.config.ts`: **2/2** nos viewports
+  1366×768 e 390×844. Essa suíte verifica indisponibilidade e ausência de fallback,
+  não executa baixa contra a API.
+- `npm run build`: aprovado, **326,86 kB** iniciais; `npm exec ng build -- --configuration local`:
+  aprovado, **1,54 MB** iniciais. Testes HTTP existentes cobrem POST `/api/v1/recebimentos`
+  e corpo wire; não houve mudança no backend.
+- Prettier direcionado, `git diff --check` e `openspec validate
+fase-006-integracao-angular --strict`: aprovados.
+
+Os testes de componente usam `FonteVendas` simulada e o E2E de formulários percorre a
+demonstração; não são teste browser/API/SQLite real. Esse cenário permanece pendente
+em INT-06.2. Zoom nativo de 200% não foi verificado nesta tarefa.

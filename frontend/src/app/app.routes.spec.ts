@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Title } from '@angular/platform-browser';
-import { routes } from './app.routes';
+import { appConfig } from './app.config';
 
 describe('Rotas da demonstração', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
+  beforeEach(() => TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] }));
 
   it('redireciona a entrada para Visão Geral', async () => {
     const harness = await RouterTestingHarness.create('/');

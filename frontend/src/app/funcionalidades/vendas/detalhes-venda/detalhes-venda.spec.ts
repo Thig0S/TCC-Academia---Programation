@@ -1,21 +1,137 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { routes } from '../../../app.routes';
+import { appConfig } from '../../../app.config';
+import { FONTE_VENDAS, FonteVendas } from '../../../nucleo/dados/fonte-vendas';
+import { VendaDetalheLeitura, VendaResumoLeitura } from '../../../nucleo/dados/modelos-leitura';
+import { ControleConsultas } from '../../../nucleo/dados/controle-consultas';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
-import { projetarVenda } from '../venda.calculos';
-import { prepararCadastro } from '../venda.validacoes';
+import { Resultado } from '../venda.modelos';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 import { formatarCpf, formatarTelefone } from '../identificacao.validacoes';
 import { calcularRelatorio } from '../../relatorios/relatorios.calculos';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
 
+const referenciaTeste = '2026-01-31';
+
+function detalheTeste(id = 'venda/teste', nome = 'Cliente HTTP sintético'): VendaDetalheLeitura {
+  const resumo: VendaResumoLeitura = {
+    id,
+    cliente: {
+      nome,
+      cpf: '90000000175',
+      telefone: '11900000001',
+      descricao: 'Descrição da origem HTTP',
+    },
+    dataVenda: '2026-01-02',
+    statusAdministrativo: 'Ativo',
+    situacao: 'Em aberto',
+    valorTotalCentavos: 20000,
+    acrescimosCentavos: 250,
+    valorTotalEfetivoCentavos: 20250,
+    totalRecebidoCentavos: 13250,
+    saldoCentavos: 7000,
+    quantidadePaga: 0,
+    quantidadeParcelas: 2,
+    proximoVencimento: '2026-02-02',
+    revisao: '17',
+    referencia: referenciaTeste,
+  };
+  return {
+    resumo,
+    parcelas: [
+      {
+        id: 'parcela/1',
+        numero: 1,
+        valorBaseCentavos: 10000,
+        acrescimoCentavos: 0,
+        valorEfetivoCentavos: 10000,
+        valorRecebidoCentavos: 5000,
+        saldoCentavos: 5000,
+        vencimento: '2026-02-02',
+        situacao: 'Aberto',
+        dataPagamento: '2026-01-10',
+        formaPagamento: 'Pix',
+      },
+      {
+        id: 'parcela/2',
+        numero: 2,
+        valorBaseCentavos: 10000,
+        acrescimoCentavos: 250,
+        valorEfetivoCentavos: 10250,
+        valorRecebidoCentavos: 8250,
+        saldoCentavos: 2000,
+        vencimento: '2026-03-02',
+        situacao: 'Aberto',
+        dataPagamento: '2026-01-11',
+        formaPagamento: 'Cartão de crédito',
+      },
+    ],
+    recebimentos: [
+      {
+        id: 'entrada/1',
+        data: '2026-01-10',
+        forma: 'Pix',
+        origem: 'Entrada',
+        valorCentavos: 3000,
+        acrescimoCentavos: 0,
+        observacao: '',
+        alocacoes: [{ parcelaId: 'parcela/1', valorCentavos: 3000 }],
+      },
+      {
+        id: 'lote/1',
+        data: '2026-01-10',
+        forma: 'Dinheiro',
+        origem: 'Lote',
+        valorCentavos: 5000,
+        acrescimoCentavos: 0,
+        observacao: '',
+        alocacoes: [
+          { parcelaId: 'parcela/1', valorCentavos: 2000 },
+          { parcelaId: 'parcela/2', valorCentavos: 3000 },
+        ],
+      },
+      {
+        id: 'individual/1',
+        data: '2026-01-11',
+        forma: 'Cartão de crédito',
+        origem: 'Individual',
+        valorCentavos: 5250,
+        acrescimoCentavos: 250,
+        observacao: 'Recebido online',
+        alocacoes: [{ parcelaId: 'parcela/2', valorCentavos: 5250 }],
+      },
+    ],
+  };
+}
+
+function fonteDetalheFake(
+  consultarVenda: (id: string) => Observable<Resultado<VendaDetalheLeitura>>,
+): FonteVendas {
+  return {
+    referencia: referenciaTeste,
+    consultarColecao: vi.fn(),
+    consultarVenda: vi.fn(consultarVenda),
+    consultarVisaoGeral: vi.fn(),
+    consultarRelatorioMensal: vi.fn(),
+    cadastrarVenda: vi.fn(),
+    editarCliente: vi.fn(),
+    alterarStatus: vi.fn(),
+    registrarPagamento: vi.fn(),
+    corrigirPagamento: vi.fn(),
+  } as unknown as FonteVendas;
+}
+
 describe('DetalhesVenda', () => {
   const showOriginal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
   const closeOriginal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'close');
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      providers: [...(appConfig.providers ?? []), provideRouter(routes)],
+    });
     Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
       configurable: true,
       value: vi.fn(function (this: HTMLDialogElement) {
@@ -59,9 +175,11 @@ describe('DetalhesVenda', () => {
     expect(pagina.textContent).toContain(formatarDinheiro(venda.totalPagoCentavos));
     expect(pagina.textContent).toContain(formatarDinheiro(venda.saldoCentavos));
     expect(pagina.textContent).toContain(venda.situacao);
-    expect(pagina.querySelectorAll('tbody tr').length).toBe(venda.parcelas.length);
+    expect(pagina.querySelectorAll('.tabela-parcelas-detalhe tbody tr').length).toBe(
+      venda.parcelas.length,
+    );
     for (const parcela of venda.parcelas) {
-      const linha = [...pagina.querySelectorAll('tbody tr')].find((item) =>
+      const linha = [...pagina.querySelectorAll('.tabela-parcelas-detalhe tbody tr')].find((item) =>
         item.textContent?.includes(`${parcela.numero} de ${venda.parcelas.length}`),
       );
       expect(linha?.textContent).toContain(formatarDinheiro(parcela.valorCentavos));
@@ -111,19 +229,25 @@ describe('DetalhesVenda', () => {
     const dez = cadastrar('Cliente Fixture dez parcelas', 10, 'Descrição curta.', true);
     const onze = cadastrar('Cliente Fixture onze parcelas', 11, 'Descrição extensa '.repeat(40));
     const harness = await RouterTestingHarness.create(urlPara(uma.id));
-    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(
+      harness.routeNativeElement?.querySelectorAll('.tabela-parcelas-detalhe tbody tr'),
+    ).toHaveLength(1);
     expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
     expect(harness.routeNativeElement?.textContent).not.toContain('Descrição');
 
     await harness.navigateByUrl(urlPara(dez.id));
-    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(
+      harness.routeNativeElement?.querySelectorAll('.tabela-parcelas-detalhe tbody tr'),
+    ).toHaveLength(10);
     expect(harness.routeNativeElement?.querySelector('.parcelas-com-rolagem')).toBeNull();
     expect(harness.routeNativeElement?.textContent).toContain('Descrição curta.');
     expect(harness.routeNativeElement?.textContent).toContain('Entrada');
     expect(harness.routeNativeElement?.textContent).toContain(formatarDinheiro(10000));
 
     await harness.navigateByUrl(urlPara(onze.id));
-    expect(harness.routeNativeElement?.querySelectorAll('tbody tr')).toHaveLength(11);
+    expect(
+      harness.routeNativeElement?.querySelectorAll('.tabela-parcelas-detalhe tbody tr'),
+    ).toHaveLength(11);
     expect(harness.routeNativeElement?.querySelector('.parcelas-com-rolagem')).not.toBeNull();
     expect(harness.routeNativeElement?.textContent).toContain('Descrição extensa');
     expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
@@ -146,7 +270,7 @@ describe('DetalhesVenda', () => {
     const outra = cadastrar('Cliente destino');
     const harness = await RouterTestingHarness.create(urlPara(alvo.id));
     const pagina = () => harness.routeNativeElement!;
-    const linhas = () => [...pagina().querySelectorAll('tbody tr')];
+    const linhas = () => [...pagina().querySelectorAll('.tabela-parcelas-detalhe tbody tr')];
     const botaoDaParcela = (numero: number) =>
       linhas()
         .find((linha) => linha.textContent?.includes(`${numero} de ${alvo.parcelas.length}`))
@@ -199,8 +323,12 @@ describe('DetalhesVenda', () => {
     const pagina = () => harness.routeNativeElement!;
     expect(pagina().textContent).toContain('1 de 10');
     expect(pagina().textContent?.replace(/\s+/g, '')).toContain('Parcelaspagas1de10');
-    expect(pagina().querySelector('tbody tr')?.textContent).toContain('Entrada');
-    expect(pagina().querySelector('tbody tr')?.textContent).toContain('Paga');
+    expect(pagina().querySelector('.tabela-parcelas-detalhe tbody tr')?.textContent).toContain(
+      'Entrada',
+    );
+    expect(pagina().querySelector('.tabela-parcelas-detalhe tbody tr')?.textContent).toContain(
+      'Paga',
+    );
     expect(pagina().querySelectorAll('[data-acao-pagar]')).toHaveLength(1);
     expect(pagina().textContent).toContain('Aguardando parcela anterior');
 
@@ -439,47 +567,168 @@ describe('DetalhesVenda', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Quitada');
     expect(harness.routeNativeElement?.textContent).toContain('Próximo vencimento');
     expect(quitada.parcelas.every((parcela) => parcela.situacao === 'Paga')).toBe(true);
-    expect(harness.routeNativeElement?.querySelectorAll('tbody tr').length).toBe(
-      quitada.parcelas.length,
-    );
+    expect(
+      harness.routeNativeElement?.querySelectorAll('.tabela-parcelas-detalhe tbody tr').length,
+    ).toBe(quitada.parcelas.length);
   });
 
   it('omite descrição ausente sem impedir a consulta', async () => {
-    const preparada = prepararCadastro(
-      {
-        cliente: {
-          nome: 'Cliente sem descrição',
-          cpf: '90000000175',
-          telefone: '00900000001',
-        },
-        dataVenda: '2026-01-01',
-        valorTotalCentavos: 10000,
-        quantidadeParcelas: 1,
-        entrada: null,
+    const detalhe = detalheTeste('teste/venda/sem-descricao');
+    const semDescricao: VendaDetalheLeitura = {
+      ...detalhe,
+      resumo: {
+        ...detalhe.resumo,
+        cliente: { ...detalhe.resumo.cliente, nome: 'Cliente sem descrição', descricao: null },
       },
-      '2026-01-01',
-      'teste/venda/sem-descricao',
-    );
-    if (preparada.tipo !== 'sucesso') throw new Error(preparada.mensagem);
-    const valor = projetarVenda(preparada.valor, '2026-01-01');
-    TestBed.overrideProvider(ServicoDemonstracao, {
-      useValue: {
-        referencia: '2026-01-01',
-        consultarVenda: (id: string) =>
-          id === valor.id
-            ? { tipo: 'sucesso', valor, mensagem: 'Consulta de teste.' }
-            : {
-                tipo: 'inexistencia',
-                codigo: 'venda-inexistente',
-                mensagem: 'Venda não encontrada.',
-              },
-      } as unknown as ServicoDemonstracao,
+    };
+    TestBed.overrideProvider(FONTE_VENDAS, {
+      useValue: fonteDetalheFake(() =>
+        of({ tipo: 'sucesso', valor: semDescricao, mensagem: 'Consulta de teste.' }),
+      ),
     });
 
-    const harness = await RouterTestingHarness.create(urlPara(valor.id));
+    const harness = await RouterTestingHarness.create(urlPara(semDescricao.resumo.id));
     expect(harness.routeNativeElement?.textContent).toContain('Cliente sem descrição');
-    expect(harness.routeNativeElement?.textContent).toContain('Sem entrada');
     expect(harness.routeNativeElement?.textContent).not.toContain('Descrição');
+  });
+
+  it('consulta ID opaco reservado e preserva origem, histórico e alocações sem iniciar comandos', async () => {
+    const id = 'loja/externa?origem=%25#ação';
+    const detalhe = detalheTeste(id);
+    const fonte = fonteDetalheFake(() =>
+      of({ tipo: 'sucesso', valor: detalhe, mensagem: 'Consulta sintética.' }),
+    );
+    const consultarDemo = vi.fn();
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    TestBed.overrideProvider(ServicoDemonstracao, {
+      useValue: { consultarVenda: consultarDemo } as unknown as ServicoDemonstracao,
+    });
+
+    const harness = await RouterTestingHarness.create(urlPara(id));
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    const historico = pagina.querySelector('details table')!;
+
+    expect(urlPara(id)).toContain('%2F');
+    expect(fonte.consultarVenda).toHaveBeenCalledTimes(1);
+    expect(fonte.consultarVenda).toHaveBeenCalledWith(id);
+    expect(pagina.textContent).toContain('Cliente HTTP sintético');
+    expect(pagina.textContent).toContain('R$ 30,00');
+    expect(historico.querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(historico.textContent).toContain('Entrada');
+    expect(historico.textContent).toContain('Lote');
+    expect(historico.textContent).toContain('Individual');
+    expect(historico.textContent).toContain('Parcela 1:');
+    expect(historico.textContent).toContain('Parcela 2:');
+    expect(historico.textContent).toContain('Recebido online');
+    expect(pagina.querySelector('a[aria-label^="Editar dados"]')).toBeNull();
+    expect(pagina.querySelector('[data-acao-status="Inativo"]')).not.toBeNull();
+    expect(pagina.querySelector('[data-acao-pagar], [data-acao-corrigir]')).toBeNull();
+    expect(pagina.querySelector('form, input')).toBeNull();
+    expect(consultarDemo).not.toHaveBeenCalled();
+    expect(fonte.cadastrarVenda).not.toHaveBeenCalled();
+    expect(fonte.editarCliente).not.toHaveBeenCalled();
+    expect(fonte.alterarStatus).not.toHaveBeenCalled();
+    expect(fonte.registrarPagamento).not.toHaveBeenCalled();
+    expect(fonte.corrigirPagamento).not.toHaveBeenCalled();
+  });
+
+  it('distingue 404 contratual de falha física e libera somente nova consulta explícita', async () => {
+    let tentativasTransporte = 0;
+    const fonte = fonteDetalheFake((id) => {
+      if (id === 'ausente') {
+        return of({
+          tipo: 'inexistencia',
+          codigo: 'venda-inexistente',
+          mensagem: 'Venda não encontrada.',
+        });
+      }
+      if (id === 'banco') {
+        return of({ tipo: 'inexistencia', codigo: 'banco-indisponivel', mensagem: 'Falha.' });
+      }
+      if (id === 'transporte' && tentativasTransporte++ === 0)
+        return throwError(() => new Error('offline'));
+      return of({ tipo: 'sucesso', valor: detalheTeste(id), mensagem: 'Consulta sintética.' });
+    });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const harness = await RouterTestingHarness.create(urlPara('ausente'));
+    const pagina = () => harness.routeNativeElement!;
+
+    expect(pagina().textContent).toContain('Venda não encontrada');
+    expect(pagina().querySelector('nav[aria-label="Retornos de Vendas"] a')).not.toBeNull();
+
+    await harness.navigateByUrl(urlPara('banco'));
+    expect(pagina().querySelector('[role="alert"]')?.textContent).toContain('Verifique a conexão');
+    expect(pagina().textContent).not.toContain('Venda não encontrada');
+
+    await harness.navigateByUrl(urlPara('transporte'));
+    expect(pagina().querySelector('[role="alert"]')?.textContent).toContain('Verifique a conexão');
+    expect(fonte.consultarVenda).toHaveBeenCalledTimes(3);
+    pagina().querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+    expect(fonte.consultarVenda).toHaveBeenCalledTimes(4);
+    expect(pagina().querySelector('[role="alert"]')).toBeNull();
+    expect(pagina().textContent).toContain('Cliente HTTP sintético');
+  });
+
+  it('descarta resposta do ID anterior quando a navegação rápida troca o detalhe', async () => {
+    const respostas: Subject<Resultado<VendaDetalheLeitura>>[] = [];
+    const fonte = fonteDetalheFake(() => {
+      const resposta = new Subject<Resultado<VendaDetalheLeitura>>();
+      respostas.push(resposta);
+      return resposta;
+    });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const harness = await RouterTestingHarness.create(urlPara('venda-a'));
+    await harness.navigateByUrl(urlPara('venda-b'));
+    expect(fonte.consultarVenda).toHaveBeenCalledTimes(2);
+
+    respostas[1].next({
+      tipo: 'sucesso',
+      valor: detalheTeste('venda-b', 'Cliente venda-b'),
+      mensagem: 'Consulta sintética.',
+    });
+    harness.fixture.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Cliente venda-b');
+
+    respostas[0].next({
+      tipo: 'sucesso',
+      valor: detalheTeste('venda-a', 'Cliente venda-a'),
+      mensagem: 'Consulta sintética.',
+    });
+    harness.fixture.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Cliente venda-b');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Cliente venda-a');
+  });
+
+  it('ignora consulta pendente invalidada antes de publicar e recarrega o mesmo ID', async () => {
+    const respostas: Subject<Resultado<VendaDetalheLeitura>>[] = [];
+    const fonte = fonteDetalheFake(() => {
+      const resposta = new Subject<Resultado<VendaDetalheLeitura>>();
+      respostas.push(resposta);
+      return resposta;
+    });
+    TestBed.overrideProvider(FONTE_VENDAS, { useValue: fonte });
+    const harness = await RouterTestingHarness.create(urlPara('venda-atual'));
+    TestBed.inject(ControleConsultas).invalidarTodas();
+    await harness.fixture.whenStable();
+    expect(fonte.consultarVenda).toHaveBeenCalledTimes(2);
+
+    respostas[0].next({
+      tipo: 'sucesso',
+      valor: detalheTeste('resposta-obsoleta', 'Resposta obsoleta'),
+      mensagem: 'Resposta anterior à invalidação.',
+    });
+    harness.fixture.detectChanges();
+    expect(harness.routeNativeElement?.textContent).not.toContain('Resposta obsoleta');
+
+    respostas[1].next({
+      tipo: 'sucesso',
+      valor: detalheTeste('venda-atual', 'Cliente venda-atual'),
+      mensagem: 'Consulta atual.',
+    });
+    harness.fixture.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Cliente venda-atual');
   });
 
   it('reavalia o parâmetro ao navegar entre vendas e apresenta a ausência sem dados anteriores', async () => {
@@ -519,12 +768,11 @@ describe('DetalhesVenda', () => {
       const botao = pagina().querySelector<HTMLButtonElement>(`[data-acao-status="${status}"]`)!;
       botao.click();
       await harness.fixture.whenStable();
-      return botao;
     };
 
     expect(pagina().textContent).toContain('Ativo');
     expect(pagina().querySelectorAll('[data-acao-status]')).toHaveLength(2);
-    const acionadorInativar = await abrirConfirmacao('Inativo');
+    await abrirConfirmacao('Inativo');
     const dialog = pagina().querySelector<HTMLDialogElement>('dialog')!;
     expect(dialog.open).toBe(true);
     expect(document.activeElement).toBe(dialog.querySelector('[data-foco-inicial]'));
@@ -540,7 +788,7 @@ describe('DetalhesVenda', () => {
       tipo: 'sucesso',
       valor: { statusAdministrativo: 'Ativo' },
     });
-    expect(document.activeElement).toBe(acionadorInativar);
+    expect((document.activeElement as HTMLButtonElement).dataset['acaoStatus']).toBe('Inativo');
 
     await abrirConfirmacao('Inativo');
     await confirmar();
