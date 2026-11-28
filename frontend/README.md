@@ -1028,6 +1028,47 @@ arquivo; o arquivo inteiro não foi reformatado para evitar alterações documen
 escopo, e a formatação global fica registrada para a auditoria 6.4/6.5. Não se alega aceite
 operacional nem prova de exatamente uma vez diante de desconexão.
 
+### Apply `fase-006-integracao-angular` — tarefa 6.3 — concorrência e resultado incerto (28/11/2026)
+
+`zz-confirmacoes-incertas.local.spec.ts` cobre quatro cenários com Chromium, Angular, proxy
+local e API .NET/SQLite reais. Em duas abas, a primeira altera o cliente e avança a revisão;
+a segunda tenta inativar com snapshot antigo, recebe 409 sem atualizar silenciosamente o
+rascunho, relê a venda e precisa de um segundo clique explícito. O teste observa no wire a
+revisão antiga no primeiro PUT e a nova no PUT confirmado, além do status persistido e sua
+revisão.
+
+O cenário pré-encaminhamento aborta o POST no browser antes de atingir o proxy e comprova por
+consulta direta que a API não alterou revisão nem recebimentos. A tentativa de consulta do
+alvo original também falha; o controle de reconhecimento permanece bloqueado. Só depois de
+uma leitura real bem-sucedida a interface habilita reconhecimento, sem repetir o comando.
+
+No cenário pós-commit, o handler encaminha o POST original pela proveniência same-origin ao
+proxy e à API reais, observa a resposta HTTP 200 real e descarta apenas sua entrega ao browser.
+Uma leitura autenticada independente verifica o commit, a revisão avançada e um recebimento
+único. A interface continua bloqueada até consultar o detalhe e o operador reconhecer a
+conferência; depois, revisão, valor e ID permanecem iguais, sem segundo POST. É uma falha de
+transporte injetada após resposta observada do backend — não uma queda nativa durante o
+commit, prova de rollback, garantia geral exactly-once ou aceite operacional.
+
+O quarto cenário entrega à interface a resposta real 200 da baixa e falha apenas o GET de
+refresh subsequente. A mensagem distingue sucesso conhecido de falha de apresentação, sem
+mostrar resultado incerto. **Recarregar detalhe** faz uma consulta explícita e não reenvia o
+POST; a revisão, o recebimento e seu ID permanecem estáveis.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --no-watch --include=src/app/nucleo/dados/controle-confirmacoes.spec.ts --include=src/app/compartilhado/componentes/aviso-confirmacao-incerta/aviso-confirmacao-incerta.spec.ts --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts --include=src/app/funcionalidades/parcelas/registrar-pagamento/registrar-pagamento.fonte.spec.ts
+npm run test:e2e:local
+```
+
+Resultados: testes unitários focados **60/60** em 5 arquivos; E2E local **22/22** nos dois
+viewports, incluindo infraestrutura inicialmente vazia, cenários integrados anteriores e
+os quatro cenários 6.3. A fixture de banco é sequencial e compartilhada pelo worker; por isso
+o spec `zz-...` executa depois da comprovação inicial vazia e dos cenários 6.1/6.2. Todos os
+dados são sintéticos. O status 200 e a leitura independente provam somente o caso controlado
+observado; não demonstram falha transacional nativa, exactly-once ou sucesso operacional.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
