@@ -313,16 +313,15 @@ O PR #41 (`feature/fase-005-contrato-e-api-local`, head
 `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`) foi integrado à `main` em 27/11/2026,
 merge commit `a8de1173a7df84ac3af860688b46a094b74bd1f2`. A branch desta Change estava
 limpa antes da integração; a `main` foi incorporada aqui pelo merge `9e3a0e9`. Os
-conflitos limitados ao PRD/TDD foram reconciliados mantendo os registros das fases 005 e
-006. A especificação integrada `openspec/specs/api-local-vendas/spec.md` e o código
+conflitos limitados ao PRD/TDD foram reconciliados mantendo os registros das fases 005 e 006. A especificação integrada `openspec/specs/api-local-vendas/spec.md` e o código
 `backend/src/VendasEmAberto.Api/` foram comparados à referência DEC-041/D3:
 
-| Contrato | Especificação/código integrados | Resultado da comparação |
-| --- | --- | --- |
-| Rotas | Seis GETs de coleções, detalhe, resumo, período, relatório mensal e Visão Geral; cinco comandos POST/PUT de venda, cliente, status, baixa e correção, sob `/api/v1` | Equivalente; nenhum endpoint comercial planejado está ausente |
-| Credencial | `Backend__SegredoLocal`, Base64 canônico de 32 bytes; grupo comercial exige Bearer e health permanece separado | Equivalente; sem login humano, CORS permissivo ou credencial no contrato de UI |
-| Tipos | Revisão decimal textual canônica até `long.MaxValue`; centavos inteiros seguros; datas civis; enums textuais e IDs opacos | Equivalente; conversor e leitor estrutural correspondem à especificação |
-| Operações | Referência/revisão nos comandos; detalhe confirmado, erros Problem Details e consulta consolidada | Equivalente; não existe endpoint de baixa em lote; origem histórica em lote permanece dado de leitura |
+| Contrato   | Especificação/código integrados                                                                                                                                     | Resultado da comparação                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Rotas      | Seis GETs de coleções, detalhe, resumo, período, relatório mensal e Visão Geral; cinco comandos POST/PUT de venda, cliente, status, baixa e correção, sob `/api/v1` | Equivalente; nenhum endpoint comercial planejado está ausente                                         |
+| Credencial | `Backend__SegredoLocal`, Base64 canônico de 32 bytes; grupo comercial exige Bearer e health permanece separado                                                      | Equivalente; sem login humano, CORS permissivo ou credencial no contrato de UI                        |
+| Tipos      | Revisão decimal textual canônica até `long.MaxValue`; centavos inteiros seguros; datas civis; enums textuais e IDs opacos                                           | Equivalente; conversor e leitor estrutural correspondem à especificação                               |
+| Operações  | Referência/revisão nos comandos; detalhe confirmado, erros Problem Details e consulta consolidada                                                                   | Equivalente; não existe endpoint de baixa em lote; origem histórica em lote permanece dado de leitura |
 
 Não foi encontrada divergência material entre código, spec e desenho. A API inicializa
 SQLite sintético antes de servir, valida o caminho e segredo no processo backend e usa
@@ -332,10 +331,10 @@ Os resultados históricos da fase 005 permanecem no `backend/README.md` (incluin
 
 Toolchain conferida sem alterar manifestos/lockfiles:
 
-| Projeto | Fixado | Observado |
-| --- | --- | --- |
+| Projeto  | Fixado                                                        | Observado                                                                                                   |
+| -------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Frontend | Node `>=24.15.0 <25.0.0`, npm `11.19.0`, Angular/CLI `22.2.6` | Node `24.21.0`, npm `11.19.0`, `npm exec -- ng version` em `frontend/` confirmou Angular/CLI local `22.2.6` |
-| Backend | SDK .NET `10.0.404`, `latestPatch` | `dotnet --version` em `backend/`: `10.0.404` |
+| Backend  | SDK .NET `10.0.404`, `latestPatch`                            | `dotnet --version` em `backend/`: `10.0.404`                                                                |
 
 Observação operacional: `npx ng version` executado na raiz resolveu CLI global `22.2.4`;
 no diretório do projeto, a CLI local fixada em `22.2.6` foi confirmada com `npm exec -- ng`.
@@ -1068,6 +1067,69 @@ os quatro cenários 6.3. A fixture de banco é sequencial e compartilhada pelo w
 o spec `zz-...` executa depois da comprovação inicial vazia e dos cenários 6.1/6.2. Todos os
 dados são sintéticos. O status 200 e a leitura independente provam somente o caso controlado
 observado; não demonstram falha transacional nativa, exactly-once ou sucesso operacional.
+
+### Apply `fase-006-integracao-angular` — tarefa 6.4 — regressão e auditoria técnica (28/11/2026)
+
+Toolchain observada: Node 24.21.0, npm 11.19.0, Angular CLI/Core 22.2.6 e Playwright
+1.65.0 em `frontend/`; .NET SDK 10.0.404, `latestPatch`, e MSTest SDK 4.5.3 em
+`backend/`. As portas 4200, 4301 e 5070 estavam livres antes da regressão demonstrativa.
+O perfil Playwright padrão sobe apenas `npm start`, usa os providers demo e ignora specs
+locais/fixture; não inicia a API. As execuções terminaram com as portas próprias liberadas.
+
+Verificações frontend executadas:
+
+```powershell
+npm test -- --watch=false
+npm run test:e2e
+npm run test:e2e:paginacao-fixture
+npm run build
+npm run build -- --base-href=/TCC-Academia---Programation/
+npm run build -- --configuration local
+npm run test:proxy-local:cli
+npm run format:check
+npm run test:e2e:local
+```
+
+Resultados: unitários **547/547** em 44 arquivos; E2E demo **158/158**; fixture responsiva
+**24/24**; local integrado **22/22**; proxy CLI real **2/2**. O build padrão e o build do
+workflow Pages passaram com 340,09 kB de chunks iniciais (92,29 kB estimados para
+transferência); o build local passou com 1,56 MB iniciais não otimizados. A primeira
+repetição da suíte demo revelou apenas duas expectativas antigas para `Referência:` em
+Visão Geral/Vendas. Atualizadas para `Referência da sessão:`, passaram os quatro casos
+focados (duas asserções × dois viewports) e a suíte integral passou **158/158**; nenhuma
+regra/produto foi modificada.
+
+O artefato Pages foi produzido com o `base-href` do workflow e `404.html` copiado de
+`index.html`, como no deploy configurado. Smoke HTTP estático simulou o prefixo do Pages e
+carregou Visão Geral, Vendas, Relatórios e Configurações por rotas diretas: **45** pedidos
+same-origin, zero pedido comercial `/api/v1`, externo ou com `Authorization`, sem falha de
+recurso. A varredura de todos os 33 arquivos compilados não encontrou `/api/v1`, o nome da
+variável de segredo, caminho SQLite, URL upstream ou marcador Bearer. O smoke foi local,
+sem publicar artefato nem chamar GitHub Pages.
+
+Backend executado sequencialmente a partir de `backend/`:
+
+```powershell
+dotnet --version
+dotnet restore VendasEmAberto.slnx --locked-mode
+dotnet build VendasEmAberto.slnx -c Release --no-restore
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build
+dotnet test --solution VendasEmAberto.slnx -c Release --no-build --list-tests
+dotnet format VendasEmAberto.slnx --verify-no-changes --no-restore
+dotnet list VendasEmAberto.slnx package --vulnerable --include-transitive
+```
+
+Restore locked, build Release (0 avisos/erros), suite **389/389** (143 IntegrationTests,
+246 UnitTests), descoberta **389**, format verify e auditoria NuGet passaram; a auditoria
+não reportou vulnerabilidades nos seis projetos considerando as fontes disponíveis. Todos
+os comandos finais tiveram código 0. Nenhum SDK foi instalado e nenhum manifesto/lockfile foi
+alterado.
+
+`npm run format:check` inicialmente repetiu a falha conhecida somente em `README.md`; a
+comparação com Prettier em cópia temporária mostrou desvio restrito a tabelas/parágrafos
+preexistentes. O README foi formatado sem alteração semântica (13 linhas inseridas/14
+removidas em wrapping/alinhamento) e a verificação global passou. Os dados de teste são
+sintéticos; a regressão demo/Pages não representa aceite operacional.
 
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
@@ -5245,10 +5307,10 @@ Verificações executadas em 28/11/2026:
 - `npm run build`: aprovado, **326,86 kB** iniciais; `npm exec ng build -- --configuration local`:
   aprovado, **1,54 MB** iniciais.
 - `dotnet test tests/VendasEmAberto.IntegrationTests/VendasEmAberto.IntegrationTests.csproj
-  --configuration Release --filter "FullyQualifiedName~AlterarStatusViaSender_AplicaMatrizNoOpEConflitoSemPerderHistorico"`:
+--configuration Release --filter "FullyQualifiedName~AlterarStatusViaSender_AplicaMatrizNoOpEConflitoSemPerderHistorico"`:
   **1/1**; matriz/no-op sem incremento de revisão e preservação do histórico.
 - Prettier direcionado, `git diff --check` e `openspec validate
-  fase-006-integracao-angular --strict`: aprovados.
+fase-006-integracao-angular --strict`: aprovados.
 
 Os testes de componente usam fonte simulada; o teste SQLite verifica o backend
 existente, não constitui E2E da interface contra a API. A integração browser real
@@ -5284,7 +5346,7 @@ Verificações executadas em 28/11/2026:
   aprovado, **1,54 MB** iniciais. Testes HTTP existentes cobrem POST `/api/v1/recebimentos`
   e corpo wire; não houve mudança no backend.
 - Prettier direcionado, `git diff --check` e `openspec validate
-  fase-006-integracao-angular --strict`: aprovados.
+fase-006-integracao-angular --strict`: aprovados.
 
 Os testes de componente usam `FonteVendas` simulada e o E2E de formulários percorre a
 demonstração; não são teste browser/API/SQLite real. Esse cenário permanece pendente
