@@ -4,9 +4,10 @@
 
 ### 1. Identificação e resumo executivo
 
-Change `fase-006-integracao-angular`: planejamento concluído e apply autorizado em
-27/11/2026, após integração do PR #41; implementação em andamento nesta feature. Não é
-a FASE-006 histórica dos formulários demonstrativos. Conectar as telas existentes ao
+Change `fase-006-integracao-angular`: planejamento e apply autorizado em 27/11/2026,
+após integração do PR #41; implementação e verificações técnicas concluídas na feature
+em 28/11/2026. Isso não é homologação operacional nem aceite da ótica. Não é a FASE-006
+histórica dos formulários demonstrativos. Conectar as telas existentes ao
 contrato HTTP v1 para validar o fluxo persistido com dados sintéticos, preservando a
 demonstração independente publicada no Pages.
 Responsáveis por homologação operacional não foram definidos.
@@ -164,6 +165,16 @@ não resolvida por testes. Roteiro sintético: consultar vazio → cadastrar com
 editar → baixar/corrigir → conferir mês/status → recarregar/reiniciar → provocar conflito
 e resposta perdida → conferir → repetir modo demo com API desligada. Sem telemetria.
 
+**Estado técnico verificado em 28/11/2026:** as 23 tarefas da Change foram implementadas
+e verificadas na feature branch; a matriz de CA-069–078 e evidências por camada constam
+em `openspec/changes/fase-006-integracao-angular/tasks.md` e `frontend/README.md`.
+Regressão final: Angular 547/547; Chromium demo 160/160, local com API/SQLite real
+24/24 e fixture responsiva 24/24; gate proxy 9/9; backend .NET 389/389. O modo local,
+as bases e pessoas usados nos testes são sintéticos. Zoom nativo 200% não pôde ser
+verificado pela automação e não foi substituído por viewport; leitores de tela e browsers
+além de Chromium não foram testados. Não há aceite operacional nem autorização de
+uso com dados reais.
+
 ### 13. Dependências, riscos e mitigação
 
 PR #41 foi integrado e seu contrato reconferido na tarefa 1.1; não houve divergência
@@ -185,10 +196,11 @@ avançar.
 
 ### 15. Entregas e próximos passos
 
-O apply foi autorizado em 27/11/2026 após a integração do PR #41; executar INT-01–06
-conforme as tarefas e gates técnicos. Commit por funcionalidade com suas verificações;
-não abrir PR apenas por este planejamento. Archive e PR único somente após escopo
-integral implementado e verificado; merge exige autorização explícita.
+O apply foi autorizado em 27/11/2026 após a integração do PR #41. INT-01–06 e as
+verificações CA-069–078 foram concluídos na feature em 28/11/2026, com a limitação de
+zoom nativo registrada na seção 12 e nos artefatos de evidência. O fechamento técnico não
+é homologação operacional. Archive e PR único seguem o fluxo do repositório, após revisar
+e consolidar esta documentação; merge exige autorização explícita.
 
 ### 16. Glossário e revisão
 
@@ -197,6 +209,9 @@ memória descartável; conferência: consulta + reconhecimento humano, não prov
 exactly-once; proxy: ferramenta apenas de desenvolvimento. Revisão de 27/11/2026
 acrescenta FON-047/048, RF-037–043 e CA-069–078, preservando os IDs FON-045/046,
 RF-031–036, CA-061–068 e DEC-041 da fase 005, integrada pelo PR #41; preserva histórico.
+Revisão de 28/11/2026 registra a conclusão técnica da implementação/auditoria na feature
+e suas evidências/limitações; não altera critérios, não resolve PEN-014 nem registra aceite
+da ótica ou autorização operacional.
 
 ## Fase 005 do backend — contrato e API local (26/11/2026)
 

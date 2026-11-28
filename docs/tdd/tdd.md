@@ -5,11 +5,14 @@
 ### 1. Identificação e situação
 
 Technical Design Document de `fase-006-integracao-angular`, baseado em PRD/FON-047/048,
-RF-037–043 e CA-069–078. Planejamento concluído; apply autorizado em 27/11/2026 e
-implementação em andamento nesta feature.
+RF-037–043 e CA-069–078. Planejamento concluído; apply autorizado em 27/11/2026.
+Implementação e verificações técnicas das tarefas 1.1–6.5 concluídas na feature em
+28/11/2026; isso não constitui homologação operacional, aceite da ótica ou autorização
+para uso com dados reais.
 Escopo, proxy com credencial no servidor, referência fixa e conferência explícita foram
-confirmados no Harness. O desenho foi revisado e o apply autorizado; compatibilidade
-runtime permanece sujeita aos gates e isso não autoriza uso operacional.
+confirmados no Harness. O desenho foi revisado e o apply autorizado; a compatibilidade
+comprovada e suas limitações estão registradas nas seções 12 e 15. Isso não autoriza uso
+operacional.
 
 ### 2. Contexto, objetivos e limites
 
@@ -24,9 +27,12 @@ idempotência distribuída, sincronização automática entre abas e dependênci
 Inspecionados `frontend/package.json`, `angular.json`, `app.config.ts`, `app.ts`,
 `nucleo/demonstracao/`, cadastro/detalhe/recebimento, Visão Geral, Relatórios e
 Configurações; testes adjacentes, configuração Playwright e specs pertinentes.
-As telas dependem de `ServicoDemonstracao`, seus retornos síncronos e modelos de
-domínio demonstrativo. `Relatorios` chama `calcularRelatorio` e Visão Geral deriva
-listas de todas as vendas. Não há HttpClient configurado ou proxy no workspace.
+Na elaboração do TDD, as telas dependiam de `ServicoDemonstracao`, seus retornos
+síncronos e modelos de domínio demonstrativo. `Relatorios` chamava `calcularRelatorio` e
+Visão Geral derivava listas de todas as vendas; não havia HttpClient configurado ou proxy
+no workspace. Após o apply, as composições demo/local, `FonteVendasHttp`, telas, cliente e
+proxy foram implementados; os resultados E2E com API/SQLite reais estão registrados nas
+seções 12/15 e em `tasks.md`/`frontend/README.md`.
 
 Main integrada `a8de117` contém o contrato e a implementação da API v1 do PR #41
 (head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e`), incluindo `api-local-vendas/spec.md`,
@@ -58,11 +64,11 @@ Fontes externas FON-048, consultadas em 27/11/2026:
 
 | Tema | Escolha explícita | Situação |
 | --- | --- | --- |
-| Resultado | Integrar Angular localmente com sintéticos, preservando Pages demo | Confirmada; implementação em andamento nesta feature |
+| Resultado | Integrar Angular localmente com sintéticos, preservando Pages demo | Confirmada; implementação técnica concluída e verificada nesta feature; sem aceite operacional |
 | Conexão | Proxy local, segredo fora do browser e CORS da API desligado | Confirmada; proxy e fonte HTTP local implementados |
 | Tempo | Dia local capturado na abertura, fixo na sessão; recarga renova só referência | Confirmada; referência fixa por injector implementada |
-| Incerteza | Bloquear confirmações na aba até consulta e reconhecimento humano | Confirmada; protocolo base implementado; integração transversal pendente em INT-05 |
-| Demais detalhes | Composição, modelos de leitura, gates e roadmap abaixo | Desenho autorizado e aplicado progressivamente; status no roadmap |
+| Incerteza | Bloquear confirmações na aba até consulta e reconhecimento humano | Confirmada; protocolo integrado e exercitado com API/SQLite reais e falhas de transporte controladas em INT-05/06 |
+| Demais detalhes | Composição, modelos de leitura, gates e roadmap abaixo | Desenho aplicado e verificado; evidências/limitações finais em tasks.md e frontend/README.md |
 
 ### 5. Arquitetura e responsabilidades propostas
 
@@ -91,10 +97,11 @@ Não criar store global de todas as vendas, repository genérico ou framework de
 
 Manter Angular/CLI/build 22.2.6, TypeScript 6.0.3, RxJS 7.8.2, Tailwind 4.3.5,
 Vitest 5.1.0, Playwright 1.65.0, Node >=24.15 <25/npm 11.19.0 dos manifestos.
-Sem atualização de versões, NgRx, SDK gerado ou novo pacote proxy. Usar HttpClient
-com APIs públicas de providers/testes e RxJS existentes. Signal Forms já adotado
-permanece; não migrar formulários por conveniência. Backend mantém baseline da fase 005.
-Comprovar APIs usadas e restore/build no apply, sem alegar compatibilidade compilada agora.
+Sem atualização de versões, NgRx, SDK gerado ou novo pacote proxy. A implementação usa
+HttpClient com APIs públicas de providers/testes e RxJS existentes. Signal Forms adotado
+foi mantido; backend permaneceu na baseline da fase 005. Builds/testes finais passaram
+com as versões fixadas descritas nas tarefas; nenhum SDK/pacote foi instalado nem
+manifesto/lockfile alterado nesta Change.
 
 ### 7. Estrutura e convenções propostas
 
@@ -157,15 +164,13 @@ Cadastro consulta revisão por uma coleção antes de habilitar confirmar. Não 
 revisão nova no submit para forçar sucesso. Conflito exige leitura explícita e novo
 aceite sobre o mesmo alvo; não sobrescrever rascunho nem deslocar parcela/recebimento.
 
-Configuração padrão/demo continua `npm start`, `npm run build` e Pages. Já existe um perfil
-`serve:local` com proxy em 127.0.0.1:4200, mas ele permanece um harness de transporte que
-serve a composição demonstrativa; não o apresentar como modo persistido. INT-02.1 cria a
-fronteira, o adaptador demonstrativo e composições isoladas/testáveis; INT-02.2 implementa o
-cliente HTTP. Manter `serve:local` ligado ao build de smoke até consultas/telas consumirem a
-fonte local (INT-03.1–3.4) e App/Configurações declararem corretamente o modo (INT-03.5);
-somente então selecionar o build/provider HTTP. Nenhum segredo no arquivo de ambiente
-compilado. Build local é artefato técnico, não implantável sem proxy; não publicar no Pages.
-Sem seletor runtime/URL ou fallback automático.
+Configuração padrão/demo continua `npm start`, `npm run build` e Pages, sem API ou segredo.
+No estado final (28/11/2026), `serve:local` seleciona `build:local`, provider HTTP e proxy
+em 127.0.0.1:4200; os E2E locais iniciam API/CLI e SQLite temporário próprios. As tarefas
+2.1–2.3 implementaram composição/adaptadores/cliente; 3.1–3.5 ligaram consultas, telas e
+configurações; a suíte final confirmou ausência de fallback. Nenhum segredo está no bundle
+ou arquivo de ambiente compilado. Build local é artefato técnico, não implantável sem proxy;
+não publicar no Pages. Sem seletor runtime/URL ou fallback automático.
 
 ### 9. Proxy e fluxos de falha
 
@@ -215,9 +220,10 @@ body ou Authorization recebido. Assets/respostas do browser também não continh
 API .NET real em SQLite sintético recebeu outro Bearer Base64 válido e respondeu 401/no-store,
 sem expor qualquer das credenciais. `node --test --test-concurrency=1 proxy-local.test.cjs
 proxy-local-cli.test.cjs` passou 9/9 e `npm run build` padrão passou (316,87 kB iniciais).
-Essa prova cobre o gate do proxy. As tarefas INT-02.1–2.3 e INT-03.1–3.5 implementaram a
-composição HTTP, consultas e ativação de `serve:local`; os testes de componentes usam fontes
-controladas. A conexão browser com backend/SQLite reais e comandos permanece para INT-06.
+Essa evidência cobriu o gate do proxy antes da integração das telas. INT-02.1–2.3 e
+INT-03.1–3.5 concluíram depois a composição HTTP, consultas e ativação de `serve:local`;
+INT-06 executou fluxos browser com backend/SQLite reais e comandos. Contagens/limites finais
+estão na seção 12 e nos artefatos de evidência.
 
 **HTTP e comandos:** GETs não têm retry automático nesta fase; ação de recarregar é
 explícita. Cada comando tem uma subscription controlada, sem retry/shareReplay que
@@ -298,18 +304,19 @@ Incerteza: interceptar e perder resposta **após** backend confirmar em cenário
 outro caso perde antes, comprovando UI conservadora em ambos. Mock de erro verifica
 protocolo, não simula falha nativa de commit. Testes reais do gravador permanecem.
 
-Executar sequencialmente frontend tests/build/format e E2E demo/local, backend restore
-locked/build Release/test/format e auditoria conforme baseline integrada. Comandos
-frontend existentes: `npm.cmd test -- --watch=false`, `npm.cmd run build`,
-`npm.cmd run format:check`, `npm.cmd run test:e2e` e fixture de paginação vigente.
-Propostos: `test:proxy-local`, `build:local`, `test:e2e:local`; criar/documentar somente
-no apply. Sem npm ci se desnecessário; se necessário, lockfile apenas e preservar
-processos alheios. SDK .NET deve satisfazer global.json; se ausente, registrar bloqueio,
-sem instalar/rebaixar global nem herdar autorização de instalação de Change antiga.
+Execução final concluída sequencialmente: `npm test -- --watch=false`, `npm run test:e2e`,
+`npm run test:e2e:paginacao-fixture`, `npm run test:e2e:local`, `npm run test:proxy-local:cli`,
+`npm run build`, build Pages/local e `npm run format:check`; backend restore locked/build
+Release/test/format/auditoria conforme README. A fixture Playwright local é worker único e
+remove apenas processos/diretório próprios. Toolchain fixada estava disponível; nenhum SDK,
+pacote ou lockfile foi instalado/alterado nesta verificação.
 
-Conferir temas em 1366×768 e 390×844 e fronteira 767/768 dos formulários; teclado,
-contraste, densidade no pronto e anúncios. Zoom nativo 200% exige observação manual
-própria; viewport reduzido não o substitui. Registrar limitação se indisponível.
+Evidência final: Chromium nos temas 1366×768/390×844 e formulários também em 767/768,
+1024 px; teclado, foco, estados anunciáveis, contraste e densidade passaram em E2E.
+Fixture de paginação manteve dez linhas e rodapé no documento desktop de 768 px. Chrome
+headed instalado foi aberto e recebeu cinco atalhos `Control+Equal`, mas viewport/DPR/escala
+permaneceram inalterados; zoom nativo 200% não foi verificado. Não substituir por viewport
+reduzido nem CSS zoom. Leitor de tela e browsers Firefox/WebKit não foram testados.
 
 ### 13. Segurança, privacidade e desempenho
 
@@ -333,8 +340,8 @@ silenciosamente nesta proposta nem mesclá-lo. Se contrato mudar, revisar primei
 | INT-02 | Fronteira/modelos/cliente/adaptador demo e estado de confirmação | INT-01 | Tipos exatos, uma escrita, referência fixa, revisão observada e testes de protocolo | Concluído/verificado; tarefas 2.1–2.3 |
 | INT-03 | Quatro coleções, detalhe, Visão Geral e mês; funcionalidades separadas | INT-02 | Pronto/erro/vazio/ausente, corridas e busca/paginação; sem cálculos financeiros HTTP | Concluído/verificado; tarefas 3.1–3.5 |
 | INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Concluído/verificado; tarefas 4.1–4.5 |
-| INT-05 | Conferência integrada/alerta por aba e recovery pós-sucesso | INT-02/04; protocolo básico já testado antes | Resposta perdida bloqueia toda aba; consulta+aceite liberam sem reenvio | Não implementado |
-| INT-06 | E2E real/reinício/duas abas, regressão demo/backend, auditoria e evidências | INT-01–05 | CA-069–078 rastreados, privacidade e limitações reais documentadas | Não implementado |
+| INT-05 | Conferência integrada/alerta por aba e recovery pós-sucesso | INT-02/04; protocolo básico já testado antes | Resposta perdida bloqueia toda aba; consulta+aceite liberam sem reenvio | Concluído/verificado; tarefas 5.1–5.2 |
+| INT-06 | E2E real/reinício/duas abas, regressão demo/backend, auditoria e evidências | INT-01–05 | CA-069–078 rastreados, privacidade e limitações reais documentadas | Concluído/verificado; tarefas 6.1–6.5; zoom nativo não verificado |
 
 Consultas podem ser desenvolvidas independentemente após INT-02, mas não compartilhar
 builds/testes/SQLite em paralelo. Nenhuma delegação ou paralelismo de agentes necessário.
@@ -349,18 +356,20 @@ DEC-042 complementa DEC-040/041 e reutiliza suas regras; não substitui schema/d
 Problema: consumidores síncronos demo não tratam fronteiras HTTP/revisão/resultado incerto.
 Escolha: adapters separados, proxy dev com segredo no servidor e protocolos acima.
 Origem: FON-047 para decisões materiais; FON-048 e inspeção para desenho proposto.
-Situação: escolhas da entrevista confirmadas e desenho técnico aplicado progressivamente.
-INT-01–04 concluídos/verificados; INT-05–06 pendentes conforme o roadmap. Contrapartidas e
-alternativas nas seções 5–13. Validação final: INT-05–06 e CA-069–078.
+Situação: escolhas da entrevista confirmadas e desenho técnico aplicado/verificado em
+INT-01–06 na feature em 28/11/2026. Frontend 547/547 unitários, 160/160 E2E demo,
+24/24 E2E local, 24/24 fixture responsiva; backend 389/389. CA-069–078 rastreados em
+tasks.md/README. Limites: zoom nativo 200%, leitor de tela, Firefox/WebKit e aceite
+operacional não comprovados; nenhuma evidência representa dados/uso reais.
 
 ### 16. Riscos, hipóteses e pendências
 
 PR #41 integrado e contrato reconferido na tarefa 1.1; a dependência está satisfeita.
 Hooks CLI/Vite foram exercitados em execução real na tarefa 1.3 antes da integração das
-telas. Não há regra comercial pendente para este recorte. INT-05/06 e a auditoria final
-permanecem pendentes; PEN-013/014 e autorização operacional continuam fora. Recarga perde
-bloqueio em memória: isso não autoriza replay nem garante deduplicação; mensagens orientam
-conferência humana, com limite explicitado no PRD.
+telas. INT-01–06 e auditoria final concluídos tecnicamente; PEN-013/014 e autorização
+operacional continuam fora. Zoom nativo não foi verificado, e leitor de tela/browsers têm
+os limites registrados acima. Recarga perde bloqueio em memória: isso não autoriza replay
+nem garante deduplicação; mensagens orientam conferência humana, com limite no PRD.
 
 ### 17. Rastreabilidade e revisão documental
 
@@ -372,15 +381,20 @@ Lotes legados e dashboard têm textos históricos divergentes nas specs principa
 não introduzir novas baixas em lote nem retirar dashboard; preservar código/regras
 atuais e RF-018–020, deixando manutenção de outras Changes fora do recorte.
 O registro de planejamento foi documental e não executou build/teste/auditoria; os
-resultados de apply são registrados por tarefa em `openspec/changes/fase-006-integracao-angular/tasks.md`
-e `frontend/README.md`. Verificações E2E reais com API/SQLite e auditoria transversal ainda
-estão pendentes em INT-06.
+resultados de apply estão registrados por tarefa em `openspec/changes/fase-006-integracao-angular/tasks.md`,
+`frontend/README.md` e no estado final deste DEC-042. E2E API/SQLite, regressão demo/backend
+e auditoria das sete deltas concluídos em 28/11/2026; zoom manual nativo e homologação
+operacional continuam não comprovados.
 
 ### 18. Histórico
 
 27/11/2026: acrescenta DEC-042 após PRD da fase 006; preserva DEC-041 e o histórico
 da fase 005; reconciliação com a main integrada e autorização do apply registradas na
 tarefa 1.1 desta Change.
+
+28/11/2026: atualiza o estado as-built de INT-01–06; registra regressão final, privacidade,
+rastreabilidade CA-069–078 e limites de zoom nativo/compatibilidade/homologação. Não altera
+as decisões técnicas, a API ou o schema; evidências detalhadas em tasks.md e frontend/README.md.
 
 ## DEC-041 — Contrato e API local da fase 005 (26/11/2026)
 

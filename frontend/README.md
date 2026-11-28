@@ -1131,6 +1131,73 @@ preexistentes. O README foi formatado sem alteração semântica (13 linhas inse
 removidas em wrapping/alinhamento) e a verificação global passou. Os dados de teste são
 sintéticos; a regressão demo/Pages não representa aceite operacional.
 
+### Apply `fase-006-integracao-angular` — tarefa 6.5 — auditoria final (28/11/2026)
+
+A auditoria final relaciona as sete deltas às evidências (matriz detalhada em
+`openspec/changes/fase-006-integracao-angular/tasks.md`):
+
+| Critério | Verificação/evidência                                                                | Resultado e limite                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| CA-069   | Demo/Pages sem API, recursos externos ou browser storage; build padrão independente  | Aprovado nos E2E Chromium e smoke estático local; sem publicação no Pages                                              |
+| CA-070   | Cadastro, reload e reinício API no mesmo SQLite, tarefa 6.2                          | IDs/histórico/revisão preservados em banco sintético; referência renovada                                              |
+| CA-071   | Gate Node, CLI real, E2E proxy e auditoria de trace/logs/assets/browser              | Negados sem upstream; sem valor Bearer nos eventos/rede; ver nota de snapshots de fonte abaixo                         |
+| CA-072   | Mapper wire e contratos, valores/revisões grandes, centavos e datas, tarefas 2.2/6.2 | 547 unitários e E2E local aprovados; precisão é verificada sem conversão insegura                                      |
+| CA-073   | Testes de geração/chave, respostas fora de ordem, falha e duas abas, tarefas 2.3/6.3 | Respostas antigas não substituem seleção atual; conflito retorna 409 e exige aceite novo                               |
+| CA-074   | Cinco comandos e persistência real em SQLite, tarefas 4.1–4.5/6.2                    | Cobertura por comando e fluxo browser/API; dados exclusivamente sintéticos                                             |
+| CA-075   | Duas abas com revisão antiga e sucesso seguido de refresh falho, tarefa 6.3          | Conflito sem retry; sucesso conhecido permanece separado da falha de consulta                                          |
+| CA-076   | Resposta perdida antes/depois de confirmação, consulta e reconhecimento, tarefa 6.3  | Bloqueio/conferência demonstrados; falhas de transporte controladas não provam exactly-once nem queda nativa de commit |
+| CA-077   | Teclado, foco, anúncios, contraste, fronteira 767/768 e densidade, Chromium          | Aprovado nos testes automatizados em dois temas/viewports; zoom nativo 200% não verificado                             |
+| CA-078   | Regressão Angular, demo, fixture, proxy e backend com versões fixadas                | Resultados e códigos registrados nas tarefas 6.4/6.5; sem dados reais ou aceite operacional                            |
+
+Dois novos E2E de privacidade — `zzzz-auditoria-storage.spec.ts` e
+`zzzz-auditoria-storage.local.spec.ts` — percorrem Visão Geral, Vendas, Relatórios e
+Configurações nos modos demo e local. Verificam cookies, `document.cookie`, local/session
+storage, IndexedDB, Cache Storage e service workers; no demo alternam tema e recarregam,
+confirmando que a preferência é efêmera. Demo **2/2** e local **2/2** passaram em
+1366×768 e 390×844. No modo local, as rotas fizeram consultas same-origin à API/SQLite
+real sem preencher armazenamento do browser; no demo nenhuma rota chamou `/api/v1`.
+Inspeção de `frontend/src/` não encontrou uso de storage comercial em runtime; as únicas
+referências a local/session storage no código são as asserções que garantem sua ausência.
+
+Auditoria de credenciais: a suíte de infraestrutura compara as requisições/respostas do
+browser e logs com o segredo efêmero real da fixture, sem Authorization/Cookie no browser;
+os testes de proxy negam proveniência inválida antes do upstream (contador zero) e testam
+API .NET com segredo divergente. A varredura Pages/33 arquivos e o smoke HTTP estático
+registrados na tarefa 6.4 permanecem válidos (nenhum marcador de API/segredo/banco no
+bundle; quatro rotas, 45 pedidos same-origin). Em um trace Playwright explícito do teste
+real do proxy, cinco arquivos de evento/rede não continham atribuição do segredo, valor
+Bearer nem header Authorization. O trace inclui snapshots dos fontes E2E, que mencionam
+somente o nome `Backend__SegredoLocal` e o código da asserção, não o valor da credencial;
+isso foi distinguido de vazamento do segredo. Os artefatos de trace são de teste local e
+não foram publicados.
+
+Verificações finais executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false
+npm run test:e2e
+npm run test:e2e:local
+npm run test:e2e:paginacao-fixture
+node --test --test-concurrency=1 proxy-local.test.cjs proxy-local-cli.test.cjs
+```
+
+Resultados: unitários **547/547** em 44 arquivos; demo **160/160**; local real
+**24/24**; fixture de paginação/estados visuais **24/24**; gate Node + CLI real **9/9**.
+Os E2E demo/local passaram em Chromium 1366×768 e 390×844. A regressão mediu contraste
+nos dois temas: mínimo informado de 4,83:1 em texto/ícones da lateral light, 4,90:1 nos
+formulários; anéis de foco medidos em 5,75:1 light e 10,41:1 dark. Testes de formulário
+confirmaram duas colunas em 768 px, empilhamento em 767 px e nenhum overflow horizontal
+global. No pronto desktop, dez linhas, critérios e rodapé cabem no documento de 768 px;
+fonte de tabela mantida em 18 px.
+
+**Zoom nativo 200%:** Chrome instalado foi aberto em modo headed; cinco `Control+Equal`
+enviados pela automação não ativaram o controle do browser: `devicePixelRatio` ficou
+1,25, `innerWidth` 1036 e `visualViewport.scale` 1 antes/depois. Portanto zoom nativo não
+foi verificado; não se usou viewport, CSS zoom ou emulação como substituto. Também não
+foram executados testes manuais com leitor de tela/tecnologia assistiva nem suites Firefox
+ou WebKit. Os resultados são regressão técnica com Chromium e dados sintéticos, não
+homologação operacional, aceite da ótica ou autorização para dados reais.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
