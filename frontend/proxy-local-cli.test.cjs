@@ -246,7 +246,7 @@ test(
         assetReads.push(assetRead);
       });
 
-      await page.goto(UI_ORIGIN);
+      await page.goto(`${UI_ORIGIN}/configuracoes`);
       const reservedId = 'cliente /+?#ção';
       const browserQuery = new URLSearchParams([
         ['id', reservedId],

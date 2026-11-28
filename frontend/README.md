@@ -945,6 +945,48 @@ provam falha de transporte com API/SQLite real. Os cenários reais de refresh, d
 resposta perdida permanecem pendentes de INT-06.3; não há alegação de exactly-once ou aceite
 operacional.
 
+### Apply `fase-006-integracao-angular` — tarefa 6.1 — fixture Playwright local (28/11/2026)
+
+O perfil `playwright.local.config.ts` agora está isolado do perfil demonstrativo e usa
+`workers: 1`. Cada worker inicia seus próprios processos .NET e Angular CLI, ambos presos
+a `127.0.0.1`; a porta fixa da UI (`4200`, exigida pelo gate de proveniência) deve estar
+livre e nunca é reutilizada. A API recebe uma porta loopback temporária, segredo Base64
+efêmero e caminho SQLite absoluto dentro de diretório único criado pela fixture. O segredo
+é mantido em memória no processo Playwright de servidor e nos ambientes dos processos API/
+proxy; o ambiente de lançamento do browser remove variáveis de credencial. O helper
+`apiRequest` autentica chamadas Node diretamente à API para preparar dados sintéticos, sem
+injetar credencial no browser nem adicionar endpoint seed. A API não recebe seed/reset e
+inicia com o banco vazio. Logs dos processos são capturados em arquivos temporários; a
+fixture detecta o segredo mesmo entre fragmentos de saída, redige o valor antes de gravar
+e falha se encontrar vazamento. Ao terminar, encerra apenas os filhos que iniciou, confirma
+que as portas foram liberadas e remove somente o diretório que criou.
+
+`npm run test:e2e:local` executa o perfil isolado. A suíte de infraestrutura comprova, em
+cada viewport, banco inicialmente vazio e estável após leitura, falha de inicialização sem
+segredo sem criar SQLite, proxy admitido same-origin/negado cross-site, ausência de Bearer,
+cookie e segredo em tráfego/logs do browser, e criação de uma venda exclusivamente por POST
+autenticado direto da fixture. Essa venda sintética é descartada junto com o banco temporário.
+O teste local de no-fallback continua interceptando API indisponível, separado das chamadas
+reais de infraestrutura. A fixture é worker-scoped e sequencial; os dois projetos de
+viewport recebem bancos/processos diferentes.
+
+A execução em Windows (`Node 24.21.0`, `npm 11.19.0`, `.NET SDK 10.0.404`) passou:
+
+```powershell
+npm run test:e2e:local
+npm run test:proxy-local:cli
+```
+
+Resultados: E2E local **10/10** em dois projetos Chromium (1366×768 e 390×844), incluindo
+API/SQLite/CLI reais e cleanup com portas livres; testes do proxy com CLI real **2/2**,
+incluindo recusa sem encaminhamento upstream e API .NET com credencial incompatível. Durante
+essa validação, o smoke CLI existente foi ajustado para abrir Configurações em vez de `/`:
+Visão Geral agora faz uma consulta comercial real no modo local e contaminava a contagem da
+requisição controlada. O perfil Playwright demo passou a ignorar somente os specs locais e
+de fixture, sem alterar a suíte demo; `npm run test:e2e -- --list` listou **158 testes em 11
+arquivos** sem specs/fixture local. Os dados são sintéticos; isso é verificação de
+infraestrutura, não aceite operacional nem prova de falha transacional nativa.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

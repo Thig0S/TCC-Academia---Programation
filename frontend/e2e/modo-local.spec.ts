@@ -1,8 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './local-stack';
 
 test('modo local explica persistência, renova ao recarregar e não recorre ao demo', async ({
   page,
+  localStack,
 }) => {
+  expect(localStack.baseURL).toBe('http://127.0.0.1:4200');
   await page.route('**/api/v1/**', (route) =>
     route.fulfill({
       status: 502,
