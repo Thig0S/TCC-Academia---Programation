@@ -78,27 +78,56 @@ function detalheWire(): Record<string, unknown> {
   };
 }
 
-function relatorioWire(): Record<string, unknown> {
+function diasNoMes(ano: number, mes: number): number {
+  if (mes === 2) {
+    const bissexto = ano % 4 === 0 && (ano % 100 !== 0 || ano % 400 === 0);
+    return bissexto ? 29 : 28;
+  }
+  return [4, 6, 9, 11].includes(mes) ? 30 : 31;
+}
+
+function relatorioWire(ano = 2024, mes = 2): Record<string, unknown> {
+  const prefixo = `${String(ano).padStart(4, '0')}-${String(mes).padStart(2, '0')}`;
+  const ultimoDia = diasNoMes(ano, mes);
   return {
     referencia,
-    inicioMes: '2024-02-01',
-    fimMes: '2024-02-29',
+    inicioMes: `${prefixo}-01`,
+    fimMes: `${prefixo}-${String(ultimoDia).padStart(2, '0')}`,
     revisao,
     recebimentos: [
-      {
-        id: 'venda/externa %/recebimento/lote',
+      ...[
+        ['entrada', 'Entrada', `${prefixo}-01`, 'Dinheiro', 100],
+        [
+          'lote',
+          'HistoricoLote',
+          `${prefixo}-${String(ultimoDia).padStart(2, '0')}`,
+          'CartaoCredito',
+          200,
+        ],
+        ['individual', 'Individual', `${prefixo}-02`, 'Pix', 300],
+      ].map(([id, origem, data, forma, valorCentavos]) => ({
+        id: `venda/externa %/recebimento/${id}`,
         venda: resumoWire(),
-        origem: 'HistoricoLote',
-        data: '2024-02-29',
-        forma: 'CartaoCredito',
-        valorCentavos: 9007199254740991,
+        origem,
+        data,
+        forma,
+        valorCentavos,
+      })),
+    ],
+    recebimentosDiarios: Array.from({ length: ultimoDia }, (_, indice) => ({
+      data: `${prefixo}-${String(indice + 1).padStart(2, '0')}`,
+      totalCentavos: indice === 0 ? 9007199254740991 : 0,
+    })),
+    vendasDoMes: [],
+    saldos: [
+      {
+        venda: resumoWire({ proximoVencimento: null }),
+        saldoCentavos: 0,
+        primeiroVencimentoPendente: null,
       },
     ],
-    recebimentosDiarios: [{ data: '2024-02-29', totalCentavos: 9007199254740991 }],
-    vendasDoMes: [],
-    saldos: [],
-    parcelasAtrasadas: [],
-    parcelasPrejuizo: [],
+    parcelasAtrasadas: [{ venda: resumoWire(), parcela: parcelaWire() }],
+    parcelasPrejuizo: [{ venda: resumoWire(), parcela: parcelaWire(), incluirNoTotal: false }],
     totalRecebidoCentavos: 9007199254740991,
     quantidadeVendasMes: 1,
     totalVendasMesCentavos: 9007199254740991,
@@ -259,11 +288,39 @@ describe('FonteVendasHttp', () => {
       revisao,
       totalRecebidoCentavos: 9007199254740991,
     });
-    expect(relatorio.recebimentos[0]).toMatchObject({
-      origem: 'Lote',
+    expect(relatorio.recebimentos.map(({ origem }) => origem)).toEqual([
+      'Entrada',
+      'Lote',
+      'Individual',
+    ]);
+    expect(relatorio.recebimentos[1]).toMatchObject({
       forma: 'Cartão de crédito',
-      valorCentavos: 9007199254740991,
+      valorCentavos: 200,
     });
+    expect(relatorio.saldos[0].primeiroVencimentoPendente).toBeNull();
+    expect(relatorio.saldos[0].venda.proximoVencimento).toBeNull();
+    expect(relatorio.parcelasAtrasadas[0].parcela).toMatchObject({
+      dataPagamento: null,
+      formaPagamento: null,
+    });
+    expect(relatorio.recebimentosDiarios).toHaveLength(29);
+  });
+
+  it.each([
+    [1, 1, '0001-01-01', '0001-01-31'],
+    [9999, 12, '9999-12-01', '9999-12-31'],
+  ])('mapeia relatório mensal completo nos limites civis %s/%s', async (ano, mes, inicio, fim) => {
+    const pendente = firstValueFrom(fonte.consultarRelatorioMensal(inicio));
+    const requisicao = backend.expectOne(
+      `/api/v1/relatorios/mensal?ano=${ano}&mes=${mes}&referencia=${referencia}`,
+    );
+    requisicao.flush(relatorioWire(Number(ano), Number(mes)));
+    const relatorio = await pendente;
+
+    expect(relatorio).toMatchObject({ inicioMes: inicio, fimMes: fim });
+    expect(relatorio.recebimentosDiarios).toHaveLength(diasNoMes(Number(ano), Number(mes)));
+    expect(relatorio.recebimentosDiarios[0].data).toBe(inicio);
+    expect(relatorio.recebimentosDiarios.at(-1)?.data).toBe(fim);
   });
 
   it('mapeia os cinco comandos para paths e corpos wire sem renovar revisão', async () => {

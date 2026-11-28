@@ -1,127 +1,247 @@
-import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
-import { ProjecaoParcela } from '../parcelas/parcela.calculos';
-import { PagamentoDemonstrativo } from '../parcelas/pagamento.modelos';
-import { ProjecaoVenda } from '../vendas/venda.calculos';
-import { ServicoDemonstracao } from '../../nucleo/demonstracao/servico-demonstracao';
+import { ControleConsultas } from '../../nucleo/dados/controle-consultas';
+import { FONTE_VENDAS, FonteVendas } from '../../nucleo/dados/fonte-vendas';
+import {
+  ParcelaLeitura,
+  RelatorioMensalLeitura,
+  VendaResumoLeitura,
+} from '../../nucleo/dados/modelos-leitura';
 
 const referencia = '2027-03-31';
 
-function parcela(
-  id: string,
-  numero: number,
-  vencimento: string,
-  situacao: ProjecaoParcela['situacao'],
-  valorCentavos = 100,
-): ProjecaoParcela {
-  return {
-    id,
-    numero,
-    vencimento,
-    situacao,
-    valorCentavos,
-    dataPagamento: situacao === 'Paga' ? vencimento : null,
-    formaPagamento: situacao === 'Paga' ? 'Pix' : null,
-  };
+function diasNoMes(ano: number, mes: number): number {
+  if (mes === 2) {
+    const bissexto = ano % 4 === 0 && (ano % 100 !== 0 || ano % 400 === 0);
+    return bissexto ? 29 : 28;
+  }
+  return [4, 6, 9, 11].includes(mes) ? 30 : 31;
 }
 
-function venda(
+function dataDoMes(mes: string, dia: number): string {
+  const [ano, numeroMes] = mes.split('-').map(Number);
+  return `${String(ano).padStart(4, '0')}-${String(numeroMes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+}
+
+function vendaResumo(
   id: string,
-  dataVenda = '2027-03-01',
-  options: {
-    readonly cliente?: Partial<ProjecaoVenda['cliente']>;
-    readonly entrada?: ProjecaoVenda['entrada'];
-    readonly recebimentos?: readonly PagamentoDemonstrativo[];
-    readonly parcelas?: readonly ProjecaoParcela[];
-    readonly saldo?: number;
-    readonly statusAdministrativo?: ProjecaoVenda['statusAdministrativo'];
-    readonly situacao?: ProjecaoVenda['situacao'];
-    readonly total?: number;
-    readonly totalEfetivo?: number;
-  } = {},
-): ProjecaoVenda {
+  nome: string,
+  substituicoes: Partial<VendaResumoLeitura> = {},
+): VendaResumoLeitura {
   return {
     id,
-    statusAdministrativo: options.statusAdministrativo ?? 'Ativo',
     cliente: {
-      nome: `Cliente ${id}`,
+      nome,
       cpf: '90000000175',
       telefone: '00900000001',
       descricao: null,
-      ...options.cliente,
     },
-    dataVenda,
-    valorTotalCentavos: options.total ?? 1000,
-    valorTotalEfetivoCentavos: options.totalEfetivo ?? options.total ?? 1000,
-    entrada: options.entrada ?? null,
-    recebimentos: options.recebimentos ?? [],
-    parcelas: options.parcelas ?? [],
-    totalPagoCentavos: 0,
-    saldoCentavos: options.saldo ?? 1000,
-    quantidadePaga: options.situacao === 'Quitada' ? 1 : 0,
+    dataVenda: '2027-03-05',
+    statusAdministrativo: 'Ativo',
+    situacao: 'Em aberto',
+    valorTotalCentavos: 10000,
+    acrescimosCentavos: 500,
+    valorTotalEfetivoCentavos: 10500,
+    totalRecebidoCentavos: 2000,
+    saldoCentavos: 8500,
+    quantidadePaga: 1,
+    quantidadeParcelas: 3,
     proximoVencimento: null,
-    situacao: options.situacao ?? 'Em aberto',
+    revisao: '9007199254740993',
+    referencia,
+    ...substituicoes,
   };
 }
 
-function pagamento(
+function parcelaLeitura(
   id: string,
-  data: string,
-  valorCentavos: number,
-  parcelaId = `parcela/${id}`,
-): PagamentoDemonstrativo {
+  vencimento: string,
+  situacao: ParcelaLeitura['situacao'],
+  valorBaseCentavos = 321,
+): ParcelaLeitura {
   return {
     id,
-    data,
-    forma: 'Pix',
-    valorCentavos,
-    alocacoes: [{ parcelaId, valorCentavos }],
+    numero: 2,
+    valorBaseCentavos,
+    acrescimoCentavos: 79,
+    valorEfetivoCentavos: valorBaseCentavos + 79,
+    valorRecebidoCentavos: 0,
+    saldoCentavos: valorBaseCentavos + 79,
+    vencimento,
+    situacao,
+    dataPagamento: null,
+    formaPagamento: null,
   };
+}
+
+function relatorioMensal(
+  mes = '2027-03-01',
+  opcoes: { readonly vazioMensal?: boolean; readonly referencia?: string } = {},
+): RelatorioMensalLeitura {
+  const [ano, numeroMes] = mes.split('-').map(Number);
+  const fimMes = dataDoMes(mes, diasNoMes(ano, numeroMes));
+  const resumo = vendaResumo('venda/com/barras', 'Cliente literal', {
+    dataVenda: mes,
+    referencia: opcoes.referencia ?? referencia,
+  });
+  const mensalVazio = opcoes.vazioMensal ?? false;
+
+  return {
+    referencia: opcoes.referencia ?? referencia,
+    revisao: '9223372036854775807',
+    inicioMes: mes,
+    fimMes,
+    recebimentos: mensalVazio
+      ? []
+      : [
+          {
+            id: 'entrada/1',
+            venda: resumo,
+            origem: 'Entrada',
+            data: dataDoMes(mes, 1),
+            forma: 'Dinheiro',
+            valorCentavos: 100,
+          },
+          {
+            id: 'lote/2',
+            venda: resumo,
+            origem: 'Lote',
+            data: dataDoMes(mes, Math.min(10, diasNoMes(ano, numeroMes))),
+            forma: 'Cartão de débito',
+            valorCentavos: 200,
+          },
+          {
+            id: 'individual/3',
+            venda: resumo,
+            origem: 'Individual',
+            data: fimMes,
+            forma: 'Pix',
+            valorCentavos: 300,
+          },
+        ],
+    recebimentosDiarios: Array.from({ length: diasNoMes(ano, numeroMes) }, (_, indice) => ({
+      data: dataDoMes(mes, indice + 1),
+      totalCentavos: mensalVazio ? 0 : indice === 0 ? 125 : indice === 9 ? 250 : 0,
+    })),
+    vendasDoMes: mensalVazio ? [] : [resumo],
+    saldos: [
+      {
+        venda: resumo,
+        saldoCentavos: 456,
+        primeiroVencimentoPendente: null,
+      },
+      {
+        venda: vendaResumo('venda/vencimento', 'Cliente vencimento', {
+          referencia: opcoes.referencia ?? referencia,
+        }),
+        saldoCentavos: 123,
+        primeiroVencimentoPendente: '2027-03-30',
+      },
+    ],
+    parcelasAtrasadas: [
+      {
+        venda: resumo,
+        parcela: parcelaLeitura('atrasada/1', '2027-03-01', 'Atrasado', 321),
+      },
+    ],
+    parcelasPrejuizo: [
+      {
+        venda: vendaResumo('venda/prejuizo', 'Cliente Prejuízo', {
+          statusAdministrativo: 'Prejuízo',
+          referencia: opcoes.referencia ?? referencia,
+        }),
+        parcela: parcelaLeitura('prejuizo/1', '2027-02-01', 'Atrasado', 654),
+        incluirNoTotal: true,
+      },
+      {
+        venda: vendaResumo('venda/prejuizo-com-recebimento', 'Cliente com recebimento', {
+          statusAdministrativo: 'Prejuízo',
+          referencia: opcoes.referencia ?? referencia,
+        }),
+        parcela: parcelaLeitura('prejuizo/2', '2027-02-02', 'Atrasado', 987),
+        incluirNoTotal: false,
+      },
+    ],
+    // Totais da resposta são deliberadamente independentes das linhas da fixture:
+    // a tela deve apresentá-los, não recalculá-los no browser.
+    totalRecebidoCentavos: mensalVazio ? 0 : 9999,
+    quantidadeVendasMes: mensalVazio ? 0 : 7,
+    totalVendasMesCentavos: mensalVazio ? 0 : 8888,
+    totalEmAbertoCentavos: 7777,
+    totalAtrasadoCentavos: 6666,
+    totalPrejuizoCentavos: 5555,
+  };
+}
+
+function criarFonte(
+  consultarRelatorioMensal: (mes: string) => Observable<RelatorioMensalLeitura>,
+): FonteVendas {
+  return {
+    referencia,
+    consultarColecao: vi.fn(),
+    consultarVenda: vi.fn(),
+    consultarVisaoGeral: vi.fn(),
+    consultarRelatorioMensal: vi.fn(consultarRelatorioMensal),
+    cadastrarVenda: vi.fn(),
+    editarCliente: vi.fn(),
+    alterarStatus: vi.fn(),
+    registrarPagamento: vi.fn(),
+    corrigirPagamento: vi.fn(),
+  } as unknown as FonteVendas;
 }
 
 function texto(elemento: Element): string {
   return (elemento.textContent ?? '').replaceAll('\u00a0', ' ');
 }
 
-function centavos(textoValor: string): number {
-  const valor = textoValor.match(/R\$\s*([\d.]+,\d{2})/)?.[1];
-  if (!valor) throw new Error(`Valor BRL ausente: ${textoValor}`);
-  return Math.round(Number(valor.replaceAll('.', '').replace(',', '.')) * 100);
+function linksDaTabela(pagina: Element, nome: string): HTMLAnchorElement[] {
+  return [...pagina.querySelectorAll<HTMLAnchorElement>(`[aria-label="${nome}"] tbody a`)];
 }
 
-describe('Relatórios', () => {
-  const vendas = signal<readonly ProjecaoVenda[]>([]);
+describe('Relatórios integrados à fonte mensal', () => {
+  let fonte: FonteVendas;
 
   beforeEach(() => {
-    vendas.set([]);
+    fonte = criarFonte((mes) => of(relatorioMensal(mes)));
     TestBed.configureTestingModule({
-      providers: [
-        provideRouter(routes),
-        { provide: ServicoDemonstracao, useValue: { referencia, vendas } },
-      ],
+      providers: [provideRouter(routes), { provide: FONTE_VENDAS, useFactory: () => fonte }],
     });
   });
 
-  it('identifica mês e posição na referência, com totais zero e estados vazios por seção', async () => {
+  it('renderiza os cinco painéis, totais wire, origens, IDs opacos e posição literal', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
     const pagina = harness.routeNativeElement!;
     const conteudo = texto(pagina);
 
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledTimes(1);
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledWith('2027-03-01');
+    expect(fonte.consultarColecao).not.toHaveBeenCalled();
+    expect(fonte.consultarVenda).not.toHaveBeenCalled();
     expect(conteudo).toContain('01/03/2027 a 31/03/2027');
-    expect(conteudo).toContain('Referência: 31/03/2027');
-    expect(conteudo).toContain('Nenhum recebimento neste mês.');
-    expect(conteudo).toContain('Nenhuma venda cadastrada neste mês.');
-    expect(conteudo).toContain('Nenhuma parcela em aberto nesta referência.');
-    expect(conteudo).toContain('Nenhuma parcela vencida nesta referência.');
-    expect(conteudo).toContain('Nenhuma parcela pendente em contratos em Prejuízo.');
-    expect(conteudo).toContain('Recebimentos no mês');
-    expect(conteudo).toContain('Parcelas em aberto');
-    expect(conteudo).toContain('R$ 0,00');
-    expect(pagina.querySelectorAll('table')).toHaveLength(1);
-    expect(pagina.querySelector('table caption')?.textContent).toContain('valores em BRL');
+    expect(conteudo).toContain('Referência fixa: 31/03/2027');
+    expect(conteudo).toContain('R$ 99,99');
+    expect(conteudo).toContain('7 vendas Ativas');
+    expect(conteudo).toContain('R$ 88,88');
+    expect(conteudo).toContain('R$ 77,77');
+    expect(conteudo).toContain('R$ 66,66');
+    expect(conteudo).toContain('R$ 55,55');
+    expect(conteudo).toContain('R$ 4,56');
+    expect(conteudo).toContain('R$ 1,23');
+    expect(conteudo).toContain('R$ 3,21');
+    expect(conteudo).toContain('R$ 6,54');
+    expect(conteudo).toContain('Fora do total: recebimento anterior');
+    expect(conteudo).toContain('Não informado');
+    expect(
+      pagina.querySelectorAll('[aria-label="Totais da movimentação do mês"] article'),
+    ).toHaveLength(2);
+    expect(pagina.querySelectorAll('[aria-label="Totais da posição atual"] article')).toHaveLength(
+      3,
+    );
+
     const detalhes = [...pagina.querySelectorAll<HTMLDetailsElement>('details')];
     expect(detalhes).toHaveLength(5);
     expect(detalhes.every((detalhe) => !detalhe.open)).toBe(true);
@@ -134,530 +254,290 @@ describe('Relatórios', () => {
         expect.stringContaining('Prejuízo'),
       ]),
     );
-    expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
-      0,
+
+    const recebimentos = pagina.querySelector(
+      '[aria-label="Tabela de recebimentos no mês"] table',
+    )!;
+    expect(recebimentos.querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(texto(recebimentos)).toContain('Entrada');
+    expect(texto(recebimentos)).toContain('Lote');
+    expect(texto(recebimentos)).toContain('Individual');
+    expect(recebimentos.textContent).toContain('Cliente literal');
+    expect(linksDaTabela(pagina, 'Tabela de recebimentos no mês')[0].getAttribute('href')).toBe(
+      TestBed.inject(Router).serializeUrl(
+        TestBed.inject(Router).createUrlTree(['/vendas', 'venda/com/barras']),
+      ),
     );
-    expect(pagina.querySelectorAll('select')).toHaveLength(1);
-    expect(pagina.querySelectorAll('input[type="number"]')).toHaveLength(1);
-    expect(pagina.querySelectorAll('canvas')).toHaveLength(0);
+    expect(texto(pagina.querySelector('[aria-label="Tabela de parcelas vencidas"]')!)).toContain(
+      'R$ 3,21',
+    );
+    expect(texto(pagina.querySelector('[aria-label="Tabela de parcelas em Prejuízo"]')!)).toContain(
+      'R$ 9,87',
+    );
+  });
+
+  it('preserva todos os dias e a tabela equivalente sem recalcular totais da resposta', async () => {
+    const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
     const diaria = pagina.querySelector(
       '[aria-label="Tabela diária equivalente de recebimentos"]',
     )!;
-    expect(diaria.querySelectorAll('tbody tr')).toHaveLength(31);
-    expect(
-      [...diaria.querySelectorAll('tbody td:last-child')].every(
-        (celula) => centavos(texto(celula)) === 0,
-      ),
-    ).toBe(true);
-    expect(pagina.querySelector('[role="status"]')?.textContent).toContain(
-      'todos os dias estão zerados',
-    );
-    expect(pagina.querySelectorAll('svg')).toHaveLength(1);
-  });
-
-  it('reconcilia gráfico e tabela diária com os recebimentos em centavos', async () => {
-    const movimento = venda('serie', '2027-03-01', {
-      recebimentos: [
-        pagamento('entrada', '2027-03-10', 125),
-        pagamento('lote', '2027-03-10', 50),
-        pagamento('individual', '2027-03-20', 305),
-      ],
-    });
-    vendas.set([movimento]);
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = harness.routeNativeElement!;
-    const regiao = pagina.querySelector(
-      '[aria-label="Tabela diária equivalente de recebimentos"]',
-    )!;
-    const linhas = [...regiao.querySelectorAll<HTMLTableRowElement>('tbody tr')];
-    const soma = linhas.reduce((total, linha) => total + centavos(texto(linha.cells[2])), 0);
-    const recebido = pagina.querySelector(
-      '[aria-label="Totais da movimentação do mês"] article p',
-    )!;
+    const linhas = [...diaria.querySelectorAll<HTMLTableRowElement>('tbody tr')];
+    const totaisDiarios = linhas.map((linha) => texto(linha.cells[2]));
 
     expect(linhas).toHaveLength(31);
     expect(linhas[0].cells[1].textContent?.trim()).toBe('01/03/2027');
-    expect(texto(linhas[9].cells[2])).toContain('R$ 1,75');
-    expect(texto(linhas[19].cells[2])).toContain('R$ 3,05');
+    expect(linhas[9].cells[1].textContent?.trim()).toBe('10/03/2027');
     expect(linhas[30].cells[1].textContent?.trim()).toBe('31/03/2027');
-    expect(soma).toBe(centavos(texto(recebido)));
+    expect(totaisDiarios[0]).toContain('R$ 1,25');
+    expect(totaisDiarios[9]).toContain('R$ 2,50');
+    expect(
+      totaisDiarios.reduce(
+        (soma, item) => soma + Number(item.match(/R\$\s*([\d,]+)/)?.[1].replace(',', '.') ?? 0),
+        0,
+      ),
+    ).toBe(3.75);
+    expect(texto(pagina.querySelector('[aria-label="Totais da movimentação do mês"]')!)).toContain(
+      'R$ 99,99',
+    );
     expect(pagina.querySelectorAll('svg rect')).toHaveLength(31);
-    expect(Number(pagina.querySelectorAll('svg rect')[0].getAttribute('height'))).toBe(0);
     expect(pagina.querySelector('svg')?.getAttribute('aria-describedby')).toBe(
       'grafico-recebimentos-descricao',
     );
-    expect(regiao.getAttribute('tabindex')).toBe('0');
-    expect(regiao.querySelector('caption')?.textContent).toContain('valores em BRL');
+    expect(diaria.getAttribute('tabindex')).toBe('0');
+    expect(diaria.querySelector('caption')?.textContent).toContain('valores em BRL');
   });
 
-  it('mantém detalhes independentes e sua abertura ao aplicar outro mês', async () => {
+  it('mantém mês aplicado anterior, painéis abertos e foco durante troca; descarta resposta invertida', async () => {
+    const respostas = new Map<string, Subject<RelatorioMensalLeitura>>();
+    fonte = criarFonte((mes) => {
+      const resposta = new Subject<RelatorioMensalLeitura>();
+      respostas.set(mes, resposta);
+      return resposta;
+    });
     const harness = await RouterTestingHarness.create('/relatorios');
     const pagina = harness.routeNativeElement!;
+    const primeiraResposta = respostas.get('2027-03-01')!;
     const detalhes = [...pagina.querySelectorAll<HTMLDetailsElement>('details')];
-    const resumoRecebimentos = detalhes[0].querySelector('summary')!;
-    const resumoVendas = detalhes[1].querySelector('summary')!;
-    resumoRecebimentos.focus();
-    resumoRecebimentos.click();
-    resumoVendas.focus();
-    resumoVendas.click();
-    harness.detectChanges();
-
-    expect(detalhes[0].open).toBe(true);
-    expect(detalhes[1].open).toBe(true);
-    expect(document.activeElement).toBe(resumoVendas);
+    detalhes[0].open = true;
+    detalhes[1].open = true;
+    const aplicar = pagina.querySelector<HTMLButtonElement>('button')!;
+    aplicar.focus();
+    expect(primeiraResposta.observed).toBe(true);
 
     const mes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
-    const ano = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
-    const aplicar = pagina.querySelector<HTMLButtonElement>('button')!;
-    mes.value = '6';
+    mes.value = '4';
     mes.dispatchEvent(new Event('change'));
+    const ano = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
     ano.value = '2027';
     ano.dispatchEvent(new Event('input'));
-    aplicar.focus();
     aplicar.click();
-    harness.detectChanges();
+    await harness.fixture.whenStable();
 
-    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledTimes(2);
+    expect(fonte.consultarRelatorioMensal).toHaveBeenLastCalledWith('2027-04-01');
+    expect(texto(pagina)).toContain('Carregando o relatório do mês selecionado');
+    expect(pagina.querySelector('[aria-label="Totais da movimentação do mês"]')).toBeNull();
+    expect(pagina.querySelector('[aria-label="Tabela de recebimentos no mês"] table')).toBeNull();
+    expect(texto(pagina)).not.toContain('R$ 99,99');
+    expect(detalhes[0].open).toBe(true);
+    expect(detalhes[1].open).toBe(true);
+    expect(document.activeElement).toBe(aplicar);
+
+    primeiraResposta.next(relatorioMensal('2027-03-01'));
+    harness.detectChanges();
+    expect(texto(pagina)).not.toContain('R$ 99,99');
+    expect(texto(pagina)).toContain('Carregando o relatório do mês selecionado');
+
+    respostas.get('2027-04-01')!.next(relatorioMensal('2027-04-01'));
+    await harness.fixture.whenStable();
+    expect(texto(pagina)).toContain('01/04/2027 a 30/04/2027');
+    expect(texto(pagina)).toContain('R$ 99,99');
     expect(detalhes[0].open).toBe(true);
     expect(detalhes[1].open).toBe(true);
     expect(document.activeElement).toBe(aplicar);
   });
 
-  it('aplica mês localmente, preserva posições e mantém foco e resultado em seleção inválida', async () => {
-    const ativa = venda('movimento', '2027-03-01', {
-      recebimentos: [pagamento('marco', '2027-03-20', 350)],
-      parcelas: [parcela('pendente', 1, '2027-02-01', 'Atrasado', 650)],
-      saldo: 650,
-    });
-    vendas.set([ativa]);
+  it('mostra vazio mensal sem substituir posições atuais não vazias', async () => {
+    fonte = criarFonte((mes) => of(relatorioMensal(mes, { vazioMensal: mes === '2027-06-01' })));
     const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    const mes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    mes.value = '6';
+    mes.dispatchEvent(new Event('change'));
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+
+    expect(fonte.consultarRelatorioMensal).toHaveBeenLastCalledWith('2027-06-01');
+    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+    expect(texto(pagina)).toContain('Nenhum recebimento neste mês.');
+    expect(texto(pagina)).toContain('Nenhuma venda cadastrada neste mês.');
+    expect(texto(pagina.querySelector('[aria-label="Totais da posição atual"]')!)).toContain(
+      'R$ 77,77',
+    );
+    expect(
+      pagina.querySelector('[aria-label="Tabela de parcelas em aberto"] tbody tr'),
+    ).not.toBeNull();
+    expect(
+      pagina.querySelector('[aria-label="Tabela de parcelas vencidas"] tbody tr'),
+    ).not.toBeNull();
+    expect(
+      pagina.querySelector('[aria-label="Tabela de parcelas em Prejuízo"] tbody tr'),
+    ).not.toBeNull();
+    expect(texto(pagina)).toContain('Referência fixa: 31/03/2027');
+  });
+
+  it.each([
+    ['0001', '1', '0001-01-01', '0001-01-31'],
+    ['9999', '12', '9999-12-01', '9999-12-31'],
+  ])('consulta e renderiza período civil extremo %s', async (ano, mes, inicio, fim) => {
+    const chamadas: string[] = [];
+    fonte = criarFonte((selecionado) => {
+      chamadas.push(selecionado);
+      return of(relatorioMensal(selecionado, { referencia }));
+    });
+    const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    const campoAno = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
+    campoAno.value = ano;
+    campoAno.dispatchEvent(new Event('input'));
+    const seletorMes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    seletorMes.value = mes;
+    seletorMes.dispatchEvent(new Event('change'));
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+
+    expect(chamadas.at(-1)).toBe(inicio);
+    expect(texto(pagina)).toContain(`${inicio.slice(8, 10)}/${inicio.slice(5, 7)}/${ano}`);
+    expect(
+      pagina.querySelector(
+        '[aria-label="Tabela diária equivalente de recebimentos"] tbody tr:last-child td:nth-child(2)',
+      )?.textContent,
+    ).toContain(fim.slice(8, 10));
+    expect(
+      pagina.querySelectorAll('[aria-label="Tabela diária equivalente de recebimentos"] tbody tr'),
+    ).toHaveLength(diasNoMes(Number(ano), Number(mes)));
+    expect(texto(pagina)).toContain('Referência fixa: 31/03/2027');
+  });
+
+  it('separa falha e vazio, não reapresenta mês anterior e permite repetir por ação explícita', async () => {
+    let abrilTentativas = 0;
+    fonte = criarFonte((mes) => {
+      if (mes === '2027-03-01') return of(relatorioMensal(mes));
+      abrilTentativas += 1;
+      return abrilTentativas === 1
+        ? throwError(() => new Error('API indisponível'))
+        : of(relatorioMensal(mes));
+    });
+    const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
     const pagina = harness.routeNativeElement!;
     const seletorMes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    seletorMes.value = '4';
+    seletorMes.dispatchEvent(new Event('change'));
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
+      'Não foi possível carregar o relatório do mês selecionado',
+    );
+    expect(pagina.querySelector('[aria-label="Totais da movimentação do mês"]')).toBeNull();
+    expect(pagina.querySelector('[aria-label="Totais da posição atual"]')).toBeNull();
+    expect(pagina.querySelector('[aria-label="Tabela de recebimentos no mês"] table')).toBeNull();
+    expect(texto(pagina)).not.toContain('R$ 99,99');
+    expect(texto(pagina)).not.toContain('Nenhum recebimento neste mês.');
+    expect(texto(pagina)).toContain('Aguardando o relatório do mês selecionado.');
+
+    pagina.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+    await harness.fixture.whenStable();
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledTimes(3);
+    expect(texto(pagina)).toContain('01/04/2027 a 30/04/2027');
+    expect(texto(pagina)).toContain('R$ 99,99');
+  });
+
+  it('preserva relatório e mês válido ao rejeitar seleção inválida sem nova consulta', async () => {
+    const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
     const campoAno = pagina.querySelector<HTMLInputElement>('#ano-relatorio')!;
     const aplicar = pagina.querySelector<HTMLButtonElement>('button')!;
-    const posicaoAntes = pagina.querySelector(
-      '[aria-label="Tabela de parcelas vencidas"]',
-    )!.textContent;
-    const urlAntes = TestBed.inject(Router).url;
-    const armazenamentoAntes = [localStorage.length, sessionStorage.length];
-
-    seletorMes.value = '6';
-    seletorMes.dispatchEvent(new Event('change'));
-    campoAno.value = '2027';
+    campoAno.value = '10000';
     campoAno.dispatchEvent(new Event('input'));
     aplicar.focus();
     aplicar.click();
     harness.detectChanges();
 
-    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
-    expect(texto(pagina)).toContain('Nenhum recebimento neste mês.');
-    expect(texto(pagina)).toContain('Nenhuma venda cadastrada neste mês.');
-    expect(pagina.querySelector('[aria-label="Tabela de parcelas vencidas"]')!.textContent).toBe(
-      posicaoAntes,
-    );
-    expect(aplicar).toBe(document.activeElement);
-    expect(TestBed.inject(Router).url).toBe(urlAntes);
-    expect([localStorage.length, sessionStorage.length]).toEqual(armazenamentoAntes);
-
-    for (const ano of ['', '0', '10000', '2027.5']) {
-      campoAno.value = ano;
-      campoAno.dispatchEvent(new Event('input'));
-      aplicar.focus();
-      aplicar.click();
-      harness.detectChanges();
-      expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
-        'Informe um mês e um ano inteiro entre 1 e 9999.',
-      );
-      expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
-      expect(aplicar).toBe(document.activeElement);
-    }
-
-    seletorMes.value = '';
-    seletorMes.dispatchEvent(new Event('change'));
-    aplicar.focus();
-    aplicar.click();
-    harness.detectChanges();
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledTimes(1);
     expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
       'Informe um mês e um ano inteiro entre 1 e 9999.',
     );
-    expect(texto(pagina)).toContain('01/06/2027 a 30/06/2027');
+    expect(texto(pagina)).toContain('01/03/2027 a 31/03/2027');
+    expect(texto(pagina)).toContain('R$ 99,99');
+    expect(document.activeElement).toBe(aplicar);
   });
 
-  it('apresenta cinco totais reconciliados e explica universos sobrepostos', async () => {
-    const ativa = venda('ativa', '2027-03-05', {
-      total: 1000,
-      totalEfetivo: 1100,
-      saldo: 700,
-      recebimentos: [pagamento('recebido-ativo', '2027-03-10', 400)],
-      parcelas: [
-        parcela('paga', 1, '2027-03-05', 'Paga', 300),
-        parcela('atrasada', 2, '2027-02-01', 'Atrasado', 200),
-        parcela('aberta', 3, '2027-04-01', 'Aberto', 500),
-      ],
-    });
-    const inativa = venda('inativa', '2027-03-06', {
-      statusAdministrativo: 'Inativo',
-      recebimentos: [pagamento('recebido-inativo', '2027-03-11', 250)],
-    });
-    const prejuizoElegivel = venda('prejuizo-elegivel', '2027-01-01', {
-      statusAdministrativo: 'Prejuízo',
-      parcelas: [parcela('pendente-elegivel', 1, '2027-02-01', 'Atrasado', 600)],
-    });
-    const prejuizoComRecebimento = venda('prejuizo-recebido', '2027-01-02', {
-      statusAdministrativo: 'Prejuízo',
-      recebimentos: [pagamento('recebimento-anterior', '2027-02-01', 200)],
-      parcelas: [parcela('pendente-nao-elegivel', 2, '2027-02-02', 'Atrasado', 300)],
-    });
-    vendas.set([ativa, inativa, prejuizoElegivel, prejuizoComRecebimento]);
+  it('preserva exportação indisponível e mantém os painéis após mudança de mês', async () => {
     const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
     const pagina = harness.routeNativeElement!;
-    const mensal = pagina.querySelector('[aria-label="Totais da movimentação do mês"]')!;
-    const posicao = pagina.querySelector('[aria-label="Totais da posição atual"]')!;
-
-    expect(texto(mensal)).toContain('R$ 6,50');
-    expect(texto(mensal)).toContain('R$ 11,00');
-    expect(texto(mensal)).toContain('1 vendas Ativas');
-    expect(texto(posicao)).toContain('R$ 7,00');
-    expect(texto(posicao)).toContain('R$ 2,00');
-    expect(texto(posicao)).toContain('R$ 6,00');
-    expect(texto(posicao)).toContain('Já incluídas no saldo em aberto.');
-    expect(texto(posicao)).toContain('Pendências de contratos sem recebimentos');
-    expect(pagina.querySelectorAll('[aria-label="Indicadores financeiros globais"]')).toHaveLength(
-      0,
-    );
-
-    vendas.set([]);
-    harness.detectChanges();
-    expect(texto(mensal)).toContain('R$ 0,00');
-    expect(texto(mensal)).toContain('0 vendas Ativas');
-    expect(texto(posicao)).toContain('R$ 0,00');
-
-    vendas.set([
-      {
-        ...ativa,
-        statusAdministrativo: 'Inativo',
-        recebimentos: [pagamento('ajustado', '2027-03-10', 500)],
-      },
-      { ...inativa, statusAdministrativo: 'Ativo' },
-      prejuizoElegivel,
-    ]);
-    harness.detectChanges();
-    expect(texto(mensal)).toContain('R$ 7,50');
-    expect(texto(mensal)).toContain('1 vendas Ativas');
-    expect(texto(mensal)).toContain('R$ 10,00');
-    expect(texto(posicao)).toContain('R$ 10,00');
-    expect(texto(posicao)).toContain('R$ 0,00');
-    expect(texto(posicao)).toContain('R$ 6,00');
-  });
-
-  it('reinicia a seleção mensal ao recriar a página sem persistir preferência', async () => {
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const seletor = () =>
-      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#mes-relatorio')!;
-    const ano = () =>
-      harness.routeNativeElement!.querySelector<HTMLInputElement>('#ano-relatorio')!;
-    const aplicar = () => harness.routeNativeElement!.querySelector<HTMLButtonElement>('button')!;
-    expect(seletor().value).toBe('3');
-
-    seletor().value = '12';
-    seletor().dispatchEvent(new Event('change'));
-    ano().value = '2028';
-    ano().dispatchEvent(new Event('input'));
-    aplicar().click();
-    harness.detectChanges();
-    expect(texto(harness.routeNativeElement!)).toContain('01/12/2028 a 31/12/2028');
-
-    await harness.navigateByUrl('/configuracoes');
-    await harness.navigateByUrl('/relatorios');
-    expect(seletor().value).toBe('3');
-    expect(ano().value).toBe('2027');
-    expect(texto(harness.routeNativeElement!)).toContain('01/03/2027 a 31/03/2027');
-  });
-
-  it('apresenta todas as linhas, preserva IDs opacos e distingue movimentos mensais da posição', async () => {
-    const id = 'venda/com/barras';
-    const primeira = venda(id, '2027-02-28', {
-      entrada: { data: '2027-02-28', forma: 'Dinheiro', valorCentavos: 200 },
-      recebimentos: [
-        pagamento('entrada', '2027-02-28', 200, 'parcela/entrada'),
-        pagamento('lote/marco', '2027-03-31', 300),
-      ],
-      parcelas: [
-        parcela('parcela/entrada', 1, '2027-02-28', 'Paga', 200),
-        parcela('atrasada', 2, '2027-03-30', 'Atrasado', 300),
-      ],
-      saldo: 500,
-    });
-    const vendasDoMes = Array.from({ length: 6 }, (_, indice) =>
-      venda(`mes/${indice}`, `2027-03-${String(indice + 1).padStart(2, '0')}`, {
-        entrada: {
-          data: `2027-03-${String(indice + 1).padStart(2, '0')}`,
-          forma: 'Pix',
-          valorCentavos: 10,
-        },
-        recebimentos: [
-          pagamento(
-            `entrada/${indice}`,
-            `2027-03-${String(indice + 1).padStart(2, '0')}`,
-            10,
-            `parcela/entrada/${indice}`,
-          ),
-        ],
-        parcelas: [
-          parcela(
-            `parcela/entrada/${indice}`,
-            1,
-            `2027-03-${String(indice + 1).padStart(2, '0')}`,
-            'Paga',
-            10,
-          ),
-        ],
-        saldo: 100,
-      }),
-    );
-    vendas.set([primeira, ...vendasDoMes]);
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = harness.routeNativeElement!;
-
-    const recebimentos = pagina.querySelector(
-      '[aria-label="Tabela de recebimentos no mês"] table',
-    )!;
-    const tabelaVendas = pagina.querySelector('[aria-label="Tabela de vendas do mês"] table')!;
-    const saldos = pagina.querySelector('[aria-label="Tabela de parcelas em aberto"] table')!;
-    const atrasadas = pagina.querySelector('[aria-label="Tabela de parcelas vencidas"] table')!;
-    expect(recebimentos.querySelectorAll('tbody tr')).toHaveLength(7);
-    expect(tabelaVendas.querySelectorAll('tbody tr')).toHaveLength(6);
-    expect(saldos.querySelectorAll('tbody tr')).toHaveLength(7);
-    expect(atrasadas.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(recebimentos.textContent).toContain('Lote');
-    expect(recebimentos.textContent).toContain('Cliente venda/com/barras');
-    expect(tabelaVendas.textContent).not.toContain('Cliente venda/com/barras');
-    expect(saldos.textContent).toContain('Cliente venda/com/barras');
-    expect(atrasadas.textContent).toContain('Cliente venda/com/barras');
-    expect(saldos.textContent).toContain('90000000175');
-    expect(saldos.textContent).toContain('00900000001');
-    expect(saldos.textContent).toContain('30/03/2027');
-    expect(saldos.querySelectorAll('thead th')).toHaveLength(6);
-    expect(atrasadas.querySelectorAll('thead th')).toHaveLength(6);
-    expect(texto(pagina)).toContain('6 vendas');
-
-    const link = recebimentos.querySelector<HTMLAnchorElement>('tbody a')!;
-    const router = TestBed.inject(Router);
-    expect(link.getAttribute('href')).toBe(
-      router.serializeUrl(router.createUrlTree(['/vendas', id])),
-    );
-  });
-
-  it('apresenta identificação, vencimentos ordenados e Prejuízo com exclusões explícitas do total', async () => {
-    const ativaProxima = venda('ativa-proxima', '2027-03-01', {
-      cliente: { nome: 'Cliente Alfa', cpf: '111.111.111-11', telefone: '(11) 90000-0001' },
-      parcelas: [parcela('proxima-atrasada', 1, '2027-03-10', 'Atrasado', 1000)],
-      saldo: 1000,
-    });
-    const ativaEmpatada = venda('ativa-empatada', '2027-03-02', {
-      cliente: { nome: 'Cliente Beta', cpf: '222.222.222-22', telefone: '(22) 90000-0002' },
-      parcelas: [parcela('empatada-atrasada', 1, '2027-03-10', 'Atrasado', 1000)],
-      saldo: 1000,
-    });
-    const ativaMaisDistante = venda('ativa-distante', '2027-03-03', {
-      cliente: { nome: 'Cliente Gama', cpf: '333.333.333-33', telefone: '(33) 90000-0003' },
-      recebimentos: [pagamento('pagamento-individual', '2027-03-15', 300, 'paga-base')],
-      parcelas: [
-        parcela('paga-base', 1, '2027-03-03', 'Paga', 200),
-        parcela('atrasada-distante', 2, '2027-03-20', 'Atrasado', 300),
-        parcela('pendente-distante', 3, '2027-04-10', 'Aberto', 500),
-      ],
-      saldo: 800,
-      total: 1000,
-      totalEfetivo: 1100,
-    });
-    const prejuizoSemPagamento = venda('prejuizo-sem-pagamento', '2027-02-01', {
-      statusAdministrativo: 'Prejuízo',
-      cliente: { nome: 'Cliente Delta', cpf: '444.444.444-44', telefone: '(44) 90000-0004' },
-      parcelas: [
-        parcela('prejuizo-base-1', 1, '2027-02-01', 'Atrasado', 400),
-        parcela('prejuizo-base-2', 2, '2027-03-01', 'Atrasado', 600),
-      ],
-      saldo: 1000,
-    });
-    const prejuizoComEntrada = venda('prejuizo-com-entrada', '2027-02-02', {
-      statusAdministrativo: 'Prejuízo',
-      cliente: { nome: 'Cliente Épsilon', cpf: '555.555.555-55', telefone: '(55) 90000-0005' },
-      entrada: { data: '2027-02-02', forma: 'Pix', valorCentavos: 200 },
-      recebimentos: [pagamento('entrada-prejuizo', '2027-02-02', 200, 'entrada-paga')],
-      parcelas: [
-        parcela('entrada-paga', 1, '2027-02-02', 'Paga', 200),
-        parcela('pendente-entrada', 2, '2027-03-02', 'Atrasado', 800),
-      ],
-      saldo: 800,
-    });
-    vendas.set([
-      ativaMaisDistante,
-      ativaProxima,
-      ativaEmpatada,
-      prejuizoSemPagamento,
-      prejuizoComEntrada,
-    ]);
-
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = harness.routeNativeElement!;
-    const tabela = (nome: string) => pagina.querySelector(`[aria-label="${nome}"] table`)!;
-    const linhasPorTexto = (seletor: string) => [
-      ...pagina.querySelectorAll<HTMLTableRowElement>(`${seletor} tbody tr`),
-    ];
-    const linhasSaldo = linhasPorTexto('[aria-label="Tabela de parcelas em aberto"]');
-
-    expect(linhasSaldo.map((linha) => linha.cells[1].textContent?.trim())).toEqual([
-      'Cliente Alfa',
-      'Cliente Beta',
-      'Cliente Gama',
-    ]);
-    expect(linhasSaldo.map((linha) => linha.cells[4].textContent?.trim())).toEqual([
-      '10/03/2027',
-      '10/03/2027',
-      '20/03/2027',
-    ]);
-    expect(linhasSaldo[0].textContent).toContain('111.111.111-11');
-    expect(linhasSaldo[0].textContent).toContain('(11) 90000-0001');
-    const router = TestBed.inject(Router);
-    expect(linhasSaldo[0].querySelector('a')?.getAttribute('href')).toBe(
-      router.serializeUrl(router.createUrlTree(['/vendas', 'ativa-proxima'])),
-    );
-    expect(linhasSaldo[0].querySelector('a')?.getAttribute('aria-label')).toContain(
-      'ativa-proxima',
-    );
-
-    const linhasAtrasadas = linhasPorTexto('[aria-label="Tabela de parcelas vencidas"]');
-    expect(linhasAtrasadas.map((linha) => linha.cells[4].textContent?.trim())).toEqual([
-      '10/03/2027',
-      '10/03/2027',
-      '20/03/2027',
-    ]);
-    expect(linhasAtrasadas.every((linha) => linha.cells.length === 6)).toBe(true);
-
-    const secaoPrejuizo = pagina.querySelector('[aria-labelledby="prejuizo-relatorio"]')!;
-    const tabelaPrejuizo = pagina.querySelector(
-      '[aria-label="Tabela de parcelas em Prejuízo"] table',
-    )!;
-    const linhasPrejuizo = [...tabelaPrejuizo.querySelectorAll<HTMLTableRowElement>('tbody tr')];
-    expect(linhasPrejuizo).toHaveLength(3);
-    expect(linhasPrejuizo[0].cells[7].textContent).toContain('Incluída no total');
-    expect(linhasPrejuizo[1].cells[7].textContent).toContain('Incluída no total');
-    expect(linhasPrejuizo[2].cells[7].textContent).toContain('Fora do total: recebimento anterior');
-    expect(texto(secaoPrejuizo.querySelector('strong')!)).toContain('R$ 10,00');
-    expect(linhasPrejuizo[2].querySelector('a')?.getAttribute('href')).toBe(
-      router.serializeUrl(router.createUrlTree(['/vendas', 'prejuizo-com-entrada'])),
-    );
-
-    const regiao = pagina.querySelector('[aria-label="Tabela de parcelas em aberto"]')!;
-    expect(regiao.getAttribute('tabindex')).toBe('0');
-    expect(regiao.getAttribute('aria-describedby')).toBe('orientacao-saldos-relatorio');
-    expect(pagina.querySelector('#orientacao-saldos-relatorio')?.textContent).toContain(
-      'setas do teclado',
-    );
-    expect(tabela('Tabela de vendas do mês').querySelector('thead')?.textContent).toContain(
-      'Valor total efetivo',
-    );
-    const vendaComAcrescimo = [
-      ...tabela('Tabela de vendas do mês').querySelectorAll('tbody tr'),
-    ].find((linha) => linha.textContent?.includes('Cliente Gama'));
-    expect(texto(vendaComAcrescimo!)).toContain('R$ 11,00');
-  });
-
-  it('recalcula após publicação recebida e edição, sem mudar valores ao apenas consultar', async () => {
-    const vendaInicial = venda('sessao/1', '2027-03-01', {
-      recebimentos: [pagamento('lote/1', '2027-03-15', 200)],
-      parcelas: [parcela('p1', 1, '2027-03-30', 'Atrasado', 200)],
-      saldo: 800,
-    });
-    vendas.set([vendaInicial]);
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = harness.routeNativeElement!;
-    expect(texto(pagina)).toContain('R$ 2,00');
-    const original = vendas();
-
-    // Consulta e navegação são somente leitura; uma publicação rejeitada não substitui a fonte.
-    harness.detectChanges();
-    expect(vendas()).toBe(original);
-    expect(texto(pagina)).toContain('R$ 2,00');
-
-    // Publicação aceita de novo lote e edição do rótulo atualizam projeção sem trocar referência.
-    const atualizada = venda('sessao/1', '2027-03-01', {
-      recebimentos: [
-        pagamento('lote/1', '2027-03-15', 200),
-        pagamento('lote/2', '2027-03-31', 300),
-      ],
-      parcelas: [parcela('p1', 1, '2027-03-30', 'Paga', 200)],
-      saldo: 500,
-    });
-    vendas.set([{ ...atualizada, cliente: { ...atualizada.cliente, nome: 'Cliente editado' } }]);
-    harness.detectChanges();
-    expect(texto(pagina)).toContain('R$ 5,00');
-    expect(texto(pagina)).toContain('Cliente editado');
-    expect(texto(pagina)).toContain('Nenhuma parcela vencida nesta referência.');
-    expect(texto(pagina)).toContain('Referência: 31/03/2027');
-  });
-
-  it('recalcula as coleções após inativar, reativar e marcar Prejuízo sem duplicar recebimentos', async () => {
-    const inativa = venda('status/financeiro', '2027-03-01', {
-      statusAdministrativo: 'Inativo',
-      recebimentos: [pagamento('recibo-unico', '2027-03-15', 200, 'parcela-paga')],
-      parcelas: [
-        parcela('parcela-paga', 1, '2027-03-01', 'Paga', 200),
-        parcela('parcela-pendente', 2, '2027-04-01', 'Aberto', 800),
-      ],
-      saldo: 800,
-    });
-    vendas.set([inativa]);
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = () => harness.routeNativeElement!;
-    const tabela = (nome: string) => pagina().querySelector(`[aria-label="${nome}"] table`);
-
-    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Tabela de vendas do mês')).toBeNull();
-    expect(tabela('Tabela de parcelas em aberto')).toBeNull();
-    expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
-
-    vendas.set([{ ...inativa, statusAdministrativo: 'Ativo' }]);
-    harness.detectChanges();
-    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Tabela de vendas do mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Tabela de parcelas em aberto')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(texto(pagina())).toContain('R$ 2,00');
-
-    vendas.set([{ ...inativa, statusAdministrativo: 'Prejuízo' }]);
-    harness.detectChanges();
-    expect(tabela('Tabela de recebimentos no mês')?.querySelectorAll('tbody tr')).toHaveLength(1);
-    expect(tabela('Tabela de vendas do mês')).toBeNull();
-    expect(tabela('Tabela de parcelas em aberto')).toBeNull();
-    expect(texto(pagina())).toContain('Nenhuma venda cadastrada neste mês.');
-    expect(texto(pagina())).toContain('R$ 2,00');
-  });
-
-  it('explica a exportação indisponível e anuncia a ação sem gerar arquivo', async () => {
-    const harness = await RouterTestingHarness.create('/relatorios');
-    const pagina = harness.routeNativeElement!;
-    const botao = pagina.querySelector<HTMLButtonElement>(
+    const exportar = pagina.querySelector<HTMLButtonElement>(
       'button[aria-describedby="indisponibilidade-exportacao"]',
     )!;
-    expect(botao.textContent).toContain('Exportar relatório');
-    expect(botao.getAttribute('aria-describedby')).toBe('indisponibilidade-exportacao');
+    expect(exportar.textContent).toContain('Exportar relatório');
     expect(pagina.querySelector('#indisponibilidade-exportacao')?.textContent).toContain(
       'Exportação não disponível no protótipo.',
     );
-    expect(
-      [...pagina.querySelectorAll('[role="status"]')].some((status) =>
-        status.textContent?.includes('A exportação de relatórios'),
-      ),
-    ).toBe(false);
-
-    botao.click();
+    expect(pagina.querySelectorAll('a[download]')).toHaveLength(0);
+    exportar.click();
     harness.detectChanges();
-    expect(
-      [...pagina.querySelectorAll('[role="status"]')].find((status) =>
-        status.textContent?.includes('A exportação de relatórios'),
-      )?.textContent,
-    ).toContain('A exportação de relatórios não está disponível no protótipo.');
+    expect(pagina.querySelector('[role="status"]')?.textContent).toContain(
+      'A exportação de relatórios não está disponível no protótipo.',
+    );
+    expect(pagina.querySelectorAll('details')).toHaveLength(5);
+  });
+
+  it('refaz consulta após invalidação mantendo a referência fixa e não aciona outras leituras', async () => {
+    const respostas: Subject<RelatorioMensalLeitura>[] = [];
+    fonte = criarFonte(() => {
+      const resposta = new Subject<RelatorioMensalLeitura>();
+      respostas.push(resposta);
+      return resposta;
+    });
+    const harness = await RouterTestingHarness.create('/relatorios');
+    TestBed.inject(ControleConsultas).invalidarTodas();
+    await harness.fixture.whenStable();
+
+    expect(fonte.referencia).toBe(referencia);
+    expect(fonte.consultarRelatorioMensal).toHaveBeenCalledTimes(2);
+    respostas[0].next(relatorioMensal('2027-03-01'));
+    harness.detectChanges();
+    expect(texto(harness.routeNativeElement!)).not.toContain('R$ 99,99');
+    respostas[1].next(relatorioMensal('2027-03-01'));
+    await harness.fixture.whenStable();
+    expect(texto(harness.routeNativeElement!)).toContain('R$ 99,99');
+    expect(fonte.consultarColecao).not.toHaveBeenCalled();
+    expect(fonte.consultarVenda).not.toHaveBeenCalled();
+    expect(fonte.consultarVisaoGeral).not.toHaveBeenCalled();
+    expect(fonte.referencia).toBe(referencia);
+  });
+
+  it('mantém o URL e não grava seleção mensal em storage do browser', async () => {
+    const harness = await RouterTestingHarness.create('/relatorios');
+    await harness.fixture.whenStable();
+    const pagina = harness.routeNativeElement!;
+    const urlAntes = TestBed.inject(Router).url;
+    const armazenamentoAntes = [localStorage.length, sessionStorage.length];
+    const mes = pagina.querySelector<HTMLSelectElement>('#mes-relatorio')!;
+    mes.value = '6';
+    mes.dispatchEvent(new Event('change'));
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe(urlAntes);
+    expect([localStorage.length, sessionStorage.length]).toEqual(armazenamentoAntes);
     expect(pagina.querySelectorAll('a[download]')).toHaveLength(0);
   });
 });

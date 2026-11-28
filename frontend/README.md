@@ -655,6 +655,48 @@ passou (323,05 kB iniciais) e build local passou (1,58 MB iniciais). Prettier di
 `git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
 `serve:local` continua sem seleção HTTP até as tarefas 3.4 e 3.5.
 
+### Apply `fase-006-integracao-angular` — tarefa 3.4 — Relatórios mensais (28/11/2026)
+
+Relatórios consulta `FONTE_VENDAS.consultarRelatorioMensal` uma vez por mês aplicado, com
+chave que inclui mês e referência fixa da sessão. A seleção só dispara leitura após validação;
+se inválida, mantém mês/dados válidos anteriores. Ao trocar o mês, a tela não apresenta os
+valores anteriores como se fossem atuais: loading e erro ficam explícitos, o erro permite
+repetição manual e nenhuma posição é apresentada até chegar o snapshot selecionado. Os cinco
+`details` permanecem montados durante a troca para conservar expansão e foco.
+
+Os totais dos cinco cartões, linhas e série diária são lidos diretamente do modelo mensal; o
+componente não recalcula universos, recebimentos, vendas, saldos ou prejuízo. O gráfico só usa
+a série recebida para escala/posicionamento geométricos e conserva a tabela equivalente com
+todos os dias do mês. Origem Entrada/Lote/Individual, ID opaco e campos nulos são apresentados
+conforme o contrato. `FonteVendasDemonstracao` permanece responsável por adaptar os cálculos
+existentes para a demo. As cinco seções expansíveis e a exportação indisponível foram mantidas.
+
+Testes do componente usam snapshots literais e cobrem dados e totais independentes, cinco
+cartões/seções, tabela diária completa, mês vazio com posições não vazias, seleção inválida,
+foco/expansão, invalidação, troca com respostas invertidas e falha/retry sem mês antigo. Os
+testes HTTP cobrem origens, histórico de lote, nulabilidade e períodos civis `0001`/`9999` na
+fixture wire mensal.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/relatorios/relatorios.spec.ts"
+npm test -- --watch=false --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.config.ts e2e/relatorios-cobranca.spec.ts --grep "detalhes independentes|Relatórios separa Prejuízo" --workers=1
+npx playwright test --config=playwright.config.ts e2e/demonstracao-inicial.spec.ts --grep "Relatórios mantém tabelas completas|Exportar relatório anuncia" --workers=1
+npx playwright test --config=playwright.config.ts e2e/refinamento-visual.spec.ts e2e/formularios-vendas.spec.ts --grep "alinha valores das quatro tabelas de Relatórios|corrige pagamento individual com foco|reconcilia cadastro, entrada, quitação e edição entre listas, Visão Geral e Relatórios|concilia correção mensal, status, posições atuais e descarte da sessão no Relatório" --workers=1
+```
+
+Resultados: testes direcionados **11/11** do componente e **17/17** do cliente HTTP; suíte
+**489/489 em 37 arquivos**; E2E de cobrança/expansão **6/6**, conteúdo demo/exportação
+**4/4** e alinhamento/reconciliação **8/8**. Playwright cobriu 1366×768 e 390×844 e os dois
+temas. Build padrão passou (323,24 kB iniciais) e local passou (1,58 MB iniciais). Prettier
+direcionado, `git diff --check` e `openspec validate fase-006-integracao-angular --strict`
+passaram. `serve:local` continua sem selecionar HTTP; a integração aguarda a tarefa 3.5.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

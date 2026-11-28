@@ -68,32 +68,54 @@
 
 <section class="mb-4" aria-labelledby="periodo-relatorio">
   <h2 id="periodo-relatorio" class="mb-1 text-xl font-semibold">Movimentação do mês</h2>
-  <p class="mb-0 text-text-muted">
-    Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
-    {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
-  </p>
+  @if (relatorio) {
+    <p class="mb-0 text-text-muted">
+      Mês civil de {{ formatarDataCivil(relatorio.inicioMes) }} a
+      {{ formatarDataCivil(relatorio.fimMes) }}. Vendas e recebimentos são movimentos deste período.
+    </p>
+  } @else if (carregando()) {
+    <p class="mb-0 text-text-muted" role="status" aria-live="polite" aria-busy="true">
+      Carregando o relatório do mês selecionado…
+    </p>
+  } @else {
+    <div class="mt-2 rounded-xl border border-border bg-surface-muted p-3" role="alert">
+      <p class="mb-2 text-text-muted">
+        Não foi possível carregar o relatório do mês selecionado. A posição exibida não foi
+        atualizada.
+      </p>
+      <button
+        type="button"
+        class="min-h-10 rounded-xl border border-control-border bg-surface px-4 text-sm font-semibold text-text shadow-sm transition-colors hover:border-brand hover:bg-surface-muted focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="recarregar()"
+      >
+        Tentar novamente
+      </button>
+    </div>
+  }
 </section>
 
-<section class="mb-6" aria-label="Totais da movimentação do mês">
-  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
-      <h3 class="mb-2 text-base font-semibold">Recebimentos no mês</h3>
-      <p class="m-0 text-2xl font-semibold tabular-nums text-success">
-        {{ formatarDinheiro(relatorio.totalRecebidoCentavos) }}
-      </p>
-      <p class="mt-1 mb-0 text-sm text-text-muted">Pagamentos efetivos de todos os status.</p>
-    </article>
-    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
-      <h3 class="mb-2 text-base font-semibold">Vendas no mês</h3>
-      <p class="m-0 text-2xl font-semibold tabular-nums text-text">
-        {{ formatarDinheiro(relatorio.totalVendasMesCentavos) }}
-      </p>
-      <p class="mt-1 mb-0 text-sm text-text-muted">
-        {{ relatorio.quantidadeVendasMes }} vendas Ativas.
-      </p>
-    </article>
-  </div>
-</section>
+@if (relatorio) {
+  <section class="mb-6" aria-label="Totais da movimentação do mês">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+        <h3 class="mb-2 text-base font-semibold">Recebimentos no mês</h3>
+        <p class="m-0 text-2xl font-semibold tabular-nums text-success">
+          {{ formatarDinheiro(relatorio.totalRecebidoCentavos) }}
+        </p>
+        <p class="mt-1 mb-0 text-sm text-text-muted">Pagamentos efetivos de todos os status.</p>
+      </article>
+      <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+        <h3 class="mb-2 text-base font-semibold">Vendas no mês</h3>
+        <p class="m-0 text-2xl font-semibold tabular-nums text-text">
+          {{ formatarDinheiro(relatorio.totalVendasMesCentavos) }}
+        </p>
+        <p class="mt-1 mb-0 text-sm text-text-muted">
+          {{ relatorio.quantidadeVendasMes }} vendas Ativas.
+        </p>
+      </article>
+    </div>
+  </section>
+}
 
 <section
   class="mb-6 rounded-xl border-[1px] border-border bg-surface p-3 shadow-sm sm:p-4"
@@ -104,106 +126,112 @@
     Valores em reais (BRL) por data efetiva no mês selecionado. A tabela abaixo apresenta todos os
     dias e valores exatos.
   </p>
-  @if (relatorio.totalRecebidoCentavos === 0) {
-    <p class="mb-3 rounded-lg bg-surface-muted p-3 text-text-muted" role="status">
-      Nenhum recebimento registrado neste mês; todos os dias estão zerados.
-    </p>
-  }
-  <div
-    class="max-w-full overflow-x-auto"
-    role="region"
-    aria-label="Gráfico de barras diário de recebimentos"
-    aria-describedby="grafico-recebimentos-descricao"
-    tabindex="0"
-  >
-    <svg
-      class="block h-auto w-full min-w-[640px] text-text sm:min-w-0"
-      viewBox="0 0 760 300"
-      role="img"
-      focusable="false"
-      aria-labelledby="grafico-recebimentos-titulo"
+  @if (relatorio) {
+    @if (relatorio.totalRecebidoCentavos === 0) {
+      <p class="mb-3 rounded-lg bg-surface-muted p-3 text-text-muted" role="status">
+        Nenhum recebimento registrado neste mês; todos os dias estão zerados.
+      </p>
+    }
+    <div
+      class="max-w-full overflow-x-auto"
+      role="region"
+      aria-label="Gráfico de barras diário de recebimentos"
       aria-describedby="grafico-recebimentos-descricao"
+      tabindex="0"
     >
-      <g aria-hidden="true" class="text-border" stroke="currentColor" stroke-width="1">
-        @for (escala of escalasGrafico(); track $index) {
-          <line [attr.x1]="76" [attr.x2]="744" [attr.y1]="escala.y" [attr.y2]="escala.y" />
-        }
-        <line x1="76" x2="76" y1="28" y2="256" />
-        <line x1="76" x2="744" y1="256" y2="256" />
-      </g>
-      <g aria-hidden="true" class="fill-current text-text-muted" font-size="12">
-        @for (escala of escalasGrafico(); track $index) {
-          <text x="70" [attr.y]="escala.y + 4" text-anchor="end">{{ escala.rotulo }}</text>
-        }
-        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
-          @if (mostrarRotuloDia(indice, relatorio.recebimentosDiarios.length)) {
-            <text [attr.x]="posicaoBarra(indice) + larguraBarra() / 2" y="276" text-anchor="middle">
-              {{ indice + 1 }}
-            </text>
+      <svg
+        class="block h-auto w-full min-w-[640px] text-text sm:min-w-0"
+        viewBox="0 0 760 300"
+        role="img"
+        focusable="false"
+        aria-labelledby="grafico-recebimentos-titulo"
+        aria-describedby="grafico-recebimentos-descricao"
+      >
+        <g aria-hidden="true" class="text-border" stroke="currentColor" stroke-width="1">
+          @for (escala of escalasGrafico(); track $index) {
+            <line [attr.x1]="76" [attr.x2]="744" [attr.y1]="escala.y" [attr.y2]="escala.y" />
           }
-        }
-        <text x="410" y="296" text-anchor="middle">Dia do mês</text>
-        <text transform="translate(14 142) rotate(-90)" text-anchor="middle">Valor (BRL)</text>
-      </g>
-      <g aria-hidden="true" class="fill-brand">
-        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
-          <rect
-            [attr.x]="
-              posicaoBarra(indice) +
-              (posicaoBarra(indice + 1) - posicaoBarra(indice) - larguraBarra()) / 2
-            "
-            [attr.y]="topoBarra(item.totalCentavos)"
-            [attr.width]="larguraBarra()"
-            [attr.height]="alturaBarra(item.totalCentavos)"
-            rx="2"
-          />
-        }
-      </g>
-    </svg>
-  </div>
-  <div
-    class="mt-3 max-w-full overflow-x-auto rounded-lg border-[1px] border-border"
-    role="region"
-    aria-label="Tabela diária equivalente de recebimentos"
-    aria-describedby="orientacao-tabela-diaria"
-    tabindex="0"
-  >
-    <p id="orientacao-tabela-diaria" class="sr-only">
-      Tabela diária completa em reais. Ao focar nesta região, use as setas do teclado para percorrer
-      as colunas.
-    </p>
-    <table
-      class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_td:last-child]:text-right [&_td:last-child]:tabular-nums"
+          <line x1="76" x2="76" y1="28" y2="256" />
+          <line x1="76" x2="744" y1="256" y2="256" />
+        </g>
+        <g aria-hidden="true" class="fill-current text-text-muted" font-size="12">
+          @for (escala of escalasGrafico(); track $index) {
+            <text x="70" [attr.y]="escala.y + 4" text-anchor="end">{{ escala.rotulo }}</text>
+          }
+          @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+            @if (mostrarRotuloDia(indice, relatorio.recebimentosDiarios.length)) {
+              <text
+                [attr.x]="posicaoBarra(indice) + larguraBarra() / 2"
+                y="276"
+                text-anchor="middle"
+              >
+                {{ indice + 1 }}
+              </text>
+            }
+          }
+          <text x="410" y="296" text-anchor="middle">Dia do mês</text>
+          <text transform="translate(14 142) rotate(-90)" text-anchor="middle">Valor (BRL)</text>
+        </g>
+        <g aria-hidden="true" class="fill-brand">
+          @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+            <rect
+              [attr.x]="
+                posicaoBarra(indice) +
+                (posicaoBarra(indice + 1) - posicaoBarra(indice) - larguraBarra()) / 2
+              "
+              [attr.y]="topoBarra(item.totalCentavos)"
+              [attr.width]="larguraBarra()"
+              [attr.height]="alturaBarra(item.totalCentavos)"
+              rx="2"
+            />
+          }
+        </g>
+      </svg>
+    </div>
+    <div
+      class="mt-3 max-w-full overflow-x-auto rounded-lg border-[1px] border-border"
+      role="region"
+      aria-label="Tabela diária equivalente de recebimentos"
+      aria-describedby="orientacao-tabela-diaria"
+      tabindex="0"
     >
-      <caption>
-        Recebimentos diários entre
-        {{
-          formatarDataCivil(relatorio.inicioMes)
-        }}
-        e
-        {{
-          formatarDataCivil(relatorio.fimMes)
-        }}
-        — valores em BRL
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Dia</th>
-          <th scope="col">Data</th>
-          <th scope="col">Recebido (BRL)</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+      <p id="orientacao-tabela-diaria" class="sr-only">
+        Tabela diária completa em reais. Ao focar nesta região, use as setas do teclado para
+        percorrer as colunas.
+      </p>
+      <table
+        class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_td:last-child]:text-right [&_td:last-child]:tabular-nums"
+      >
+        <caption>
+          Recebimentos diários entre
+          {{
+            formatarDataCivil(relatorio.inicioMes)
+          }}
+          e
+          {{
+            formatarDataCivil(relatorio.fimMes)
+          }}
+          — valores em BRL
+        </caption>
+        <thead>
           <tr>
-            <td>{{ indice + 1 }}</td>
-            <td>{{ formatarDataCivil(item.data) }}</td>
-            <td>{{ formatarDinheiro(item.totalCentavos) }}</td>
+            <th scope="col">Dia</th>
+            <th scope="col">Data</th>
+            <th scope="col">Recebido (BRL)</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (item of relatorio.recebimentosDiarios; track item.data; let indice = $index) {
+            <tr>
+              <td>{{ indice + 1 }}</td>
+              <td>{{ formatarDataCivil(item.data) }}</td>
+              <td>{{ formatarDinheiro(item.totalCentavos) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </section>
 
 <section class="mb-4" aria-labelledby="posicao-atual-relatorio">
@@ -211,33 +239,35 @@
   <p class="mb-0 text-text-muted">Referência fixa: {{ formatarDataCivil(referencia) }}.</p>
 </section>
 
-<section class="mb-6" aria-label="Totais da posição atual">
-  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
-      <h3 class="mb-2 text-base font-semibold">Parcelas em aberto</h3>
-      <p class="m-0 text-2xl font-semibold tabular-nums text-text">
-        {{ formatarDinheiro(relatorio.totalEmAbertoCentavos) }}
-      </p>
-      <p class="mt-1 mb-0 text-sm text-text-muted">Somente contratos Ativos.</p>
-    </article>
-    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
-      <h3 class="mb-2 text-base font-semibold">Parcelas vencidas</h3>
-      <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
-        {{ formatarDinheiro(relatorio.totalAtrasadoCentavos) }}
-      </p>
-      <p class="mt-1 mb-0 text-sm text-text-muted">Já incluídas no saldo em aberto.</p>
-    </article>
-    <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
-      <h3 class="mb-2 text-base font-semibold">Prejuízo elegível</h3>
-      <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
-        {{ formatarDinheiro(relatorio.totalPrejuizoCentavos) }}
-      </p>
-      <p class="mt-1 mb-0 text-sm text-text-muted">
-        Pendências de contratos sem recebimentos; total separado dos Ativos.
-      </p>
-    </article>
-  </div>
-</section>
+@if (relatorio) {
+  <section class="mb-6" aria-label="Totais da posição atual">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+        <h3 class="mb-2 text-base font-semibold">Parcelas em aberto</h3>
+        <p class="m-0 text-2xl font-semibold tabular-nums text-text">
+          {{ formatarDinheiro(relatorio.totalEmAbertoCentavos) }}
+        </p>
+        <p class="mt-1 mb-0 text-sm text-text-muted">Somente contratos Ativos.</p>
+      </article>
+      <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+        <h3 class="mb-2 text-base font-semibold">Parcelas vencidas</h3>
+        <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
+          {{ formatarDinheiro(relatorio.totalAtrasadoCentavos) }}
+        </p>
+        <p class="mt-1 mb-0 text-sm text-text-muted">Já incluídas no saldo em aberto.</p>
+      </article>
+      <article class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm">
+        <h3 class="mb-2 text-base font-semibold">Prejuízo elegível</h3>
+        <p class="m-0 text-2xl font-semibold tabular-nums text-danger">
+          {{ formatarDinheiro(relatorio.totalPrejuizoCentavos) }}
+        </p>
+        <p class="mt-1 mb-0 text-sm text-text-muted">
+          Pendências de contratos sem recebimentos; total separado dos Ativos.
+        </p>
+      </article>
+    </div>
+  </section>
+}
 
 <details
   class="mb-3 overflow-hidden rounded-xl border-[1px] border-border bg-surface shadow-sm"
@@ -247,72 +277,80 @@
     <h2 id="recebimentos-mensais" class="inline text-lg font-semibold tracking-tight">
       Recebimentos no mês
     </h2>
-    <p class="mt-1 mb-0 text-text-muted">
-      Total recebido:
-      <strong class="font-semibold tabular-nums text-success">{{
-        formatarDinheiro(relatorio.totalRecebidoCentavos)
-      }}</strong>
-    </p>
+    @if (relatorio) {
+      <p class="mt-1 mb-0 text-text-muted">
+        Total recebido:
+        <strong class="font-semibold tabular-nums text-success">{{
+          formatarDinheiro(relatorio.totalRecebidoCentavos)
+        }}</strong>
+      </p>
+    } @else {
+      <p class="mt-1 mb-0 text-text-muted">Aguardando o relatório do mês selecionado.</p>
+    }
   </summary>
   <div class="border-t border-border p-3">
-    @if (relatorio.recebimentos.length) {
-      <div
-        class="max-w-full overflow-x-auto"
-        role="region"
-        aria-label="Tabela de recebimentos no mês"
-        aria-describedby="orientacao-recebimentos-relatorio"
-        tabindex="0"
-      >
-        <table
-          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(5)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(5)]:tabular-nums"
+    @if (relatorio) {
+      @if (relatorio.recebimentos.length) {
+        <div
+          class="max-w-full overflow-x-auto"
+          role="region"
+          aria-label="Tabela de recebimentos no mês"
+          aria-describedby="orientacao-recebimentos-relatorio"
+          tabindex="0"
         >
-          <caption>
-            Entradas, pagamentos individuais e lotes recebidos entre
-            {{
-              formatarDataCivil(relatorio.inicioMes)
-            }}
-            e
-            {{
-              formatarDataCivil(relatorio.fimMes)
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Data</th>
-              <th scope="col">Origem</th>
-              <th scope="col">Venda</th>
-              <th scope="col">Forma</th>
-              <th scope="col">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of relatorio.recebimentos; track item.id) {
+          <table
+            class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(5)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(5)]:tabular-nums"
+          >
+            <caption>
+              Entradas, pagamentos individuais e lotes recebidos entre
+              {{
+                formatarDataCivil(relatorio.inicioMes)
+              }}
+              e
+              {{
+                formatarDataCivil(relatorio.fimMes)
+              }}
+            </caption>
+            <thead>
               <tr>
-                <td>{{ formatarDataCivil(item.data) }}</td>
-                <td>{{ item.origem }}</td>
-                <td>
-                  <a
-                    [routerLink]="['/vendas', item.venda.id]"
-                    [attr.aria-label]="
-                      'Abrir detalhes da venda de ' +
-                      item.venda.cliente.nome +
-                      ', ID ' +
-                      item.venda.id
-                    "
-                    >{{ item.venda.cliente.nome }}</a
-                  >
-                </td>
-                <td>{{ item.forma }}</td>
-                <td>{{ formatarDinheiro(item.valorCentavos) }}</td>
+                <th scope="col">Data</th>
+                <th scope="col">Origem</th>
+                <th scope="col">Venda</th>
+                <th scope="col">Forma</th>
+                <th scope="col">Valor</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (item of relatorio.recebimentos; track item.id) {
+                <tr>
+                  <td>{{ formatarDataCivil(item.data) }}</td>
+                  <td>{{ item.origem }}</td>
+                  <td>
+                    <a
+                      [routerLink]="['/vendas', item.venda.id]"
+                      [attr.aria-label]="
+                        'Abrir detalhes da venda de ' +
+                        item.venda.cliente.nome +
+                        ', ID ' +
+                        item.venda.id
+                      "
+                      >{{ item.venda.cliente.nome }}</a
+                    >
+                  </td>
+                  <td>{{ item.forma }}</td>
+                  <td>{{ formatarDinheiro(item.valorCentavos) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+          Nenhum recebimento neste mês.
+        </p>
+      }
     } @else {
-      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-        Nenhum recebimento neste mês.
-      </p>
+      <p class="m-0 text-text-muted">Os movimentos serão exibidos após a consulta.</p>
     }
   </div>
 </details>
@@ -328,67 +366,75 @@
 >
   <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
     <h2 id="vendas-mensais" class="inline text-lg font-semibold tracking-tight">Vendas do mês</h2>
-    <p class="mt-1 mb-0 text-text-muted">
-      {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
-      <strong class="font-semibold tabular-nums text-text">{{
-        formatarDinheiro(relatorio.totalVendasMesCentavos)
-      }}</strong>
-    </p>
+    @if (relatorio) {
+      <p class="mt-1 mb-0 text-text-muted">
+        {{ relatorio.quantidadeVendasMes }} vendas · Total vendido:
+        <strong class="font-semibold tabular-nums text-text">{{
+          formatarDinheiro(relatorio.totalVendasMesCentavos)
+        }}</strong>
+      </p>
+    } @else {
+      <p class="mt-1 mb-0 text-text-muted">Aguardando o relatório do mês selecionado.</p>
+    }
   </summary>
   <div class="border-t border-border p-3">
-    @if (relatorio.vendasDoMes.length) {
-      <div
-        class="max-w-full overflow-x-auto"
-        role="region"
-        aria-label="Tabela de vendas do mês"
-        aria-describedby="orientacao-vendas-relatorio"
-        tabindex="0"
-      >
-        <table
-          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
+    @if (relatorio) {
+      @if (relatorio.vendasDoMes.length) {
+        <div
+          class="max-w-full overflow-x-auto"
+          role="region"
+          aria-label="Tabela de vendas do mês"
+          aria-describedby="orientacao-vendas-relatorio"
+          tabindex="0"
         >
-          <caption>
-            Vendas cadastradas entre
-            {{
-              formatarDataCivil(relatorio.inicioMes)
-            }}
-            e
-            {{
-              formatarDataCivil(relatorio.fimMes)
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Data da venda</th>
-              <th scope="col">Cliente</th>
-              <th scope="col">Situação</th>
-              <th scope="col">Valor total efetivo</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (venda of relatorio.vendasDoMes; track venda.id) {
+          <table
+            class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(4)]:text-right [&_td:nth-child(4)]:text-right [&_td:nth-child(4)]:tabular-nums"
+          >
+            <caption>
+              Vendas cadastradas entre
+              {{
+                formatarDataCivil(relatorio.inicioMes)
+              }}
+              e
+              {{
+                formatarDataCivil(relatorio.fimMes)
+              }}
+            </caption>
+            <thead>
               <tr>
-                <td>{{ formatarDataCivil(venda.dataVenda) }}</td>
-                <td>
-                  <a
-                    [routerLink]="['/vendas', venda.id]"
-                    [attr.aria-label]="
-                      'Abrir detalhes da venda de ' + venda.cliente.nome + ', ID ' + venda.id
-                    "
-                    >{{ venda.cliente.nome }}</a
-                  >
-                </td>
-                <td>{{ venda.situacao }}</td>
-                <td>{{ formatarDinheiro(venda.valorTotalEfetivoCentavos) }}</td>
+                <th scope="col">Data da venda</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Valor total efetivo</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (venda of relatorio.vendasDoMes; track venda.id) {
+                <tr>
+                  <td>{{ formatarDataCivil(venda.dataVenda) }}</td>
+                  <td>
+                    <a
+                      [routerLink]="['/vendas', venda.id]"
+                      [attr.aria-label]="
+                        'Abrir detalhes da venda de ' + venda.cliente.nome + ', ID ' + venda.id
+                      "
+                      >{{ venda.cliente.nome }}</a
+                    >
+                  </td>
+                  <td>{{ venda.situacao }}</td>
+                  <td>{{ formatarDinheiro(venda.valorTotalEfetivoCentavos) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+          Nenhuma venda cadastrada neste mês.
+        </p>
+      }
     } @else {
-      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-        Nenhuma venda cadastrada neste mês.
-      </p>
+      <p class="m-0 text-text-muted">Os movimentos serão exibidos após a consulta.</p>
     }
   </div>
 </details>
@@ -406,76 +452,84 @@
     <h2 id="parcelas-abertas" class="inline text-lg font-semibold tracking-tight">
       Parcelas em aberto
     </h2>
-    <p class="mt-1 mb-0 text-text-muted">
-      Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
-      <strong class="font-semibold tabular-nums text-text">{{
-        formatarDinheiro(relatorio.totalEmAbertoCentavos)
-      }}</strong>
-    </p>
+    @if (relatorio) {
+      <p class="mt-1 mb-0 text-text-muted">
+        Referência: {{ formatarDataCivil(referencia) }} · Total em aberto:
+        <strong class="font-semibold tabular-nums text-text">{{
+          formatarDinheiro(relatorio.totalEmAbertoCentavos)
+        }}</strong>
+      </p>
+    } @else {
+      <p class="mt-1 mb-0 text-text-muted">Posição atual indisponível até a consulta do mês.</p>
+    }
   </summary>
   <div class="border-t border-border p-3">
-    @if (relatorio.saldos.length) {
-      <div
-        class="max-w-full overflow-x-auto"
-        role="region"
-        aria-label="Tabela de parcelas em aberto"
-        aria-describedby="orientacao-saldos-relatorio"
-        tabindex="0"
-      >
-        <table
-          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+    @if (relatorio) {
+      @if (relatorio.saldos.length) {
+        <div
+          class="max-w-full overflow-x-auto"
+          role="region"
+          aria-label="Tabela de parcelas em aberto"
+          aria-describedby="orientacao-saldos-relatorio"
+          tabindex="0"
         >
-          <caption>
-            Saldos positivos por venda na referência
-            {{
-              formatarDataCivil(referencia)
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Data da venda</th>
-              <th scope="col">Cliente</th>
-              <th scope="col">CPF</th>
-              <th scope="col">Telefone</th>
-              <th scope="col">Primeiro vencimento pendente</th>
-              <th scope="col">Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of relatorio.saldos; track item.venda.id) {
+          <table
+            class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+          >
+            <caption>
+              Saldos positivos por venda na referência
+              {{
+                formatarDataCivil(referencia)
+              }}
+            </caption>
+            <thead>
               <tr>
-                <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
-                <td>
-                  <a
-                    [routerLink]="['/vendas', item.venda.id]"
-                    [attr.aria-label]="
-                      'Abrir detalhes da venda de ' +
-                      item.venda.cliente.nome +
-                      ', ID ' +
-                      item.venda.id
-                    "
-                    >{{ item.venda.cliente.nome }}</a
-                  >
-                </td>
-                <td>{{ item.venda.cliente.cpf }}</td>
-                <td>{{ item.venda.cliente.telefone }}</td>
-                <td>
-                  {{
-                    item.primeiroVencimentoPendente
-                      ? formatarDataCivil(item.primeiroVencimentoPendente)
-                      : 'Não informado'
-                  }}
-                </td>
-                <td>{{ formatarDinheiro(item.saldoCentavos) }}</td>
+                <th scope="col">Data da venda</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Primeiro vencimento pendente</th>
+                <th scope="col">Saldo</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (item of relatorio.saldos; track item.venda.id) {
+                <tr>
+                  <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
+                  <td>
+                    <a
+                      [routerLink]="['/vendas', item.venda.id]"
+                      [attr.aria-label]="
+                        'Abrir detalhes da venda de ' +
+                        item.venda.cliente.nome +
+                        ', ID ' +
+                        item.venda.id
+                      "
+                      >{{ item.venda.cliente.nome }}</a
+                    >
+                  </td>
+                  <td>{{ item.venda.cliente.cpf }}</td>
+                  <td>{{ item.venda.cliente.telefone }}</td>
+                  <td>
+                    {{
+                      item.primeiroVencimentoPendente
+                        ? formatarDataCivil(item.primeiroVencimentoPendente)
+                        : 'Não informado'
+                    }}
+                  </td>
+                  <td>{{ formatarDinheiro(item.saldoCentavos) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+          Nenhuma parcela em aberto nesta referência.
+        </p>
+      }
     } @else {
-      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-        Nenhuma parcela em aberto nesta referência.
-      </p>
+      <p class="m-0 text-text-muted">A posição será exibida após a consulta.</p>
     }
   </div>
 </details>
@@ -493,70 +547,78 @@
     <h2 id="parcelas-vencidas" class="inline text-lg font-semibold tracking-tight">
       Parcelas vencidas
     </h2>
-    <p class="mt-1 mb-0 text-text-muted">
-      Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
-      <strong class="font-semibold tabular-nums text-danger">{{
-        formatarDinheiro(relatorio.totalAtrasadoCentavos)
-      }}</strong>
-    </p>
+    @if (relatorio) {
+      <p class="mt-1 mb-0 text-text-muted">
+        Referência: {{ formatarDataCivil(referencia) }} · Total vencido:
+        <strong class="font-semibold tabular-nums text-danger">{{
+          formatarDinheiro(relatorio.totalAtrasadoCentavos)
+        }}</strong>
+      </p>
+    } @else {
+      <p class="mt-1 mb-0 text-text-muted">Posição atual indisponível até a consulta do mês.</p>
+    }
   </summary>
   <div class="border-t border-border p-3">
-    @if (relatorio.parcelasAtrasadas.length) {
-      <div
-        class="max-w-full overflow-x-auto"
-        role="region"
-        aria-label="Tabela de parcelas vencidas"
-        aria-describedby="orientacao-vencidas-relatorio"
-        tabindex="0"
-      >
-        <table
-          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+    @if (relatorio) {
+      @if (relatorio.parcelasAtrasadas.length) {
+        <div
+          class="max-w-full overflow-x-auto"
+          role="region"
+          aria-label="Tabela de parcelas vencidas"
+          aria-describedby="orientacao-vencidas-relatorio"
+          tabindex="0"
         >
-          <caption>
-            Parcelas pendentes vencidas na referência
-            {{
-              formatarDataCivil(referencia)
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Venda</th>
-              <th scope="col">CPF</th>
-              <th scope="col">Telefone</th>
-              <th scope="col">Parcela</th>
-              <th scope="col">Vencimento</th>
-              <th scope="col">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of relatorio.parcelasAtrasadas; track item.parcela.id) {
+          <table
+            class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(6)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(6)]:tabular-nums"
+          >
+            <caption>
+              Parcelas pendentes vencidas na referência
+              {{
+                formatarDataCivil(referencia)
+              }}
+            </caption>
+            <thead>
               <tr>
-                <td>
-                  <a
-                    [routerLink]="['/vendas', item.venda.id]"
-                    [attr.aria-label]="
-                      'Abrir detalhes da venda de ' +
-                      item.venda.cliente.nome +
-                      ', ID ' +
-                      item.venda.id
-                    "
-                    >{{ item.venda.cliente.nome }}</a
-                  >
-                </td>
-                <td>{{ item.venda.cliente.cpf }}</td>
-                <td>{{ item.venda.cliente.telefone }}</td>
-                <td>{{ item.parcela.numero }}</td>
-                <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
-                <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
+                <th scope="col">Venda</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Parcela</th>
+                <th scope="col">Vencimento</th>
+                <th scope="col">Valor</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (item of relatorio.parcelasAtrasadas; track item.parcela.id) {
+                <tr>
+                  <td>
+                    <a
+                      [routerLink]="['/vendas', item.venda.id]"
+                      [attr.aria-label]="
+                        'Abrir detalhes da venda de ' +
+                        item.venda.cliente.nome +
+                        ', ID ' +
+                        item.venda.id
+                      "
+                      >{{ item.venda.cliente.nome }}</a
+                    >
+                  </td>
+                  <td>{{ item.venda.cliente.cpf }}</td>
+                  <td>{{ item.venda.cliente.telefone }}</td>
+                  <td>{{ item.parcela.numero }}</td>
+                  <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
+                  <td>{{ formatarDinheiro(item.parcela.valorBaseCentavos) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+          Nenhuma parcela vencida nesta referência.
+        </p>
+      }
     } @else {
-      <p class="rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-        Nenhuma parcela vencida nesta referência.
-      </p>
+      <p class="m-0 text-text-muted">A posição será exibida após a consulta.</p>
     }
   </div>
 </details>
@@ -572,85 +634,96 @@
 >
   <summary class="cursor-pointer px-3 py-3 focus-visible:outline-3 focus-visible:outline-focus">
     <h2 id="prejuizo-relatorio" class="inline text-lg font-semibold tracking-tight">Prejuízo</h2>
-    <p class="mt-1 mb-0 text-text-muted">
-      Total de prejuízo:
-      <strong class="font-semibold tabular-nums text-danger">{{
-        formatarDinheiro(relatorio.totalPrejuizoCentavos)
-      }}</strong>
-    </p>
+    @if (relatorio) {
+      <p class="mt-1 mb-0 text-text-muted">
+        Total de prejuízo:
+        <strong class="font-semibold tabular-nums text-danger">{{
+          formatarDinheiro(relatorio.totalPrejuizoCentavos)
+        }}</strong>
+      </p>
+    } @else {
+      <p class="mt-1 mb-0 text-text-muted">Posição atual indisponível até a consulta do mês.</p>
+    }
   </summary>
   <div class="border-t border-border p-3">
     <p id="orientacao-prejuizo-relatorio" class="mb-3 text-text-muted">
       O total considera apenas parcelas pendentes de contratos sem nenhum pagamento. Contratos com
       recebimentos anteriores permanecem visíveis e ficam fora da soma.
     </p>
-    @if (relatorio.parcelasPrejuizo.length) {
-      <div
-        class="max-w-full overflow-x-auto"
-        role="region"
-        aria-label="Tabela de parcelas em Prejuízo"
-        aria-describedby="orientacao-prejuizo-relatorio orientacao-tabela-prejuizo-relatorio"
-        tabindex="0"
-      >
-        <p id="orientacao-tabela-prejuizo-relatorio" class="sr-only">
-          Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para
-          percorrer as colunas.
-        </p>
-        <table
-          class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(7)]:text-right [&_td:nth-child(7)]:text-right [&_td:nth-child(7)]:tabular-nums"
+    @if (relatorio) {
+      @if (relatorio.parcelasPrejuizo.length) {
+        <div
+          class="max-w-full overflow-x-auto"
+          role="region"
+          aria-label="Tabela de parcelas em Prejuízo"
+          aria-describedby="orientacao-prejuizo-relatorio orientacao-tabela-prejuizo-relatorio"
+          tabindex="0"
         >
-          <caption>
-            Parcelas pendentes dos contratos classificados como Prejuízo
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Data da venda</th>
-              <th scope="col">Cliente</th>
-              <th scope="col">CPF</th>
-              <th scope="col">Telefone</th>
-              <th scope="col">Parcela</th>
-              <th scope="col">Vencimento</th>
-              <th scope="col">Valor pendente</th>
-              <th scope="col">Participação no total</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of relatorio.parcelasPrejuizo; track item.venda.id + '/' + item.parcela.id) {
+          <p id="orientacao-tabela-prejuizo-relatorio" class="sr-only">
+            Tabela com rolagem horizontal local. Ao focar nesta região, use as setas do teclado para
+            percorrer as colunas.
+          </p>
+          <table
+            class="w-full min-w-max border-collapse bg-surface text-left text-lg leading-5 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:bg-surface-muted [&_th]:px-2.5 [&_th]:py-2 [&_th]:font-semibold [&_td]:whitespace-nowrap [&_td]:border-b [&_td]:border-border [&_td]:px-2.5 [&_td]:py-1 [&_th:nth-child(7)]:text-right [&_td:nth-child(7)]:text-right [&_td:nth-child(7)]:tabular-nums"
+          >
+            <caption>
+              Parcelas pendentes dos contratos classificados como Prejuízo
+            </caption>
+            <thead>
               <tr>
-                <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
-                <td>
-                  <a
-                    [routerLink]="['/vendas', item.venda.id]"
-                    [attr.aria-label]="
-                      'Abrir detalhes da venda de ' +
-                      item.venda.cliente.nome +
-                      ', ID ' +
-                      item.venda.id
-                    "
-                    >{{ item.venda.cliente.nome }}</a
-                  >
-                </td>
-                <td>{{ item.venda.cliente.cpf }}</td>
-                <td>{{ item.venda.cliente.telefone }}</td>
-                <td>{{ item.parcela.numero }} de {{ item.venda.parcelas.length }}</td>
-                <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
-                <td>{{ formatarDinheiro(item.parcela.valorCentavos) }}</td>
-                <td>
-                  {{
-                    item.incluirNoTotal
-                      ? 'Incluída no total'
-                      : 'Fora do total: recebimento anterior'
-                  }}
-                </td>
+                <th scope="col">Data da venda</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Parcela</th>
+                <th scope="col">Vencimento</th>
+                <th scope="col">Valor pendente</th>
+                <th scope="col">Participação no total</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (
+                item of relatorio.parcelasPrejuizo;
+                track item.venda.id + '/' + item.parcela.id
+              ) {
+                <tr>
+                  <td>{{ formatarDataCivil(item.venda.dataVenda) }}</td>
+                  <td>
+                    <a
+                      [routerLink]="['/vendas', item.venda.id]"
+                      [attr.aria-label]="
+                        'Abrir detalhes da venda de ' +
+                        item.venda.cliente.nome +
+                        ', ID ' +
+                        item.venda.id
+                      "
+                      >{{ item.venda.cliente.nome }}</a
+                    >
+                  </td>
+                  <td>{{ item.venda.cliente.cpf }}</td>
+                  <td>{{ item.venda.cliente.telefone }}</td>
+                  <td>{{ item.parcela.numero }} de {{ item.venda.quantidadeParcelas }}</td>
+                  <td>{{ formatarDataCivil(item.parcela.vencimento) }}</td>
+                  <td>{{ formatarDinheiro(item.parcela.valorBaseCentavos) }}</td>
+                  <td>
+                    {{
+                      item.incluirNoTotal
+                        ? 'Incluída no total'
+                        : 'Fora do total: recebimento anterior'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="m-2 rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
+          Nenhuma parcela pendente em contratos em Prejuízo.
+        </p>
+      }
     } @else {
-      <p class="m-2 rounded-xl border-[1px] border-border bg-surface-muted p-3 text-text-muted">
-        Nenhuma parcela pendente em contratos em Prejuízo.
-      </p>
+      <p class="m-0 text-text-muted">A posição será exibida após a consulta.</p>
     }
   </div>
 </details>
