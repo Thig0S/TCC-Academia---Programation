@@ -11,7 +11,7 @@ import { cpfValido, telefoneValido } from '../identificacao.validacoes';
 import { ComandoCadastro, ComandoEdicaoCliente, Venda } from '../venda.modelos';
 import { prepararCadastro } from '../venda.validacoes';
 import { projetarVenda } from '../venda.calculos';
-import { VendaDetalheLeitura } from '../../../nucleo/dados/modelos-leitura';
+import { RecebimentoLeitura, VendaDetalheLeitura } from '../../../nucleo/dados/modelos-leitura';
 
 export interface RascunhoCliente {
   nome: string;
@@ -115,7 +115,7 @@ export function iniciarRecebimento(referencia: string): RascunhoRecebimento {
 }
 
 export function iniciarEdicaoRecebimento(
-  pagamento: PagamentoIndividualDemonstrativo,
+  pagamento: PagamentoIndividualDemonstrativo | RecebimentoLeitura,
 ): RascunhoRecebimento {
   return {
     data: pagamento.data,
@@ -347,6 +347,62 @@ export function converterEdicaoRecebimento(
     comando: {
       vendaId: venda.id,
       recebimentoId: pagamento.id,
+      valorCentavos: valorRecebido,
+      data: rascunho.data,
+      forma: rascunho.forma,
+      observacao: rascunho.observacao,
+    },
+  };
+}
+
+/** Converte correção local a partir do snapshot HTTP, sem reconstruir a venda de domínio. */
+export function converterEdicaoRecebimentoLocal(
+  rascunho: RascunhoRecebimento,
+  detalhe: VendaDetalheLeitura,
+  recebimentoId: string,
+  referencia: string,
+): Conversao<ComandoCorrecaoPagamento, RascunhoRecebimento> {
+  const erros: ErrosCampos<RascunhoRecebimento> = {};
+  const data = erroData(rascunho.data, detalhe.resumo.dataVenda, referencia);
+  if (data) erros.data = data;
+  if (!formaAceita(rascunho.forma)) erros.forma = 'Selecione uma forma aceita.';
+  const valorRecebido = dinheiro(rascunho.valorRecebido, 'valorRecebido', erros);
+  if (Array.from(rascunho.observacao).length > 20)
+    erros.observacao = 'A observação deve ter no máximo 20 caracteres.';
+
+  let resumo: string | null = null;
+  const recebimento = detalhe.recebimentos.find((item) => item.id === recebimentoId);
+  let parcelaId: string | null = null;
+  let valorBase: number | null = null;
+  if (detalhe.resumo.statusAdministrativo !== 'Ativo') {
+    resumo = 'Somente recebimentos de vendas ativas podem ser corrigidos.';
+  } else if (!recebimento || recebimento.origem !== 'Individual') {
+    resumo = 'Este recebimento não está disponível para correção nesta venda.';
+  } else if (recebimento.alocacoes.length !== 1) {
+    resumo = 'Somente recebimentos individuais vinculados a uma parcela podem ser corrigidos.';
+  } else {
+    const alocacao = recebimento.alocacoes[0];
+    const parcela = alocacao
+      ? detalhe.parcelas.find((item) => item.id === alocacao.parcelaId)
+      : undefined;
+    if (!alocacao || !parcela) {
+      resumo = 'Não foi possível localizar a parcela deste recebimento.';
+    } else {
+      parcelaId = parcela.id;
+      valorBase = parcela.valorBaseCentavos;
+    }
+  }
+
+  if (valorRecebido !== null && valorBase !== null && valorRecebido < valorBase)
+    erros.valorRecebido = 'O valor corrigido deve ser igual ou superior ao valor-base da parcela.';
+  if (Object.keys(erros).length || resumo || valorRecebido === null || parcelaId === null)
+    return { tipo: 'invalido', erros, resumo };
+
+  return {
+    tipo: 'sucesso',
+    comando: {
+      vendaId: detalhe.resumo.id,
+      recebimentoId,
       valorCentavos: valorRecebido,
       data: rascunho.data,
       forma: rascunho.forma,

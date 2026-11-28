@@ -92,6 +92,7 @@ export class DetalhesVenda {
   protected readonly mensagemRecebimento = signal('');
   protected readonly erroRecebimento = signal('');
   protected readonly mensagemCorrecao = signal('');
+  protected readonly erroCorrecao = signal('');
   protected readonly mensagemStatus = signal('');
   protected readonly erroStatus = signal('');
   protected readonly statusAlvo = signal<StatusAdministrativoVenda | null>(null);
@@ -110,6 +111,7 @@ export class DetalhesVenda {
   private readonly baixaAcompanhada = signal<AcompanhamentoBaixa | null>(null);
   private readonly baixaEnviando = signal(false);
   private readonly baixaConfirmadaId = signal<string | null>(null);
+  private readonly correcaoConfirmadaId = signal<string | null>(null);
   private readonly acionadorCorrecao = signal<string | null>(null);
   protected readonly estadoConsulta = this.consultaInterna.estado;
   private readonly acompanharBaixa = effect(() => {
@@ -179,6 +181,40 @@ export class DetalhesVenda {
     ) {
       this.baixaConfirmadaId.set(null);
       this.erroRecebimento.set('');
+    }
+  });
+  private readonly reconciliarCorrecaoConfirmada = effect(() => {
+    const vendaId = this.correcaoConfirmadaId();
+    if (!vendaId) return;
+    const estado = this.estadoConsulta();
+    if (
+      estado.tipo === 'erro' &&
+      estado.chave.tipo === 'detalhe' &&
+      estado.chave.vendaId === vendaId
+    ) {
+      this.erroCorrecao.set(
+        'A correção foi confirmada, mas não foi possível atualizar o detalhe. Recarregue para consultar o resultado; não repita a correção.',
+      );
+      return;
+    }
+    if (
+      estado.tipo === 'pronto' &&
+      estado.chave.tipo === 'detalhe' &&
+      estado.chave.vendaId === vendaId
+    ) {
+      afterNextRender(
+        () => {
+          const host = this.elemento.nativeElement;
+          const acionador = this.acionadorCorrecao();
+          const botao = [...host.querySelectorAll<HTMLElement>('[data-acao-corrigir]')].find(
+            (item) => item.dataset['acaoCorrigir'] === acionador,
+          );
+          (botao ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
+        },
+        { injector: this.injector },
+      );
+      this.correcaoConfirmadaId.set(null);
+      this.erroCorrecao.set('');
     }
   });
   private readonly focarProximaAcaoBaixa = effect(() => {
@@ -364,13 +400,23 @@ export class DetalhesVenda {
 
   protected abrirCorrecao(recebimentoId: string): void {
     this.mensagemCorrecao.set('');
+    this.erroCorrecao.set('');
     this.acionadorCorrecao.set(recebimentoId);
     this.recebimentoCorrecao.set(recebimentoId);
   }
 
   protected fecharCorrecao(mensagem: string | null): void {
     this.recebimentoCorrecao.set(null);
-    if (mensagem) this.mensagemCorrecao.set(mensagem);
+    if (mensagem) {
+      this.mensagemCorrecao.set(mensagem);
+      this.erroCorrecao.set('');
+      if (this.modo === 'local') this.correcaoConfirmadaId.set(this.id().get('id'));
+    }
+  }
+
+  protected registrarCorrecaoIncerta(mensagem: string): void {
+    this.mensagemCorrecao.set('');
+    this.erroCorrecao.set(mensagem);
   }
 
   protected abrirConfirmacaoStatus(status: StatusAdministrativoVenda): void {
@@ -664,6 +710,48 @@ export class DetalhesVenda {
         (recebimento) =>
           recebimento.origem === 'Individual' &&
           recebimento.alocacoes.some((alocacao) => alocacao.parcelaId === parcela.id),
+      ) ?? null
+    );
+  }
+
+  protected recebimentoCorrigivel(
+    detalhe: VendaDetalheLeitura,
+    parcela: ParcelaLeitura,
+  ): RecebimentoLeitura | null {
+    return (
+      detalhe.recebimentos.find(
+        (recebimento) =>
+          recebimento.origem === 'Individual' &&
+          recebimento.alocacoes.length === 1 &&
+          recebimento.alocacoes[0]?.parcelaId === parcela.id,
+      ) ?? null
+    );
+  }
+
+  protected podeCorrigir(venda: VendaResumoLeitura): boolean {
+    if (venda.statusAdministrativo !== 'Ativo') return false;
+    if (this.modo === 'demonstrativo') return this.podePagar(venda);
+    return venda.revisao !== null && this.confirmacoes.estado().tipo === 'disponivel';
+  }
+
+  protected bloqueioCorrecao(venda: VendaResumoLeitura): string {
+    if (venda.revisao === null)
+      return 'A consulta não forneceu revisão para corrigir o recebimento.';
+    const estado = this.confirmacoes.estado();
+    return estado.tipo === 'enviando'
+      ? 'Aguarde a confirmação em andamento.'
+      : estado.tipo === 'incerto'
+        ? 'Confira o resultado da confirmação anterior antes de corrigir o recebimento.'
+        : 'A correção não está disponível nesta venda.';
+  }
+
+  protected recebimentoAlvoLeitura(
+    detalhe: VendaDetalheLeitura,
+    recebimentoId: string,
+  ): RecebimentoLeitura | null {
+    return (
+      detalhe.recebimentos.find(
+        (recebimento) => recebimento.id === recebimentoId && recebimento.origem === 'Individual',
       ) ?? null
     );
   }

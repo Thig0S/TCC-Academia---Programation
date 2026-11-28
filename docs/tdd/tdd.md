@@ -58,11 +58,11 @@ Fontes externas FON-048, consultadas em 27/11/2026:
 
 | Tema | Escolha explícita | Situação |
 | --- | --- | --- |
-| Resultado | Integrar Angular localmente com sintéticos, preservando Pages demo | Confirmada; não implementada |
-| Conexão | Proxy local, segredo fora do browser e CORS da API desligado | Confirmada; não implementada |
-| Tempo | Dia local capturado na abertura, fixo na sessão; recarga renova só referência | Confirmada; não implementada no modo local |
-| Incerteza | Bloquear confirmações na aba até consulta e reconhecimento humano | Confirmada; não implementada |
-| Demais detalhes | Composição, modelos de leitura, gates e roadmap abaixo | Propostos para revisão |
+| Resultado | Integrar Angular localmente com sintéticos, preservando Pages demo | Confirmada; implementação em andamento nesta feature |
+| Conexão | Proxy local, segredo fora do browser e CORS da API desligado | Confirmada; proxy e fonte HTTP local implementados |
+| Tempo | Dia local capturado na abertura, fixo na sessão; recarga renova só referência | Confirmada; referência fixa por injector implementada |
+| Incerteza | Bloquear confirmações na aba até consulta e reconhecimento humano | Confirmada; protocolo base implementado; integração transversal pendente em INT-05 |
+| Demais detalhes | Composição, modelos de leitura, gates e roadmap abaixo | Desenho autorizado e aplicado progressivamente; status no roadmap |
 
 ### 5. Arquitetura e responsabilidades propostas
 
@@ -215,8 +215,9 @@ body ou Authorization recebido. Assets/respostas do browser também não continh
 API .NET real em SQLite sintético recebeu outro Bearer Base64 válido e respondeu 401/no-store,
 sem expor qualquer das credenciais. `node --test --test-concurrency=1 proxy-local.test.cjs
 proxy-local-cli.test.cjs` passou 9/9 e `npm run build` padrão passou (316,87 kB iniciais).
-O build/teste comprova somente o harness do proxy, não o modo de persistência. A composição
-HTTP e a ativação de `serve:local` permanecem pendentes de INT-02.1, INT-02.2 e INT-03.1–3.5.
+Essa prova cobre o gate do proxy. As tarefas INT-02.1–2.3 e INT-03.1–3.5 implementaram a
+composição HTTP, consultas e ativação de `serve:local`; os testes de componentes usam fontes
+controladas. A conexão browser com backend/SQLite reais e comandos permanece para INT-06.
 
 **HTTP e comandos:** GETs não têm retry automático nesta fase; ação de recarregar é
 explícita. Cada comando tem uma subscription controlada, sem retry/shareReplay que
@@ -328,10 +329,10 @@ silenciosamente nesta proposta nem mesclá-lo. Se contrato mudar, revisar primei
 
 | Marco | Entregas | Dependências | Critério verificável | Estado |
 | --- | --- | --- | --- | --- |
-| INT-01 | Reconferir baseline integrada; composição demo/local; gate proxy/segredo e logging | Pré-requisitos acima | Demo sem API; CLI real recusa origem/Host antes de proxy; segredo não vaza | Não implementado |
-| INT-02 | Fronteira/modelos/cliente/adaptador demo e estado de confirmação | INT-01 | Tipos exatos, uma escrita, referência fixa, revisão observada e testes de protocolo | Não implementado |
-| INT-03 | Quatro coleções, detalhe, Visão Geral e mês; funcionalidades separadas | INT-02 | Pronto/erro/vazio/ausente, corridas e busca/paginação; sem cálculos financeiros HTTP | Não implementado |
-| INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Em andamento: cadastro, edição, status e baixa concluídos; correção pendente |
+| INT-01 | Reconferir baseline integrada; composição demo/local; gate proxy/segredo e logging | Pré-requisitos acima | Demo sem API; CLI real recusa origem/Host antes de proxy; segredo não vaza | Concluído/verificado; tarefas 1.1–1.3 |
+| INT-02 | Fronteira/modelos/cliente/adaptador demo e estado de confirmação | INT-01 | Tipos exatos, uma escrita, referência fixa, revisão observada e testes de protocolo | Concluído/verificado; tarefas 2.1–2.3 |
+| INT-03 | Quatro coleções, detalhe, Visão Geral e mês; funcionalidades separadas | INT-02 | Pronto/erro/vazio/ausente, corridas e busca/paginação; sem cálculos financeiros HTTP | Concluído/verificado; tarefas 3.1–3.5 |
+| INT-04 | Cadastro, cliente, status, baixa e correção; commits individuais | INT-03 para contextos usados | Confirmação única, no-op, rascunho, conflito, foco e invalidação por funcionalidade | Concluído/verificado; tarefas 4.1–4.5 |
 | INT-05 | Conferência integrada/alerta por aba e recovery pós-sucesso | INT-02/04; protocolo básico já testado antes | Resposta perdida bloqueia toda aba; consulta+aceite liberam sem reenvio | Não implementado |
 | INT-06 | E2E real/reinício/duas abas, regressão demo/backend, auditoria e evidências | INT-01–05 | CA-069–078 rastreados, privacidade e limitações reais documentadas | Não implementado |
 
@@ -348,17 +349,18 @@ DEC-042 complementa DEC-040/041 e reutiliza suas regras; não substitui schema/d
 Problema: consumidores síncronos demo não tratam fronteiras HTTP/revisão/resultado incerto.
 Escolha: adapters separados, proxy dev com segredo no servidor e protocolos acima.
 Origem: FON-047 para decisões materiais; FON-048 e inspeção para desenho proposto.
-Situação: escolhas da entrevista confirmadas, desenho técnico proposto; implementação
-não iniciada. Contrapartidas/alternativas nas seções 5–13. Validação: INT-01–06 e CA-069–078.
+Situação: escolhas da entrevista confirmadas e desenho técnico aplicado progressivamente.
+INT-01–04 concluídos/verificados; INT-05–06 pendentes conforme o roadmap. Contrapartidas e
+alternativas nas seções 5–13. Validação final: INT-05–06 e CA-069–078.
 
 ### 16. Riscos, hipóteses e pendências
 
 PR #41 integrado e contrato reconferido na tarefa 1.1; a dependência está satisfeita.
-Gate técnico: hooks do CLI/Vite exatos ainda sem execução observada; prova de proteção
-antecede qualquer tela local. Falha bloqueia e exige revisão, não implementação insegura.
-Não há regra comercial pendente para este recorte. PEN-013/014 e autorização operacional
-continuam fora. Recarga perde bloqueio em memória: isso não autoriza replay nem garante
-deduplicação; mensagens orientam conferência humana, com limite explicitado no PRD.
+Hooks CLI/Vite foram exercitados em execução real na tarefa 1.3 antes da integração das
+telas. Não há regra comercial pendente para este recorte. INT-05/06 e a auditoria final
+permanecem pendentes; PEN-013/014 e autorização operacional continuam fora. Recarga perde
+bloqueio em memória: isso não autoriza replay nem garante deduplicação; mensagens orientam
+conferência humana, com limite explicitado no PRD.
 
 ### 17. Rastreabilidade e revisão documental
 
@@ -369,7 +371,10 @@ revogar esses contratos. Capability nova descreve integração/revisão/incertez
 Lotes legados e dashboard têm textos históricos divergentes nas specs principais:
 não introduzir novas baixas em lote nem retirar dashboard; preservar código/regras
 atuais e RF-018–020, deixando manutenção de outras Changes fora do recorte.
-Verificações aqui são documentais; nenhum build/teste/auditoria de código foi executado.
+O registro de planejamento foi documental e não executou build/teste/auditoria; os
+resultados de apply são registrados por tarefa em `openspec/changes/fase-006-integracao-angular/tasks.md`
+e `frontend/README.md`. Verificações E2E reais com API/SQLite e auditoria transversal ainda
+estão pendentes em INT-06.
 
 ### 18. Histórico
 

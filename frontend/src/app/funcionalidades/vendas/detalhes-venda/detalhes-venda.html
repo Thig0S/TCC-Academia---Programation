@@ -28,6 +28,22 @@
       {{ erroRecebimento() }}
     </p>
   }
+  @if (mensagemCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-success-badge bg-success-badge px-3 py-2 font-medium text-success-badge-text"
+      role="status"
+    >
+      {{ mensagemCorrecao() }} A atualização do detalhe continua separada da correção.
+    </p>
+  }
+  @if (erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroCorrecao() }}
+    </p>
+  }
 } @else if (estado.tipo === 'erro') {
   <app-cabecalho titulo="Não foi possível carregar a venda" [compacto]="true" />
   <p
@@ -73,6 +89,20 @@
       role="alert"
     >
       {{ erroRecebimento() }}
+    </p>
+  }
+  @if (mensagemCorrecao() || erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      [attr.role]="erroCorrecao() ? 'alert' : 'status'"
+      aria-live="polite"
+    >
+      {{ mensagemCorrecao() }} {{ erroCorrecao() }}
+      @if (erroCorrecao()) {
+        Recarregue para consultar o resultado; não repita a correção.
+      } @else {
+        A atualização do detalhe falhou; não repita a correção.
+      }
     </p>
   }
   <button
@@ -126,6 +156,14 @@
       role="alert"
     >
       {{ erroRecebimento() }}
+    </p>
+  }
+  @if (erroCorrecao()) {
+    <p
+      class="mb-2 rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm text-error"
+      role="alert"
+    >
+      {{ erroCorrecao() }}
     </p>
   }
   @if (mensagemCorrecao()) {
@@ -513,7 +551,7 @@
                 } @else if (parcela.situacao !== 'Paga') {
                   <span>Aguardando parcela anterior</span>
                 } @else if (
-                  pagamentoIndividualParcela && podePagar(venda) && modo === 'demonstrativo'
+                  pagamentoIndividualParcela && podeCorrigir(venda) && modo === 'demonstrativo'
                 ) {
                   <button
                     type="button"
@@ -529,6 +567,25 @@
                   >
                     Corrigir pagamento
                   </button>
+                } @else if (recebimentoCorrigivel(detalhe, parcela); as recebimentoCorrigivel) {
+                  @if (podeCorrigir(venda)) {
+                    <button
+                      type="button"
+                      class="rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-1 text-sm font-semibold text-text shadow-sm transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+                      [attr.data-acao-corrigir]="recebimentoCorrigivel.id"
+                      [attr.aria-label]="
+                        'Corrigir pagamento da parcela ' +
+                        parcela.numero +
+                        ' da venda de ' +
+                        venda.cliente.nome
+                      "
+                      (click)="abrirCorrecao(recebimentoCorrigivel.id)"
+                    >
+                      Corrigir pagamento
+                    </button>
+                  } @else if (modo === 'local') {
+                    <span>{{ bloqueioCorrecao(venda) }}</span>
+                  }
                 } @else {
                   <span aria-hidden="true">—</span>
                 }
@@ -664,6 +721,17 @@
           [restaurarFoco]="restaurarFoco"
           (confirmacaoIniciada)="acompanharBaixaIniciada($event)"
           (encerrado)="fecharRecebimento($event)"
+        />
+      }
+    }
+    @if (recebimentoCorrecao(); as recebimentoId) {
+      @if (recebimentoAlvoLeitura(detalhe, recebimentoId); as recebimento) {
+        <app-corrigir-pagamento
+          [detalhe]="detalhe"
+          [recebimento]="recebimento"
+          [restaurarFoco]="restaurarFocoCorrecao"
+          (resultadoIncerto)="registrarCorrecaoIncerta($event)"
+          (encerrado)="fecharCorrecao($event)"
         />
       }
     }

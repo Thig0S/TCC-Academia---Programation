@@ -821,6 +821,49 @@ ver observação da tarefa 4.1 sobre formatação histórica do README. `git dif
 `openspec validate fase-006-integracao-angular --strict` passaram. Cobertura local usa fonte
 HTTP simulada; não representa teste real contra SQLite/API nem aceite operacional.
 
+### Apply `fase-006-integracao-angular` — tarefa 4.5 — correção pela fonte local (28/11/2026)
+
+No modo local, a ação de correção aparece somente para recebimento `Individual` ligado a
+uma única parcela de venda ativa; entrada e histórico em lote não recebem ação. O modal
+captura do detalhe consultado o ID do recebimento, parcela, referência e revisão original.
+A conversão usa os modelos de leitura da API, sem reconstruir a venda de domínio, e exige
+valor corrigido não inferior ao valor-base, data civil válida, forma conhecida e nota de
+até 20 caracteres. A confirmação passa uma vez pelo `ControleConfirmacoes` e pelo comando
+HTTP existente, sem troca do ID/alocação nem escrita otimista.
+
+A resposta é conferida antes de ser aceita: venda e recebimento devem manter suas
+identidades, quantidade de recebimentos e demais movimentos devem permanecer iguais, e a
+alocação deve continuar na parcela original com o valor corrigido. Após sucesso, consultas
+são invalidadas para refletir inclusive a mudança de mês, sem repetir a escrita. Recusa
+preserva rascunho; conflito só permite nova confirmação após consulta explícita da mesma
+venda/recebimento e revisão nova, e bloqueia a ação se o alvo não continuar elegível. A
+consulta de conflito atualiza os dados atuais mostrados no modal, sem sobrescrever os
+valores editados. Cancelar antes do envio não grava; resultado incerto mantém contexto no
+coordenador e orienta conferência sem retry. Foco retorna ao acionador após cancelamento
+e à ação correspondente após confirmação.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts" --include="src/app/funcionalidades/relatorios/relatorios.spec.ts"
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "corrige pagamento individual com foco, validação e relatório nos dois temas" --workers=1
+npm exec -- prettier --check src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.ts src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.html src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.ts src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.html src/app/funcionalidades/vendas/formulario-venda/rascunhos.ts
+```
+
+Resultados: testes direcionados **41/41 em 4 arquivos**; suíte completa **538/538 em 43
+arquivos**; build padrão aprovado (326,86 kB iniciais) e build local aprovado (1,54 MB
+iniciais). E2E de regressão demonstrativa passou **2/2** projetos Chromium, 1366×768 e
+390×844, exercitando os dois temas. `git diff --check` e `openspec validate
+fase-006-integracao-angular --strict` passaram. A correção local de componente usa fonte
+simulada; o E2E executado cobre a demonstração existente, não API/SQLite real. A
+integração browser com backend real permanece para INT-06.2; estes resultados não são
+aceite operacional.
+`prettier --check README.md`, executado adicionalmente, ainda aponta formatação histórica
+do README já registrada antes desta tarefa; não foi reformatado o documento inteiro.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
