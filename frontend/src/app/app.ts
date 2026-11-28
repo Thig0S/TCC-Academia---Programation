@@ -10,9 +10,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barra-navegacao';
+import { MODO_APLICACAO } from './nucleo/configuracao/modo-aplicacao';
 import { ServicoTema } from './nucleo/configuracao/servico-tema';
-import { ServicoDemonstracao } from './nucleo/demonstracao/servico-demonstracao';
-import { RetornoFormulario } from './nucleo/demonstracao/retorno-formulario';
+import { FONTE_VENDAS } from './nucleo/dados/fonte-vendas';
+import { RetornoFormulario } from './nucleo/navegacao/retorno-formulario';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,8 @@ import { RetornoFormulario } from './nucleo/demonstracao/retorno-formulario';
 })
 export class App {
   protected readonly servicoTema = inject(ServicoTema);
-  private readonly demonstracao = inject(ServicoDemonstracao);
+  protected readonly modo = inject(MODO_APLICACAO);
+  private readonly fonte = inject(FONTE_VENDAS);
   private readonly retornoFormulario = inject(RetornoFormulario);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
@@ -35,6 +37,8 @@ export class App {
   private ultimoDestino?: string;
 
   constructor() {
+    // Captura e mantém a referência da fonte efetiva desde a abertura do app.
+    void this.fonte.referencia;
     this.router.events.pipe(takeUntilDestroyed()).subscribe((evento) => {
       if (evento instanceof NavigationStart) this.focoPendente?.destroy();
       if (!(evento instanceof NavigationEnd)) return;

@@ -11,7 +11,7 @@ import { form, submit, validate } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 import { IdentificacaoCliente } from '../formulario-venda/identificacao-cliente';
 import {
   converterEdicao,

@@ -7,6 +7,7 @@ import { REFERENCIA_DEMONSTRACAO } from '../demonstracao/referencia-demonstracao
 import { ServicoDemonstracao } from '../demonstracao/servico-demonstracao';
 import { provedoresFonteVendas as provedoresLocais } from '../../../configuracoes/provedores-fonte-vendas.local';
 import { FonteVendasHttp } from './fonte-vendas-http';
+import { MODO_APLICACAO } from '../configuracao/modo-aplicacao';
 
 describe('Composição da fonte de vendas', () => {
   it('mantém a composição padrão demonstrativa sem fonte local nem cliente HTTP', () => {
@@ -21,6 +22,7 @@ describe('Composição da fonte de vendas', () => {
 
     expect(fonte).toBeInstanceOf(FonteVendasDemonstracao);
     expect(fonte.referencia).toBe('2027-01-31');
+    expect(TestBed.inject(MODO_APLICACAO)).toBe('demonstrativo');
     expect(TestBed.inject(FONTE_VENDAS_LOCAL, null)).toBeNull();
   });
 
@@ -42,6 +44,7 @@ describe('Composição da fonte de vendas', () => {
     });
 
     expect(TestBed.inject(FONTE_VENDAS)).toBe(fonteSubstituta);
+    expect(TestBed.inject(MODO_APLICACAO)).toBe('local');
     expect(instanciacoesDemonstrativas).toBe(0);
   });
 
@@ -61,6 +64,7 @@ describe('Composição da fonte de vendas', () => {
     });
 
     expect(TestBed.inject(FONTE_VENDAS)).toBeInstanceOf(FonteVendasHttp);
+    expect(TestBed.inject(MODO_APLICACAO)).toBe('local');
     expect(instanciacoesDemonstrativas).toBe(0);
   });
 

@@ -697,6 +697,56 @@ temas. Build padrão passou (323,24 kB iniciais) e local passou (1,58 MB iniciai
 direcionado, `git diff --check` e `openspec validate fase-006-integracao-angular --strict`
 passaram. `serve:local` continua sem selecionar HTTP; a integração aguarda a tarefa 3.5.
 
+### Apply `fase-006-integracao-angular` — tarefa 3.5 — App e Configurações (28/11/2026)
+
+`MODO_APLICACAO` é fornecido junto à composição demonstrativa ou local; `App` não injeta mais
+`ServicoDemonstracao` e inicia pela interface `FONTE_VENDAS`, fixando a referência ao abrir sem
+conhecer a implementação concreta. O estado de retorno/foco de formulários foi movido para
+`nucleo/navegacao`, sem depender do namespace demonstrativo. O cabeçalho existente identifica
+“Demonstração independente” ou “Modo local persistido”, sem adicionar banner global.
+
+Configurações mantém quatro explicações e nenhum controle: dados sempre sintéticos; negócios em
+memória no demo ou persistidos pelo backend SQLite local; tema somente em memória; e descarte ou
+recuperação após recarga, incluindo referência civil exibida, fixa durante a abertura e renovada
+quando reabre. O modo local orienta a consultar os dados e concluir conferência explícita antes de
+repetir uma confirmação cuja resposta se perdeu. Ambos os modos avisam que não são operacionais.
+
+Após a conclusão de 3.1–3.5, `serve:local` passou a selecionar `build:local` e o provider HTTP, sem
+alterar o build/start padrão. O E2E local usa segredo sintético aleatório apenas no ambiente do
+processo de teste e intercepta a API com 502: as rotas integradas mostram falha, não dados seed.
+Esse teste não valida o backend real nem os comandos, que pertencem às tarefas 4.1–4.5.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/configuracoes/configuracoes.spec.ts" --include="src/app/nucleo/dados/composicao-fonte-vendas.spec.ts" --include="src/app/app.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.config.ts e2e/demonstracao-inicial.spec.ts --grep "Configurações explica os quatro limites|abre e recarrega cada destino" --workers=1
+npx playwright test --config=playwright.local.config.ts
+npm exec -- prettier --check angular.json playwright.local.config.ts e2e/modo-local.spec.ts `
+  src/app/app.ts src/app/app.html src/app/nucleo/configuracao/modo-aplicacao.ts `
+  src/app/nucleo/navegacao/retorno-formulario.ts src/app/nucleo/dados/composicao-fonte-vendas.spec.ts `
+  src/app/funcionalidades/configuracoes/configuracoes.ts `
+  src/app/funcionalidades/configuracoes/configuracoes.html `
+  src/app/funcionalidades/configuracoes/configuracoes.spec.ts `
+  src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.ts `
+  src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts `
+  src/app/funcionalidades/vendas/editar-venda/editar-venda.ts `
+  src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts `
+  src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.ts `
+  src/configuracoes/provedores-fonte-vendas.ts `
+  src/configuracoes/provedores-fonte-vendas.local.ts
+```
+
+Resultados: testes direcionados **12/12 em 3 arquivos**, suíte **491/491 em 38 arquivos**;
+E2E demonstrativo **4/4** e local **2/2**, nos viewports 1366×768 e 390×844. No modo local, foram
+acessadas diretamente e recarregadas Visão Geral, Vendas abertas/quitadas/inativas/Prejuízo,
+Relatórios e Configurações; a falha 502 não ativou seed, e a recarga restaurou o tema escuro.
+Build padrão passou (323,40 kB iniciais) e local passou (1,53 MB iniciais). Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

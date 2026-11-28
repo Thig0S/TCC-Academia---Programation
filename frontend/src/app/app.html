@@ -17,7 +17,7 @@
         class="text-sidebar-text no-underline hover:underline hover:underline-offset-4 focus-visible:underline focus-visible:outline-3 focus-visible:outline-sidebar-focus focus-visible:outline-offset-4"
         routerLink="/configuracoes"
         aria-label="Atalho para Configurações"
-        >Configurações da demonstração</a
+        >Configurações</a
       >
     </div>
   </aside>
@@ -25,7 +25,9 @@
     <header
       class="barra-superior flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2 md:px-5"
     >
-      <span class="text-sm font-semibold">Protótipo navegável</span>
+      <span class="text-sm font-semibold">
+        {{ modo === 'local' ? 'Modo local persistido' : 'Demonstração independente' }}
+      </span>
       <button
         type="button"
         class="controle-tema rounded-lg border-[1px] border-control-border bg-surface-muted px-3 py-2 text-sm font-semibold transition-none hover:bg-surface hover:text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-4"

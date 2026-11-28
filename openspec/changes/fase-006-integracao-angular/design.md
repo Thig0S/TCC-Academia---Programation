@@ -5,19 +5,22 @@
 Ver `proposal.md/Why`. PRD/FON-047/048/RF-037–043/CA-069–078 e TDD/DEC-042 centralizam
 o escopo e contrato técnico; este desenho organiza sua aplicação. Criar design é
 necessário: mudança transversal nas telas, composição, segurança e protocolo assíncrono.
-O planejamento foi concluído e o apply foi autorizado em 27/11/2026; as tarefas 1.1–1.3
-estão concluídas, com a integração das telas ainda não iniciada.
+O planejamento foi concluído e o apply foi autorizado em 27/11/2026. Na conclusão de
+INT-03.5, as tarefas 1.1–3.5 estão implementadas e verificadas; seguem pendentes as
+confirmações comerciais de INT-04 e as etapas INT-05/06.
 
-Main integrada `a8de117`: API técnica v1 e specs da fase 005 disponíveis; telas ainda
-dependem de `ServicoDemonstracao`, comandos síncronos e Relatórios/painel calculados da
-fonte local. O PR #41/head `4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` foi integrado em
-27/11/2026 e reconferido na tarefa 1.1. Rotas, campos, Bearer de ambiente e revisão
-textual estão equivalentes à referência; nenhum desvio material foi encontrado. Os IDs
-de PRD/TDD da fase 005 permanecem reservados àquela entrega integrada.
+Main integrada `a8de117`: API técnica v1 e specs da fase 005 disponíveis. As consultas de
+coleções, detalhe, Visão Geral e Relatórios usam a fonte assíncrona; App/Configurações
+selecionam explicações por composição e `serve:local` ativa o provider HTTP. Os comandos
+das telas ainda dependem da implementação prevista em INT-04. O PR #41/head
+`4fe279ef65621cf0d2b3a70e396f5724d97dfa9e` foi integrado em 27/11/2026 e reconferido na
+tarefa 1.1. Rotas, campos, Bearer de ambiente e revisão textual estão equivalentes à
+referência; nenhum desvio material foi encontrado. Os IDs de PRD/TDD da fase 005
+permanecem reservados àquela entrega integrada.
 
-Specs de abertura/estado/consulta ainda afirmam ausência global de API/persistência;
-as deltas limitam isso ao demo. Textos legados de lote/dashboard não autorizam novos
-lotes nem retirada do dashboard atual; preservar RF-018–020 e comportamento vigente.
+Specs base antigas de abertura/estado/consulta afirmam ausência global de API/persistência;
+as deltas limitam isso ao demo. Textos legados de lote/dashboard não autorizam novos lotes
+nem retirada do dashboard atual; preservar RF-018–020 e comportamento vigente.
 
 ## Goals / Non-Goals
 

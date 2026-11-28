@@ -4,7 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { appConfig } from '../../../app.config';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { REFERENCIA_DEMONSTRACAO } from '../../../nucleo/demonstracao/referencia-demonstracao';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 
 describe('Cadastro demonstrativo pela interface', () => {
   beforeEach(() =>

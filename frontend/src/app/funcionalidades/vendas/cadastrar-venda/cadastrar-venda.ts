@@ -3,7 +3,7 @@ import { form, FormField, submit, validate } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 import { FORMAS_PAGAMENTO } from '../../parcelas/pagamento.modelos';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro, subtrairCentavos } from '../dinheiro';

@@ -1,13 +1,13 @@
 <app-cabecalho titulo="Configurações" />
 <section
   class="rounded-xl border-[1px] border-border bg-surface p-4 shadow-sm"
-  aria-labelledby="limites-demonstracao"
+  aria-labelledby="limites-modo"
 >
   <h2
-    id="limites-demonstracao"
+    id="limites-modo"
     class="mb-3 border-b border-border pb-2 text-lg font-semibold tracking-tight"
   >
-    Limites da demonstração
+    {{ modo === 'local' ? 'Limites do modo local' : 'Limites da demonstração' }}
   </h2>
   <dl class="mb-0 grid gap-3">
     <div
@@ -15,33 +15,54 @@
     >
       <dt class="font-semibold">Dados fictícios</dt>
       <dd class="mb-0 text-text-muted">
-        Esta demonstração prevê somente dados fictícios, nunca dados pessoais reais. As páginas
-        comerciais apresentam consultas e alterações somente demonstrativas.
+        Este ambiente usa somente dados sintéticos, nunca dados pessoais reais.
       </dd>
     </div>
     <div
       class="grid grid-cols-1 gap-x-4 gap-y-1 border-b border-border pb-3 sm:grid-cols-[minmax(10rem,0.35fr)_minmax(0,1fr)]"
     >
-      <dt class="font-semibold">Estado apenas em memória</dt>
+      <dt class="font-semibold">
+        {{ modo === 'local' ? 'Negócios persistidos localmente' : 'Estado apenas em memória' }}
+      </dt>
       <dd class="mb-0 text-text-muted">
-        O estado da sessão, incluindo o tema, existe apenas em memória. Não há armazenamento
-        persistente no navegador ou em arquivo.
+        @if (modo === 'local') {
+          Os negócios são persistidos pela API no SQLite local e não no navegador. A preferência de
+          tema existe somente em memória, sem armazenamento persistente.
+        } @else {
+          Os negócios e o tema existem somente em memória. Não há armazenamento persistente no
+          navegador ou em arquivo.
+        }
       </dd>
     </div>
     <div
       class="grid grid-cols-1 gap-x-4 gap-y-1 border-b border-border pb-3 sm:grid-cols-[minmax(10rem,0.35fr)_minmax(0,1fr)]"
     >
-      <dt class="font-semibold">Descarte ao recarregar</dt>
+      <dt class="font-semibold">
+        {{ modo === 'local' ? 'Recarga e referência da sessão' : 'Descarte ao recarregar' }}
+      </dt>
       <dd class="mb-0 text-text-muted">
-        As alterações são perdidas ao recarregar. O tema volta ao escuro quando a aplicação é
-        reaberta.
+        @if (modo === 'local') {
+          Recarregar recupera os negócios do mesmo banco local. A referência é
+          {{ referencia }} nesta abertura, fixa durante a sessão e renovada ao recarregar; o tema
+          volta ao escuro.
+        } @else {
+          Alterações demonstrativas são descartadas ao recarregar. A referência é {{ referencia }}
+          nesta abertura e fixa durante a sessão; o tema volta ao escuro ao reabrir.
+        }
       </dd>
     </div>
     <div class="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[minmax(10rem,0.35fr)_minmax(0,1fr)]">
       <dt class="font-semibold">Sem uso operacional</dt>
       <dd class="mb-0 text-text-muted">
-        Este protótipo não controla cobranças reais e não deve ser usado para operações financeiras
+        Este ambiente não controla cobranças reais e não deve ser usado para operações financeiras
         da ótica.
+        @if (modo === 'local') {
+          Se uma confirmação perder a resposta, não a repita imediatamente: consulte os dados e
+          conclua a conferência explícita antes de tentar novamente. Recarregar não desfaz uma
+          operação que a API tenha aceitado.
+        } @else {
+          Consultas e alterações são somente demonstrativas.
+        }
       </dd>
     </div>
   </dl>

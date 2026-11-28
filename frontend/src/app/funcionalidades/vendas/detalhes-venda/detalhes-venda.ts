@@ -31,7 +31,7 @@ import {
   VendaDetalheLeitura,
   VendaResumoLeitura,
 } from '../../../nucleo/dados/modelos-leitura';
-import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
+import { RetornoFormulario } from '../../../nucleo/navegacao/retorno-formulario';
 import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar-pagamento';
 import { CorrigirPagamento } from '../../parcelas/corrigir-pagamento/corrigir-pagamento';
 import { ProjecaoParcela } from '../../parcelas/parcela.calculos';
