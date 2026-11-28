@@ -179,6 +179,9 @@ export class DetalhesVenda {
       this.erroRecebimento.set(
         'A baixa foi confirmada, mas não foi possível atualizar o detalhe. Recarregue para consultar o resultado; não repita o pagamento.',
       );
+      afterNextRender(() => this.elemento.nativeElement.querySelector<HTMLElement>('h1')?.focus(), {
+        injector: this.injector,
+      });
       return;
     }
     if (
@@ -202,6 +205,9 @@ export class DetalhesVenda {
       this.erroCorrecao.set(
         'A correção foi confirmada, mas não foi possível atualizar o detalhe. Recarregue para consultar o resultado; não repita a correção.',
       );
+      afterNextRender(() => this.elemento.nativeElement.querySelector<HTMLElement>('h1')?.focus(), {
+        injector: this.injector,
+      });
       return;
     }
     if (
@@ -370,7 +376,11 @@ export class DetalhesVenda {
         const destino = this.focoProxima()
           ? acoes[0]
           : acoes.find((acao) => acao.dataset['acaoPagar'] === this.acionadorPagamento());
-        (destino ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
+        (
+          destino ??
+          host.querySelector<HTMLElement>('#titulo-parcelas') ??
+          host.querySelector<HTMLElement>('h1')
+        )?.focus();
         this.focoProxima.set(false);
       },
       { injector: this.injector },
@@ -394,7 +404,11 @@ export class DetalhesVenda {
         const destino = [...host.querySelectorAll<HTMLElement>('[data-acao-corrigir]')].find(
           (botao) => botao.dataset['acaoCorrigir'] === id,
         );
-        (destino ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
+        (
+          destino ??
+          host.querySelector<HTMLElement>('#titulo-parcelas') ??
+          host.querySelector<HTMLElement>('h1')
+        )?.focus();
       },
       { injector: this.injector },
     );

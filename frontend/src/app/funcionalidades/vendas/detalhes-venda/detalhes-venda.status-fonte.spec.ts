@@ -5,7 +5,11 @@ import { Observable, Subject, of } from 'rxjs';
 import { appConfig } from '../../../app.config';
 import { routes } from '../../../app.routes';
 import { MODO_APLICACAO } from '../../../nucleo/configuracao/modo-aplicacao';
-import { ControleConfirmacoes } from '../../../nucleo/dados/controle-confirmacoes';
+import {
+  ContextoConfirmacao,
+  ControleConfirmacoes,
+  ErroConfirmacaoBloqueada,
+} from '../../../nucleo/dados/controle-confirmacoes';
 import { ControleConsultas } from '../../../nucleo/dados/controle-consultas';
 import { FONTE_VENDAS, FonteVendas } from '../../../nucleo/dados/fonte-vendas';
 import {
@@ -393,6 +397,19 @@ describe('Mudança de status pela fonte assíncrona', () => {
     expect(fonte.consultarColecao).toHaveBeenCalledTimes(1);
     expect(harness.routeNativeElement?.textContent).not.toContain(`Cliente ${idVenda}`);
     expect(alterarStatus).toHaveBeenCalledTimes(1);
+
+    const contextoConcorrente: ContextoConfirmacao = {
+      operacao: 'cadastro',
+      alvo: { tipo: 'colecao', colecao: 'abertas' },
+      referencia,
+      revisaoEsperada: '17',
+      rascunho: { cliente: { nome: 'Cadastro não enviado' } },
+    };
+    const cadastrarConcorrente = vi.fn(() => of(sucesso(detalhe('cadastro-concorrente'))));
+    expect(() =>
+      TestBed.inject(ControleConfirmacoes).confirmar(contextoConcorrente, cadastrarConcorrente),
+    ).toThrow(ErroConfirmacaoBloqueada);
+    expect(cadastrarConcorrente).not.toHaveBeenCalled();
 
     registroAtual = detalhe(idVenda, 'Inativo', '18', 7000);
     resposta.next(sucesso(registroAtual));

@@ -128,11 +128,12 @@ describe('ControleConfirmacoes', () => {
   it('faz uma subscription, fixa a revisão e conserva resultado/invalidação fora da tela', async () => {
     const consultas = new ControleConsultas();
     const controle = new ControleConfirmacoes(consultas);
-    const estadoConsulta = new EstadoConsultaPorChave<number>(consultas);
-    const leituraAnterior = new Subject<number>();
-    estadoConsulta.carregar({ tipo: 'painel', referencia: '2027-04-05' }, () => leituraAnterior);
+    const estadoConsulta = new EstadoConsultaPorChave<string>(consultas);
+    const chaveConsulta = { tipo: 'painel', referencia: '2027-04-05' } as const;
+    const leituraAnterior = new Subject<string>();
+    estadoConsulta.carregar(chaveConsulta, () => leituraAnterior);
 
-    const resposta = new Subject<Resultado<{ readonly id: string }>>();
+    const resposta = new Subject<Resultado<{ readonly id: string; readonly revisao: string }>>();
     let assinaturas = 0;
     let contextoRecebido: ContextoConfirmacao | undefined;
     const rascunhoOriginal = { cliente: { nome: 'Nome ainda não confirmado' } };
@@ -142,11 +143,13 @@ describe('ControleConfirmacoes', () => {
     };
     const pendente = controle.confirmar(contextoOriginal, (contextoFixo) => {
       contextoRecebido = contextoFixo;
-      return new Observable<Resultado<{ readonly id: string }>>((assinante) => {
-        assinaturas++;
-        const subscription = resposta.subscribe(assinante);
-        return () => subscription.unsubscribe();
-      });
+      return new Observable<Resultado<{ readonly id: string; readonly revisao: string }>>(
+        (assinante) => {
+          assinaturas++;
+          const subscription = resposta.subscribe(assinante);
+          return () => subscription.unsubscribe();
+        },
+      );
     });
 
     expect(controle.estado().tipo).toBe('enviando');
@@ -160,18 +163,18 @@ describe('ControleConfirmacoes', () => {
         Object.isFrozen((contextoRecebido.rascunho as Record<string, unknown>)['cliente']),
       ).toBe(true);
     }
-    expect(() => controle.confirmar(contextoEdicao(), () => of(sucesso({ id: 'replay' })))).toThrow(
+    const outraChamada = vi.fn(() => of(sucesso({ id: 'cadastro-concorrente', revisao: '1' })));
+    expect(() => controle.confirmar(contextoCadastro(), outraChamada)).toThrow(
       ErroConfirmacaoBloqueada,
     );
+    expect(outraChamada).not.toHaveBeenCalled();
 
-    resposta.next(sucesso({ id: 'venda-confirmada' }));
+    resposta.next(sucesso({ id: 'venda-confirmada', revisao: '18' }));
     await expect(pendente).resolves.toMatchObject({
       tipo: 'sucesso',
-      valor: { id: 'venda-confirmada' },
+      valor: { id: 'venda-confirmada', revisao: '18' },
     });
     expect(consultas.geracao()).toBe(1);
-    expect(estadoConsulta.estado().tipo).toBe('inicial');
-    leituraAnterior.next(77);
     expect(estadoConsulta.estado().tipo).toBe('inicial');
     expect(controle.estado()).toMatchObject({
       tipo: 'disponivel',
@@ -181,10 +184,16 @@ describe('ControleConfirmacoes', () => {
           revisaoEsperada: '9007199254740993',
           alvo: { tipo: 'detalhe', vendaId: 'venda/externa' },
         },
-        resultado: { valor: { id: 'venda-confirmada' } },
+        resultado: { valor: { id: 'venda-confirmada', revisao: '18' } },
       },
     });
+
+    estadoConsulta.carregar(chaveConsulta, () => of('18'));
+    expect(estadoConsulta.estado()).toMatchObject({ tipo: 'pronto', valor: '18' });
+    leituraAnterior.next('17');
+    expect(estadoConsulta.estado()).toMatchObject({ tipo: 'pronto', valor: '18' });
     expect(assinaturas).toBe(1);
+    expect(outraChamada).not.toHaveBeenCalled();
   });
 
   it.each([

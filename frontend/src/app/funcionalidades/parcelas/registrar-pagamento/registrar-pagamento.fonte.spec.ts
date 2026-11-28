@@ -612,4 +612,51 @@ describe('Baixa individual pela fonte local', () => {
     expect(document.activeElement).toBe(pagina.querySelector('#titulo-parcelas'));
     expect(pagina.querySelector('[role="status"]')?.textContent).toContain('Pagamento confirmado');
   });
+
+  it('distingue baixa confirmada de falha no refresh, recarrega por ação e foca a falha', async () => {
+    const detalheConfirmado = detalhe({
+      revisao: '18',
+      pagamento: { parcelaId: ids[0], valorCentavos: 3334, forma: 'Pix' },
+    });
+    let leituras = 0;
+    const consultar = vi.fn((_id: string) => {
+      leituras++;
+      if (leituras === 2) return throwError(() => new Error('Falha de transporte no refresh.'));
+      return of(sucesso(leituras === 1 ? detalhe() : detalheConfirmado));
+    });
+    const mock = criarFonte(
+      detalhe(),
+      vi.fn(() => of(sucesso(detalheConfirmado))),
+      consultar,
+    );
+    const { harness, pagina } = await abrir(mock.fonte);
+    const dialog = await prepararPagamento(pagina, harness);
+    await preencher(pagina, harness, 'forma-recebimento', 'Pix');
+    enviar(pagina);
+    await atualizar(harness);
+
+    expect(mock.pagamento).toHaveBeenCalledTimes(1);
+    expect(mock.consultar).toHaveBeenCalledTimes(2);
+    expect(TestBed.inject(ControleConfirmacoes).estado()).toMatchObject({
+      tipo: 'disponivel',
+      ultimoResultado: {
+        tipo: 'confirmado',
+        resultado: { valor: { resumo: { revisao: '18' } } },
+      },
+    });
+    const anuncio = pagina.querySelector<HTMLElement>('[role="status"]');
+    expect(anuncio?.textContent).toContain('Pagamento confirmado.');
+    expect(anuncio?.textContent).toContain('não foi possível atualizar o detalhe');
+    expect(pagina.querySelector('h1')?.textContent).toContain('Não foi possível carregar a venda');
+    expect(document.activeElement).toBe(pagina.querySelector('h1'));
+    expect(pagina.textContent).toContain('não repita o pagamento');
+    expect(dialog.open).toBe(false);
+
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await atualizar(harness);
+    expect(mock.consultar).toHaveBeenCalledTimes(3);
+    expect(mock.pagamento).toHaveBeenCalledTimes(1);
+    expect(pagina.querySelector('h1')?.textContent).toContain('Detalhes da venda');
+    expect(pagina.querySelector('[role="status"]')?.textContent).toContain('Pagamento confirmado.');
+  });
 });

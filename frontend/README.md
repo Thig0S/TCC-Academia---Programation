@@ -909,6 +909,42 @@ não perda de resposta contra API/SQLite; o fluxo com persistência real continu
 tarefas INT-06.2/6.3 e não há alegação de exactly-once ou aceite operacional. O README não
 foi reformatado integralmente; o histórico da Change já registra formatação preexistente.
 
+### Apply `fase-006-integracao-angular` — tarefa 5.2 — concorrência e refresh (28/11/2026)
+
+A verificação transversal confirmou que o coordenador mantém apenas uma assinatura por
+confirmação. Enquanto uma edição está em voo, tentativa de cadastro concorrente é bloqueada
+antes de chamar sua fonte. O teste acompanha o status após navegação para outra coleção e
+confirma que a escrita original continua única; consultas dependentes são atualizadas apenas
+depois da resposta confirmada. Uma leitura do painel iniciada antes do commit termina com
+revisão antiga depois de uma nova consulta com revisão `18`; a geração/invalidação mantém a
+consulta atual e impede que o valor antigo sobrescreva o estado confirmado.
+
+Nos fluxos de baixa e correção, testes de fonte simulam sucesso confirmado seguido de falha
+no refresh do detalhe. A interface conserva a mensagem de sucesso separada da falha de
+apresentação, orienta a não repetir o comando, mantém o resultado confirmado no coordenador,
+e foca o título da tela de falha, que oferece **Recarregar detalhe**. A recarga é explicitamente
+acionada e não reenvia baixa/correção. O rascunho capturado pelo coordenador segue imutável;
+nenhum retry automático ou polling foi adicionado. O ajuste de foco foi necessário porque o
+modal de baixa é destruído no sucesso confirmado e, portanto, seu callback de restauração não
+é executado quando a consulta subsequente falha.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/nucleo/dados/controle-confirmacoes.spec.ts --include src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.status-fonte.spec.ts --include src/app/funcionalidades/parcelas/registrar-pagamento/registrar-pagamento.fonte.spec.ts --include src/app/funcionalidades/parcelas/corrigir-pagamento/corrigir-pagamento.fonte.spec.ts
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+```
+
+Resultados: direcionados **49/49 em 4 arquivos**; regressão **547/547 em 44 arquivos**;
+build padrão **340,09 kB** iniciais e build local **1,56 MB** iniciais. Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+Nenhum E2E foi executado especificamente nesta tarefa; os testes usam fonte controlada e não
+provam falha de transporte com API/SQLite real. Os cenários reais de refresh, duas abas e
+resposta perdida permanecem pendentes de INT-06.3; não há alegação de exactly-once ou aceite
+operacional.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

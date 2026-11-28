@@ -631,6 +631,39 @@ describe('Correção individual pela fonte local', () => {
     );
   });
 
+  it('mantém correção confirmada distinta de falha no refresh e permite recarga sem novo comando', async () => {
+    const mock = criarFonte(
+      detalhe(),
+      vi.fn(() => of(sucesso(detalhe()))),
+    );
+    const { harness, pagina } = await abrir(mock.fonte);
+    await preparar(pagina, harness);
+    mock.consultarVenda.mockImplementationOnce(() =>
+      throwError(() => new Error('Falha de transporte no refresh.')),
+    );
+    enviar(pagina);
+    await atualizar(harness);
+
+    expect(mock.corrigir).toHaveBeenCalledTimes(1);
+    expect(mock.consultarVenda).toHaveBeenCalledTimes(2);
+    expect(TestBed.inject(ControleConfirmacoes).estado()).toMatchObject({
+      tipo: 'disponivel',
+      ultimoResultado: { tipo: 'confirmado', resultado: { mensagem: 'Correção confirmada.' } },
+    });
+    expect(pagina.querySelector('h1')?.textContent).toContain('Não foi possível carregar a venda');
+    const anuncio = pagina.querySelector<HTMLElement>('[role="alert"][aria-live="polite"]');
+    expect(anuncio?.getAttribute('aria-live')).toBe('polite');
+    expect(anuncio?.textContent).toContain('Correção confirmada.');
+    expect(anuncio?.textContent).toContain('não foi possível atualizar o detalhe');
+    expect(document.activeElement).toBe(pagina.querySelector('h1'));
+
+    pagina.querySelector<HTMLButtonElement>('button')!.click();
+    await atualizar(harness);
+    expect(mock.consultarVenda).toHaveBeenCalledTimes(3);
+    expect(mock.corrigir).toHaveBeenCalledTimes(1);
+    expect(pagina.querySelector('h1')?.textContent).toContain('Detalhes da venda');
+  });
+
   it('fecha para conferência quando a API retorna confirmação indeterminada', async () => {
     const mock = criarFonte(
       detalhe(),
