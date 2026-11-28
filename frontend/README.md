@@ -784,6 +784,43 @@ linhas foi revertida para manter o diff documental no escopo. Os testes usam fon
 simulada em componente e dados sintéticos na demonstração; não constituem execução de
 cadastro contra SQLite/API real nem aceite operacional.
 
+### Apply `fase-006-integracao-angular` — tarefa 4.2 — edição pela fonte (27/11/2026)
+
+Detalhes de venda no modo local agora oferecem o acesso à edição. A tela consulta o ID
+completo pela `FONTE_VENDAS` antes de preencher nome, CPF, telefone e descrição; resposta
+de outro ID não inicializa o rascunho. Trocar ID invalida a leitura anterior. O comando
+contém somente o ID e os quatro campos do cliente, com a revisão do detalhe que originou
+o rascunho. CPF repetido não é rejeitado localmente; o servidor continua validando os
+campos e reconhecendo no-op. Status, parcelas, recebimentos e valores financeiros não
+são editáveis pelo formulário.
+
+Após conflito, a interface conserva os quatro valores e exige recarga explícita do detalhe
+antes de aceitar nova confirmação; recarregar não substitui o rascunho. Recusas estruturadas
+são associadas e focadas no campo conhecido, e campos desconhecidos usam resumo seguro.
+Resposta incompatível ou sucesso que retorna ID diferente é tratada como resultado incerto:
+sem sucesso visual, navegação ou replay. A confirmação consome uma fonte uma única vez e
+invalida consultas apenas com a resposta confirmada. Cancelar antes de enviar retorna ao
+detalhe e não publica alterações.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/editar-venda/editar-venda.fonte.spec.ts" --include="src/app/funcionalidades/vendas/editar-venda/editar-venda.spec.ts" --include="src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts" --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts" --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts" --include="src/app/nucleo/dados/controle-confirmacoes.spec.ts"
+npm test -- --watch=false
+npm run build
+npx ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "edita nome e descrição|edição e recebimento preservam foco"
+```
+
+Resultados: direcionados **127/127 em 6 arquivos**, regressão **515/515 em 40 arquivos**;
+build padrão aprovado (**326,79 kB** iniciais) e local aprovado (**1,54 MB** iniciais). E2E
+Chromium **22/22**, nos viewports de projeto 1366×768 e 390×844; os cenários percorrem
+ambos os temas e larguras 390, 767, 768, 1024 e 1366 px, checando foco de validação, texto
+extenso, navegação e finanças sem alteração. Prettier direcionado para código/E2E passou;
+ver observação da tarefa 4.1 sobre formatação histórica do README. `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Cobertura local usa fonte
+HTTP simulada; não representa teste real contra SQLite/API nem aceite operacional.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

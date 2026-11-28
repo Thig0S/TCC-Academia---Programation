@@ -80,7 +80,7 @@
       <a routerLink="/vendas/quitadas">Ver Vendas quitadas</a>
       <a routerLink="/vendas/inativas">Ver Vendas inativas</a>
       <a routerLink="/vendas/prejuizo">Ver Prejuízo</a>
-      @if (vendaDemo) {
+      @if (podeEditar()) {
         <a
           [routerLink]="['/vendas', venda.id, 'editar']"
           [state]="{ origemEdicao: 'detalhe' }"

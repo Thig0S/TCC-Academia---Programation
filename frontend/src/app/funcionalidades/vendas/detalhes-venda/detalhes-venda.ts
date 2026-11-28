@@ -20,6 +20,7 @@ import { Modal } from '../../../compartilhado/componentes/modal/modal';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
+import { MODO_APLICACAO } from '../../../nucleo/configuracao/modo-aplicacao';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
 import { ControleConsultas } from '../../../nucleo/dados/controle-consultas';
 import { EstadoConsultaPorChave } from '../../../nucleo/dados/estado-consulta';
@@ -52,6 +53,7 @@ import {
 })
 export class DetalhesVenda {
   protected readonly sucesso = inject(RetornoFormulario).consumirSucesso();
+  private readonly modo = inject(MODO_APLICACAO);
   private readonly rota = inject(ActivatedRoute);
   private readonly fonte = inject(FONTE_VENDAS);
   // Preserve legacy demo-only actions without creating the demo service in local composition.
@@ -93,6 +95,9 @@ export class DetalhesVenda {
     const resultado = this.consultaDemonstrativa();
     return resultado?.tipo === 'sucesso' ? resultado.valor : null;
   });
+  protected readonly podeEditar = computed(
+    () => this.modo === 'local' || this.vendaDemonstrativa() !== null,
+  );
   private readonly acompanharConsulta = effect((onCleanup) => {
     this.controleConsultas.geracao();
     const id = this.id().get('id');
