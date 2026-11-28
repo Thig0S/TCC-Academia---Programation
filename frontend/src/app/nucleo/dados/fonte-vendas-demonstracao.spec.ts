@@ -94,6 +94,50 @@ describe('Adaptador assíncrono da demonstração', () => {
     ).toBe(relatorio.totalRecebidoCentavos);
   });
 
+  it('inclui recebimentos das vendas em todos os status e conserva a referência fixa', async () => {
+    const fonte = TestBed.inject(FonteVendasDemonstracao);
+    const antes = await firstValueFrom(fonte.consultarVisaoGeral());
+    const status = ['Ativo', 'Inativo', 'Prejuízo'] as const;
+
+    for (const [indice, statusAdministrativo] of status.entries()) {
+      const resultado = await firstValueFrom(
+        fonte.cadastrarVenda({
+          comando: {
+            ...cadastro(),
+            cliente: {
+              ...cadastro().cliente,
+              nome: `Cliente fonte status ${statusAdministrativo}`,
+            },
+          },
+          revisaoEsperada: null,
+        }),
+      );
+      const venda = valorSucesso(resultado).resumo;
+
+      if (statusAdministrativo !== 'Ativo') {
+        const alteracao = await firstValueFrom(
+          fonte.alterarStatus({
+            comando: { vendaId: venda.id, status: statusAdministrativo },
+            revisaoEsperada: null,
+          }),
+        );
+        expect(valorSucesso(alteracao).resumo.statusAdministrativo).toBe(statusAdministrativo);
+      }
+
+      const detalhe = valorSucesso(await firstValueFrom(fonte.consultarVenda(venda.id)));
+      expect(detalhe.resumo.statusAdministrativo).toBe(statusAdministrativo);
+      expect(detalhe.recebimentos[0].origem).toBe('Entrada');
+    }
+
+    const depois = await firstValueFrom(fonte.consultarVisaoGeral());
+    expect(depois.indicadores.recebidoNoMesCentavos).toBe(
+      antes.indicadores.recebidoNoMesCentavos + 3 * 20000,
+    );
+    expect(antes.referencia).toBe(referencia);
+    expect(depois.referencia).toBe(referencia);
+    expect(fonte.referencia).toBe(referencia);
+  });
+
   it('executa comando demonstrativo somente quando o Observable é consumido', async () => {
     const fonte = TestBed.inject(FonteVendasDemonstracao);
     const demonstracao = TestBed.inject(ServicoDemonstracao);

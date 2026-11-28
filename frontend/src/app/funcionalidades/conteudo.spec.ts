@@ -1,10 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../app.routes';
+import { appConfig } from '../app.config';
 
 describe('Conteúdo honesto da demonstração', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
+  beforeEach(() => TestBed.configureTestingModule({ providers: [...(appConfig.providers ?? [])] }));
 
   it('explica os quatro limites de Configurações sem controles fictícios', async () => {
     const harness = await RouterTestingHarness.create('/configuracoes');

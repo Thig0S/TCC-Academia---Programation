@@ -279,7 +279,7 @@ test('paga parcelas individualmente e reconcilia quitação', async ({ page }) =
     const referenciaTexto = await page
       .getByRole('main')
       .locator('p')
-      .filter({ hasText: 'Referência da demonstração:' })
+      .filter({ hasText: 'Referência:' })
       .innerText();
     const [, dia, mes, ano] = referenciaTexto.match(/(\d{2})\/(\d{2})\/(\d{4})/)!;
     const referencia = `${ano}-${mes}-${dia}`;
@@ -997,7 +997,7 @@ test('reconcilia cadastro, entrada, quitação e edição entre listas, Visão G
     const referencia = await page
       .getByRole('main')
       .locator('p')
-      .filter({ hasText: 'Referência da demonstração:' })
+      .filter({ hasText: 'Referência da sessão:' })
       .innerText();
     await page
       .getByRole('navigation', { name: 'Navegação principal' })

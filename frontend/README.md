@@ -617,6 +617,44 @@ verificação global `npm run format:check`, executada antes desta edição do R
 somente `README.md`; o arquivo não foi reformatado integralmente para evitar mudanças
 históricas fora do escopo.
 
+### Apply `fase-006-integracao-angular` — tarefa 3.3 — Visão Geral consolidada (28/11/2026)
+
+Visão Geral consulta uma vez `FONTE_VENDAS.consultarVisaoGeral` usando a chave de painel e a
+referência fixa da sessão. A tela apresenta os quatro indicadores e as listas já limitadas
+pela fonte para vendas recentes, parcelas próximas e parcelas atrasadas; links preservam o
+ID opaco completo. O componente não consulta coleções/detalhes para montar o painel nem
+recalcula indicadores ou seleciona registros no modo HTTP. Cada bloco vazio é independente.
+Loading tem anúncio próprio e erro de conexão oferece repetição explícita, sem exibir vazio,
+reaproveitar resposta antiga ou inicializar seed. O adaptador demo continua usando resumo,
+projeções e seleções financeiras existentes.
+
+O teste do adaptador criou recebimentos de entrada durante o mês para vendas Ativa, Inativa
+e em Prejuízo; o indicador mensal aumentou pelos três recebimentos, enquanto referência e
+data de corte permaneceram fixas. Testes do componente usam resposta literal e verificam
+indicadores, três limites/links, vazio independente, carregamento, falha/retry, chamada única,
+ausência de fan-out e descarte após invalidação.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/visao-geral/visao-geral.spec.ts"
+npm test -- --watch=false --include="src/app/nucleo/dados/fonte-vendas-demonstracao.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/visao-geral-refinamento.spec.ts --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/refinamento-visual.spec.ts e2e/formularios-vendas.spec.ts --grep "cabeçalhos e mensagens de sucesso|paga parcelas individualmente|reconcilia cadastro, entrada, quitação" --workers=1
+npx playwright test --config=playwright.paginacao-fixture.config.ts e2e/paginacao-fixture.spec.ts --grep "hierarquia de Vendas apresenta cabeçalho" --workers=1
+```
+
+Resultados: testes direcionados **5/5** do componente e **4/4** do adaptador; regressão
+**487/487 em 37 arquivos**; E2E de Visão Geral **2/2**, E2E de referência/fluxos **6/6** e
+E2E de hierarquia das listas **2/2**. Playwright cobriu 1366×768 e 390×844; o teste de
+Visão Geral percorreu links com Tab/Shift+Tab e Enter nos temas escuro/claro. Build padrão
+passou (323,05 kB iniciais) e build local passou (1,58 MB iniciais). Prettier direcionado,
+`git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
+`serve:local` continua sem seleção HTTP até as tarefas 3.4 e 3.5.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

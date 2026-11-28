@@ -522,7 +522,7 @@ test('cabeçalhos e mensagens de sucesso preservam contraste e acabamento nos do
     const referenciaTexto = await page
       .getByRole('main')
       .locator('p')
-      .filter({ hasText: 'Referência da demonstração:' })
+      .filter({ hasText: 'Referência:' })
       .innerText();
     const [, dia, mes, ano] = referenciaTexto.match(/(\d{2})\/(\d{2})\/(\d{4})/)!;
     await page.getByLabel('Data do pagamento').fill(`${ano}-${mes}-${dia}`);
