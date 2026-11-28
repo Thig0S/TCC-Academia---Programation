@@ -747,6 +747,43 @@ Relatórios e Configurações; a falha 502 não ativou seed, e a recarga restaur
 Build padrão passou (323,40 kB iniciais) e local passou (1,53 MB iniciais). Prettier direcionado,
 `git diff --check` e `openspec validate fase-006-integracao-angular --strict` passaram.
 
+### Apply `fase-006-integracao-angular` — tarefa 4.1 — cadastro pela fonte (27/11/2026)
+
+Cadastro agora consulta a coleção `abertas` da fonte configurada antes de habilitar a
+confirmação. A revisão textual é fixada do snapshot exibido e enviada uma única vez com o
+comando; falha de consulta e revisão ausente/nula bloqueiam escrita e não ativam dados
+demonstrativos. Após 409, o rascunho permanece e uma ação explícita recarrega a coleção antes
+de nova confirmação. Recusa estruturada preserva entradas e associa erros wire conhecidos
+ao campo correspondente (inclusive `entrada.forma`); campo não reconhecido recebe mensagem
+segura. Resposta incompatível/transportada como exceção preserva o rascunho, não navega nem
+anuncia sucesso e bloqueia replay pelo `ControleConfirmacoes`. Sucesso invalida as consultas
+e só então navega para o ID retornado. Cancelar antes do envio não publica cadastro. A prévia,
+validações locais, centavos e datas civis permanecem no formulário; descrição ausente é
+omitida no comando e no JSON.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.fonte.spec.ts" --include="src/app/funcionalidades/vendas/cadastrar-venda/cadastrar-venda.spec.ts" --include="src/app/funcionalidades/vendas/formulario-venda/rascunhos.spec.ts" --include="src/app/nucleo/dados/fonte-vendas-http.spec.ts" --include="src/app/nucleo/dados/controle-confirmacoes.spec.ts"
+npm test -- --watch=false
+npm run build
+npx ng build --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/formularios-vendas.spec.ts --grep "Nova venda|cadastra sem entrada|cadastra com entrada|seleção por teclado|revela erros por campo"
+```
+
+Resultados: direcionados **110/110 em 5 arquivos**; regressão **504/504 em 39 arquivos**;
+build padrão aprovado (**327,02 kB** iniciais) e local aprovado (**1,54 MB** iniciais). E2E
+Chromium **10/10** nos viewports 1366×768 e 390×844, nos dois temas; cobriu cadastro com e
+sem entrada, envio único apesar de Enter/clique repetidos, foco/validação por teclado,
+cancelamento e responsividade sem overflow global. Um seletor E2E foi restringido à região
+“Parcelas da venda”, pois o histórico também contém a linha da entrada e não deve ser contado
+como parcela. Prettier direcionado, `git diff --check` e validação OpenSpec estrita passaram.
+Prettier passou para os arquivos de código e E2E. `prettier --check README.md` ainda aponta
+somente a formatação de tabelas no bloco histórico de baseline 1.1; a reformatação dessas
+linhas foi revertida para manter o diff documental no escopo. Os testes usam fonte HTTP
+simulada em componente e dados sintéticos na demonstração; não constituem execução de
+cadastro contra SQLite/API real nem aceite operacional.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

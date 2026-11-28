@@ -6,6 +6,54 @@
   (submit)="confirmar($event)"
   class="mt-3 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"
 >
+  @let consulta = estadoColecao();
+  @if (consulta.tipo === 'inicial' || consulta.tipo === 'carregando') {
+    <p
+      class="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-text-muted md:col-span-2"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      Consultando a coleção antes de habilitar a confirmação…
+    </p>
+  } @else if (consulta.tipo === 'erro') {
+    <div
+      class="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm md:col-span-2"
+      role="alert"
+    >
+      <p class="mb-2">
+        Não foi possível consultar a revisão das vendas. Nenhum cadastro foi enviado.
+      </p>
+      <button
+        type="button"
+        class="rounded-lg border border-control-border bg-surface px-3 py-2 font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="recarregarColecao()"
+      >
+        Tentar consultar novamente
+      </button>
+    </div>
+  } @else if (consulta.tipo === 'pronto' && podeConfirmar()) {
+    <p
+      class="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-text-muted md:col-span-2"
+      role="status"
+    >
+      A coleção foi consultada. Revise os dados e confirme para cadastrar.
+    </p>
+  } @else if (consulta.tipo === 'pronto' && modo === 'local' && consulta.valor.revisao === null) {
+    <div
+      class="rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm md:col-span-2"
+      role="alert"
+    >
+      <p class="mb-2">A consulta não forneceu uma revisão válida. Nenhum cadastro foi enviado.</p>
+      <button
+        type="button"
+        class="rounded-lg border border-control-border bg-surface px-3 py-2 font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
+        (click)="recarregarColecao()"
+      >
+        Tentar consultar novamente
+      </button>
+    </div>
+  }
   <div class="grid min-w-0 content-start gap-3">
     <app-identificacao-cliente
       class="block min-w-0 @container"
@@ -202,13 +250,29 @@
       {{ mensagem() }}
     </p>
   }
+  @if (conflitoRevisao()) {
+    <div
+      class="rounded-lg border border-control-border bg-surface-muted px-3 py-2 text-sm md:col-span-2"
+      role="group"
+      aria-label="Atualizar revisão do cadastro"
+    >
+      <button
+        type="button"
+        class="rounded-lg border border-control-border bg-surface px-3 py-2 font-semibold text-text focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:opacity-60"
+        [disabled]="consulta.tipo === 'carregando' || consulta.tipo === 'inicial'"
+        (click)="renovarRevisao()"
+      >
+        Recarregar coleção antes de confirmar novamente
+      </button>
+    </div>
+  }
   <div class="flex flex-wrap gap-3 md:col-span-2">
     <button
       type="submit"
       class="rounded-lg border-[1px] border-control-border bg-action px-4 py-2 text-sm font-semibold text-white shadow-sm transition-none hover:bg-action-hover focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-      [disabled]="campos().submitting() || concluido()"
+      [disabled]="campos().submitting() || enviando() || concluido() || !podeConfirmar()"
     >
-      Confirmar cadastro demonstrativo
+      {{ modo === 'local' ? 'Confirmar cadastro' : 'Confirmar cadastro demonstrativo' }}
     </button>
     <button
       type="button"

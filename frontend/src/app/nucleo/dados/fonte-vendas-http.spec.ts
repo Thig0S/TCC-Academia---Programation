@@ -459,6 +459,107 @@ describe('FonteVendasHttp', () => {
     });
   });
 
+  it('preserva erros estruturados de campo único e validação múltipla do cadastro', async () => {
+    const individualPendente = firstValueFrom(
+      fonte.cadastrarVenda({ comando: cadastro(), revisaoEsperada: revisao }),
+    );
+    backend.expectOne('/api/v1/vendas').flush(
+      {
+        type: 'about:blank',
+        title: 'Requisição inválida',
+        status: 400,
+        detail: 'CPF inválido.',
+        codigo: 'cpf-invalido',
+        campo: 'cpf',
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    await expect(individualPendente).resolves.toEqual({
+      tipo: 'validacao',
+      codigo: 'cpf-invalido',
+      mensagem: 'CPF inválido.',
+      campo: 'cpf',
+    });
+
+    const multiplosPendente = firstValueFrom(
+      fonte.cadastrarVenda({ comando: cadastro(), revisaoEsperada: revisao }),
+    );
+    backend.expectOne('/api/v1/vendas').flush(
+      {
+        type: 'about:blank',
+        title: 'Requisição inválida',
+        status: 400,
+        detail: 'Um ou mais campos da requisição não são válidos.',
+        codigo: 'erros-validacao',
+        erros: [
+          { codigo: 'cpf-invalido', mensagem: 'CPF inválido.', campo: 'cpf' },
+          {
+            codigo: 'dados-recebimento-invalidos',
+            mensagem: 'Informe uma forma aceita para a entrada.',
+            campo: 'entrada.forma',
+          },
+        ],
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    await expect(multiplosPendente).resolves.toEqual({
+      tipo: 'validacao',
+      codigo: 'erros-validacao',
+      mensagem: 'Um ou mais campos da requisição não são válidos.',
+      erros: [
+        { codigo: 'cpf-invalido', mensagem: 'CPF inválido.', campo: 'cpf' },
+        {
+          codigo: 'dados-recebimento-invalidos',
+          mensagem: 'Informe uma forma aceita para a entrada.',
+          campo: 'entrada.forma',
+        },
+      ],
+    });
+  });
+
+  it('omite descrição vazia e envia uma única entrada com centavos e data civil', async () => {
+    const comando = cadastro();
+    const pendente = firstValueFrom(
+      fonte.cadastrarVenda({
+        comando: {
+          ...comando,
+          cliente: { ...comando.cliente, descricao: undefined },
+          dataVenda: '2027-01-31',
+          valorTotalCentavos: 100000,
+          quantidadeParcelas: 4,
+          entrada: { valorCentavos: 20000, data: '2027-01-31', forma: 'Pix' },
+        },
+        revisaoEsperada: revisao,
+      }),
+    );
+    const requisicao = backend.expectOne('/api/v1/vendas');
+    expect(requisicao.request.body).toEqual({
+      nome: 'Cliente sintético',
+      cpf: '52998224725',
+      telefone: '11987654321',
+      dataVenda: '2027-01-31',
+      valorTotalCentavos: 100000,
+      quantidadeParcelas: 4,
+      referencia,
+      revisaoEsperada: revisao,
+      entrada: { valorCentavos: 20000, forma: 'Pix' },
+    });
+    expect(Array.isArray(requisicao.request.body.entrada)).toBe(false);
+    requisicao.flush(detalheWire(), { status: 201, statusText: 'Created' });
+    expect((await pendente).tipo).toBe('sucesso');
+  });
+
+  it('rejeita resposta inválida de POST como exceção não confirmada', async () => {
+    const pendente = firstValueFrom(
+      fonte.cadastrarVenda({ comando: cadastro(), revisaoEsperada: revisao }),
+    );
+    backend
+      .expectOne('/api/v1/vendas')
+      .flush({ id: 'sem representação de venda válida' }, { status: 201, statusText: 'Created' });
+
+    await expect(pendente).rejects.toBeInstanceOf(ErroContratoApi);
+  });
+
   it.each([
     ['revisão numérica', resumoWire({ revisao: 9223372036854775807 })],
     ['revisão além de Int64', resumoWire({ revisao: '9223372036854775808' })],

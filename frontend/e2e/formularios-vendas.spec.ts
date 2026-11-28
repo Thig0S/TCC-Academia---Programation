@@ -861,7 +861,9 @@ test('cadastra com entrada e descrição pela UI e impede clique duplicado', asy
       .filter({ hasText: /^Parcelas pagas$/ })
       .locator('+ dd'),
   ).toContainText('1 de 4');
-  await expect(page.locator('tbody tr')).toHaveCount(4);
+  await expect(
+    page.getByRole('region', { name: 'Parcelas da venda' }).locator('tbody tr'),
+  ).toHaveCount(4);
   await page.getByRole('link', { name: 'Voltar para Vendas', exact: true }).click();
   await page
     .getByLabel('Buscar por nome, CPF, telefone ou data da venda', { exact: true })

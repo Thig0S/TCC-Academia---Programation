@@ -61,6 +61,14 @@ describe('Adaptadores puros de rascunhos', () => {
     expect(rascunho).toEqual(antes);
   });
 
+  it('omite a descrição em branco do comando de cadastro', () => {
+    const resultado = converterCadastro({ ...cadastro(), descricao: '  ' }, referencia);
+    expect(resultado.tipo).toBe('sucesso');
+    if (resultado.tipo === 'sucesso') {
+      expect(Object.hasOwn(resultado.comando.cliente, 'descricao')).toBe(false);
+    }
+  });
+
   it.each(['', '11111111111', '90000000174', 'abc'])('associa CPF inválido %s', (cpf) => {
     const resultado = converterEdicao({ ...cadastro(), cpf }, 'venda');
     expect(resultado.tipo).toBe('invalido');

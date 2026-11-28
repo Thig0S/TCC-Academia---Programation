@@ -14,6 +14,7 @@ import {
   ComandoCadastro,
   ComandoEdicaoCliente,
   ComandoMudancaStatus,
+  ErroValidacaoResultado,
   Resultado,
 } from '../../funcionalidades/vendas/venda.modelos';
 import {
@@ -44,6 +45,8 @@ interface ProblemaApi {
   readonly status: number;
   readonly codigo: string;
   readonly detalhe: string;
+  readonly campo?: string;
+  readonly erros?: readonly ErroValidacaoResultado[];
 }
 
 class CodificadorQueryEstrito implements HttpParameterCodec {
@@ -89,12 +92,55 @@ function lerProblemaApi(erro: unknown): ProblemaApi | null {
   ) {
     return null;
   }
-  return { status, codigo, detalhe };
+  const campo = problema['campo'];
+  if (Object.hasOwn(problema, 'campo') && typeof campo !== 'string') return null;
+  const erros = problema['erros'];
+  if (Object.hasOwn(problema, 'erros')) {
+    if (!Array.isArray(erros)) return null;
+    for (const erro of erros) {
+      if (erro === null || typeof erro !== 'object' || Array.isArray(erro)) return null;
+      const item = erro as Record<string, unknown>;
+      if (
+        typeof item['codigo'] !== 'string' ||
+        typeof item['mensagem'] !== 'string' ||
+        !(typeof item['campo'] === 'string' || item['campo'] === null)
+      ) {
+        return null;
+      }
+    }
+  }
+  return {
+    status,
+    codigo,
+    detalhe,
+    ...(typeof campo === 'string' ? { campo } : {}),
+    ...(Array.isArray(erros)
+      ? {
+          erros: erros.map((erro) => {
+            const item = erro as Record<string, string | null>;
+            return {
+              codigo: item['codigo']!,
+              mensagem: item['mensagem']!,
+              campo: item['campo']!,
+            };
+          }),
+        }
+      : {}),
+  };
 }
 
 function resultadoProblema<T>(problema: ProblemaApi): Resultado<T> {
+  const dadosValidacao = {
+    ...(problema.campo ? { campo: problema.campo } : {}),
+    ...(problema.erros ? { erros: problema.erros } : {}),
+  };
   if (problema.status === 400) {
-    return { tipo: 'validacao', codigo: problema.codigo, mensagem: problema.detalhe };
+    return {
+      tipo: 'validacao',
+      codigo: problema.codigo,
+      mensagem: problema.detalhe,
+      ...dadosValidacao,
+    };
   }
   if (problema.status === 404) {
     return { tipo: 'inexistencia', codigo: problema.codigo, mensagem: problema.detalhe };
@@ -169,7 +215,7 @@ export class FonteVendasHttp implements FonteVendas {
         nome: comando.cliente.nome,
         cpf: comando.cliente.cpf,
         telefone: comando.cliente.telefone,
-        descricao: comando.cliente.descricao ?? null,
+        ...(comando.cliente.descricao == null ? {} : { descricao: comando.cliente.descricao }),
         dataVenda: validarDataCivilEntrada(comando.dataVenda, 'dataVenda'),
         valorTotalCentavos: validarCentavosEntrada(
           comando.valorTotalCentavos,

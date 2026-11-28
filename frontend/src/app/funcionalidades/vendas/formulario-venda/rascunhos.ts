@@ -60,7 +60,27 @@ export function copiarCliente(cliente: ComandoCadastro['cliente']): RascunhoClie
     nome: cliente.nome,
     cpf: cliente.cpf,
     telefone: cliente.telefone,
-    descricao: cliente.descricao ?? '',
+    descricao: cliente.descricao?.trim() || '',
+  };
+}
+
+function copiarClienteParaComando(rascunho: RascunhoCliente): ComandoCadastro['cliente'] {
+  return {
+    nome: rascunho.nome,
+    cpf: rascunho.cpf,
+    telefone: rascunho.telefone,
+    descricao: rascunho.descricao,
+  };
+}
+
+function copiarClienteParaCadastro(rascunho: RascunhoCliente): ComandoCadastro['cliente'] {
+  const cliente = copiarClienteParaComando(rascunho);
+  const descricao = cliente.descricao?.trim();
+  return {
+    nome: cliente.nome,
+    cpf: cliente.cpf,
+    telefone: cliente.telefone,
+    ...(descricao ? { descricao } : {}),
   };
 }
 
@@ -167,7 +187,7 @@ export function converterCadastro(
   return {
     tipo: 'sucesso',
     comando: {
-      cliente: copiarCliente(rascunho),
+      cliente: copiarClienteParaCadastro(rascunho),
       dataVenda: rascunho.dataVenda,
       valorTotalCentavos: total,
       quantidadeParcelas: quantidade,
@@ -191,7 +211,7 @@ export function converterEdicao(
   const erros = errosCliente(rascunho);
   return Object.keys(erros).length
     ? { tipo: 'invalido', erros, resumo: null }
-    : { tipo: 'sucesso', comando: { vendaId, cliente: copiarCliente(rascunho) } };
+    : { tipo: 'sucesso', comando: { vendaId, cliente: copiarClienteParaComando(rascunho) } };
 }
 
 /** IDs são os capturados pelo formulário, jamais substituídos por novas pendências. */
