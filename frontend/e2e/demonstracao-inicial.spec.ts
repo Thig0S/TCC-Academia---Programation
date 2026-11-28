@@ -56,7 +56,7 @@ test('não exibe aviso global ao abrir ou recarregar', async ({ page }) => {
 test('Visão Geral e Relatórios apresentam as consultas financeiras definidas', async ({ page }) => {
   await page.goto('/visao-geral');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Visão Geral');
-  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  await expect(page.getByRole('main')).toContainText('Referência:');
   await expect(
     page.getByRole('main').getByRole('heading', { name: 'Indicadores financeiros globais' }),
   ).toHaveCount(1);
@@ -500,7 +500,7 @@ test('consulta listas, combina critérios e abre a venda correta pelos dois aces
   const nome = (await primeiraLinha.locator('th').innerText()).trim();
   const data = (await primeiraLinha.locator('td').nth(0).innerText()).trim();
   const situacaoLinha = (await primeiraLinha.locator('td').nth(5).innerText()).trim();
-  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  await expect(page.getByRole('main')).toContainText('Referência:');
   for (const termo of [nome.slice(-5), '900.000.001-75', '(00) 90000-0001', '00000175', data]) {
     await busca.fill(termo);
     await expect(tabela.locator('tbody tr').filter({ hasText: nome })).toHaveCount(1);
@@ -586,7 +586,7 @@ test('abre detalhes por URL opaca, recarrega e oferece retornos explícitos no c
   await expect(page.getByRole('heading', { level: 1, name: 'Detalhes da venda' })).toBeVisible();
   await expect(page.getByRole('main')).toContainText('Pedro Farias');
   await expect(page.getByRole('main')).toContainText('900.000.001-75');
-  await expect(page.getByRole('main')).toContainText('Referência da demonstração:');
+  await expect(page.getByRole('main')).toContainText('Referência:');
   await expect(page.getByRole('main').getByRole('table')).toBeVisible();
   await expect(page.getByRole('main').locator('form')).toHaveCount(0);
   await expect(page.locator('[data-acao-pagar]')).toHaveCount(1);

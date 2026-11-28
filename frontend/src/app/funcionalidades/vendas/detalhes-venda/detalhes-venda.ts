@@ -3,21 +3,34 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   Injector,
   linkedSignal,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { map, Observable } from 'rxjs';
 import { SeloSituacao } from '../../../compartilhado/componentes/selo-situacao/selo-situacao';
 import { Modal } from '../../../compartilhado/componentes/modal/modal';
 import { formatarDataCivil } from '../data-civil';
 import { formatarDinheiro } from '../dinheiro';
 import { Cabecalho } from '../../../compartilhado/componentes/cabecalho/cabecalho';
 import { ServicoDemonstracao } from '../../../nucleo/demonstracao/servico-demonstracao';
+import { ControleConsultas } from '../../../nucleo/dados/controle-consultas';
+import { EstadoConsultaPorChave } from '../../../nucleo/dados/estado-consulta';
+import { FONTE_VENDAS } from '../../../nucleo/dados/fonte-vendas';
+import { FonteVendasDemonstracao } from '../../../nucleo/dados/fonte-vendas-demonstracao';
+import {
+  ParcelaLeitura,
+  RecebimentoLeitura,
+  VendaDetalheLeitura,
+  VendaResumoLeitura,
+} from '../../../nucleo/dados/modelos-leitura';
 import { RetornoFormulario } from '../../../nucleo/demonstracao/retorno-formulario';
 import { RegistrarPagamento } from '../../parcelas/registrar-pagamento/registrar-pagamento';
 import { CorrigirPagamento } from '../../parcelas/corrigir-pagamento/corrigir-pagamento';
@@ -40,7 +53,14 @@ import {
 export class DetalhesVenda {
   protected readonly sucesso = inject(RetornoFormulario).consumirSucesso();
   private readonly rota = inject(ActivatedRoute);
-  private readonly servico = inject(ServicoDemonstracao);
+  private readonly fonte = inject(FONTE_VENDAS);
+  // Preserve legacy demo-only actions without creating the demo service in local composition.
+  private readonly servico =
+    this.fonte instanceof FonteVendasDemonstracao ? inject(ServicoDemonstracao) : null;
+  private readonly controleConsultas = inject(ControleConsultas);
+  private readonly consultaInterna = new EstadoConsultaPorChave<VendaDetalheLeitura | null>(
+    this.controleConsultas,
+  );
   private readonly id = toSignal(this.rota.paramMap, { initialValue: this.rota.snapshot.paramMap });
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -64,6 +84,27 @@ export class DetalhesVenda {
   private readonly focoProxima = signal(false);
   private readonly acionadorPagamento = signal<string | null>(null);
   private readonly acionadorCorrecao = signal<string | null>(null);
+  protected readonly estadoConsulta = this.consultaInterna.estado;
+  private readonly consultaDemonstrativa = computed(() => {
+    const id = this.id().get('id');
+    return id === null || this.servico === null ? null : this.servico.consultarVenda(id);
+  });
+  protected readonly vendaDemonstrativa = computed(() => {
+    const resultado = this.consultaDemonstrativa();
+    return resultado?.tipo === 'sucesso' ? resultado.valor : null;
+  });
+  private readonly acompanharConsulta = effect((onCleanup) => {
+    this.controleConsultas.geracao();
+    const id = this.id().get('id');
+    untracked(() => {
+      if (id === null) {
+        this.consultaInterna.cancelar();
+        return;
+      }
+      this.carregarDetalhe(id);
+    });
+    onCleanup(() => untracked(() => this.consultaInterna.cancelar()));
+  });
   protected readonly restaurarFoco = () => {
     afterNextRender(
       () => {
@@ -136,8 +177,8 @@ export class DetalhesVenda {
 
   protected confirmarMudancaStatus(): void {
     const status = this.statusAlvo();
-    const consulta = this.consulta();
-    if (status === null || consulta?.tipo !== 'sucesso') return;
+    const consulta = this.consultaDemonstrativa();
+    if (this.servico === null || status === null || consulta?.tipo !== 'sucesso') return;
     try {
       const resultado = this.servico.alterarStatus({ vendaId: consulta.valor.id, status });
       if (resultado.tipo !== 'sucesso') {
@@ -183,23 +224,23 @@ export class DetalhesVenda {
     );
   };
 
-  protected rotaRetorno(venda: ProjecaoVenda): readonly string[] {
+  protected rotaRetorno(venda: VendaResumoLeitura): readonly string[] {
     if (venda.statusAdministrativo === 'Inativo') return ['/vendas/inativas'];
     if (venda.statusAdministrativo === 'Prejuízo') return ['/vendas/prejuizo'];
     return venda.saldoCentavos > 0 ? ['/vendas'] : ['/vendas/quitadas'];
   }
 
-  protected textoRetorno(venda: ProjecaoVenda): string {
+  protected textoRetorno(venda: VendaResumoLeitura): string {
     if (venda.statusAdministrativo === 'Inativo') return 'Voltar para Vendas inativas';
     if (venda.statusAdministrativo === 'Prejuízo') return 'Voltar para Prejuízo';
     return venda.saldoCentavos > 0 ? 'Voltar para Vendas' : 'Voltar para Quitadas';
   }
 
-  protected primeiraPendente(venda: ProjecaoVenda, parcela: ProjecaoParcela): boolean {
-    return venda.parcelas.find((item) => item.situacao !== 'Paga')?.id === parcela.id;
+  protected primeiraPendente(detalhe: VendaDetalheLeitura, parcela: ParcelaLeitura): boolean {
+    return detalhe.parcelas.find((item) => item.situacao !== 'Paga')?.id === parcela.id;
   }
 
-  protected podePagar(venda: ProjecaoVenda): boolean {
+  protected podePagar(venda: VendaResumoLeitura): boolean {
     return venda.statusAdministrativo === 'Ativo';
   }
 
@@ -208,33 +249,21 @@ export class DetalhesVenda {
     return id ? (venda.parcelas.find((parcela) => parcela.id === id) ?? null) : null;
   }
 
-  protected pagamentoDaParcela(
-    venda: ProjecaoVenda,
-    parcela: ProjecaoParcela,
-  ): PagamentoDemonstrativo | null {
+  protected pagamentoIndividual(
+    detalhe: VendaDetalheLeitura,
+    parcela: ParcelaLeitura,
+  ): RecebimentoLeitura | null {
     return (
-      venda.recebimentos.find((recebimento) =>
-        recebimento.alocacoes.some((alocacao) => alocacao.parcelaId === parcela.id),
+      detalhe.recebimentos.find(
+        (recebimento) =>
+          recebimento.origem === 'Individual' &&
+          recebimento.alocacoes.some((alocacao) => alocacao.parcelaId === parcela.id),
       ) ?? null
     );
   }
 
-  protected pagamentoIndividual(
-    venda: ProjecaoVenda,
-    parcela: ProjecaoParcela,
-  ): PagamentoIndividualDemonstrativo | null {
-    const pagamento = this.pagamentoDaParcela(venda, parcela);
-    return pagamento?.origem === 'individual' ? pagamento : null;
-  }
-
-  protected valorAlocado(
-    pagamento: PagamentoDemonstrativo | null,
-    parcela: ProjecaoParcela,
-  ): number | null {
-    return (
-      pagamento?.alocacoes.find((alocacao) => alocacao.parcelaId === parcela.id)?.valorCentavos ??
-      null
-    );
+  protected valorRecebido(parcela: ParcelaLeitura): number | null {
+    return parcela.valorRecebidoCentavos > 0 ? parcela.valorRecebidoCentavos : null;
   }
 
   protected pagamentoAlvo(venda: ProjecaoVenda): PagamentoIndividualDemonstrativo | null {
@@ -252,13 +281,46 @@ export class DetalhesVenda {
     return parcelaId ? (venda.parcelas.find((item) => item.id === parcelaId) ?? null) : null;
   }
 
-  protected readonly consulta = computed(() => {
-    const id = this.id().get('id');
-    return id === null ? null : this.servico.consultarVenda(id);
-  });
-  protected readonly referencia = this.servico.referencia;
+  protected readonly referencia = this.fonte.referencia;
   protected readonly formatarDinheiro = formatarDinheiro;
   protected readonly formatarDataCivil = formatarDataCivil;
   protected readonly formatarCpf = formatarCpf;
   protected readonly formatarTelefone = formatarTelefone;
+
+  protected entrada(detalhe: VendaDetalheLeitura): RecebimentoLeitura | null {
+    return detalhe.recebimentos.find((recebimento) => recebimento.origem === 'Entrada') ?? null;
+  }
+
+  protected numeroParcela(detalhe: VendaDetalheLeitura, parcelaId: string): number | null {
+    return detalhe.parcelas.find((parcela) => parcela.id === parcelaId)?.numero ?? null;
+  }
+
+  protected parcelaDemonstrativa(venda: ProjecaoVenda, parcelaId: string): ProjecaoParcela | null {
+    return venda.parcelas.find((parcela) => parcela.id === parcelaId) ?? null;
+  }
+
+  protected recarregar(): void {
+    const id = this.id().get('id');
+    if (id !== null) this.carregarDetalhe(id);
+  }
+
+  private carregarDetalhe(id: string): void {
+    this.consultaInterna.carregar(
+      { tipo: 'detalhe', vendaId: id, referencia: this.fonte.referencia },
+      () => this.consultarDetalhe(id),
+      (valor) => valor === null,
+    );
+  }
+
+  private consultarDetalhe(id: string): Observable<VendaDetalheLeitura | null> {
+    return this.fonte.consultarVenda(id).pipe(
+      map((resultado) => {
+        if (resultado.tipo === 'sucesso') return resultado.valor;
+        if (resultado.tipo === 'inexistencia' && resultado.codigo === 'venda-inexistente') {
+          return null;
+        }
+        throw new Error('A consulta do detalhe não foi concluída.');
+      }),
+    );
+  }
 }

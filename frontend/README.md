@@ -580,6 +580,43 @@ rotas e fluxos demo foram alinhadas aos providers reais de `appConfig`. Prettier
 TypeScript/HTML tocados, `git diff --check` e `openspec validate fase-006-integracao-angular
 --strict` passaram. Sem alteração de API, dependências, proxy ou configuração de `serve:local`.
 
+### Apply `fase-006-integracao-angular` — tarefa 3.2 — detalhe por ID (28/11/2026)
+
+Detalhes consulta `FONTE_VENDAS.consultarVenda` com o ID completo, referência fixa e estado
+por chave/geração. Somente `inexistencia` com código contratual `venda-inexistente` mostra
+ausência; erro físico, transporte e códigos de inexistência diferentes apresentam falha
+recarregável, sem reaproveitar outro detalhe nem cair na demonstração. Troca rápida de ID e
+invalidação descartam respostas anteriores.
+
+A tela renderiza diretamente os modelos de leitura: resumo, entrada, parcelas e histórico
+expansível com origem, recebimentos, observações e todas as alocações. Não reconstrói
+entidades nem recalcula valores financeiros. No adaptador demonstrativo, ações existentes
+continuam ligadas ao serviço legado; em fonte HTTP, editar/status/baixa/correção não são
+expostos antes das tarefas de escrita correspondentes, e a composição local não instancia
+o serviço ou usa seed demonstrativo. A consulta não prepara nem grava comandos.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include="src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts"
+npm test -- --watch=false
+npm run build
+npm run build -- --configuration local
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/detalhe-venda.spec.ts --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/demonstracao-inicial.spec.ts --grep "abre detalhes por URL opaca" --workers=1
+npx playwright test --config=playwright.refinar-baseline.config.ts e2e/status-administrativo.spec.ts --workers=1
+```
+
+Resultados: testes direcionados **15/15**; suíte **483/483 em 37 arquivos**; E2E de detalhe,
+retorno/foco e regressão de status passaram em **2/2**, **2/2** e **8/8** casos. As execuções
+cobriram 1366×768 e 390×844. O cenário novo percorre a parcela 11 pelo teclado em ambos os
+temas; a suíte de componente também verifica contagens 1/10/11.
+Build padrão passou (323,06 kB iniciais) e build local passou (1,58 MB iniciais). Prettier
+nos arquivos de código/testes e `git diff --check` são verificados antes do commit. A
+verificação global `npm run format:check`, executada antes desta edição do README, apontou
+somente `README.md`; o arquivo não foi reformatado integralmente para evitar mudanças
+históricas fora do escopo.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e
