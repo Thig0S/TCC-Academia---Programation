@@ -864,6 +864,51 @@ aceite operacional.
 `prettier --check README.md`, executado adicionalmente, ainda aponta formatação histórica
 do README já registrada antes desta tarefa; não foi reformatado o documento inteiro.
 
+### Apply `fase-006-integracao-angular` — tarefa 5.1 — recuperação e conferência transversal (28/11/2026)
+
+`AvisoConfirmacaoIncerta` foi adicionado ao shell da aplicação, fora do `router-outlet`;
+assim, o aviso e o contexto imutável mantido pelo coordenador continuam disponíveis ao
+navegar entre cadastro, detalhe, coleções, Relatórios e Configurações. O cadastro consulta
+a coleção aberta original. Edição, mudança de status, baixa e correção consultam o detalhe
+do ID original e referência capturados no envio; a interface não procura nem associa uma
+venda pela semelhança do cliente.
+
+O alerta distingue consulta em andamento, falha e leitura concluída. Apenas uma leitura
+válida do alvo/referência habilita **Reconheço que conferi os dados**. Falha mantém o bloqueio
+e permite repetir somente a consulta. Depois do reconhecimento, o coordenador invalida as
+consultas e libera futuras confirmações sem reenviar a operação incerta. A leitura apresenta
+um resumo e um link para abrir a coleção/detalhe; ela não declara sucesso, rollback ou
+deduplicação. O rascunho e o alvo ficam somente em memória nesta aba. Reabrir a aplicação
+não restaura nem envia o comando; permanece a orientação para conferir antes de repetir.
+
+Nos fluxos de baixa e status, o controle de fechamento do modal identifica explicitamente
+**Fechar para conferir** após incerteza. Ao restaurar o foco após o fechamento, o detalhe
+prioriza o título focável do aviso global, evitando direcioná-lo à ação bloqueada. Correção
+já fecha o modal ao entrar em incerteza; cadastro e edição permanecem nas respectivas telas,
+com o aviso compartilhado fora do conteúdo roteado.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --watch=false --include src/app/compartilhado/componentes/aviso-confirmacao-incerta/aviso-confirmacao-incerta.spec.ts --include src/app/app.spec.ts
+npm test -- --watch=false
+npm run build
+npm exec -- ng build --configuration local
+npm exec -- playwright test --config=playwright.config.ts e2e/formularios-vendas.spec.ts e2e/status-administrativo.spec.ts --grep "paga parcelas individualmente|corrige pagamento individual com foco" --workers=1
+npm exec -- playwright test --config=playwright.config.ts e2e/status-administrativo.spec.ts --workers=1
+```
+
+Resultados: testes focados **13/13 em 2 arquivos**; regressão **545/545 em 44 arquivos**;
+build padrão **340,09 kB** iniciais e build local **1,56 MB** iniciais; E2E demonstrativo
+de baixa/correção **4/4** e de status **8/8**, em 1366×768 e 390×844 (status também nos
+temas claro/escuro). Prettier direcionado aos TypeScript/templates, `git diff --check` e
+`openspec validate fase-006-integracao-angular --strict` passaram. Os testes do alerta usam
+fonte sintética e cobrem os cinco alvos, consulta falha/retry, reconhecimento sem replay e
+preservação do snapshot na navegação do shell. Os E2E executados exercitam a demonstração,
+não perda de resposta contra API/SQLite; o fluxo com persistência real continua pendente das
+tarefas INT-06.2/6.3 e não há alegação de exactly-once ou aceite operacional. O README não
+foi reformatado integralmente; o histórico da Change já registra formatação preexistente.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

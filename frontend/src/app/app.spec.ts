@@ -1,7 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { throwError } from 'rxjs';
 import { App } from './app';
 import { appConfig } from './app.config';
+import { ContextoConfirmacao, ControleConfirmacoes } from './nucleo/dados/controle-confirmacoes';
+import { FONTE_VENDAS } from './nucleo/dados/fonte-vendas';
 
 describe('Estrutura navegável', () => {
   beforeEach(async () => {
@@ -67,5 +71,44 @@ describe('Estrutura navegável', () => {
     expect(pagina.getAttribute('data-tema')).toBe('light');
     expect(botao.getAttribute('aria-pressed')).toBe('false');
     expect(botao.textContent).toContain('Tema ativo: Claro');
+  });
+
+  it('mantém o alerta e o rascunho em memória ao navegar entre funcionalidades da aba', async () => {
+    const { fixture, pagina } = await renderizar('/vendas/nova');
+    const contexto: ContextoConfirmacao = {
+      operacao: 'baixa',
+      alvo: { tipo: 'detalhe', vendaId: 'venda/opaca' },
+      referencia: TestBed.inject(FONTE_VENDAS).referencia,
+      revisaoEsperada: '17',
+      rascunho: { valorCentavos: 10000, observacao: 'rascunho preservado' },
+    };
+    const confirmacoes = TestBed.inject(ControleConfirmacoes);
+
+    await confirmacoes
+      .confirmar(contexto, () => throwError(() => new HttpErrorResponse({ status: 0 })))
+      .catch(() => undefined);
+    fixture.detectChanges();
+
+    expect(pagina.querySelector<HTMLButtonElement>('form button[type="submit"]')?.disabled).toBe(
+      true,
+    );
+
+    for (const destino of [
+      '/vendas',
+      '/vendas/quitadas',
+      '/vendas/abc/editar',
+      '/vendas/abc',
+      '/relatorios',
+      '/configuracoes',
+    ]) {
+      await TestBed.inject(Router).navigateByUrl(destino);
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(pagina.querySelector('[data-testid="aviso-confirmacao-incerta"]')).not.toBeNull();
+      expect(confirmacoes.estado()).toMatchObject({
+        tipo: 'incerto',
+        contexto: { operacao: 'baixa', rascunho: contexto.rascunho },
+      });
+    }
   });
 });

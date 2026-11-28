@@ -114,6 +114,7 @@ export class DetalhesVenda {
   private readonly correcaoConfirmadaId = signal<string | null>(null);
   private readonly acionadorCorrecao = signal<string | null>(null);
   protected readonly estadoConsulta = this.consultaInterna.estado;
+  protected readonly estadoConfirmacao = this.confirmacoes.estado;
   private readonly acompanharBaixa = effect(() => {
     const acompanhamento = this.baixaAcompanhada();
     if (!acompanhamento) return;
@@ -144,7 +145,13 @@ export class DetalhesVenda {
       this.baixaEnviando.set(false);
       this.baixaAcompanhada.set(null);
       afterNextRender(
-        () => this.elemento.nativeElement.querySelector<HTMLElement>('#titulo-parcelas')?.focus(),
+        () => {
+          const host = this.elemento.nativeElement;
+          const alerta = host
+            .closest('app-root')
+            ?.querySelector<HTMLElement>('[data-foco-confirmacao-incerta]');
+          (alerta ?? host.querySelector<HTMLElement>('#titulo-parcelas'))?.focus();
+        },
         { injector: this.injector },
       );
       return;
@@ -348,6 +355,17 @@ export class DetalhesVenda {
     afterNextRender(
       () => {
         const host = this.elemento.nativeElement;
+        const alertaIncerta =
+          this.confirmacoes.estado().tipo === 'incerto'
+            ? host
+                .closest('app-root')
+                ?.querySelector<HTMLElement>('[data-foco-confirmacao-incerta]')
+            : null;
+        if (alertaIncerta) {
+          alertaIncerta.focus();
+          this.focoProxima.set(false);
+          return;
+        }
         const acoes = [...host.querySelectorAll<HTMLElement>('[data-acao-pagar]')];
         const destino = this.focoProxima()
           ? acoes[0]
@@ -362,6 +380,16 @@ export class DetalhesVenda {
     afterNextRender(
       () => {
         const host = this.elemento.nativeElement;
+        const alertaIncerta =
+          this.confirmacoes.estado().tipo === 'incerto'
+            ? host
+                .closest('app-root')
+                ?.querySelector<HTMLElement>('[data-foco-confirmacao-incerta]')
+            : null;
+        if (alertaIncerta) {
+          alertaIncerta.focus();
+          return;
+        }
         const id = this.acionadorCorrecao();
         const destino = [...host.querySelectorAll<HTMLElement>('[data-acao-corrigir]')].find(
           (botao) => botao.dataset['acaoCorrigir'] === id,
@@ -564,10 +592,13 @@ export class DetalhesVenda {
           this.statusPreparado.set(null);
           this.statusAlvo.set(null);
           afterNextRender(
-            () =>
-              this.elemento.nativeElement
-                .querySelector<HTMLElement>('#titulo-status-administrativo')
-                ?.focus(),
+            () => {
+              const host = this.elemento.nativeElement;
+              const alerta = host
+                .closest('app-root')
+                ?.querySelector<HTMLElement>('[data-foco-confirmacao-incerta]');
+              (alerta ?? host.querySelector<HTMLElement>('#titulo-status-administrativo'))?.focus();
+            },
             {
               injector: this.injector,
             },
@@ -642,6 +673,17 @@ export class DetalhesVenda {
     afterNextRender(
       () => {
         const host = this.elemento.nativeElement;
+        const alertaIncerta =
+          this.confirmacoes.estado().tipo === 'incerto'
+            ? host
+                .closest('app-root')
+                ?.querySelector<HTMLElement>('[data-foco-confirmacao-incerta]')
+            : null;
+        if (alertaIncerta) {
+          alertaIncerta.focus();
+          this.statusConfirmado.set(false);
+          return;
+        }
         const tituloStatus = host.querySelector<HTMLElement>('#titulo-status-administrativo');
         const destino = this.statusConfirmado()
           ? (tituloStatus ?? host.querySelector<HTMLElement>('h1'))

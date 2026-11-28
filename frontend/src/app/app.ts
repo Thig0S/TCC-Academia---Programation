@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BarraNavegacao } from './compartilhado/componentes/barra-navegacao/barra-navegacao';
+import { AvisoConfirmacaoIncerta } from './compartilhado/componentes/aviso-confirmacao-incerta/aviso-confirmacao-incerta';
 import { MODO_APLICACAO } from './nucleo/configuracao/modo-aplicacao';
 import { ServicoTema } from './nucleo/configuracao/servico-tema';
 import { FONTE_VENDAS } from './nucleo/dados/fonte-vendas';
@@ -17,7 +18,7 @@ import { RetornoFormulario } from './nucleo/navegacao/retorno-formulario';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, BarraNavegacao],
+  imports: [RouterLink, RouterOutlet, BarraNavegacao, AvisoConfirmacaoIncerta],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

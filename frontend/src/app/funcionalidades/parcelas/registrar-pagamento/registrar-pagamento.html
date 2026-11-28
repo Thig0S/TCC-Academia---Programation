@@ -138,7 +138,7 @@
         class="rounded-lg border-[1px] border-control-border bg-surface-muted px-4 py-2 text-sm font-semibold text-text transition-none hover:bg-surface focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2"
         (click)="cancelar()"
       >
-        {{ enviando() ? 'Fechar (não cancela)' : 'Cancelar' }}
+        {{ incerto() ? 'Fechar para conferir' : enviando() ? 'Fechar (não cancela)' : 'Cancelar' }}
       </button>
     </div>
   </form>
