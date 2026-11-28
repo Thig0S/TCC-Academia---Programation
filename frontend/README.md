@@ -987,6 +987,47 @@ de fixture, sem alterar a suíte demo; `npm run test:e2e -- --list` listou **158
 arquivos** sem specs/fixture local. Os dados são sintéticos; isso é verificação de
 infraestrutura, não aceite operacional nem prova de falha transacional nativa.
 
+### Apply `fase-006-integracao-angular` — tarefa 6.2 — integração E2E real (28/11/2026)
+
+`persistencia-local.local.spec.ts` percorre a interface Angular contra a API .NET real e o
+SQLite isolado da fixture. Cadastra vendas sintéticas com e sem entrada; edita os dados do
+cliente; confirma Ativo→Prejuízo→Ativo→Inativo→Ativo; registra baixa individual de R$ 55,00,
+corrige-a para R$ 53,00 em mês anterior sem substituir o ID do recebimento e paga a segunda
+parcela por R$ 50,00. Consulta Vendas abertas, quitadas, Prejuízo e Inativas, os quatro
+indicadores da Visão Geral e Relatórios, conferindo R$ 53,00 no mês da correção e R$ 50,00
+no mês da segunda baixa. Cadastro, edição, pagamento e transições exercitam teclado/foco e
+confirmações nativas.
+
+Depois de abrir o detalhe no browser, a fixture encerra e reinicia somente seu próprio
+processo API, mantendo porta, caminho SQLite e processos Angular. O reload seguinte consulta
+a mesma venda, agora com referência civil avançada em um dia; ID, revisão, recebimentos e IDs
+de todas as coleções permanecem iguais. O cenário de paginação cria 11 vendas por chamadas
+autenticadas da fixture (sem endpoint seed) e percorre busca, limpar, ordenação e páginas
+10+1 nos temas escuro/claro. A suíte repete tudo nos viewports 1366×768 e 390×844; o perfil
+local permanece serial e com banco próprio por projeto. A infraestrutura de 6.1 comprova o
+banco inicial vazio e as consultas sem seed. Todos os registros e valores são sintéticos.
+
+O E2E encontrou um caso real de ciclo de vida: uma confirmação de status bem-sucedida
+invalidava a consulta e desmontava temporariamente o detalhe enquanto o alvo do modal ainda
+estava selecionado; ao retornar a leitura, reaparecia um modal desabilitado. O detalhe agora
+limpa o alvo confirmado e restaura foco no título somente depois da leitura da mesma venda,
+inclusive sem permitir que um refresh antigo mova o foco para outro registro.
+
+Verificações executadas em `frontend/`:
+
+```powershell
+npm test -- --no-watch --include=src/app/funcionalidades/vendas/detalhes-venda/detalhes-venda.spec.ts
+npm run test:e2e:local
+```
+
+Resultados: teste focado de detalhe **15/15**; suíte local completa **14/14** nos dois
+projetos Chromium (infraestrutura, no-fallback, cinco comandos, persistência/reinício e
+paginação). Prettier direcionado aos arquivos TypeScript tocados e `git diff --check` passaram.
+`npm run format:check`, executado antes de editar este README, já apontava somente este
+arquivo; o arquivo inteiro não foi reformatado para evitar alterações documentais fora do
+escopo, e a formatação global fica registrada para a auditoria 6.4/6.5. Não se alega aceite
+operacional nem prova de exatamente uma vez diante de desconexão.
+
 ## Apply `feedback-luighi` — coleções e reconciliação por status — 24/11/2026
 
 As projeções normais de Vendas/Quitadas incluem somente vendas Ativas; Inativas e

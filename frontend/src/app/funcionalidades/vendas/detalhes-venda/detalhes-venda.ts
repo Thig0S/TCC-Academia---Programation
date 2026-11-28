@@ -101,6 +101,8 @@ export class DetalhesVenda {
   protected readonly statusRevisaoRecarregada = signal(false);
   private readonly statusPreparado = signal<ConfirmacaoStatusPreparada | null>(null);
   private readonly geracaoAntesDaRecargaStatus = signal<number | null>(null);
+  private readonly statusConfirmadoVendaId = signal<string | null>(null);
+  private readonly geracaoAntesDoStatusConfirmado = signal<number | null>(null);
   protected readonly statusEnviando = signal(false);
   private readonly statusAcionador = signal<StatusAdministrativoVenda | null>(null);
   private readonly statusConfirmado = signal(false);
@@ -357,6 +359,48 @@ export class DetalhesVenda {
       { injector: this.injector },
     );
   });
+  private readonly restaurarFocoAposStatusConfirmado = effect(() => {
+    if (!this.statusConfirmado()) return;
+    const vendaId = this.statusConfirmadoVendaId();
+    const geracaoAnterior = this.geracaoAntesDoStatusConfirmado();
+    const estado = this.estadoConsulta();
+    if (vendaId === null || geracaoAnterior === null) return;
+    if (this.id().get('id') !== vendaId) {
+      this.statusConfirmado.set(false);
+      this.statusConfirmadoVendaId.set(null);
+      this.geracaoAntesDoStatusConfirmado.set(null);
+      return;
+    }
+    if (
+      estado.geracao <= geracaoAnterior ||
+      estado.tipo === 'inicial' ||
+      estado.tipo === 'carregando'
+    ) {
+      return;
+    }
+    if (
+      estado.tipo === 'pronto' &&
+      (estado.chave.tipo !== 'detalhe' || estado.chave.vendaId !== vendaId)
+    ) {
+      return;
+    }
+
+    afterNextRender(
+      () => {
+        if (!this.statusConfirmado() || this.id().get('id') !== vendaId) return;
+        const host = this.elemento.nativeElement;
+        const destino =
+          estado.tipo === 'pronto'
+            ? host.querySelector<HTMLElement>('#titulo-status-administrativo')
+            : host.querySelector<HTMLElement>('h1');
+        (destino ?? host.querySelector<HTMLElement>('h1'))?.focus();
+        this.statusConfirmado.set(false);
+        this.statusConfirmadoVendaId.set(null);
+        this.geracaoAntesDoStatusConfirmado.set(null);
+      },
+      { injector: this.injector },
+    );
+  });
   protected readonly restaurarFoco = () => {
     afterNextRender(
       () => {
@@ -549,6 +593,7 @@ export class DetalhesVenda {
   protected async confirmarMudancaStatus(): Promise<void> {
     const preparado = this.statusPreparado();
     if (!preparado || !this.podeConfirmarStatus()) return;
+    const geracaoAntesDaConfirmacao = this.estadoConsulta().geracao;
     this.statusEnviando.set(true);
     this.erroStatus.set('');
     this.statusRevisaoRecarregada.set(false);
@@ -627,12 +672,14 @@ export class DetalhesVenda {
         return;
       }
       this.statusConfirmado.set(true);
+      this.statusConfirmadoVendaId.set(preparado.vendaId);
+      this.geracaoAntesDoStatusConfirmado.set(geracaoAntesDaConfirmacao);
       this.mensagemStatus.set(resultado.mensagem);
       this.statusPreparado.set(null);
+      this.statusAlvo.set(null);
       this.conflitoStatus.set(false);
       this.erroStatus.set('');
       this.statusEnviando.set(false);
-      this.modalStatus()?.fechar();
     } catch {
       if (this.id().get('id') === preparado.vendaId) {
         const mensagem =

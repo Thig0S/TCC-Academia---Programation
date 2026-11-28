@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import {
   appendFileSync,
@@ -31,8 +31,10 @@ export interface LocalStack {
   readonly apiURL: string;
   readonly databasePath: string;
   readonly reference: string;
+  readonly runId: string;
   readonly logFiles: readonly string[];
   apiRequest(path: string, init?: RequestInit): Promise<Response>;
+  restartApi(): Promise<void>;
   logsSemSegredo(): boolean;
   dadosSemSegredo(valor: string): boolean;
   lerLogs(): string;
@@ -45,6 +47,7 @@ export const test = base.extend<{}, { localStack: LocalStack }>({
     async ({}, use) => {
       const runDirectory = mkdtempSync(path.join(os.tmpdir(), 'vendas-em-aberto-e2e-'));
       const secret = randomBytes(32).toString('base64');
+      const runId = randomUUID();
       const databasePath = path.join(runDirectory, 'local.sqlite');
       const logFiles = [
         path.join(runDirectory, 'api.stdout.log'),
@@ -58,6 +61,7 @@ export const test = base.extend<{}, { localStack: LocalStack }>({
       const processos: ChildOutput[] = [];
       let apiPort: number | null = null;
       let apiIniciada = false;
+      let apiProcesso: ChildOutput | null = null;
       let cliIniciado = false;
       const marcadorRedacao = '[credencial removida]'
         .padEnd(secret.length, '*')
@@ -134,15 +138,24 @@ export const test = base.extend<{}, { localStack: LocalStack }>({
         delete ambienteServidor.ASPNETCORE_URLS;
         delete ambienteServidor.DOTNET_URLS;
 
-        const api = iniciarProcesso(
-          'dotnet',
-          ['run', '--project', apiProject, '--no-launch-profile'],
-          backendRoot,
-          ambienteServidor,
-          [logFiles[0]!, logFiles[1]!],
-        );
-        apiIniciada = true;
-        await aguardarHttp(`http://${uiHost}:${apiPort}/health`, api, 'API .NET');
+        async function iniciarApi(semBuild: boolean): Promise<void> {
+          if (apiPort === null) throw new Error('A porta da API local não foi reservada.');
+          const argumentos = [
+            'run',
+            ...(semBuild ? ['--no-build'] : []),
+            '--project',
+            apiProject,
+            '--no-launch-profile',
+          ];
+          apiProcesso = iniciarProcesso('dotnet', argumentos, backendRoot, ambienteServidor, [
+            logFiles[0]!,
+            logFiles[1]!,
+          ]);
+          apiIniciada = true;
+          await aguardarHttp(`http://${uiHost}:${apiPort}/health`, apiProcesso, 'API .NET');
+        }
+
+        await iniciarApi(false);
 
         const cli = iniciarProcesso(
           process.execPath,
@@ -170,7 +183,16 @@ export const test = base.extend<{}, { localStack: LocalStack }>({
           apiURL: `http://${uiHost}:${apiPort}`,
           databasePath,
           reference: referencia,
+          runId,
           logFiles,
+          restartApi: async () => {
+            if (apiPort === null || apiProcesso === null) {
+              throw new Error('A API local ainda não foi iniciada.');
+            }
+            await encerrarProcesso(apiProcesso);
+            await aguardarPortaLivre(uiHost, apiPort, 'API .NET');
+            await iniciarApi(true);
+          },
           apiRequest: (requestPath, init = {}) => {
             const headers = new Headers(init.headers);
             headers.set('Authorization', `Bearer ${secret}`);
